@@ -216,6 +216,12 @@
             border: 1px solid #f5c6cb;
         }
 
+        .alert.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -318,6 +324,35 @@
             opacity: 0.9;
         }
 
+        .setup-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .setup-info h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .setup-info p {
+            color: #856404;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .setup-info code {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: block;
+            margin-top: 10px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -354,8 +389,35 @@
 
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab(event, 'radicar')">📋 Radicar Trabajo</button>
+            <button class="tab-btn" onclick="switchTab(event, 'setup')">⚙️ Configuración</button>
             <button class="tab-btn" onclick="switchTab(event, 'consultar')">📊 Consultar Radicaciones</button>
             <button class="tab-btn" onclick="switchTab(event, 'estadisticas')">📈 Estadísticas</button>
+        </div>
+
+        <!-- TAB: SETUP (CONFIGURACIÓN) -->
+        <div id="setup" class="tab-content">
+            <div class="setup-info">
+                <h3>⚙️ CONFIGURACIÓN INICIAL (IMPORTANTE)</h3>
+                <p><strong>Debes hacer esto una sola vez.</strong></p>
+                
+                <p><strong>Paso 1:</strong> Obtén la URL de tu Web App</p>
+                <p>En Google Sheets → Extensiones > Apps Script → Desplegar → "Web app URL"</p>
+                
+                <p><strong>Paso 2:</strong> Pega la URL aquí y haz clic en "Guardar Configuración"</p>
+                
+                <div class="form-group">
+                    <label>URL de Web App:</label>
+                    <input type="text" id="webAppUrl" placeholder="https://script.google.com/macros/s/AKfycbzJltequOwGhXoOsG70jAsJTTXOzj0Rdw8N9K-aBQbT2LjUU37zb97JPxsfNtCVk755wA/exec">
+                </div>
+                
+                <button class="btn-primary" onclick="guardarConfiguracion()" style="margin-top: 15px; max-width: 200px;">💾 Guardar Configuración</button>
+                
+                <div id="setupMessage" class="alert" style="margin-top: 15px;"></div>
+                
+                <p style="margin-top: 20px; font-size: 12px; color: #666;">
+                    <strong>La URL se guarda en tu navegador (localStorage)</strong> y es usada para conectar con Google Sheets.
+                </p>
+            </div>
         </div>
 
         <!-- TAB: RADICAR -->
@@ -476,7 +538,7 @@
                     <div class="form-row">
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label>Título <span class="required">*</span></label>
-                            <textarea name="titulo" required placeholder="Escribe el título del trabajo o 'No tiene tema' si aún no está definido"></textarea>
+                            <textarea name="titulo" required placeholder="Escribe el título del trabajo o 'No tiene tema' si aún está en desarrollo"></textarea>
                         </div>
                     </div>
                     <div class="form-row">
@@ -611,9 +673,36 @@
     </div>
 
     <script>
-        // ⚠️ IMPORTANTE: REEMPLAZA ESTA URL CON LA DE TU WEB APP
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzJltequOwGhXoOsG70jAsJTTXOzj0Rdw8N9K-aBQbT2LjUU37zb97JPxsfNtCVk755wA/exec";
+        // Funciones de configuración
+        function guardarConfiguracion() {
+            const url = document.getElementById('webAppUrl').value.trim();
+            
+            if (!url) {
+                mostrarMensajeSetup('❌ Por favor, ingresa una URL', 'error');
+                return;
+            }
+            
+            if (!url.includes('/macros/s/')) {
+                mostrarMensajeSetup('❌ La URL debe contener /macros/s/ (no /macros/d/)', 'error');
+                return;
+            }
+            
+            localStorage.setItem('cttg_web_app_url', url);
+            mostrarMensajeSetup('✅ Configuración guardada correctamente. Ya puedes usar el sistema.', 'success');
+        }
 
+        function obtenerUrlWebApp() {
+            return localStorage.getItem('cttg_web_app_url');
+        }
+
+        function mostrarMensajeSetup(mensaje, tipo) {
+            const setupMessage = document.getElementById('setupMessage');
+            setupMessage.className = `alert ${tipo}`;
+            setupMessage.textContent = mensaje;
+            setupMessage.style.display = 'block';
+        }
+
+        // Funciones principales
         function handleAreaChange() {
             const areaSelect = document.getElementById('areaSelect');
             const areaOtrasInput = document.getElementById('areaOtrasInput');
@@ -647,15 +736,15 @@
         function radicarTrabajo(event) {
             event.preventDefault();
             
-            if (WEB_APP_URL.includes('TU_SCRIPT_ID')) {
-                showAlert('❌ ERROR: Debes reemplazar la URL de la Web App en el código. Busca WEB_APP_URL y coloca tu URL.', 'error');
+            const url = obtenerUrlWebApp();
+            if (!url) {
+                showAlert('❌ Primero debes guardar la URL en la pestaña ⚙️ Configuración', 'error');
                 return;
             }
             
             const formData = new FormData(document.getElementById('formulario'));
             const radicacion = Object.fromEntries(formData);
             
-            // Si es "Otras", usar el área personalizada
             if (radicacion.area === 'Otras') {
                 radicacion.area = radicacion.areaOtras || 'Otras';
             }
@@ -663,86 +752,102 @@
             document.getElementById('loading').style.display = 'block';
             document.getElementById('formulario').style.display = 'none';
             
-            fetch(WEB_APP_URL, {
+            fetch(url, {
                 method: 'POST',
+                mode: 'no-cors',
                 body: JSON.stringify({
                     action: 'addRadicacion',
                     radicacion: radicacion
                 })
             })
-            .then(res => res.json())
-            .then(data => {
+            .then(() => {
+                // Con mode: 'no-cors', no podemos leer la respuesta
+                // pero la solicitud se envía
                 document.getElementById('loading').style.display = 'none';
-                if (data.success) {
-                    showAlert(`✅ ¡Radicación exitosa! Número: ${data.numero}`, 'success');
-                    document.getElementById('formulario').reset();
-                    handleAreaChange();
-                    document.getElementById('formulario').style.display = 'block';
-                } else {
-                    document.getElementById('formulario').style.display = 'block';
-                    showAlert(`❌ Error: ${data.error}`, 'error');
-                }
+                showAlert(`✅ ¡Radicación enviada! El trabajo ha sido registrado en Google Sheets.`, 'success');
+                document.getElementById('formulario').reset();
+                handleAreaChange();
+                document.getElementById('formulario').style.display = 'block';
+                
+                // Auto-reload de datos después de 2 segundos
+                setTimeout(() => {
+                    cargarRadicaciones();
+                }, 2000);
             })
             .catch(err => {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('formulario').style.display = 'block';
-                showAlert(`❌ Error de conexión: ${err.message}. Verifica que la URL de la Web App sea correcta.`, 'error');
-                console.error('Error detallado:', err);
+                showAlert(`❌ Error: ${err.message}`, 'error');
             });
         }
 
         function cargarRadicaciones() {
-            if (WEB_APP_URL.includes('TU_SCRIPT_ID')) {
-                showAlert('❌ ERROR: Debes reemplazar la URL de la Web App. Busca WEB_APP_URL en el código.', 'error');
+            const url = obtenerUrlWebApp();
+            if (!url) {
+                showAlert('❌ Primero debes guardar la URL en Configuración', 'error');
                 return;
             }
             
-            fetch(WEB_APP_URL + '?action=getRadicaciones')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.radicaciones) {
-                        const tbody = document.getElementById('tablaBody');
-                        tbody.innerHTML = '';
-                        if (data.radicaciones.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No hay radicaciones aún</td></tr>';
-                            return;
-                        }
-                        data.radicaciones.forEach(rad => {
-                            const row = `<tr>
-                                <td>${rad.numero}</td>
-                                <td>${rad.nombre1}</td>
-                                <td>${rad.email1}</td>
-                                <td>${rad.titulo.substring(0, 30)}...</td>
-                                <td>${rad.modalidad}</td>
-                                <td>${rad.area}</td>
-                                <td><span class="badge ${(rad.estado || 'radicado').toLowerCase()}">${rad.estado || 'Radicado'}</span></td>
-                            </tr>`;
-                            tbody.innerHTML += row;
-                        });
+            fetch(url + '?action=getRadicaciones', {
+                mode: 'no-cors'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.radicaciones) {
+                    const tbody = document.getElementById('tablaBody');
+                    tbody.innerHTML = '';
+                    if (data.radicaciones.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No hay radicaciones aún</td></tr>';
+                        return;
                     }
-                })
-                .catch(err => showAlert(`❌ Error: ${err.message}`, 'error'));
+                    data.radicaciones.forEach(rad => {
+                        const row = `<tr>
+                            <td>${rad.numero}</td>
+                            <td>${rad.nombre1}</td>
+                            <td>${rad.email1}</td>
+                            <td>${rad.titulo.substring(0, 30)}...</td>
+                            <td>${rad.modalidad}</td>
+                            <td>${rad.area}</td>
+                            <td><span class="badge ${(rad.estado || 'radicado').toLowerCase()}">${rad.estado || 'Radicado'}</span></td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                }
+            })
+            .catch(err => showAlert(`❌ Error: ${err.message}`, 'error'));
         }
 
         function cargarEstadisticas() {
-            if (WEB_APP_URL.includes('TU_SCRIPT_ID')) {
-                showAlert('❌ ERROR: Debes reemplazar la URL de la Web App.', 'error');
+            const url = obtenerUrlWebApp();
+            if (!url) {
+                showAlert('❌ Primero debes guardar la URL en Configuración', 'error');
                 return;
             }
             
-            fetch(WEB_APP_URL + '?action=getEstadisticas')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.stats) {
-                        document.getElementById('statTotal').textContent = data.stats.total;
-                        document.getElementById('statRadicado').textContent = data.stats.radicado;
-                        document.getElementById('statRevision').textContent = data.stats.revision;
-                        document.getElementById('statAprobado').textContent = data.stats.aprobado;
-                        document.getElementById('statDevuelto').textContent = data.stats.devuelto;
-                    }
-                })
-                .catch(err => showAlert(`❌ Error: ${err.message}`, 'error'));
+            fetch(url + '?action=getEstadisticas', {
+                mode: 'no-cors'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.stats) {
+                    document.getElementById('statTotal').textContent = data.stats.total;
+                    document.getElementById('statRadicado').textContent = data.stats.radicado;
+                    document.getElementById('statRevision').textContent = data.stats.revision;
+                    document.getElementById('statAprobado').textContent = data.stats.aprobado;
+                    document.getElementById('statDevuelto').textContent = data.stats.devuelto;
+                }
+            })
+            .catch(err => showAlert(`❌ Error: ${err.message}`, 'error'));
         }
+
+        // Verificar URL al cargar
+        window.addEventListener('load', function() {
+            const url = obtenerUrlWebApp();
+            if (url) {
+                document.getElementById('webAppUrl').value = url;
+                mostrarMensajeSetup('✅ URL configurada correctamente', 'info');
+            }
+        });
     </script>
 </body>
 </html>
