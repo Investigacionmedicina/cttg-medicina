@@ -207,7 +207,7 @@
 
         // Si ya está autenticado, redirigir
         if (localStorage.getItem("usuarioActual")) {
-            window.location.href = "coordinadora_dashboard_nuevo.html";
+            window.location.href = "coordinadora_dashboard.html";
         }
 
         document.getElementById("loginForm").addEventListener("submit", async function(e) {
@@ -242,7 +242,7 @@
                     }));
 
                     // Redirigir a dashboard
-                    window.location.href = "coordinadora_dashboard_nuevo.html";
+                    window.location.href = "coordinadora_dashboard.html";
                 } else {
                     mostrarAlerta(data.error || "Error en login");
                     document.getElementById("textBtn").style.display = "block";
