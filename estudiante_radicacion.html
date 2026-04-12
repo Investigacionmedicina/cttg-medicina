@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTTG Medicina - Radicación Fase 1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            padding-left: 10px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .numero-resultado {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .numero-resultado h2 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+
+        .numero-grande {
+            font-size: 32px;
+            font-weight: bold;
+            color: #167f39;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+        }
+
+        .numero-resultado p {
+            color: #155724;
+            font-size: 14px;
+        }
+
+        .numero-resultado button {
+            margin-top: 15px;
+            background: #155724;
+            color: white;
+        }
+
+        .numero-resultado button:hover {
+            background: #0c3410;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+            font-size: 13px;
+            color: #004085;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 CTTG Medicina</h1>
+            <p>FASE 1: Radicación de Trabajo de Grado</p>
+        </div>
+
+        <div class="content">
+            <div id="alert" class="alert"></div>
+
+            <div class="info-box">
+                <strong>ℹ️ Instrucciones:</strong> Complete todos los campos obligatorios (*). Puede registrar hasta 3 estudiantes (mínimo 1) y 2 tutores.
+            </div>
+
+            <form id="formulario">
+                <!-- ESTUDIANTES -->
+                <div class="section-title">👥 Estudiante 1 (Obligatorio)</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cédula <span class="required">*</span></label>
+                        <input type="text" name="cedula1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre <span class="required">*</span></label>
+                        <input type="text" name="nombre1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" name="email1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono <span class="required">*</span></label>
+                        <input type="tel" name="telefono1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Semestre <span class="required">*</span></label>
+                        <select name="semestre1" required>
+                            <option value="">Seleccionar</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Semillero / Grupo de Investigación</label>
+                        <input type="text" name="semillero1" placeholder="Opcional">
+                    </div>
+                </div>
+
+                <div class="section-title">👥 Estudiante 2 (Opcional)</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cédula</label>
+                        <input type="text" name="cedula2">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" name="nombre2">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email2">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="telefono2">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Semestre</label>
+                        <select name="semestre2">
+                            <option value="">Seleccionar</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Semillero / Grupo de Investigación</label>
+                        <input type="text" name="semillero2" placeholder="Opcional">
+                    </div>
+                </div>
+
+                <div class="section-title">👥 Estudiante 3 (Opcional)</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cédula</label>
+                        <input type="text" name="cedula3">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" name="nombre3">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email3">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="telefono3">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Semestre</label>
+                        <select name="semestre3">
+                            <option value="">Seleccionar</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Semillero / Grupo de Investigación</label>
+                        <input type="text" name="semillero3" placeholder="Opcional">
+                    </div>
+                </div>
+
+                <!-- TRABAJO -->
+                <div class="section-title">📄 Información del Trabajo</div>
+                <div class="form-group form-row full">
+                    <div>
+                        <label>Título <span class="required">*</span></label>
+                        <textarea name="titulo" required placeholder="Ingrese el título de su trabajo de grado"></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Modalidad <span class="required">*</span></label>
+                        <select name="modalidad" required>
+                            <option value="">Seleccionar</option>
+                            <option value="Investigación">Investigación</option>
+                            <option value="Monografía">Monografía</option>
+                            <option value="Pasantía">Pasantía</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Área <span class="required">*</span></label>
+                        <select name="area" required>
+                            <option value="">Seleccionar</option>
+                            <option value="Medicina Interna">Medicina Interna</option>
+                            <option value="Cirugía General">Cirugía General</option>
+                            <option value="Pediatría">Pediatría</option>
+                            <option value="Ginecología">Ginecología</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- TUTORES -->
+                <div class="section-title">👨‍🏫 Tutor 1 (Opcional)</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" name="tutor1Nombre">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="tutor1Email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="tutor1Telefono">
+                    </div>
+                    <div class="form-group">
+                        <label>Relación</label>
+                        <input type="text" name="tutor1Relacion" placeholder="Ej: Tiene relación contractual con la USC">
+                    </div>
+                </div>
+
+                <div class="section-title">👨‍🏫 Tutor 2 (Opcional)</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" name="tutor2Nombre">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="tutor2Email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="tutor2Telefono">
+                    </div>
+                    <div class="form-group">
+                        <label>Relación</label>
+                        <input type="text" name="tutor2Relacion" placeholder="Ej: Tiene relación contractual con la USC">
+                    </div>
+                </div>
+
+                <!-- BOTONES -->
+                <div class="button-group">
+                    <button type="reset" class="btn-secondary">Limpiar Formulario</button>
+                    <button type="submit" class="btn-primary">Radicar</button>
+                </div>
+            </form>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Procesando radicación...</p>
+            </div>
+
+            <div id="resultado" class="numero-resultado">
+                <h2>✅ ¡Radicación Exitosa!</h2>
+                <p>Su trabajo de grado ha sido radicado correctamente.</p>
+                <p style="margin-top: 15px; font-weight: bold;">Guarde su número de radicación:</p>
+                <div class="numero-grande" id="numeroRadicacion"></div>
+                <p>Recibirá un email de confirmación en los próximos minutos.</p>
+                <button type="button" onclick="location.reload()">Radicar Otro Trabajo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKnT7HJ2EKCfXbsL_Z32_-R8l-uaTsDahgkmk5g90vNmVkJofP7Vy5NqKjc9XunZLp/exec";
+
+        document.getElementById("formulario").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            // Validar que mínimo haya 1 estudiante
+            const cedula1 = document.querySelector("[name='cedula1']").value;
+
+            if (!cedula1) {
+                mostrarAlerta("Se requiere mínimo 1 estudiante para radicar", "error");
+                return;
+            }
+
+            // Recopilar datos del formulario
+            const formData = new FormData(this);
+            const radicacion = {};
+
+            formData.forEach((value, key) => {
+                radicacion[key] = value;
+            });
+
+            // Agregar email de estudiante
+            radicacion.emailEstudiante = formData.get("email1");
+
+            // Mostrar loading
+            document.getElementById("formulario").style.display = "none";
+            document.getElementById("loading").style.display = "block";
+
+            try {
+                const response = await fetch(APP_SCRIPT_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        action: "createRadicacion",
+                        radicacion: radicacion
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Mostrar número generado
+                    document.getElementById("numeroRadicacion").textContent = data.numero;
+                    document.getElementById("resultado").style.display = "block";
+                } else {
+                    document.getElementById("formulario").style.display = "block";
+                    document.getElementById("loading").style.display = "none";
+                    mostrarAlerta("Error: " + (data.error || "No se pudo radicar"), "error");
+                }
+            } catch(error) {
+                document.getElementById("formulario").style.display = "block";
+                document.getElementById("loading").style.display = "none";
+                mostrarAlerta("Error de conexión: " + error.message, "error");
+                console.error(error);
+            }
+        });
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alert = document.getElementById("alert");
+            alert.className = "alert " + tipo;
+            alert.textContent = mensaje;
+            alert.style.display = "block";
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
