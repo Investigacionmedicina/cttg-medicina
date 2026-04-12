@@ -58,7 +58,6 @@
             padding: 30px 20px;
         }
 
-        /* ESTADÍSTICAS */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -84,7 +83,6 @@
         .stat-card.pending { border-left-color: #f59e0b; }
         .stat-card.approved { border-left-color: #10b981; }
         .stat-card.rejected { border-left-color: #ef4444; }
-        .stat-card.alerts { border-left-color: #e91e63; }
 
         .stat-label {
             font-size: 13px;
@@ -106,7 +104,6 @@
             color: #666;
         }
 
-        /* ALERTAS */
         .alerts-section {
             background: white;
             border-radius: 10px;
@@ -119,9 +116,6 @@
             font-size: 18px;
             margin-bottom: 20px;
             color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .alert-item {
@@ -129,9 +123,6 @@
             margin-bottom: 12px;
             border-radius: 8px;
             border-left: 4px solid;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .alert-item.warning {
@@ -140,56 +131,12 @@
             color: #92400e;
         }
 
-        .alert-item.danger {
-            background: #fee2e2;
-            border-left-color: #ef4444;
-            color: #7f1d1d;
-        }
-
-        .alert-item.info {
-            background: #dbeafe;
-            border-left-color: #3b82f6;
-            color: #1e40af;
-        }
-
-        .alert-text {
-            flex: 1;
-            font-size: 14px;
-        }
-
-        .alert-icon {
-            font-size: 20px;
-            margin-right: 10px;
-        }
-
-        .alert-action {
-            background: none;
-            border: none;
-            color: inherit;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .alert-action:hover {
-            opacity: 0.8;
-        }
-
         .empty-alerts {
             text-align: center;
             padding: 30px;
             color: #999;
         }
 
-        .empty-alerts p {
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        /* TABLA RADICACIONES */
         .radicaciones-section {
             background: white;
             border-radius: 10px;
@@ -205,12 +152,11 @@
 
         .search-bar {
             margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
         }
 
         .search-bar input {
-            flex: 1;
+            width: 100%;
+            max-width: 400px;
             padding: 10px 15px;
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -223,14 +169,11 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
+            margin-top: 20px;
         }
 
         table thead {
@@ -277,22 +220,6 @@
             color: #7f1d1d;
         }
 
-        .action-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .action-btn:hover {
-            background: #5568d3;
-        }
-
         .loading {
             text-align: center;
             padding: 40px;
@@ -320,25 +247,6 @@
             padding: 40px;
             color: #999;
         }
-
-        .empty-state p {
-            font-size: 14px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transition: width 0.3s ease;
-        }
     </style>
 </head>
 <body>
@@ -355,34 +263,29 @@
         <div class="stats-grid">
             <div class="stat-card total">
                 <div class="stat-label">Total Radicaciones</div>
-                <div class="stat-number" id="totalRad">—</div>
+                <div class="stat-number" id="totalRad">0</div>
                 <div class="stat-percentage">Este semestre</div>
             </div>
             <div class="stat-card pending">
-                <div class="stat-label">Pendientes de Aprobación</div>
-                <div class="stat-number" id="pendingRad">—</div>
+                <div class="stat-label">Pendientes</div>
+                <div class="stat-number" id="pendingRad">0</div>
                 <div class="stat-percentage">Requieren acción</div>
             </div>
             <div class="stat-card approved">
                 <div class="stat-label">Aprobadas</div>
-                <div class="stat-number" id="approvedRad">—</div>
-                <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                <div class="stat-number" id="approvedRad">0</div>
+                <div class="stat-percentage">Completadas</div>
             </div>
             <div class="stat-card rejected">
                 <div class="stat-label">Rechazadas</div>
-                <div class="stat-number" id="rejectedRad">—</div>
+                <div class="stat-number" id="rejectedRad">0</div>
                 <div class="stat-percentage">Requieren revisión</div>
-            </div>
-            <div class="stat-card alerts">
-                <div class="stat-label">⚠️ Alertas Activas</div>
-                <div class="stat-number" id="alertCount">—</div>
-                <div class="stat-percentage">Requieren atención</div>
             </div>
         </div>
 
         <!-- ALERTAS -->
         <div class="alerts-section">
-            <h2>⚠️ Alertas y Notificaciones</h2>
+            <h2>⚠️ Alertas</h2>
             <div id="alertsContainer">
                 <div class="empty-alerts">
                     <p>No hay alertas activas</p>
@@ -396,12 +299,10 @@
             <div class="search-bar">
                 <input type="text" id="buscar" placeholder="🔍 Buscar por nombre o número..." onkeyup="filtrarTabla()">
             </div>
-            <div class="table-wrapper">
-                <div id="tableContainer">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Cargando radicaciones...</p>
-                    </div>
+            <div id="tableContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Cargando radicaciones...</p>
                 </div>
             </div>
         </div>
@@ -416,7 +317,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("usuarioNombre").textContent = usuarioActual.nombre || "Coordinadora";
             cargarDatos();
-            setInterval(cargarDatos, 30000); // Actualizar cada 30 segundos
         });
 
         async function cargarDatos() {
@@ -436,9 +336,12 @@
                     actualizarEstadisticas();
                     generarAlertas();
                     renderizarTabla();
+                } else {
+                    document.getElementById("tableContainer").innerHTML = '<div class="empty-state"><p>Error al cargar datos</p></div>';
                 }
             } catch (error) {
-                console.error("Error al cargar datos:", error);
+                console.error("Error:", error);
+                document.getElementById("tableContainer").innerHTML = '<div class="empty-state"><p>Error de conexión</p></div>';
             }
         }
 
@@ -452,11 +355,6 @@
             document.getElementById("pendingRad").textContent = pending;
             document.getElementById("approvedRad").textContent = approved;
             document.getElementById("rejectedRad").textContent = rejected;
-
-            const porcentaje = total > 0 ? Math.round((approved / total) * 100) : 0;
-            document.getElementById("progressFill").style.width = porcentaje + "%";
-
-            document.getElementById("alertCount").textContent = generarAlertas().length;
         }
 
         function generarAlertas() {
@@ -464,77 +362,35 @@
             const hoy = new Date();
 
             radicaciones.forEach(r => {
-                // Alerta 1: Radicaciones pendientes > 7 días
-                if (r.estado === "Pendiente Aprobación" && r.fechaRadicacion) {
-                    const fecha = new Date(r.fechaRadicacion);
+                if (r.estado === "Pendiente Aprobación" && r.fecha) {
+                    const fecha = new Date(r.fecha);
                     const dias = Math.floor((hoy - fecha) / (1000 * 60 * 60 * 24));
                     if (dias > 7) {
-                        alertas.push({
-                            tipo: "warning",
-                            icon: "⏰",
-                            titulo: `Radicación ${r.numero} pendiente desde hace ${dias} días`,
-                            accion: "Revisar",
-                            id: r.numero
-                        });
+                        alertas.push(`⏰ Radicación ${r.numero} pendiente desde hace ${dias} días`);
                     }
                 }
             });
 
-            // Alerta 2: Próximas fechas límites (Semestre 11)
-            const enSemana = radicaciones.filter(r => {
-                const fecha = new Date(r.fechaRadicacion);
-                const semana = new Date(fecha.getTime() + (180 * 24 * 60 * 60 * 1000)); // 6 meses
-                return semana <= new Date(hoy.getTime() + (7 * 24 * 60 * 60 * 1000));
-            });
-
-            if (enSemana.length > 0) {
-                alertas.push({
-                    tipo: "danger",
-                    icon: "🔔",
-                    titulo: `${enSemana.length} radicaciones próximas a vencer (semestre 11)`,
-                    accion: "Ver",
-                    id: null
-                });
-            }
-
-            renderizarAlertas(alertas);
-            return alertas;
-        }
-
-        function renderizarAlertas(alertas) {
             const container = document.getElementById("alertsContainer");
-
             if (alertas.length === 0) {
                 container.innerHTML = '<div class="empty-alerts"><p>✅ No hay alertas activas</p></div>';
-                return;
+            } else {
+                container.innerHTML = alertas.map(a => `<div class="alert-item warning">${a}</div>`).join("");
             }
-
-            container.innerHTML = alertas.map(a => `
-                <div class="alert-item ${a.tipo}">
-                    <div>
-                        <span class="alert-icon">${a.icon}</span>
-                        <span class="alert-text">${a.titulo}</span>
-                    </div>
-                    <button class="alert-action" onclick="handleAlerta('${a.id}')">
-                        ${a.accion} →
-                    </button>
-                </div>
-            `).join("");
         }
 
         function renderizarTabla() {
             const container = document.getElementById("tableContainer");
-
-            if (radicaciones.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>No hay radicaciones registradas</p></div>';
-                return;
-            }
-
             const filtro = document.getElementById("buscar").value.toLowerCase();
             const filtradas = radicaciones.filter(r => 
-                r.numero.toLowerCase().includes(filtro) || 
-                r.nombre.toLowerCase().includes(filtro)
+                (r.numero && r.numero.toLowerCase().includes(filtro)) || 
+                (r.nombre && r.nombre.toLowerCase().includes(filtro))
             );
+
+            if (filtradas.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No hay radicaciones que coincidan</p></div>';
+                return;
+            }
 
             container.innerHTML = `
                 <table>
@@ -546,24 +402,20 @@
                             <th>Modalidad</th>
                             <th>Fecha</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${filtradas.map(r => `
                             <tr>
-                                <td><strong>${r.numero}</strong></td>
-                                <td>${r.nombre}</td>
-                                <td>${r.email}</td>
-                                <td>${r.modalidad}</td>
-                                <td>${formatearFecha(r.fecha)}</td>
+                                <td><strong>${r.numero || '—'}</strong></td>
+                                <td>${r.nombre || '—'}</td>
+                                <td>${r.email || '—'}</td>
+                                <td>${r.modalidad || '—'}</td>
+                                <td>${r.fecha ? new Date(r.fecha).toLocaleDateString('es-CO') : '—'}</td>
                                 <td>
-                                    <span class="status-badge status-${getStatusClass(r.estado)}">
-                                        ${r.estado}
+                                    <span class="status-badge status-${r.estado === 'Aprobado Fase 1' ? 'approved' : r.estado === 'Rechazado' ? 'rejected' : 'pending'}">
+                                        ${r.estado || 'Pendiente'}
                                     </span>
-                                </td>
-                                <td>
-                                    <button class="action-btn" onclick="verDetalle('${r.numero}')">Ver</button>
                                 </td>
                             </tr>
                         `).join("")}
@@ -574,26 +426,6 @@
 
         function filtrarTabla() {
             renderizarTabla();
-        }
-
-        function getStatusClass(estado) {
-            if (estado === "Aprobado Fase 1") return "approved";
-            if (estado === "Rechazado") return "rejected";
-            return "pending";
-        }
-
-        function formatearFecha(fecha) {
-            if (!fecha) return "—";
-            const d = new Date(fecha);
-            return d.toLocaleDateString('es-CO');
-        }
-
-        function verDetalle(numero) {
-            alert("Funcionalidad próximamente: " + numero);
-        }
-
-        function handleAlerta(id) {
-            if (id) verDetalle(id);
         }
 
         function logout() {
