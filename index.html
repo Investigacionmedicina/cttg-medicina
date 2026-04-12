@@ -719,7 +719,7 @@
             
             // Convertir objeto a parámetros individuales
             for (const [key, value] of Object.entries(radicacion)) {
-                envio.append('radicacion_' + key, value);
+                envio.append(key, value);
             }
             
             // POST directo - SIN modo no-cors, SIN JSON
@@ -751,7 +751,7 @@
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('formulario').style.display = 'block';
                     console.log('Respuesta del servidor:', text);
-                    showAlert(`✅ Radicación procesada. Verificar en la pestaña "Consultar Radicaciones"`, 'success');
+                    showAlert(`❌ Error en la respuesta del servidor: ${text} "Consultar Radicaciones"`, 'success');
                 }
             })
             .catch(err => {
