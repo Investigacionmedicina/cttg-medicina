@@ -128,17 +128,119 @@
         });
 
         async function cargarProgreso() {
-            // Por ahora mostrar las 3 fases
+            // Obtener estado de las fases del Apps Script
+            try {
+                const response = await fetch(APP_SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "getEstadoFases",
+                        email: usuarioEstudiante.email
+                    })
+                });
+
+                const result = await response.json();
+                let estadoFases = {
+                    fase1: "completed",
+                    fase2: "active",
+                    fase3: "inactive"
+                };
+
+                if (result.success && result.estadoFases) {
+                    estadoFases = result.estadoFases;
+                }
+
+                const fases = [
+                    { 
+                        id: 1, 
+                        nombre: "Radicación", 
+                        icon: "📋", 
+                        estado: estadoFases.fase1, 
+                        descripcion: "Radicación de intención de trabajo",
+                        link: "#",
+                        accion: "Ver Detalles"
+                    },
+                    { 
+                        id: 2, 
+                        nombre: "Protocolo", 
+                        icon: "📄", 
+                        estado: estadoFases.fase2,
+                        descripcion: "Carga y evaluación de protocolo",
+                        link: "fase2_protocolo.html",
+                        accion: "Cargar Protocolo",
+                        plazo: "Hasta 1 año"
+                    },
+                    { 
+                        id: 3, 
+                        nombre: "Sustentación", 
+                        icon: "🎤", 
+                        estado: estadoFases.fase3,
+                        descripcion: "Sustentación del trabajo",
+                        link: "fase3_sustentacion.html",
+                        accion: "Solicitar Sustentación",
+                        plazo: "Después de Protocolo"
+                    }
+                ];
+
+                const html = fases.map(f => {
+                    const isCompleted = f.estado === "completed";
+                    const isActive = f.estado === "active";
+                    const isInactive = f.estado === "inactive";
+
+                    let statusBadge = "";
+                    if (isCompleted) statusBadge = '<span class="phase-status status-completed">✓ Completada</span>';
+                    else if (isActive) statusBadge = '<span class="phase-status status-active">⟳ En curso</span>';
+                    else statusBadge = '<span class="phase-status status-inactive">⏱ Próxima</span>';
+
+                    let buttonsHTML = "";
+                    if (isCompleted) {
+                        buttonsHTML = `
+                            <button class="btn btn-secondary" onclick="irA('${f.link}')">👁️ Ver Detalles</button>
+                            ${f.id === 1 ? '<button class="btn btn-primary" onclick="abrirModalTutor(\'Tutor 1\', \'Fase 1\')">👥 Cambiar Tutor</button>' : ''}
+                        `;
+                    } else if (isActive) {
+                        buttonsHTML = `
+                            <button class="btn btn-primary" onclick="irA('${f.link}')">${f.accion}</button>
+                            ${f.id === 2 ? '<button class="btn btn-secondary" onclick="abrirModalTutor(\'Tutor\', \'Fase 2\')">👥 Cambiar Tutor</button>' : ''}
+                        `;
+                    } else {
+                        buttonsHTML = '<button class="btn btn-disabled" disabled>Disponible cuando Fase ' + (f.id - 1) + ' esté completa</button>';
+                    }
+
+                    return `
+                        <div class="phase-card">
+                            <div class="phase-header ${f.estado}">
+                                <div class="phase-title">
+                                    <h2>${f.icon} Fase ${f.id}: ${f.nombre}</h2>
+                                    <p>${f.descripcion}</p>
+                                </div>
+                                ${statusBadge}
+                            </div>
+                            <div class="phase-body">
+                                ${f.plazo ? `<p style="color: #666; font-size: 13px; margin-bottom: 15px;">⏰ ${f.plazo}</p>` : ''}
+                                <div class="phase-actions">${buttonsHTML}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById("phasesContainer").innerHTML = html;
+            } catch (error) {
+                console.error("Error cargando progreso:", error);
+                // Mostrar fases dummy si hay error
+                mostrarFasesDefault();
+            }
+        }
+
+        function mostrarFasesDefault() {
             const fases = [
-                { id: 1, nombre: "Radicación", icon: "📋", estado: "completed", info: "Completada" },
-                { id: 2, nombre: "Protocolo", icon: "📄", estado: "active", plazo: "Hasta 1 año" },
-                { id: 3, nombre: "Sustentación", icon: "🎤", estado: "inactive", plazo: "Después de Protocolo" }
+                { id: 1, nombre: "Radicación", icon: "📋", estado: "completed" },
+                { id: 2, nombre: "Protocolo", icon: "📄", estado: "active" },
+                { id: 3, nombre: "Sustentación", icon: "🎤", estado: "inactive" }
             ];
 
             const html = fases.map(f => {
                 const isCompleted = f.estado === "completed";
                 const isActive = f.estado === "active";
-                const isInactive = f.estado === "inactive";
 
                 let statusBadge = "";
                 if (isCompleted) statusBadge = '<span class="phase-status status-completed">✓ Completada</span>';
@@ -146,24 +248,23 @@
                 else statusBadge = '<span class="phase-status status-inactive">⏱ Próxima</span>';
 
                 let buttonsHTML = "";
-                if (isCompleted || isActive) {
-                    buttonsHTML = `
-                        <button class="btn btn-primary" onclick="abrirModalTutor('Tutor 1', 'Fase ${f.id}')">👥 Cambiar Tutor</button>
-                    `;
+                if (isCompleted) {
+                    buttonsHTML = `<button class="btn btn-secondary" onclick="irA('fase${f.id}_${f.nombre.toLowerCase().replace(' ', '')}.html')">Ver Detalles</button>`;
+                } else if (isActive) {
+                    buttonsHTML = `<button class="btn btn-primary" onclick="irA('fase${f.id}_protocolo.html')">Continuar</button>`;
                 } else {
-                    buttonsHTML = '<button class="btn btn-disabled" disabled>Próximamente disponible</button>';
+                    buttonsHTML = '<button class="btn btn-disabled" disabled>Próximamente</button>';
                 }
 
                 return `
                     <div class="phase-card">
                         <div class="phase-header ${f.estado}">
                             <div class="phase-title">
-                                <h2>${f.icon} ${f.nombre}</h2>
+                                <h2>${f.icon} Fase ${f.id}: ${f.nombre}</h2>
                             </div>
                             ${statusBadge}
                         </div>
                         <div class="phase-body">
-                            ${isActive ? `<p style="color: #666; font-size: 13px; margin-bottom: 15px;">⏰ Plazo: ${f.plazo}</p>` : ''}
                             <div class="phase-actions">${buttonsHTML}</div>
                         </div>
                     </div>
@@ -214,6 +315,12 @@
                 }
             } catch (error) {
                 alert("Error de conexión: " + error.message);
+            }
+        }
+
+        function irA(url) {
+            if (url !== "#") {
+                window.location.href = url;
             }
         }
 
