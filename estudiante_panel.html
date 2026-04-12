@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTTG Medicina - Mi Progreso</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { background: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #333; font-size: 28px; }
+        .header-right { text-align: right; }
+        .usuario { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .usuario strong { color: #333; }
+        .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-logout:hover { background: #dc2626; }
+        .phases-grid { display: grid; gap: 20px; }
+        .phase-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .phase-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; }
+        .phase-header.completed { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; }
+        .phase-header.active { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; }
+        .phase-header.inactive { background: #f9fafb; color: #9ca3af; }
+        .phase-title h2 { font-size: 20px; margin-bottom: 5px; }
+        .phase-title p { font-size: 13px; opacity: 0.9; }
+        .phase-status { padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .status-completed { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-active { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .status-inactive { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+        .phase-body { padding: 20px; background: white; }
+        .phase-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .detail-item { background: #f5f5f5; padding: 12px; border-radius: 8px; border-left: 3px solid #667eea; }
+        .detail-item.completed { border-left-color: #10b981; }
+        .detail-label { font-size: 12px; color: #999; text-transform: uppercase; margin-bottom: 5px; }
+        .detail-value { font-size: 14px; color: #333; font-weight: 600; }
+        .phase-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-secondary { background: white; color: #667eea; border: 2px solid #667eea; }
+        .btn-secondary:hover { background: #667eea; color: white; }
+        .btn-disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 10px; padding: 30px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { font-size: 22px; color: #333; }
+        .modal-close { background: none; border: none; font-size: 24px; color: #999; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 5px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .form-group textarea { min-height: 100px; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        @media (max-width: 768px) {
+            .header { flex-direction: column; text-align: center; }
+            .header-right { text-align: center; margin-top: 15px; }
+            .phase-details { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📊 Mi Progreso</h1>
+                <p>Seguimiento de tus fases</p>
+            </div>
+            <div class="header-right">
+                <div class="usuario">
+                    Conectado como: <strong id="usuarioEmail">—</strong>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <div class="phases-grid" id="phasesContainer">
+            <!-- Se llenará con JavaScript -->
+        </div>
+    </div>
+
+    <!-- MODAL CAMBIO TUTOR -->
+    <div class="modal" id="modalTutor">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Solicitar Cambio de Tutor</h2>
+                <button class="modal-close" onclick="cerrarModal()">×</button>
+            </div>
+            <form id="formCambio" onsubmit="enviarCambio(event)">
+                <div class="form-group">
+                    <label>Tutor Actual</label>
+                    <input type="text" id="tutorActual" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Nuevo Tutor *</label>
+                    <input type="text" id="nuevoTutor" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Nuevo Tutor *</label>
+                    <input type="email" id="emailNuevoTutor" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" id="telNuevoTutor">
+                </div>
+                <div class="form-group">
+                    <label>Motivo del Cambio *</label>
+                    <textarea id="motivoCambio" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPkshyhXbW8gDduKMAdsM5VHm2wF3OOjiDz6zesc_XdHIBa4FcQJxABr1UwSxxRLWZ/exec";
+        let usuarioEstudiante = JSON.parse(localStorage.getItem("usuarioEstudiante") || '{}');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!usuarioEstudiante.email) {
+                window.location.href = "estudiante_login.html";
+            }
+            document.getElementById("usuarioEmail").textContent = usuarioEstudiante.email;
+            cargarProgreso();
+        });
+
+        async function cargarProgreso() {
+            // Por ahora mostrar las 3 fases
+            const fases = [
+                { id: 1, nombre: "Radicación", icon: "📋", estado: "completed", info: "Completada" },
+                { id: 2, nombre: "Protocolo", icon: "📄", estado: "active", plazo: "Hasta 1 año" },
+                { id: 3, nombre: "Sustentación", icon: "🎤", estado: "inactive", plazo: "Después de Protocolo" }
+            ];
+
+            const html = fases.map(f => {
+                const isCompleted = f.estado === "completed";
+                const isActive = f.estado === "active";
+                const isInactive = f.estado === "inactive";
+
+                let statusBadge = "";
+                if (isCompleted) statusBadge = '<span class="phase-status status-completed">✓ Completada</span>';
+                else if (isActive) statusBadge = '<span class="phase-status status-active">⟳ En curso</span>';
+                else statusBadge = '<span class="phase-status status-inactive">⏱ Próxima</span>';
+
+                let buttonsHTML = "";
+                if (isCompleted || isActive) {
+                    buttonsHTML = `
+                        <button class="btn btn-primary" onclick="abrirModalTutor('Tutor 1', 'Fase ${f.id}')">👥 Cambiar Tutor</button>
+                    `;
+                } else {
+                    buttonsHTML = '<button class="btn btn-disabled" disabled>Próximamente disponible</button>';
+                }
+
+                return `
+                    <div class="phase-card">
+                        <div class="phase-header ${f.estado}">
+                            <div class="phase-title">
+                                <h2>${f.icon} ${f.nombre}</h2>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <div class="phase-body">
+                            ${isActive ? `<p style="color: #666; font-size: 13px; margin-bottom: 15px;">⏰ Plazo: ${f.plazo}</p>` : ''}
+                            <div class="phase-actions">${buttonsHTML}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById("phasesContainer").innerHTML = html;
+        }
+
+        function abrirModalTutor(tutor, fase) {
+            document.getElementById("tutorActual").value = tutor + " - " + fase;
+            document.getElementById("modalTutor").classList.add("active");
+        }
+
+        function cerrarModal() {
+            document.getElementById("modalTutor").classList.remove("active");
+            document.getElementById("formCambio").reset();
+        }
+
+        async function enviarCambio(e) {
+            e.preventDefault();
+            
+            const datos = {
+                tutor_actual: document.getElementById("tutorActual").value,
+                tutor_nuevo: document.getElementById("nuevoTutor").value,
+                email_nuevo: document.getElementById("emailNuevoTutor").value,
+                telefono_nuevo: document.getElementById("telNuevoTutor").value,
+                motivo: document.getElementById("motivoCambio").value,
+                estudiante_email: usuarioEstudiante.email,
+                fecha: new Date().toISOString().split('T')[0]
+            };
+
+            try {
+                const response = await fetch(APP_SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "guardarCambioTutor",
+                        datos: datos
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert("Solicitud enviada correctamente");
+                    cerrarModal();
+                } else {
+                    alert("Error: " + (result.error || "No se pudo enviar"));
+                }
+            } catch (error) {
+                alert("Error de conexión: " + error.message);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("usuarioEstudiante");
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

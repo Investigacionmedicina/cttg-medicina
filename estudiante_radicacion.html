@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTTG Medicina - Radicación</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .header-right .usuario {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .header-right .usuario strong {
+            color: #333;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+        }
+
+        .form-box {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.half {
+            display: inline-block;
+            width: calc(50% - 7.5px);
+            margin-right: 15px;
+        }
+
+        .form-group.half:nth-child(even) {
+            margin-right: 0;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .required::after {
+            content: " *";
+            color: #ef4444;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #1e40af;
+            margin-bottom: 20px;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .success-box {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-box h2 {
+            color: #065f46;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .success-box .numero {
+            background: white;
+            color: #10b981;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            letter-spacing: 2px;
+        }
+
+        .success-box p {
+            color: #065f46;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .success-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .success-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn-success-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success-primary:hover {
+            background: #059669;
+        }
+
+        .btn-success-secondary {
+            background: white;
+            color: #10b981;
+            border: 2px solid #10b981;
+        }
+
+        .btn-success-secondary:hover {
+            background: #d1fae5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-box {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            border-radius: 6px;
+            color: #7f1d1d;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .form-group.half {
+                display: block;
+                width: 100%;
+                margin-right: 0;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-right {
+                text-align: center;
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🎓 CTTG Medicina</h1>
+                <p>FASE 1: Radicación de Trabajo de Grado</p>
+            </div>
+            <div class="header-right">
+                <div class="usuario">
+                    Conectado como: <strong id="usuarioEmail">—</strong>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <div class="form-box">
+            <div id="errorBox" class="error-box"></div>
+            <div id="successBox" class="success-box">
+                <h2>✅ ¡Radicación Exitosa!</h2>
+                <p>Tu trabajo de grado ha sido radicado correctamente.</p>
+                <p style="font-weight: bold;">Guarda tu número de radicación:</p>
+                <div class="numero" id="numeroRad"></div>
+                <p>Recibirás un email de confirmación en los próximos minutos.</p>
+                <div class="success-buttons">
+                    <button class="btn-success-primary" onclick="irAlPanel()">📊 Ver Mi Progreso</button>
+                    <button class="btn-success-secondary" onclick="location.reload()">📝 Radicar Otro</button>
+                </div>
+            </div>
+
+            <div id="formularioContainer">
+                <div class="info-box">
+                    <strong>ℹ️ Instrucciones:</strong> Completa todos los campos obligatorios (*). Puedes registrar de 1 a 3 estudiantes y hasta 2 tutores.
+                </div>
+
+                <form id="formulario">
+                    <!-- ESTUDIANTE 1 -->
+                    <div class="form-section">
+                        <div class="section-title">👨‍🎓 Estudiante 1 (Obligatorio)</div>
+                        <div class="form-group half">
+                            <label class="required">Cédula</label>
+                            <input type="text" name="cedula1" required>
+                        </div>
+                        <div class="form-group half">
+                            <label class="required">Nombre</label>
+                            <input type="text" name="nombre1" required>
+                        </div>
+                        <div class="form-group half">
+                            <label class="required">Email</label>
+                            <input type="email" name="email1" required>
+                        </div>
+                        <div class="form-group half">
+                            <label class="required">Teléfono</label>
+                            <input type="tel" name="telefono1" required>
+                        </div>
+                        <div class="form-group half">
+                            <label class="required">Semestre</label>
+                            <select name="semestre1" required>
+                                <option value="">Selecciona</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label>Semillero/Grupo (Opcional)</label>
+                            <input type="text" name="semillero1">
+                        </div>
+                    </div>
+
+                    <!-- ESTUDIANTE 2 -->
+                    <div class="form-section">
+                        <div class="section-title">👨‍🎓 Estudiante 2 (Opcional)</div>
+                        <div class="form-group half">
+                            <label>Cédula</label>
+                            <input type="text" name="cedula2">
+                        </div>
+                        <div class="form-group half">
+                            <label>Nombre</label>
+                            <input type="text" name="nombre2">
+                        </div>
+                        <div class="form-group half">
+                            <label>Email</label>
+                            <input type="email" name="email2">
+                        </div>
+                        <div class="form-group half">
+                            <label>Teléfono</label>
+                            <input type="tel" name="telefono2">
+                        </div>
+                        <div class="form-group half">
+                            <label>Semestre</label>
+                            <select name="semestre2">
+                                <option value="">Selecciona</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label>Semillero/Grupo (Opcional)</label>
+                            <input type="text" name="semillero2">
+                        </div>
+                    </div>
+
+                    <!-- ESTUDIANTE 3 -->
+                    <div class="form-section">
+                        <div class="section-title">👨‍🎓 Estudiante 3 (Opcional)</div>
+                        <div class="form-group half">
+                            <label>Cédula</label>
+                            <input type="text" name="cedula3">
+                        </div>
+                        <div class="form-group half">
+                            <label>Nombre</label>
+                            <input type="text" name="nombre3">
+                        </div>
+                        <div class="form-group half">
+                            <label>Email</label>
+                            <input type="email" name="email3">
+                        </div>
+                        <div class="form-group half">
+                            <label>Teléfono</label>
+                            <input type="tel" name="telefono3">
+                        </div>
+                        <div class="form-group half">
+                            <label>Semestre</label>
+                            <select name="semestre3">
+                                <option value="">Selecciona</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label>Semillero/Grupo (Opcional)</label>
+                            <input type="text" name="semillero3">
+                        </div>
+                    </div>
+
+                    <!-- TRABAJO DE GRADO -->
+                    <div class="form-section">
+                        <div class="section-title">📚 Trabajo de Grado</div>
+                        <div class="form-group">
+                            <label class="required">Título</label>
+                            <input type="text" name="titulo" required>
+                        </div>
+                        <div class="form-group half">
+                            <label class="required">Modalidad</label>
+                            <select name="modalidad" required>
+                                <option value="">Selecciona</option>
+                                <option value="Investigación">Investigación</option>
+                                <option value="Revisión Sistemática">Revisión Sistemática</option>
+                                <option value="Caso Clínico">Caso Clínico</option>
+                                <option value="Sistematización de Experiencia">Sistematización de Experiencia</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label class="required">Área (Especialidad Médica)</label>
+                            <input type="text" name="area" placeholder="Ej: Medicina Interna" required>
+                        </div>
+                    </div>
+
+                    <!-- TUTORES -->
+                    <div class="form-section">
+                        <div class="section-title">👨‍🏫 Tutor 1 (Obligatorio)</div>
+                        <div class="form-group half">
+                            <label class="required">Nombre</label>
+                            <input type="text" name="tutor1_nombre" required>
+                        </div>
+                        <div class="form-group half">
+                            <label class="required">Email</label>
+                            <input type="email" name="tutor1_email" required>
+                        </div>
+                        <div class="form-group half">
+                            <label class="required">Teléfono</label>
+                            <input type="tel" name="tutor1_telefono" required>
+                        </div>
+                        <div class="form-group half">
+                            <label class="required">Relación</label>
+                            <input type="text" name="tutor1_relacion" placeholder="Ej: Docente USC" required>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title">👨‍🏫 Tutor 2 (Opcional)</div>
+                        <div class="form-group half">
+                            <label>Nombre</label>
+                            <input type="text" name="tutor2_nombre">
+                        </div>
+                        <div class="form-group half">
+                            <label>Email</label>
+                            <input type="email" name="tutor2_email">
+                        </div>
+                        <div class="form-group half">
+                            <label>Teléfono</label>
+                            <input type="tel" name="tutor2_telefono">
+                        </div>
+                        <div class="form-group half">
+                            <label>Relación</label>
+                            <input type="text" name="tutor2_relacion" placeholder="Ej: Docente Externo">
+                        </div>
+                    </div>
+
+                    <div class="btn-container">
+                        <button type="submit" class="btn btn-primary" id="btnRadicar">
+                            📝 Radicar Trabajo
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="loadingBox" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Procesando radicación...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPkshyhXbW8gDduKMAdsM5VHm2wF3OOjiDz6zesc_XdHIBa4FcQJxABr1UwSxxRLWZ/exec";
+
+        let usuarioEstudiante = JSON.parse(localStorage.getItem("usuarioEstudiante") || '{}');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!usuarioEstudiante.email) {
+                window.location.href = "estudiante_login.html";
+            }
+            document.getElementById("usuarioEmail").textContent = usuarioEstudiante.email;
+        });
+
+        document.getElementById("formulario").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const datos = Object.fromEntries(formData);
+
+            document.getElementById("formularioContainer").style.display = "none";
+            document.getElementById("loadingBox").style.display = "block";
+            document.getElementById("errorBox").style.display = "none";
+
+            try {
+                const response = await fetch(APP_SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "createRadicacion",
+                        emailEstudiante: usuarioEstudiante.email,
+                        datos: datos
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById("numeroRad").textContent = result.numero;
+                    document.getElementById("loadingBox").style.display = "none";
+                    document.getElementById("successBox").style.display = "block";
+                } else {
+                    mostrarError(result.error || "Error al radicar");
+                }
+            } catch (error) {
+                mostrarError("Error de conexión: " + error.message);
+            }
+        });
+
+        function mostrarError(mensaje) {
+            document.getElementById("formularioContainer").style.display = "block";
+            document.getElementById("loadingBox").style.display = "none";
+            document.getElementById("errorBox").textContent = mensaje;
+            document.getElementById("errorBox").style.display = "block";
+            window.scrollTo(0, 0);
+        }
+
+        function logout() {
+            localStorage.removeItem("usuarioEstudiante");
+            window.location.href = "index.html";
+        }
+
+        function irAlPanel() {
+            window.location.href = "estudiante_panel.html";
+        }
+    </script>
+</body>
+</html>
