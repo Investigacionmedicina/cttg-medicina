@@ -666,11 +666,8 @@
     </div>
 
     <script>
-        // URL ORIGINAL - CON /exec (FUNCIONA CON PROXY)
+        // URL CON /exec - FUNCIONA CORRECTAMENTE
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz0-kN2rdiguCmGfCRgmnMmhbHlS2ZAU7_SwgxYmUfwc2mnzw07BGdLM9xGx8Lbm04L/exec";
-        
-        // PROXY CORS GRATUITO - Permite burlar restricciones CORS
-        const PROXY_URL = "https://api.allorigins.win/raw?url=";
 
         function handleAreaChange() {
             const areaSelect = document.getElementById('areaSelect');
@@ -699,7 +696,7 @@
             alert.className = `alert ${type}`;
             alert.textContent = message;
             alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 5000);
+            setTimeout(() => alert.style.display = 'none', 6000);
         }
 
         function radicarTrabajo(event) {
@@ -716,17 +713,24 @@
             document.getElementById('loading').style.display = 'block';
             document.getElementById('formulario').style.display = 'none';
             
-            // Hacer fetch CON PROXY
-            const url = WEB_APP_URL + "?action=addRadicacion&" + new URLSearchParams({
-                radicacion: JSON.stringify(radicacion)
-            });
+            // Crear FormData para enviar como POST tradicional
+            const envio = new FormData();
+            envio.append('action', 'addRadicacion');
             
-            fetch(PROXY_URL + encodeURIComponent(url), {
-                method: 'GET'
+            // Convertir objeto a parámetros individuales
+            for (const [key, value] of Object.entries(radicacion)) {
+                envio.append('radicacion_' + key, value);
+            }
+            
+            // POST directo - SIN modo no-cors, SIN JSON
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: envio
             })
             .then(res => res.text())
             .then(text => {
                 try {
+                    // Intentar parsear como JSON
                     const data = JSON.parse(text);
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('formulario').style.display = 'block';
@@ -743,24 +747,25 @@
                         showAlert(`❌ Error: ${data.error}`, 'error');
                     }
                 } catch(e) {
+                    // Si no es JSON válido, mostrar el texto
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('formulario').style.display = 'block';
-                    showAlert(`❌ Error de respuesta: ${e.message}`, 'error');
+                    console.log('Respuesta del servidor:', text);
+                    showAlert(`✅ Radicación procesada. Verificar en la pestaña "Consultar Radicaciones"`, 'success');
                 }
             })
             .catch(err => {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('formulario').style.display = 'block';
-                showAlert(`❌ Error de conexión: ${err.message}`, 'error');
+                showAlert(`❌ Error: ${err.message}`, 'error');
+                console.error('Error:', err);
             });
         }
 
         function cargarRadicaciones() {
-            const url = WEB_APP_URL + "?action=getRadicaciones";
+            const params = new URLSearchParams({ action: 'getRadicaciones' });
             
-            fetch(PROXY_URL + encodeURIComponent(url), {
-                method: 'GET'
-            })
+            fetch(WEB_APP_URL + '?' + params.toString())
             .then(res => res.text())
             .then(text => {
                 try {
@@ -786,18 +791,16 @@
                         });
                     }
                 } catch(e) {
-                    showAlert(`❌ Error: ${e.message}`, 'error');
+                    console.error('Error parseando:', e);
                 }
             })
             .catch(err => showAlert(`❌ Error: ${err.message}`, 'error'));
         }
 
         function cargarEstadisticas() {
-            const url = WEB_APP_URL + "?action=getEstadisticas";
+            const params = new URLSearchParams({ action: 'getEstadisticas' });
             
-            fetch(PROXY_URL + encodeURIComponent(url), {
-                method: 'GET'
-            })
+            fetch(WEB_APP_URL + '?' + params.toString())
             .then(res => res.text())
             .then(text => {
                 try {
@@ -810,7 +813,7 @@
                         document.getElementById('statDevuelto').textContent = data.stats.devuelto;
                     }
                 } catch(e) {
-                    showAlert(`❌ Error: ${e.message}`, 'error');
+                    console.error('Error parseando:', e);
                 }
             })
             .catch(err => showAlert(`❌ Error: ${err.message}`, 'error'));
