@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTTG Medicina - Login Coordinadora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .login-body {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #004085;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🎓 CTTG Medicina</h1>
+            <p>Acceso Coordinadora</p>
+        </div>
+
+        <div class="login-body">
+            <div id="alert" class="alert"></div>
+
+            <div class="info-box">
+                <strong>ℹ️ Demo:</strong> Email: investigacionmedicina@usc.edu.co | Password: admin123
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email <span style="color: #e74c3c;">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="Ingrese su email">
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña <span style="color: #e74c3c;">*</span></label>
+                    <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña">
+                </div>
+
+                <button type="submit" class="btn-login" id="btnLogin">
+                    <span id="textBtn">Acceder</span>
+                    <div id="loading" class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+            </form>
+
+            <div class="back-link">
+                <a href="index.html">← Volver al inicio</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKnT7HJ2EKCfXbsL_Z32_-R8l-uaTsDahgkmk5g90vNmVkJofP7Vy5NqKjc9XunZLp/exec";
+
+        // Si ya está autenticado, redirigir
+        if (localStorage.getItem("usuarioActual")) {
+            window.location.href = "coordinadora_dashboard.html";
+        }
+
+        document.getElementById("loginForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            // Mostrar loading
+            document.getElementById("textBtn").style.display = "none";
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("btnLogin").disabled = true;
+
+            try {
+                const response = await fetch(APP_SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "login",
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Guardar usuario en localStorage
+                    localStorage.setItem("usuarioActual", JSON.stringify({
+                        email: data.user.email,
+                        nombre: data.user.nombre,
+                        rol: data.user.rol
+                    }));
+
+                    // Redirigir a dashboard
+                    window.location.href = "coordinadora_dashboard.html";
+                } else {
+                    mostrarAlerta(data.error || "Error en login");
+                    document.getElementById("textBtn").style.display = "block";
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("btnLogin").disabled = false;
+                }
+            } catch(error) {
+                mostrarAlerta("Error de conexión: " + error.message);
+                document.getElementById("textBtn").style.display = "block";
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("btnLogin").disabled = false;
+            }
+        });
+
+        function mostrarAlerta(mensaje) {
+            const alert = document.getElementById("alert");
+            alert.className = "alert error";
+            alert.textContent = mensaje;
+            alert.style.display = "block";
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
