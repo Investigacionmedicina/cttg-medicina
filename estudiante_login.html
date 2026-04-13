@@ -4,28 +4,30 @@
     <meta charset="UTF-8">
     <title>Login Estudiante</title>
     <style>
-        body { font-family: sans-serif; background: #764ba2; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .box { background: white; padding: 30px; border-radius: 8px; width: 300px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; }
-        button { width: 100%; padding: 10px; background: #667eea; color: white; border: none; cursor: pointer; }
+        body { font-family: sans-serif; background: #764ba2; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { background: white; padding: 30px; border-radius: 8px; width: 320px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="box">
         <h2>Ingreso Estudiante</h2>
-        <input type="email" id="email" placeholder="Correo">
+        <input type="email" id="email" placeholder="Correo institucional">
         <input type="password" id="pass" placeholder="Contraseña">
         <button onclick="login()">Ingresar</button>
     </div>
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbw0qSs72fbrddp5VqURjL1KPQ-JpoEL9ZJI-3cJXKfz23R12AFR8iqvGff0SCfpNDfe/exec";
+        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzriRobDKKzBoNbaijxHK1O_niLzdSKdGwl1gsERMAgbAFgkBoKNN4mt9aseENyeXKs/exec";
         async function login() {
-            const res = await fetch(URL, { method: "POST", body: JSON.stringify({ action: "login", email: document.getElementById("email").value, password: document.getElementById("pass").value }) });
-            const data = await res.json();
-            if (data.success && data.user.rol === "estudiante") {
-                localStorage.setItem("user", JSON.stringify(data.user));
-                window.location.href = "estudiante_radicacion.html";
-            } else { alert("Acceso denegado"); }
+            try {
+                const res = await fetch(APP_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "login", email: document.getElementById("email").value, password: document.getElementById("pass").value }) });
+                const data = await res.json();
+                if (data.success && data.user.rol === "estudiante") {
+                    localStorage.setItem("user", JSON.stringify(data.user));
+                    window.location.href = "estudiante_radicacion.html";
+                } else { alert("Acceso denegado o credenciales incorrectas"); }
+            } catch(e) { alert("Error de conexión"); }
         }
     </script>
 </body>
