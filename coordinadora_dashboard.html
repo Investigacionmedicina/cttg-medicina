@@ -2,40 +2,61 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - CTTG</title>
+    <title>Dashboard General - CTTG Medicina</title>
     <style>
-        body { font-family: sans-serif; background: #f8fafc; padding: 30px; margin: 0; }
-        .header { background: #764ba2; color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #edf2f7; }
-        th { background: #f1f5f9; color: #475569; font-weight: bold; }
-        .status { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background: #fef3c7; color: #92400e; }
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
+        .section { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #f8fafc; color: #64748b; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📊 Seguimiento de Radicaciones</h1>
-        <button onclick="location.href='index.html'" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Cerrar</button>
+    <h1>📊 Control Total de Procesos - CTTG</h1>
+    
+    <div class="section">
+        <h2>Fase 1: Nuevos Proyectos</h2>
+        <div id="tableF1">Cargando...</div>
     </div>
-    <div id="tableContainer">Cargando registros...</div>
+
+    <div class="section">
+        <h2>Fase 2: Anexos y Evaluaciones</h2>
+        <div id="tableF2">Cargando...</div>
+    </div>
+
+    <div class="section">
+        <h2>Fase 3: Sustentaciones</h2>
+        <div id="tableF3">Cargando...</div>
+    </div>
 
     <script>
-        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzriRobDKKzBoNbaijxHK1O_niLzdSKdGwl1gsERMAgbAFgkBoKNN4mt9aseENyeXKs/exec";
-        async function cargar() {
-            try {
-                const resp = await fetch(APP_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getFase1" }) });
-                const data = await resp.json();
-                if (data.success) {
-                    let html = `<table><tr><th>Número</th><th>Estudiante</th><th>Título</th><th>Fecha</th><th>Estado</th></tr>`;
-                    data.radicaciones.forEach(r => {
-                        html += `<tr><td><strong>${r.numero}</strong></td><td>${r.nombre1}</td><td>${r.titulo}</td><td>${r.fecha}</td><td><span class="status">${r.estado}</span></td></tr>`;
-                    });
-                    html += `</table>`;
-                    document.getElementById("tableContainer").innerHTML = html;
-                }
-            } catch(e) { document.getElementById("tableContainer").innerHTML = "Error al cargar datos."; }
+        const API = "https://script.google.com/macros/s/AKfycbzriRobDKKzBoNbaijxHK1O_niLzdSKdGwl1gsERMAgbAFgkBoKNN4mt9aseENyeXKs/exec";
+        
+        async function loadAll() {
+            const res = await fetch(API, { method: "POST", body: JSON.stringify({ action: "getAllData" }) });
+            const data = await res.json();
+            if (data.success) {
+                renderTable("tableF1", data.f1, [1, 4, 21, 32]); // Número, Nombre, Título, Estado
+                renderTable("tableF2", data.f2, [1, 4, 6, 9]);   // Radicación, URL, Tipo, Estado
+                renderTable("tableF3", data.f3, [1, 10, 11, 22]); // Radicación, Turnitin, %, Nota
+            }
         }
-        cargar();
+
+        function renderTable(divId, rows, cols) {
+            let html = "<table><tr>";
+            cols.forEach(c => html += `<th>${rows[0][c]}</th>`);
+            html += "</tr>";
+            for (let i = 1; i < rows.length; i++) {
+                html += "<tr>";
+                cols.forEach(c => html += `<td>${rows[i][c] || "-"}</td>`);
+                html += "</tr>";
+            }
+            html += "</table>";
+            document.getElementById(divId).innerHTML = html;
+        }
+
+        loadAll();
     </script>
 </body>
 </html>
