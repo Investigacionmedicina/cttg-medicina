@@ -303,6 +303,7 @@ function renderTabla() {
       <td><div class="act">
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Estado</button>
+        <button class="btn gr" onclick="irA('coordinadora_validar_tutores.html?row=${r.rowIndex}')">✅ Tutores</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -392,6 +393,10 @@ function exportCSV() {
 ['modalEst','modalDet'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => { if (e.target === document.getElementById(id)) closeModal(id); });
 });
+
+function irA(url) {
+  window.location.href = url;
+}
 </script>
 </body>
 </html>
