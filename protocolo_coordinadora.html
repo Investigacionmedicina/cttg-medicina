@@ -120,8 +120,7 @@
 </div>
 
 <script>
-const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec
-";
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 let protocoloActual = null;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -156,7 +155,7 @@ function cargarProtocolos() {
         tr.innerHTML = `
           <td><strong>${p.numero}</strong></td>
           <td>${p.emailEstudiante}</td>
-          <td><a href="${p.urlArchivo}" target="_blank" style="color:#a5b4fc;text-decoration:none">📄 ${p.nombreArchivo.substring(0, 30)}...</a></td>
+          <td>${p.urlArchivo && p.urlArchivo.startsWith('http') ? `<a href="${p.urlArchivo}" target="_blank" style="color:#a5b4fc;text-decoration:none">📄 ${p.nombreArchivo.substring(0,30)}</a>` : `<span style="color:rgba(255,255,255,.5);font-size:12px">📧 ${p.nombreArchivo.substring(0,30)}</span>`}</td>
           <td>${p.fechaCarga}</td>
           <td>${p.anexoCambio}</td>
           <td>${estadoBadge}</td>
