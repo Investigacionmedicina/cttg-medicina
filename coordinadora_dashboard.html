@@ -114,14 +114,6 @@
     <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
   </div>
 
-  <!-- MENÚ FASES -->
-  <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">
-    <button class="btn" style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);color:#fff;padding:11px 18px;border-radius:10px;font-weight:600;font-size:13px;cursor:default" disabled>📋 Fase 1: Radicación</button>
-    <a href="protocolo_coordinadora.html" style="display:flex;align-items:center;gap:8px;padding:11px 18px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;text-decoration:none;color:#fff;font-weight:600;font-size:13px;transition:all .2s;cursor:pointer">
-      📄 Fase 2: Protocolo
-    </a>
-  </div>
-
   <!-- FILTROS -->
   <div class="filters">
     <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTabla()">
@@ -202,8 +194,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec
-";
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 let radicaciones = [];
 let admin = null;
 
