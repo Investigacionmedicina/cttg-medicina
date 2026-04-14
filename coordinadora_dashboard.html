@@ -303,7 +303,7 @@ function renderTabla() {
       <td><div class="act">
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Estado</button>
-        <button class="btn gr" onclick="irA('coordinadora_validar_tutores.html?row=${r.rowIndex}')">✅ Tutores</button>
+        <button class="btn gr" onclick="irA('coordinadora_validar_tutores?row=${r.rowIndex}')">✅ Tutores</button>
       </div></td>
     </tr>`;
   }).join('');
