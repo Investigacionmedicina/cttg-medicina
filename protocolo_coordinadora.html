@@ -224,13 +224,13 @@ function guardarEvaluacion() {
     errModal.style.display = 'block';
     return;
   }
-
+const estadoFinal = decision === 'Aprobado' ? 'Aprobado' : 'Devuelto';
   fetch(URL_APP, {
     method: 'POST',
     body: JSON.stringify({
       action: 'actualizarProtocolo',
       rowIndex: protocoloActual.rowIndex,
-      estado: 'En Evaluación',
+       estado: estadoFinal,
       evaluador: evaluador,
       fechaReunion: fechaReunion,
       decision: decision,
