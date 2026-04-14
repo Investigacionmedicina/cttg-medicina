@@ -339,13 +339,18 @@ async function enviarSolicitud() {
     turnitin:    driveUrls.turnitin || '',
     pctTurnitin: pct
   };
-
-  const jurados = [];
-  const j1n = document.getElementById('j1Nombre').value.trim();
-  if (j1n) jurados.push({ nombre: j1n, cedula: document.getElementById('j1Cedula').value.trim(), email: document.getElementById('j1Email').value.trim() });
-  const j2n = document.getElementById('j2Nombre').value.trim();
-  if (j2n) jurados.push({ nombre: j2n, cedula: document.getElementById('j2Cedula').value.trim(), email: document.getElementById('j2Email').value.trim() });
-
+  const jurados = [
+    {
+      nombre: document.getElementById('j1Nombre').value.trim(),
+      cedula: document.getElementById('j1Cedula').value.trim(),
+      email:  document.getElementById('j1Email').value.trim()
+    },
+    {
+      nombre: document.getElementById('j2Nombre').value.trim(),
+      cedula: document.getElementById('j2Cedula').value.trim(),
+      email:  document.getElementById('j2Email').value.trim()
+    }
+  ];
   const btn = document.getElementById('btnEnviar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
   try {
