@@ -78,10 +78,16 @@
       <h3><span class="dot"></span>Tutor 1</h3>
       <p>Valida o edita los datos del tutor principal. Al guardar se enviará correo de aval.</p>
       <div class="form-grid">
+           <div class="fg full">
+          <label>Seleccionar desde hoja "Tutores"</label>
+          <select id="t1Catalogo" onchange="aplicarTutorCatalogo(1)">
+            <option value="">— Seleccionar tutor guardado —</option>
+          </select>
+        </div>
         <div class="fg"><label>Nombre *</label><input id="t1Nombre" placeholder="Dr./Dra."></div>
         <div class="fg"><label>Email *</label><input type="email" id="t1Email" placeholder="tutor@usc.edu.co"></div>
         <div class="fg"><label>Teléfono</label><input id="t1Telefono" placeholder="300 000 0000"></div>
-        div class="fg"><label>Vínculo contractual USC</label>
+        <div class="fg"><label>Vínculo contractual USC</label>
           <select id="t1Relacion">
             <option value="Si">Si</option>
             <option value="No">No</option>
@@ -94,11 +100,17 @@
       <h3><span class="dot"></span>Tutor 2 (Opcional)</h3>
       <p>Si aplica, registra o edita el segundo tutor.</p>
       <div class="form-grid">
+         <div class="fg full">
+          <label>Seleccionar desde hoja "Tutores"</label>
+          <select id="t2Catalogo" onchange="aplicarTutorCatalogo(2)">
+            <option value="">— Seleccionar tutor guardado —</option>
+          </select>
+        </div>
         <div class="fg"><label>Nombre</label><input id="t2Nombre" placeholder="(opcional)"></div>
         <div class="fg"><label>Email</label><input type="email" id="t2Email" placeholder="(opcional)"></div>
         <div class="fg"><label>Teléfono</label><input id="t2Telefono" placeholder="(opcional)"></div>
-        <div class="fg"><label>Rol</label>
-          <select id="t2Relacion Contractual USC ">
+        <div class="fg"><label>Vínculo contractual USC</label>
+          <select id="t2Relacion">
             <option value="">— Sin tutor 2 —</option>
             <option value="Si">Si</option>
             <option value="No">No</option>
@@ -127,15 +139,17 @@ const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7
 let admin = null;
 let rowIndex = null;
 let radicacion = null;
+let catalogoTutores = [];
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
   if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
   const params = new URLSearchParams(window.location.search);
-  rowIndex = parseInt(params.get('row'));
-  if (!rowIndex) { document.getElementById('loadWrap').textContent = 'Parámetro de fila inválido.'; return; }
+  rowIndex = Number(params.get('row'));
+  if (!Number.isFinite(rowIndex)) { document.getElementById('loadWrap').textContent = 'Parámetro de fila inválido.'; return; }
   cargarDatos();
+cargarCatalogoTutores();
 })();
 
 function salir() { localStorage.removeItem('cttg_admin'); window.location.href = 'index.html'; }
@@ -145,13 +159,47 @@ function toast(msg, type) {
   t.textContent = msg; t.className = 'toast ' + type + ' show';
   setTimeout(() => t.classList.remove('show'), 3500);
 }
+async function cargarCatalogoTutores() {
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getTutores' }) });
+    const d = await res.json();
+    if (!d.success || !Array.isArray(d.tutores)) return;
+    catalogoTutores = d.tutores.map((t, i) => ({
+      id: String(t.id || i + 1),
+      nombre: String(t.nombre || '').trim(),
+      email: String(t.email || '').trim(),
+      telefono: String(t.telefono || '').trim()
+    })).filter(t => t.nombre || t.email || t.telefono);
+    poblarSelectCatalogo('t1Catalogo');
+    poblarSelectCatalogo('t2Catalogo');
+  } catch(e) {
+    // Silencioso para no bloquear el flujo actual si aún no existe la acción getTutores en Apps Script.
+  }
+}
+
+function poblarSelectCatalogo(id) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  const options = ['<option value="">— Seleccionar tutor guardado —</option>']
+    .concat(catalogoTutores.map(t => `<option value="${t.id}">${t.nombre || 'Sin nombre'} · ${t.email || 'sin-email'}</option>`));
+  sel.innerHTML = options.join('');
+}
+
+function aplicarTutorCatalogo(num) {
+  const sel = document.getElementById(num === 1 ? 't1Catalogo' : 't2Catalogo');
+  const t = catalogoTutores.find(x => x.id === sel.value);
+  if (!t) return;
+  document.getElementById(num === 1 ? 't1Nombre' : 't2Nombre').value = t.nombre || '';
+  document.getElementById(num === 1 ? 't1Email' : 't2Email').value = t.email || '';
+  document.getElementById(num === 1 ? 't1Telefono' : 't2Telefono').value = t.telefono || '';
+}
 
 async function cargarDatos() {
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1' }) });
     const d = await res.json();
     if (!d.success) throw new Error(d.error);
-    radicacion = d.radicaciones.find(r => r.rowIndex === rowIndex);
+    radicacion = d.radicaciones.find(r => Number(r.rowIndex) === rowIndex);
     if (!radicacion) { document.getElementById('loadWrap').textContent = 'Radicación no encontrada.'; return; }
     poblarFormulario();
   } catch(e) {
@@ -185,22 +233,24 @@ function poblarFormulario() {
 async function guardar() {
   const t1Nombre = document.getElementById('t1Nombre').value.trim();
   const t1Email  = document.getElementById('t1Email').value.trim();
+  const t1Vinculo = document.getElementById('t1Relacion').value;
   if (!t1Nombre || !t1Email) { toast('Nombre y email del Tutor 1 son obligatorios', 'warn'); return; }
+if (!t1Vinculo) { toast('Selecciona vínculo contractual USC para Tutor 1', 'warn'); return; }
 
   const tutor1 = {
     nombre:   t1Nombre,
     email:    t1Email,
     telefono: document.getElementById('t1Telefono').value.trim(),
-    vinculo:  document.getElementById('t1Relacion').value,
-    relacion: document.getElementById('t1Relacion').value
+    vinculo:  t1Vinculo,
+    relacion: t1Vinculo
   };
   const t2Nombre = document.getElementById('t2Nombre').value.trim();
-  const tutor2 = t2Nombre ? {
+  const t2Vinculo = document.getElementById('t2Relacion').value || 'No';
     nombre:   t2Nombre,
     email:    document.getElementById('t2Email').value.trim(),
     telefono: document.getElementById('t2Telefono').value.trim(),
-    vinculo:  document.getElementById('t2Relacion').value,
-    relacion: document.getElementById('t2Relacion').value
+    vinculo:  t2Vinculo,
+    relacion: t2Vinculo
   } : null;
 
   const btn = document.getElementById('btnGuardar');
