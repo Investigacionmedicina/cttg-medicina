@@ -58,6 +58,7 @@
   .btn.gr{color:#34d399;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
   .btn.bl{color:#60a5fa;border-color:rgba(96,165,250,.3)}.btn.bl:hover{background:rgba(96,165,250,.1)}
   .btn.am{color:#fcd34d;border-color:rgba(252,211,77,.3)}.btn.am:hover{background:rgba(252,211,77,.1)}
+  .btn.pu{color:#c4b5fd;border-color:rgba(196,181,253,.35)}.btn.pu:hover{background:rgba(167,139,250,.14)}
   .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
   .btn-action:hover{transform:translateY(-1px)}
   .btn-action:disabled{opacity:.6;transform:none;cursor:not-allowed}
@@ -127,6 +128,8 @@
     </select>
     <select id="fMod" onchange="renderTabla()"><option value="">Todas las modalidades</option></select>
     <button class="btn" onclick="cargar()">↻ Actualizar</button>
+    <button class="btn pu" onclick="irA('coordinadora_actas_asesorias.html')">📝 Actas asesoría</button>
+    <button class="btn pu" onclick="irA('coordinadora_fase3.html')">🎓 Sustentaciones</button>
     <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
   </div>
 
