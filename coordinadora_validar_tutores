@@ -246,7 +246,8 @@ if (!t1Vinculo) { toast('Selecciona vínculo contractual USC para Tutor 1', 'war
   };
   const t2Nombre = document.getElementById('t2Nombre').value.trim();
   const t2Vinculo = document.getElementById('t2Relacion').value || 'No';
-    nombre:   t2Nombre,
+   const tutor2 = t2Nombre ? { 
+   nombre:   t2Nombre,
     email:    document.getElementById('t2Email').value.trim(),
     telefono: document.getElementById('t2Telefono').value.trim(),
     vinculo:  t2Vinculo,
