@@ -34,7 +34,10 @@
   .b-devuelto{background:rgba(239,68,68,.2);color:#fca5a5}
   .date-info{font-size:12px;color:rgba(255,255,255,.4)}
   .notas-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#fcd34d;margin-top:10px}
-  .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
+  .time-box{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:8px;padding:10px 13px;font-size:12px;color:#bfdbfe;margin-top:10px}
+  .time-box strong{color:#dbeafe}
+  .block-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);border-radius:10px;padding:12px 14px;font-size:12px;color:#fecaca;margin-bottom:14px;display:none}
+ .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
   /* FORM */
   .form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:24px;margin-bottom:18px}
   .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
@@ -81,7 +84,7 @@
 <main>
   <div class="tabs">
     <button class="tab on" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
-    <button class="tab" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
+    <button class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
   </div>
 <div style="margin-top:16px">
   <a href="protocolo_fase2.html" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:12px;text-decoration:none;color:#fff;transition:all .2s;cursor:pointer">
@@ -100,6 +103,7 @@
 
   <!-- NUEVA RADICACIÓN -->
   <div class="panel" id="pan-nueva">
+   <div id="bloqueoRad" class="block-box"></div>
     <div class="form-card">
       <h3><span class="dot"></span>Formulario de Radicación</h3>
       <p>Completa todos los campos marcados con *. El número de radicación se genera automáticamente.</p>
@@ -231,6 +235,7 @@
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 let numEst = 1;
 let user = null;
+let bloquearNuevaRad = false;
 
 // Init
 (function(){
@@ -243,6 +248,10 @@ let user = null;
 function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
 
 function switchTab(name, btn) {
+ if (name === 'nueva' && bloquearNuevaRad) {
+    toast('Aún tienes una radicación sin respuesta. No puedes crear otra.', 'warn');
+    return;
+  }
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
   document.getElementById('pan-' + name).classList.add('on');
@@ -274,6 +283,66 @@ function fmtFecha(s) {
   const p = String(s).split('T')[0].split('-');
   return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
 }
+function parseFecha(s) {
+  if (!s) return null;
+  const raw = String(s).split('T')[0];
+  const d = new Date(raw + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function addBusinessDays(fecha, days) {
+  const d = new Date(fecha.getTime());
+  let added = 0;
+  while (added < days) {
+    d.setDate(d.getDate() + 1);
+    const wd = d.getDay();
+    if (wd !== 0 && wd !== 6) added++;
+  }
+  return d;
+}
+
+function addMonths(fecha, months) {
+  const d = new Date(fecha.getTime());
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+function diffDias(fechaObjetivo) {
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  const fin = new Date(fechaObjetivo.getTime());
+  fin.setHours(0,0,0,0);
+  return Math.ceil((fin - hoy) / 86400000);
+}
+
+function semestreMayor(r) {
+  const vals = [r.semestre1, r.semestre2, r.semestre3].map(v => parseInt(v,10)).filter(n => !isNaN(n));
+  return vals.length ? Math.max(...vals) : 1;
+}
+
+function construirCajaTiempos(r) {
+  const fechaRad = parseFecha(r.fechaRadicacion);
+  if (!fechaRad) return '';
+
+  const limiteTutor = addBusinessDays(fechaRad, 15);
+  const diasTutor = diffDias(limiteTutor);
+  const fechaTutorTxt = fmtFecha(limiteTutor.toISOString().split('T')[0]);
+  const txtTutor = diasTutor >= 0
+    ? `⏱ Respuesta asignación tutor (15 días hábiles): hasta <strong>${fechaTutorTxt}</strong> · faltan ${diasTutor} días.`
+    : `⏱ Respuesta asignación tutor (15 días hábiles): venció el <strong>${fechaTutorTxt}</strong>.`;
+
+  const semMax = semestreMayor(r);
+  const mesesActas = semMax >= 12 ? 3 : (semMax >= 11 ? 6 : 12);
+  const baseActas = parseFecha(r.fechaAprobacion) || fechaRad;
+  const limiteActas = addMonths(baseActas, mesesActas);
+  const diasActas = diffDias(limiteActas);
+  const fechaActasTxt = fmtFecha(limiteActas.toISOString().split('T')[0]);
+  const txtActas = diasActas >= 0
+    ? `📄 Carga de actas (${mesesActas} meses según semestre mayor ${semMax}): hasta <strong>${fechaActasTxt}</strong> · faltan ${diasActas} días.`
+    : `📄 Carga de actas (${mesesActas} meses según semestre mayor ${semMax}): venció el <strong>${fechaActasTxt}</strong>.`;
+
+  return `<div class="time-box">${txtTutor}<br>${txtActas}</div>`;
+}
 
 async function cargarMisRad() {
   const wrap = document.getElementById('misRadWrap');
@@ -282,6 +351,17 @@ async function cargarMisRad() {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
     const data = await res.json();
     if (data.success && data.radicaciones.length > 0) {
+     bloquearNuevaRad = data.radicaciones.some(r => !['Aprobado','Devuelto'].includes(String(r.estado || '')));
+      const bloqueo = document.getElementById('bloqueoRad');
+      const tabNueva = document.getElementById('tabNueva');
+      if (bloquearNuevaRad) {
+        bloqueo.style.display = 'block';
+        bloqueo.innerHTML = '🚫 Ya tienes una radicación sin respuesta del comité. Debes esperar respuesta para poder crear una nueva.';
+        tabNueva.style.opacity = '.55';
+      } else {
+        bloqueo.style.display = 'none';
+        tabNueva.style.opacity = '1';
+      }
       wrap.innerHTML = data.radicaciones.map(r => `
         <div class="rad-card">
           <div class="num">📋 ${r.numero}</div>
@@ -292,9 +372,13 @@ async function cargarMisRad() {
             ${r.modalidad ? `<span class="date-info">· ${r.modalidad}</span>` : ''}
             ${r.fechaAprobacion ? `<span class="date-info">✅ ${fmtFecha(r.fechaAprobacion)}</span>` : ''}
           </div>
+          ${construirCajaTiempos(r)}
           ${r.notas ? `<div class="notas-box">📝 ${r.notas}</div>` : ''}
         </div>`).join('');
     } else {
+     bloquearNuevaRad = false;
+      document.getElementById('bloqueoRad').style.display = 'none';
+      document.getElementById('tabNueva').style.opacity = '1';
       wrap.innerHTML = `<div class="empty">
         <div style="font-size:32px;margin-bottom:12px">📭</div>
         <div>No tienes radicaciones registradas aún.</div>
@@ -320,6 +404,7 @@ function limpiar() {
 }
 
 async function radicar() {
+  if (bloquearNuevaRad) { toast('No puedes radicar de nuevo hasta recibir respuesta de tu radicación actual.', 'warn'); return; }
   const reqs = [
     ['cedula1','Cédula estudiante 1'],['nombre1','Nombre estudiante 1'],
     ['email1','Email estudiante 1'],['telefono1','Teléfono estudiante 1'],
