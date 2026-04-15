@@ -187,7 +187,7 @@ function badgeActa(est) {
 
 async function cargarNumeroRad() {
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
+     = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
     const d = await res.json();
     if (d.success && d.radicaciones.length > 0) {
       document.getElementById('numeroRad').value = d.radicaciones[0].numero;
@@ -199,7 +199,7 @@ async function cargarMisActas() {
   const tbody = document.getElementById('tbodyActas');
   tbody.innerHTML = '<tr><td colspan="5" class="empty">Cargando...</td></tr>';
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) });
+     = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) });
     const d = await res.json();
     if (!d.success) throw new Error(d.error);
     const misActas = (d.actas || []).filter(a => String(a.emailEstudiante).toLowerCase() === user.email.toLowerCase());
@@ -242,13 +242,14 @@ async function cargarActa() {
   reader.onload = async function(e) {
     const base64 = e.target.result.split(',')[1];
     try {
-      const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-        action: 'crearActasAsesoria',
-        numeroRadicacion: numero,
-        emailEstudiante: user.email,
-        nombreArchivo: file.name,
-        base64
-      })});
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+  action: 'crearActasAsesoria',
+  numeroRadicacion: numero,
+  emailEstudiante: user.email,
+  nombreArchivo: file.name,
+  base64,
+  observaciones: obs   // FIX: obs ya estaba declarado arriba, solo faltaba enviarlo
+})});
       const d = await res.json();
       if (d.success) {
         document.getElementById('successBox').style.display = 'block';
