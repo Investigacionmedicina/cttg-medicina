@@ -275,7 +275,7 @@ function renderTablas() {
       <td style="font-size:13px">${r.semestre}${r.alertaS12==='SÍ'?'<span class="alert-s12">⚠️ S12</span>':''}</td>
       <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5)">${[r.jurado1Nombre,r.jurado2Nombre].filter(Boolean).join(', ')||'—'}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(([r.jurado1Nombre,r.jurado2Nombre].filter(Boolean).join(', ')||'—'))}</td>
       <td><button class="btn gr" onclick="abrirAsignar(${r.rowIndex},'${esc(r.numero)}',${JSON.stringify(r).replace(/'/g,"&#39;")})">📅 Asignar</button></td>
     </tr>`).join('');
   }
