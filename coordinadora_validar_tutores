@@ -78,7 +78,7 @@
       <h3><span class="dot"></span>Tutor 1</h3>
       <p>Valida o edita los datos del tutor principal. Al guardar se enviará correo de aval.</p>
       <div class="form-grid">
-           <div class="fg full">
+        <div class="fg full">
           <label>Seleccionar desde hoja "Tutores"</label>
           <select id="t1Catalogo" onchange="aplicarTutorCatalogo(1)">
             <option value="">— Seleccionar tutor guardado —</option>
@@ -100,7 +100,7 @@
       <h3><span class="dot"></span>Tutor 2 (Opcional)</h3>
       <p>Si aplica, registra o edita el segundo tutor.</p>
       <div class="form-grid">
-         <div class="fg full">
+        <div class="fg full">
           <label>Seleccionar desde hoja "Tutores"</label>
           <select id="t2Catalogo" onchange="aplicarTutorCatalogo(2)">
             <option value="">— Seleccionar tutor guardado —</option>
@@ -125,6 +125,33 @@
       <textarea id="observaciones" placeholder="Observaciones del comité sobre los tutores..."></textarea>
     </div>
 
+    <div class="form-card">
+      <h3><span class="dot"></span>Gestión CTTG</h3>
+      <p>Asigna evaluador y fecha de comité para pasar a revisión, o devuelve la propuesta de tutores.</p>
+      <div class="form-grid">
+        <div class="fg">
+          <label>Fecha reunión CTTG *</label>
+          <select id="fechaComite">
+            <option value="">Seleccionar fecha...</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Evaluador asignado *</label>
+          <select id="evaluadorAsignado">
+            <option value="">Seleccionar evaluador...</option>
+          </select>
+        </div>
+        <div class="fg full">
+          <label>Decisión sobre tutores *</label>
+          <select id="decisionTutores">
+            <option value="">Seleccionar decisión...</option>
+            <option value="revision">✅ Pasar a revisión</option>
+            <option value="devolver">↩️ Devolver propuesta</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn-action" id="btnGuardar" onclick="guardar()">✅ Avalar tutores y notificar</button>
       <button class="btn-sec" onclick="window.location.href='coordinadora_dashboard.html'">Cancelar</button>
@@ -140,6 +167,8 @@ let admin = null;
 let rowIndex = null;
 let radicacion = null;
 let catalogoTutores = [];
+let evaluadoresCatalogo = [];
+let fechasComiteCatalogo = [];
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
@@ -149,7 +178,9 @@ let catalogoTutores = [];
   rowIndex = Number(params.get('row'));
   if (!Number.isFinite(rowIndex)) { document.getElementById('loadWrap').textContent = 'Parámetro de fila inválido.'; return; }
   cargarDatos();
-cargarCatalogoTutores();
+  cargarCatalogoTutores();
+  cargarCatalogoEvaluadores();
+  cargarFechasComite();
 })();
 
 function salir() { localStorage.removeItem('cttg_admin'); window.location.href = 'index.html'; }
@@ -159,6 +190,7 @@ function toast(msg, type) {
   t.textContent = msg; t.className = 'toast ' + type + ' show';
   setTimeout(() => t.classList.remove('show'), 3500);
 }
+
 async function cargarCatalogoTutores() {
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getTutores' }) });
@@ -192,6 +224,35 @@ function aplicarTutorCatalogo(num) {
   document.getElementById(num === 1 ? 't1Nombre' : 't2Nombre').value = t.nombre || '';
   document.getElementById(num === 1 ? 't1Email' : 't2Email').value = t.email || '';
   document.getElementById(num === 1 ? 't1Telefono' : 't2Telefono').value = t.telefono || '';
+}
+
+async function cargarCatalogoEvaluadores() {
+  const sel = document.getElementById('evaluadorAsignado');
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getEvaluadores' }) });
+    const d = await res.json();
+    if (!d.success || !Array.isArray(d.evaluadores)) return;
+    evaluadoresCatalogo = d.evaluadores.map((e, i) => ({
+      nombre: String(e.nombre || e.email || `Evaluador ${i+1}`).trim(),
+      email: String(e.email || '').trim()
+    }));
+    sel.innerHTML = ['<option value="">Seleccionar evaluador...</option>']
+      .concat(evaluadoresCatalogo.map(e => `<option value="${e.nombre}">${e.nombre}${e.email ? ' · '+e.email : ''}</option>`))
+      .join('');
+  } catch(_) {}
+}
+
+async function cargarFechasComite() {
+  const sel = document.getElementById('fechaComite');
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFechasComite' }) });
+    const d = await res.json();
+    if (!d.success || !Array.isArray(d.fechas)) return;
+    fechasComiteCatalogo = d.fechas.map(f => String(f).trim()).filter(Boolean);
+    sel.innerHTML = ['<option value="">Seleccionar fecha...</option>']
+      .concat(fechasComiteCatalogo.map(f => `<option value="${f}">${f}</option>`))
+      .join('');
+  } catch(_) {}
 }
 
 async function cargarDatos() {
@@ -234,8 +295,17 @@ async function guardar() {
   const t1Nombre = document.getElementById('t1Nombre').value.trim();
   const t1Email  = document.getElementById('t1Email').value.trim();
   const t1Vinculo = document.getElementById('t1Relacion').value;
+  const fechaComite = document.getElementById('fechaComite').value;
+  const evaluador = document.getElementById('evaluadorAsignado').value.trim();
+  const decision = document.getElementById('decisionTutores').value;
+  const obsBase = document.getElementById('observaciones').value.trim();
   if (!t1Nombre || !t1Email) { toast('Nombre y email del Tutor 1 son obligatorios', 'warn'); return; }
-if (!t1Vinculo) { toast('Selecciona vínculo contractual USC para Tutor 1', 'warn'); return; }
+  if (!t1Vinculo) { toast('Selecciona vínculo contractual USC para Tutor 1', 'warn'); return; }
+  if (!decision) { toast('Selecciona la decisión sobre tutores', 'warn'); return; }
+  if (decision === 'revision' && (!fechaComite || !evaluador)) {
+    toast('Para pasar a revisión debes asignar fecha de comité y evaluador', 'warn');
+    return;
+  }
 
   const tutor1 = {
     nombre:   t1Nombre,
@@ -246,8 +316,8 @@ if (!t1Vinculo) { toast('Selecciona vínculo contractual USC para Tutor 1', 'war
   };
   const t2Nombre = document.getElementById('t2Nombre').value.trim();
   const t2Vinculo = document.getElementById('t2Relacion').value || 'No';
-   const tutor2 = t2Nombre ? { 
-   nombre:   t2Nombre,
+  const tutor2 = t2Nombre ? {
+    nombre:   t2Nombre,
     email:    document.getElementById('t2Email').value.trim(),
     telefono: document.getElementById('t2Telefono').value.trim(),
     vinculo:  t2Vinculo,
@@ -262,14 +332,33 @@ if (!t1Vinculo) { toast('Selecciona vínculo contractual USC para Tutor 1', 'war
       rowIndex,
       tutor1,
       tutor2,
-      observaciones: document.getElementById('observaciones').value.trim(),
+      observaciones: [
+        obsBase,
+        evaluador ? `Evaluador: ${evaluador}` : '',
+        fechaComite ? `Fecha Comité CTTG: ${fechaComite}` : '',
+        decision === 'revision' ? 'Decisión Tutores: Pasar a revisión' : 'Decisión Tutores: Devolver propuesta'
+      ].filter(Boolean).join(' | '),
       emailCoord: admin.email
     })});
     const d = await res.json();
-    if (d.success) {
-      toast('Tutores avalados. Correos enviados ✓', 'ok');
-      setTimeout(() => window.location.href = 'coordinadora_dashboard.html', 1800);
-    } else throw new Error(d.error);
+    if (!d.success) throw new Error(d.error);
+
+    const estado = decision === 'revision' ? 'Revisión' : 'Devuelto';
+    const resEstado = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'updateEstado',
+      rowIndex,
+      estado,
+      notas: [
+        evaluador ? `Evaluador: ${evaluador}` : '',
+        fechaComite ? `Fecha Comité CTTG: ${fechaComite}` : ''
+      ].filter(Boolean).join(' | '),
+      emailCoord: admin.email
+    })});
+    const dEstado = await resEstado.json();
+    if (!dEstado.success) throw new Error(dEstado.error || 'No se pudo actualizar el estado');
+
+    toast(decision === 'revision' ? 'Tutores avalados y enviados a revisión ✓' : 'Propuesta de tutores devuelta ✓', 'ok');
+    setTimeout(() => window.location.href = 'coordinadora_dashboard.html', 1800);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
   finally { btn.disabled = false; btn.innerHTML = '✅ Avalar tutores y notificar'; }
 }
