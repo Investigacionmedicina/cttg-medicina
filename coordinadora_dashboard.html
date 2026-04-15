@@ -114,7 +114,7 @@
     <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
   </div>
 
-  <!-- FILTROS -->
+    <!-- FILTROS -->
   <div class="filters">
     <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTabla()">
     <select id="fEst" onchange="renderTabla()">
@@ -127,7 +127,8 @@
     </select>
     <select id="fMod" onchange="renderTabla()"><option value="">Todas las modalidades</option></select>
     <button class="btn" onclick="cargar()">↻ Actualizar</button>
-    <button class="btn gr" onclick="irA('coordinadora_validar_tutores.html?row=${r.rowIndex}')">✅ Tutores</button>
+    <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
+    <!-- FIX: se eliminó el botón Tutores con ${r.rowIndex} que causaba error de sintaxis -->
   </div>
 
   <!-- TABLA -->
@@ -223,32 +224,35 @@ function toast(msg, type) {
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
+function parsearFecha(val) {
+  if (!val) return "";
+  var s = String(val).trim();
+  if (!s) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  return d.getFullYear() + "-" +
+    String(d.getMonth()+1).padStart(2,"0") + "-" +
+    String(d.getDate()).padStart(2,"0");
+}
 async function cargar() {
   setSyncState('loading');
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1' }) });
     const d = await res.json();
     if (d.success) {
-      // FIX: normalizar campos que vienen con nombres distintos del backend
       radicaciones = (d.radicaciones || []).map(r => ({
         ...r,
-        // El script puede devolver 'aprobadoPor' en vez de 'emailCoord'
         emailCoord:      r.emailCoord      || r.aprobadoPor || "",
-        // Garantizar que estos campos siempre existan aunque vengan vacíos
         evaluador:       r.evaluador       || "",
-        fechaComite:     r.fechaComite      || "",
-        decisionTutores: r.decisionTutores  || "",
-        diasRestantes:   r.diasRestantes    || "",
-        estado:          r.estado           || "Radicado",
-        notas:           r.notas            || "",
-        // Normalizar fechas que pueden venir como Date object o string
-        fechaRadicacion: r.fechaRadicacion
-          ? String(r.fechaRadicacion).split('T')[0]
-          : "",
-        fechaAprobacion: r.fechaAprobacion
-          ? String(r.fechaAprobacion).split('T')[0]
-          : ""
+        fechaComite:     r.fechaComite     || "",
+        decisionTutores: r.decisionTutores || "",
+        diasRestantes:   r.diasRestantes   || "",
+        estado:          r.estado          || "Radicado",
+        notas:           r.notas           || "",
+        // FIX: maneja "Mon Apr 13 2026..." y "2026-04-13" y objetos Date
+        fechaRadicacion: parsearFecha(r.fechaRadicacion),
+        fechaAprobacion: parsearFecha(r.fechaAprobacion)
       }));
       actualizarMetricas();
       poblarFiltroMod();
