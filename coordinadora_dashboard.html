@@ -278,10 +278,18 @@ function poblarFiltroMod() {
 }
 
 function badgeEst(est) {
-  const map = { 'Radicado':'b-radicado','Revisión':'b-revision','Pendiente Comité':'b-comite','Aprobado':'b-aprobado','Devuelto':'b-devuelto' };
+  const map = {
+    'Radicado':                'b-radicado',
+    'Tutores Avalados':        'b-revision',
+    'Fase 2 Desbloqueada':     'b-comite',
+    'Pendiente Comité Técnico':'b-comite',
+    'Aprobado':                'b-aprobado',
+    'Devuelto':                'b-devuelto',
+    'Sustentado':              'b-aprobado',
+    'Reprobado':               'b-devuelto'
+  };
   return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
 }
-
 function fmtFecha(s) {
   if (!s || s === '') return '—';
   const p = String(s).split('T')[0].split('-');
