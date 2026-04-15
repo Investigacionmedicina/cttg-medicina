@@ -187,7 +187,7 @@ function badgeActa(est) {
 
 async function cargarNumeroRad() {
   try {
-     = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
     const d = await res.json();
     if (d.success && d.radicaciones.length > 0) {
       document.getElementById('numeroRad').value = d.radicaciones[0].numero;
@@ -199,7 +199,7 @@ async function cargarMisActas() {
   const tbody = document.getElementById('tbodyActas');
   tbody.innerHTML = '<tr><td colspan="5" class="empty">Cargando...</td></tr>';
   try {
-     = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) });
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) });
     const d = await res.json();
     if (!d.success) throw new Error(d.error);
     const misActas = (d.actas || []).filter(a => String(a.emailEstudiante).toLowerCase() === user.email.toLowerCase());
