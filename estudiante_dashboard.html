@@ -480,8 +480,8 @@ async function cargarMisRad() {
       </div>`;
     }
   await actualizarBotonesFases(misRadicaciones);
+  await actualizarBotonesFases(misRadicaciones);
   } catch(e) { wrap.innerHTML = '<div class="empty">Error al cargar. Intenta de nuevo.</div>'; }
-}
 async function actualizarBotonesFases(radicaciones) {
   const btnActas = document.getElementById('btnActas');
   const btnFase2 = document.getElementById('btnFase2');
