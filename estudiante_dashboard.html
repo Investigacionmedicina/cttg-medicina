@@ -31,6 +31,7 @@
   .b-comite{background:rgba(167,139,250,.2);color:#c4b5fd}
   .b-aprobado{background:rgba(16,185,129,.2);color:#6ee7b7}
   .b-devuelto{background:rgba(239,68,68,.2);color:#fca5a5}
+  .b-tutores{background:rgba(52,211,153,.2);color:#6ee7b7}
   .date-info{font-size:12px;color:rgba(255,255,255,.4)}
   .notas-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#fcd34d;margin-top:10px}
   .time-box{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:8px;padding:10px 13px;font-size:12px;color:#bfdbfe;margin-top:10px}
@@ -276,7 +277,7 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 function badgeEst(est) {
   const map = {
     'Radicado':                'b-radicado',
-    'Tutores Avalados':        'b-revision',
+    'Tutores Avalados': 'b-tutores',
     'Fase 2 Desbloqueada':     'b-comite',
     'Pendiente Comité Técnico':'b-comite',
     'Aprobado':                'b-aprobado',
