@@ -373,23 +373,24 @@ function renderAlertasSuperiores(radicaciones) {
   if (!fechaRad) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
 
   const limiteTutor = addBusinessDays(fechaRad, 15);
-  const diasTutor = diffDias(limiteTutor);
-  const semMax = semestreMayor(r);
-  const mesesActas = semMax >= 12 ? 3 : (semMax >= 11 ? 6 : 12);
+  const diasTutor   = diffDias(limiteTutor);
+  const semMax      = semestreMayor(r);
+  const mesesActas  = semMax >= 12 ? 3 : (semMax >= 11 ? 6 : 12);
   const limiteActas = addMonths(parseFecha(r.fechaAprobacion) || fechaRad, mesesActas);
-  const diasActas = diffDias(limiteActas);
+  const diasActas   = diffDias(limiteActas);
 
   wrap.style.display = 'grid';
   wrap.innerHTML = `
     <div class="alert-card">
       <h4>⏱ Respuesta tutor (15 días hábiles)</h4>
       <p>Radicación <strong>${esc(r.numero)}</strong>. Fecha límite: <strong>${fmtFecha(limiteTutor.toISOString().split('T')[0])}</strong>. ${diasTutor >= 0 ? `Faltan ${diasTutor} días.` : 'Plazo vencido.'}</p>
+    </div>
     <div class="alert-card">
       <h4>📄 Plazo para actas</h4>
       <p>Semestre mayor detectado: <strong>${semMax}</strong> (${mesesActas} meses). Fecha límite: <strong>${fmtFecha(limiteActas.toISOString().split('T')[0])}</strong>. ${diasActas >= 0 ? `Faltan ${diasActas} días.` : 'Plazo vencido.'}</p>
     </div>`;
+  // FIX: ambas alert-card ahora tienen su </div> de cierre correcto
 }
-
 async function cargarMisRad() {
   const wrap = document.getElementById('misRadWrap');
   wrap.innerHTML = '<div class="empty">Cargando...</div>';
