@@ -286,10 +286,57 @@ async function guardar() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
 
   try {
+    const estudiantes = [
+      {
+        nombre: String(radicacion.nombre1 || '').trim(),
+        cedula: String(radicacion.cedula1 || '').trim(),
+        telefono: String(radicacion.telefono1 || '').trim(),
+        email: String(radicacion.email1 || '').trim()
+      },
+      {
+        nombre: String(radicacion.nombre2 || '').trim(),
+        cedula: String(radicacion.cedula2 || '').trim(),
+        telefono: String(radicacion.telefono2 || '').trim(),
+        email: String(radicacion.email2 || '').trim()
+      },
+      {
+        nombre: String(radicacion.nombre3 || '').trim(),
+        cedula: String(radicacion.cedula3 || '').trim(),
+        telefono: String(radicacion.telefono3 || '').trim(),
+        email: String(radicacion.email3 || '').trim()
+      }
+    ].filter(e => e.nombre || e.email || e.telefono || e.cedula);
+
+    const estudiantesTxt = estudiantes.map((e, i) =>
+      `Estudiante ${i + 1}: ${e.nombre || 'Sin nombre'} · Cédula: ${e.cedula || 'N/D'} · Tel: ${e.telefono || 'N/D'} · Email: ${e.email || 'N/D'}`
+    ).join('\n');
+
+    const notificacionTutores = {
+      asunto: decision === 'revision'
+        ? `CTTG Medicina | Aval tutor(es) radicación ${radicacion.numero || rowIndex}`
+        : `CTTG Medicina | Ajustes en propuesta de tutor(es) ${radicacion.numero || rowIndex}`,
+      mensaje:
+`Estimado(a) docente tutor(a),
+
+La Coordinación del CTTG Medicina registró la siguiente gestión de tutores:
+- Radicación: ${radicacion.numero || 'N/D'}
+- Proyecto: ${radicacion.titulo || 'Sin título'}
+- Decisión: ${decision === 'revision' ? 'Pasar a revisión' : 'Devolver propuesta'}
+${evaluador ? `- Evaluador asignado: ${evaluador}` : ''}
+${fechaComite ? `- Fecha Comité CTTG: ${fechaComite}` : ''}
+
+Datos de contacto de estudiante(s):
+${estudiantesTxt}
+
+Este mensaje fue generado automáticamente por el sistema CTTG.`,
+      estudiantes
+    };
+
     // 1. Guardar tutores
     const resTutores = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'validarTutores',
       rowIndex, tutor1, tutor2,
+     notificacionTutores,
       observaciones: obsBase,
       emailCoord: admin.email
     })});
