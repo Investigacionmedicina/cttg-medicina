@@ -495,9 +495,16 @@ async function actualizarBotonesFases(radicaciones) {
     return;
   }
 
-  // Mostrar siempre el botón de actas si hay radicación
-  if (btnActas) btnActas.style.display = 'flex';
-
+  // Mostrar botón de actas solo si tutores ya fueron avalados
+  const estadoActual = radicaciones.length > 0 ? (radicaciones[0].estado || '') : '';
+  const estadosConAcceso = ['Tutores Avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Aprobado','Sustentado'];
+  if (btnActas) {
+    if (estadosConAcceso.includes(estadoActual)) {
+      btnActas.style.display = 'flex';
+    } else {
+      btnActas.style.display = 'none';
+    }
+  }
   // Consultar estado de actas
   let actasAprobadas = false;
   let fase2Aprobada  = false;
