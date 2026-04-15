@@ -85,41 +85,52 @@
       <button class="modal-close" onclick="cerrarModal()">✕</button>
     </div>
     <div id="errModal" class="err"></div>
-    
+
     <div class="modal-fg">
       <label class="modal-label">Número Radicación</label>
       <input type="text" id="modalNumero" readonly class="modal-input" style="opacity:.7">
     </div>
 
     <div class="modal-fg">
-      <label class="modal-label">Asignar Evaluador</label>
-      <input type="text" id="modalEvaluador" class="modal-input" placeholder="Ej: Dr. Juan Pérez">
-    </div>
-
-    <div class="modal-fg">
-      <label class="modal-label">Fecha Reunión Comité</label>
-      <input type="date" id="modalFechaReunion" class="modal-input">
-    </div>
-
-    <div class="modal-fg">
-      <label class="modal-label">Decisión del Comité</label>
-      <select id="modalDecision" class="modal-input" onchange="mostrarMotivo()">
+      <label class="modal-label">Decisión del Comité *</label>
+      <select id="modalDecision" class="modal-input" onchange="mostrarCamposDecision()">
         <option value="">— Selecciona —</option>
-        <option value="Aprobado">✅ Aprobado</option>
-        <option value="Devuelto">↩️ Devuelto para Corrección</option>
+        <option value="Aprobado">✅ Aprobar y asignar comité</option>
+        <option value="Devuelto">↩️ Devolver para corrección</option>
       </select>
     </div>
 
-    <div class="modal-fg" id="motivoDiv" style="display:none">
-      <label class="modal-label">Motivo de Devolución (si aplica)</label>
-      <textarea id="modalMotivo" class="modal-textarea" placeholder="Describe las correcciones necesarias..."></textarea>
+    <!-- Campos que aparecen solo al Aprobar -->
+    <div id="camposAprobacion" style="display:none">
+      <div class="modal-fg">
+        <label class="modal-label">Fecha Comité Técnico *</label>
+        <input type="date" id="modalFechaReunion" class="modal-input">
+      </div>
+      <div class="modal-fg">
+        <label class="modal-label">Nombre del Evaluador *</label>
+        <input type="text" id="modalEvaluador" class="modal-input" placeholder="Dr./Dra. Nombre Apellido">
+      </div>
+      <div class="modal-fg">
+        <label class="modal-label">Email del Evaluador * (recibirá el documento)</label>
+        <input type="email" id="modalEmailEvaluador" class="modal-input" placeholder="evaluador@usc.edu.co">
+      </div>
+      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:6px;padding:10px 12px;font-size:12px;color:#065f46;margin-bottom:14px">
+        📧 Se enviará: al <strong>estudiante</strong> la fecha del comité · al <strong>evaluador</strong> el documento para revisión
+      </div>
     </div>
 
-    <button class="modal-button" onclick="guardarEvaluacion()">Guardar Evaluación</button>
+    <!-- Campo que aparece solo al Devolver -->
+    <div id="camposDevolucion" style="display:none">
+      <div class="modal-fg">
+        <label class="modal-label">Motivo de devolución *</label>
+        <textarea id="modalMotivo" class="modal-textarea" placeholder="Describe las correcciones necesarias..."></textarea>
+      </div>
+    </div>
+
+    <button class="modal-button" onclick="guardarEvaluacion()">Guardar y notificar</button>
   </div>
 </div>
-
-<script>
+ <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 let protocoloActual = null;
 
@@ -181,13 +192,15 @@ function cargarProtocolos() {
 
 function abrirModal(numero, rowIndex) {
   protocoloActual = { numero, rowIndex };
-  document.getElementById('modalNumero').value = numero;
-  document.getElementById('modalEvaluador').value = '';
-  document.getElementById('modalFechaReunion').value = '';
-  document.getElementById('modalDecision').value = '';
-  document.getElementById('modalMotivo').value = '';
-  document.getElementById('motivoDiv').style.display = 'none';
-  document.getElementById('errModal').style.display = 'none';
+  document.getElementById('modalNumero').value          = numero;
+  document.getElementById('modalEvaluador').value       = '';
+  document.getElementById('modalEmailEvaluador').value  = '';
+  document.getElementById('modalFechaReunion').value    = '';
+  document.getElementById('modalDecision').value        = '';
+  document.getElementById('modalMotivo').value          = '';
+  document.getElementById('camposAprobacion').style.display = 'none';
+  document.getElementById('camposDevolucion').style.display = 'none';
+  document.getElementById('errModal').style.display     = 'none';
   document.getElementById('modalEditar').classList.add('active');
 }
 
@@ -196,27 +209,35 @@ function cerrarModal() {
   protocoloActual = null;
 }
 
-function mostrarMotivo() {
+function mostrarCamposDecision() {
   const decision = document.getElementById('modalDecision').value;
-  document.getElementById('motivoDiv').style.display = decision === 'Devuelto' ? 'block' : 'none';
+  document.getElementById('camposAprobacion').style.display = decision === 'Aprobado' ? 'block' : 'none';
+  document.getElementById('camposDevolucion').style.display = decision === 'Devuelto'  ? 'block' : 'none';
 }
 
 function guardarEvaluacion() {
   if (!protocoloActual) return;
 
-  const evaluador = document.getElementById('modalEvaluador').value.trim();
-  const fechaReunion = document.getElementById('modalFechaReunion').value;
-  const decision = document.getElementById('modalDecision').value;
-  const motivo = document.getElementById('modalMotivo').value;
-  const errModal = document.getElementById('errModal');
-  const user = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
+  const evaluador      = document.getElementById('modalEvaluador').value.trim();
+  const emailEvaluador = document.getElementById('modalEmailEvaluador').value.trim();
+  const fechaReunion   = document.getElementById('modalFechaReunion').value;
+  const decision       = document.getElementById('modalDecision').value;
+  const motivo         = document.getElementById('modalMotivo').value.trim();
+  const errModal       = document.getElementById('errModal');
+  const user           = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
 
   errModal.style.display = 'none';
 
-  if (!evaluador || !fechaReunion || !decision) {
-    errModal.textContent = 'Completa todos los campos requeridos';
+  if (!decision) {
+    errModal.textContent = 'Selecciona una decisión';
     errModal.style.display = 'block';
     return;
+  }
+
+  if (decision === 'Aprobado') {
+    if (!evaluador)      { errModal.textContent = 'El nombre del evaluador es obligatorio'; errModal.style.display = 'block'; return; }
+    if (!emailEvaluador) { errModal.textContent = 'El email del evaluador es obligatorio para enviarle el documento'; errModal.style.display = 'block'; return; }
+    if (!fechaReunion)   { errModal.textContent = 'La fecha del comité técnico es obligatoria'; errModal.style.display = 'block'; return; }
   }
 
   if (decision === 'Devuelto' && !motivo) {
@@ -224,18 +245,21 @@ function guardarEvaluacion() {
     errModal.style.display = 'block';
     return;
   }
-const estadoFinal = decision === 'Aprobado' ? 'Aprobado' : 'Devuelto';
+
+  const estadoFinal = decision === 'Aprobado' ? 'Aprobado' : 'Devuelto';
+
   fetch(URL_APP, {
     method: 'POST',
     body: JSON.stringify({
-      action: 'actualizarProtocolo',
-      rowIndex: protocoloActual.rowIndex,
-       estado: estadoFinal,
-      evaluador: evaluador,
-      fechaReunion: fechaReunion,
-      decision: decision,
-      motivo: motivo,
-      emailCoord: user.email
+      action:         'actualizarProtocolo',
+      rowIndex:        protocoloActual.rowIndex,
+      estado:          estadoFinal,
+      evaluador:       evaluador,
+      emailEvaluador:  emailEvaluador,
+      fechaReunion:    fechaReunion,
+      decision:        decision,
+      motivo:          motivo,
+      emailCoord:      user.email
     })
   })
   .then(r => r.json())
