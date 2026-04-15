@@ -339,26 +339,20 @@ async function enviarSolicitud() {
     turnitin:    driveUrls.turnitin || '',
     pctTurnitin: pct
   };
- const jurados = [
-    {
-      nombre: document.getElementById('j1Nombre').value.trim(),
-      cedula: document.getElementById('j1Cedula').value.trim(),
-      email:  document.getElementById('j1Email').value.trim()
-    },
-    {
-      nombre: document.getElementById('j2Nombre').value.trim(),
-      cedula: document.getElementById('j2Cedula').value.trim(),
-      email:  document.getElementById('j2Email').value.trim()
-    }
-  ];
-    },
-    {
-      nombre: document.getElementById('j2Nombre').value.trim(),
-      cedula: document.getElementById('j2Cedula').value.trim(),
-      email:  document.getElementById('j2Email').value.trim()
-    }
-  ];
-  const btn = document.getElementById('btnEnviar');
+ 
+const jurados = [
+  {
+    nombre: document.getElementById('j1Nombre').value.trim(),
+    cedula: document.getElementById('j1Cedula').value.trim(),
+    email:  document.getElementById('j1Email').value.trim()
+  },
+  {
+    nombre: document.getElementById('j2Nombre').value.trim(),
+    cedula: document.getElementById('j2Cedula').value.trim(),
+    email:  document.getElementById('j2Email').value.trim()
+  }
+];
+ const btn = document.getElementById('btnEnviar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
