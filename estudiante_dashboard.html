@@ -455,6 +455,89 @@ async function cargarMisRad() {
     }
   } catch(e) { wrap.innerHTML = '<div class="empty">Error al cargar. Intenta de nuevo.</div>'; }
 }
+async function actualizarBotonesFases(radicaciones) {
+  const btnActas = document.getElementById('btnActas');
+  const btnFase2 = document.getElementById('btnFase2');
+  const btnFase3 = document.getElementById('btnFase3');
+  const btnActasSub = document.getElementById('btnActasSub');
+  const btnFase2Sub = document.getElementById('btnFase2Sub');
+  const btnFase3Sub = document.getElementById('btnFase3Sub');
+ // Solo mostrar botones si hay al menos una radicación
+  const tieneRadicacion = radicaciones.length > 0;
+  if (!tieneRadicacion) {
+    [btnActas, btnFase2, btnFase3].forEach(b => { if(b) b.style.display = 'none'; });
+    return;
+  }
+
+  // Mostrar siempre el botón de actas si hay radicación
+  if (btnActas) btnActas.style.display = 'flex';
+
+  // Consultar estado de actas
+  let actasAprobadas = false;
+  let fase2Aprobada  = false;
+
+  try {
+    const resActas = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) });
+    const dActas   = await resActas.json();
+    if (dActas.success) {
+      const misActas = (dActas.actas || []).filter(a =>
+        a.emailEstudiante.toLowerCase() === user.email.toLowerCase()
+      );
+      actasAprobadas = misActas.some(a => a.estado === 'Aprobada');
+
+      // Actualizar subtexto de actas según estado
+      const pendientes = misActas.filter(a => a.estado === 'Pendiente revisión').length;
+      if (btnActasSub) {
+        if (actasAprobadas) btnActasSub.textContent = '✅ Actas aprobadas';
+        else if (pendientes > 0) btnActasSub.textContent = `⏳ ${pendientes} acta(s) en revisión`;
+        else btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
+      }
+    }
+  } catch(e) {}
+
+  // Mostrar Fase 2 — activo solo si actas aprobadas
+  if (btnFase2) {
+    btnFase2.style.display = 'flex';
+    if (actasAprobadas) {
+      btnFase2.style.opacity       = '1';
+      btnFase2.style.pointerEvents = 'auto';
+      if (btnFase2Sub) btnFase2Sub.textContent = 'Subir documento de protocolo';
+    } else {
+      btnFase2.style.opacity       = '0.4';
+      btnFase2.style.pointerEvents = 'none';
+      if (btnFase2Sub) btnFase2Sub.textContent = 'Pendiente: aprobación de actas';
+    }
+  }
+
+  // Consultar Fase 2 para activar Fase 3
+  try {
+    const resF2 = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
+    const dF2   = await resF2.json();
+    if (dF2.success) {
+      fase2Aprobada = (dF2.protocolos || []).some(p =>
+        p.emailEstudiante.toLowerCase() === user.email.toLowerCase() &&
+        p.estado === 'Aprobado'
+      );
+    }
+  } catch(e) {}
+
+  // Mostrar Fase 3 — activo solo si Fase 2 aprobada
+  if (btnFase3) {
+    btnFase3.style.display = 'flex';
+    if (fase2Aprobada) {
+      btnFase3.style.opacity       = '1';
+      btnFase3.style.pointerEvents = 'auto';
+      if (btnFase3Sub) btnFase3Sub.textContent = 'Solicitar fecha de sustentación';
+    } else {
+      btnFase3.style.opacity       = '0.4';
+      btnFase3.style.pointerEvents = 'none';
+      if (btnFase3Sub) btnFase3Sub.textContent = 'Pendiente: aprobación de protocolo';
+    }
+  }
+}
+
+// ── En cargarMisRad(), al final del bloque try, agrega esta línea: ──
+// await actualizarBotonesFases(misRadicaciones);
 
 function limpiar() {
   ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono'].forEach(id => {
