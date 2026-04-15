@@ -483,8 +483,9 @@ async function actualizarBotonesFases(radicaciones) {
     [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'none'; });
     return;
   }
-
-  const estadoActual = radicaciones[0].estado || '';
+// Asegurar que los botones siempre sean visibles si hay radicaciones
+[btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'flex'; });
+   const estadoActual = radicaciones[0].estado || '';
   const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Aprobado','Sustentado'];
 
   if (btnActas) {
