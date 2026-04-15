@@ -279,12 +279,13 @@ function toast(msg, type) {
   t.textContent = msg; t.className = 'toast ' + type + ' show';
   setTimeout(() => t.classList.remove('show'), 3500);
 }
-
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 function badgeEst(est) {
   const map = { 'Radicado':'b-radicado','Revisión':'b-revision','Pendiente Comité':'b-comite','Aprobado':'b-aprobado','Devuelto':'b-devuelto' };
-  return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
+  return `<span class="badge ${map[est]||'b-radicado'}">${esc(est||'Radicado')}</span>`;
 }
-
 function fmtFecha(s) {
   if (!s || s === '') return '—';
   const p = String(s).split('T')[0].split('-');
@@ -382,8 +383,7 @@ function renderAlertasSuperiores(radicaciones) {
   wrap.innerHTML = `
     <div class="alert-card">
       <h4>⏱ Respuesta tutor (15 días hábiles)</h4>
-      <p>Radicación <strong>${r.numero}</strong>. Fecha límite: <strong>${fmtFecha(limiteTutor.toISOString().split('T')[0])}</strong>. ${diasTutor >= 0 ? `Faltan ${diasTutor} días.` : 'Plazo vencido.'}</p>
-    </div>
+      <p>Radicación <strong>${esc(r.numero)}</strong>. Fecha límite: <strong>${fmtFecha(limiteTutor.toISOString().split('T')[0])}</strong>. ${diasTutor >= 0 ? `Faltan ${diasTutor} días.` : 'Plazo vencido.'}</p>
     <div class="alert-card">
       <h4>📄 Plazo para actas</h4>
       <p>Semestre mayor detectado: <strong>${semMax}</strong> (${mesesActas} meses). Fecha límite: <strong>${fmtFecha(limiteActas.toISOString().split('T')[0])}</strong>. ${diasActas >= 0 ? `Faltan ${diasActas} días.` : 'Plazo vencido.'}</p>
@@ -417,16 +417,16 @@ async function cargarMisRad() {
       }
       wrap.innerHTML = data.radicaciones.map(r => `
         <div class="rad-card">
-          <div class="num">📋 ${r.numero}</div>
-          <div class="titulo">${r.titulo || 'Sin título'}</div>
+         <div class="num">📋 ${esc(r.numero)}</div>
+          <div class="titulo">${esc(r.titulo || 'Sin título')}</div>
           <div class="rad-meta">
             ${badgeEst(r.estado)}
             <span class="date-info">📅 ${fmtFecha(r.fechaRadicacion)}</span>
-            ${r.modalidad ? `<span class="date-info">· ${r.modalidad}</span>` : ''}
+           ${r.modalidad ? `<span class="date-info">· ${esc(r.modalidad)}</span>` : ''}
             ${r.fechaAprobacion ? `<span class="date-info">✅ ${fmtFecha(r.fechaAprobacion)}</span>` : ''}
           </div>
           ${construirCajaTiempos(r)}
-          ${r.notas ? `<div class="notas-box">📝 ${r.notas}</div>` : ''}
+          ${r.notas ? `<div class="notas-box">📝 ${esc(r.notas)}</div>` : ''}
         </div>`).join('');
     } else {
      bloquearNuevaRad = false;
