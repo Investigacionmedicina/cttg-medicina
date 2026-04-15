@@ -288,8 +288,11 @@ function badgeEst(est) {
 }
 function fmtFecha(s) {
   if (!s || s === '') return '—';
-  const p = String(s).split('T')[0].split('-');
-  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  const day = String(d.getDate()).padStart(2,'0');
+  const mon = String(d.getMonth()+1).padStart(2,'0');
+  return `${day}/${mon}/${d.getFullYear()}`;
 }
  function parseFecha(s) {
   if (!s) return null;
