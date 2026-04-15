@@ -498,14 +498,19 @@ async function actualizarBotonesFases(radicaciones) {
 
   // Mostrar botón de actas solo si tutores ya fueron avalados
   const estadoActual = radicaciones.length > 0 ? (radicaciones[0].estado || '') : '';
-  const estadosConAcceso = ['Tutores Avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Aprobado','Sustentado'];
-  if (btnActas) {
-    if (estadosConAcceso.includes(estadoActual)) {
-      btnActas.style.display = 'flex';
-    } else {
-      btnActas.style.display = 'none';
-    }
+const estadosConAcceso = ['Revisión','Tutores Avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Aprobado','Sustentado'];
+if (btnActas) {
+  btnActas.style.display = 'flex';
+  if (estadosConAcceso.includes(estadoActual)) {
+    btnActas.style.opacity = '1';
+    btnActas.style.pointerEvents = 'auto';
+    if (btnActasSub) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
+  } else {
+    btnActas.style.opacity = '0.4';
+    btnActas.style.pointerEvents = 'none';
+    if (btnActasSub) btnActasSub.textContent = 'Pendiente: aval de tutores';
   }
+}
   // Consultar estado de actas
   let actasAprobadas = false;
   let fase2Aprobada  = false;
