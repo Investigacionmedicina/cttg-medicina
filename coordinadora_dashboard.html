@@ -21,8 +21,6 @@
   .user-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
   .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
   main{padding:24px 28px;max-width:1500px;margin:0 auto}
-
-  /* METRICS */
   .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
   .mc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;position:relative;overflow:hidden}
   .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
@@ -30,14 +28,10 @@
   .mc .ml{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:6px;font-family:'DM Mono',monospace}
   .mc .mv{font-size:26px;font-weight:700;font-family:'DM Serif Display',serif}
   .mc.c1 .mv{color:#60a5fa}.mc.c2 .mv{color:#34d399}.mc.c3 .mv{color:#fcd34d}.mc.c4 .mv{color:#fca5a5}.mc.c5 .mv{color:#c4b5fd}.mc.c6 .mv{color:#00c3a5}
-
-  /* FILTERS */
   .filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
   .filters input,.filters select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:12px;padding:7px 11px;outline:none}
   .filters input{min-width:200px}.filters input::placeholder{color:rgba(255,255,255,.3)}
   .filters select option{background:#111827}
-
-  /* TABLE */
   .tbl-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto}
   table{width:100%;border-collapse:collapse;min-width:900px}
   thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
@@ -64,8 +58,6 @@
   .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
   .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
   @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* MODAL */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
   .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
@@ -81,12 +73,9 @@
   .det-row{display:flex;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;gap:8px}
   .det-label{min-width:130px;font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;flex-shrink:0}
   .det-val{color:#e2e8f0;flex:1}
-
-  /* TOAST */
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
-
   @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
@@ -104,7 +93,6 @@
 </header>
 
 <main>
-  <!-- MÉTRICAS -->
   <div class="metrics">
     <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div></div>
     <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div></div>
@@ -114,7 +102,7 @@
     <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
   </div>
 
-    <!-- FILTROS -->
+  <!-- FILTROS — FIX: eliminado botón Tutores con ${r.rowIndex} que rompía el script -->
   <div class="filters">
     <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTabla()">
     <select id="fEst" onchange="renderTabla()">
@@ -128,10 +116,8 @@
     <select id="fMod" onchange="renderTabla()"><option value="">Todas las modalidades</option></select>
     <button class="btn" onclick="cargar()">↻ Actualizar</button>
     <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
-    <!-- FIX: se eliminó el botón Tutores con ${r.rowIndex} que causaba error de sintaxis -->
   </div>
 
-  <!-- TABLA -->
   <div class="tbl-wrap">
     <table>
       <thead><tr>
@@ -199,7 +185,6 @@ const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7
 let radicaciones = [];
 let admin = null;
 
-// INIT
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
   if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
@@ -213,7 +198,7 @@ function salir() { localStorage.removeItem('cttg_admin'); window.location.href =
 function setSyncState(s) {
   const dot = document.getElementById('syncDot'), lbl = document.getElementById('syncLbl');
   if (s === 'loading') { dot.className = 'dot loading'; lbl.textContent = 'Sincronizando...'; }
-  else if (s === 'ok')  { dot.className = 'dot'; lbl.textContent = 'Conectado · Google Sheets'; }
+  else if (s === 'ok') { dot.className = 'dot'; lbl.textContent = 'Conectado · Google Sheets'; }
   else { dot.className = 'dot error'; lbl.textContent = 'Error de conexión'; }
 }
 
@@ -224,6 +209,8 @@ function toast(msg, type) {
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// FIX: parsea fechas en cualquier formato que llegue del backend
 function parsearFecha(val) {
   if (!val) return "";
   var s = String(val).trim();
@@ -232,9 +219,10 @@ function parsearFecha(val) {
   var d = new Date(s);
   if (isNaN(d.getTime())) return s;
   return d.getFullYear() + "-" +
-    String(d.getMonth()+1).padStart(2,"0") + "-" +
-    String(d.getDate()).padStart(2,"0");
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
 }
+
 async function cargar() {
   setSyncState('loading');
   try {
@@ -250,7 +238,6 @@ async function cargar() {
         diasRestantes:   r.diasRestantes   || "",
         estado:          r.estado          || "Radicado",
         notas:           r.notas           || "",
-        // FIX: maneja "Mon Apr 13 2026..." y "2026-04-13" y objetos Date
         fechaRadicacion: parsearFecha(r.fechaRadicacion),
         fechaAprobacion: parsearFecha(r.fechaAprobacion)
       }));
@@ -264,6 +251,7 @@ async function cargar() {
     toast('Error al cargar: ' + e.message, 'err');
   }
 }
+
 function actualizarMetricas() {
   const s = { total: radicaciones.length, radicado: 0, revision: 0, pendienteComite: 0, aprobado: 0, devuelto: 0 };
   radicaciones.forEach(r => {
@@ -285,7 +273,8 @@ function actualizarMetricas() {
 function poblarFiltroMod() {
   const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
   const sel = document.getElementById('fMod'), cur = sel.value;
-  sel.innerHTML = '<option value="">Todas las modalidades</option>' + opts.map(o => `<option value="${o}" ${o===cur?'selected':''}>${o}</option>`).join('');
+  sel.innerHTML = '<option value="">Todas las modalidades</option>' +
+    opts.map(o => `<option value="${o}" ${o===cur?'selected':''}>${o}</option>`).join('');
 }
 
 function badgeEst(est) {
@@ -300,19 +289,15 @@ function fmtFecha(s) {
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 function renderTabla() {
   const q  = (document.getElementById('search').value || '').toLowerCase();
   const fE = document.getElementById('fEst').value;
   const fM = document.getElementById('fMod').value;
 
-  let filtered = radicaciones.filter(r => {
-    const txt = [
-      r.numero, r.nombre1, r.nombre2, r.nombre3,
-      r.titulo, r.emailEstudiante, r.tutor1Nombre
-    ].join(' ').toLowerCase();
-    return (!q || txt.includes(q))
-      && (!fE || r.estado === fE)
-      && (!fM || r.modalidad === fM);
+  const filtered = radicaciones.filter(r => {
+    const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.titulo, r.emailEstudiante, r.tutor1Nombre].join(' ').toLowerCase();
+    return (!q || txt.includes(q)) && (!fE || r.estado === fE) && (!fM || r.modalidad === fM);
   });
 
   const body = document.getElementById('tbody');
@@ -322,32 +307,28 @@ function renderTabla() {
   }
 
   body.innerHTML = filtered.map(r => {
-    // Nombres de estudiantes — defensivo contra undefined
-    const nombres = [r.nombre1, r.nombre2, r.nombre3]
-      .filter(Boolean).join('<br>') || '—';
-    const tutores = [r.tutor1Nombre, r.tutor2Nombre]
-      .filter(Boolean).join('<br>') || '—';
+    const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join('<br>') || '—';
+    const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).join('<br>') || '—';
     const titulo  = r.titulo || 'Sin título';
     const fecha   = fmtFecha(r.fechaRadicacion);
     const estado  = r.estado || 'Radicado';
-
     return `<tr>
-      <td><div class="num-rad">${esc(r.numero || '')}</div></td>
+      <td><div class="num-rad">${esc(r.numero||'')}</div></td>
       <td style="font-size:12px;max-width:160px">${nombres}</td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-          title="${esc(titulo)}">${esc(titulo)}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad || '—')}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(titulo)}">${esc(titulo)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:140px">${tutores}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fecha}</td>
       <td>${badgeEst(estado)}</td>
       <td><div class="act">
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
-        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero || '')}','${esc(estado)}')">✎ Estado</button>
-        <button class="btn gr" onclick="irA('coordinadora_validar_tutores.html?row=${r.rowIndex}')">✅ Tutores</button>
+        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
+        <button class="btn gr" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">✅ Tutores</button>
       </div></td>
     </tr>`;
   }).join('');
 }
+
 function abrirModalEst(ri, numero, estadoActual) {
   document.getElementById('mRowIndex').value = ri;
   document.getElementById('mEstLabel').textContent = 'Radicación: ' + numero;
@@ -380,8 +361,6 @@ function verDetalle(ri) {
   const r = radicaciones.find(x => x.rowIndex === ri);
   if (!r) return;
   const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val">${esc(val)}</span></div>` : '';
-  const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(' · ');
-
   document.getElementById('modalDetBody').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div>
@@ -391,20 +370,21 @@ function verDetalle(ri) {
       ${badgeEst(r.estado)}
     </div>
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:6px">Proyecto</div>
-    ${fila('Modalidad', r.modalidad)}${fila('Área', r.area)}${fila('F. Radicación', fmtFecha(r.fechaRadicacion))}${fila('F. Aprobación', fmtFecha(r.fechaAprobacion))}
+    ${fila('Modalidad', r.modalidad)}${fila('Área', r.area)}
+    ${fila('F. Radicación', fmtFecha(r.fechaRadicacion))}${fila('F. Aprobación', fmtFecha(r.fechaAprobacion))}
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Estudiantes</div>
-    ${fila('Estudiante 1', r.nombre1 ? r.nombre1 + ' · Ced: ' + r.cedula1 + ' · Sem. ' + r.semestre1 : '')}
+    ${fila('Estudiante 1', r.nombre1 ? r.nombre1+' · Ced: '+r.cedula1+' · Sem. '+r.semestre1 : '')}
     ${fila('Email 1', r.email1)}${fila('Teléfono 1', r.telefono1)}
-    ${fila('Estudiante 2', r.nombre2 ? r.nombre2 + ' · Ced: ' + r.cedula2 + ' · Sem. ' + r.semestre2 : '')}
-    ${fila('Estudiante 3', r.nombre3 ? r.nombre3 + ' · Ced: ' + r.cedula3 + ' · Sem. ' + r.semestre3 : '')}
+    ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
+    ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
-    ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre + ' (' + r.tutor1Relacion + ')' : '')}
-    ${fila('Email T1', r.tutor1Email)}${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre + ' (' + r.tutor2Relacion + ')' : '')}
+    ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
+    ${fila('Email T1', r.tutor1Email)}
+    ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
     ${r.notas ? `<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#fcd34d">📝 Observaciones: </span>${esc(r.notas)}</div>` : ''}
-    <div style="margin-top:14px;display:flex;gap:8px">
+    <div style="margin-top:14px">
       <button class="btn am" onclick="closeModal('modalDet');abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Cambiar estado</button>
-    </div>
-  `;
+    </div>`;
   document.getElementById('modalDet').classList.add('open');
 }
 
@@ -430,14 +410,10 @@ function exportCSV() {
 }
 
 ['modalEst','modalDet'].forEach(id => {
-  document.getElementById(id).addEventListener('click', e => { if (e.target === document.getElementById(id)) closeModal(id); });
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target === document.getElementById(id)) closeModal(id);
+  });
 });
-
-function irA(url) {
-  // FIX: asegurar que la URL tenga extensión .html si no la tiene
-  if (url && !url.includes('.html') && !url.startsWith('http')) {
-    var partes = url.split('?');
-    url = partes[0] + '.html' + (partes[1] ? '?' + partes[1] : '');
-  }
-  window.location.href = url;
-}
+</script>
+</body>
+</html>
