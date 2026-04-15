@@ -322,8 +322,7 @@ La Coordinación del CTTG Medicina registró la siguiente gestión de tutores:
 - Radicación: ${radicacion.numero || 'N/D'}
 - Proyecto: ${radicacion.titulo || 'Sin título'}
 - Decisión: ${decision === 'revision' ? 'Pasar a revisión' : 'Devolver propuesta'}
-${evaluador ? `- Evaluador asignado: ${evaluador}` : ''}
-${fechaComite ? `- Fecha Comité CTTG: ${fechaComite}` : ''}
+
 
 Datos de contacto de estudiante(s):
 ${estudiantesTxt}
@@ -344,7 +343,7 @@ Este mensaje fue generado automáticamente por el sistema CTTG.`,
     if (!dTutores.success) throw new Error(dTutores.error);
 
     // 2. Actualizar estado
-    const estado = decision === 'revision' ? 'Revisión' : 'Devuelto';
+    const estado = decision === 'revision' ? 'Tutores Avalados' : 'Devuelto';
     const resEstado = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'updateEstado',
       rowIndex,
