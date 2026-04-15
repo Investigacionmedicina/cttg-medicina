@@ -175,8 +175,12 @@ let fechasComiteCatalogo = [];
   if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
   const params = new URLSearchParams(window.location.search);
-  rowIndex = Number(params.get('row'));
-  if (!Number.isFinite(rowIndex)) { document.getElementById('loadWrap').textContent = 'Parámetro de fila inválido.'; return; }
+  const rowParam = params.get('row');
+  if (rowParam === null || rowParam === '' || !/^\d+$/.test(rowParam)) {
+    document.getElementById('loadWrap').textContent = 'Parámetro de fila inválido.';
+    return;
+  }
+  rowIndex = Number(rowParam);
   cargarDatos();
   cargarCatalogoTutores();
   cargarCatalogoEvaluadores();
