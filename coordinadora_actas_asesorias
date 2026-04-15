@@ -138,8 +138,7 @@
     </div>
     <input type="hidden" id="mRechazarRow">
     <input type="hidden" id="mRechazarEmail">
-    <input type="hidden" id="mRechazarEmail">
-    <div style="display:flex;gap:8px;justify-content:flex-end">
+       <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" onclick="closeModal('modalRechazar')">Cancelar</button>
       <button class="btn-danger" id="btnRechazar" onclick="rechazar()">❌ Confirmar rechazo</button>
     </div>
