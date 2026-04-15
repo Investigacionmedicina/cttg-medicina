@@ -46,6 +46,7 @@
   .b-comite{background:rgba(167,139,250,.2);color:#c4b5fd}
   .b-aprobado{background:rgba(16,185,129,.2);color:#6ee7b7}
   .b-devuelto{background:rgba(239,68,68,.2);color:#fca5a5}
+  .b-tutores{background:rgba(52,211,153,.2);color:#6ee7b7}
   .act{display:flex;gap:4px;flex-wrap:wrap}
   .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
   .btn:hover{background:rgba(255,255,255,.07);color:#fff}
@@ -280,7 +281,7 @@ function poblarFiltroMod() {
 function badgeEst(est) {
   const map = {
     'Radicado':                'b-radicado',
-    'Tutores Avalados':        'b-revision',
+    'Tutores Avalados': 'b-tutores',
     'Fase 2 Desbloqueada':     'b-comite',
     'Pendiente Comité Técnico':'b-comite',
     'Aprobado':                'b-aprobado',
