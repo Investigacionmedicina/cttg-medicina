@@ -230,15 +230,36 @@ async function cargar() {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1' }) });
     const d = await res.json();
     if (d.success) {
-      radicaciones = d.radicaciones || [];
+      // FIX: normalizar campos que vienen con nombres distintos del backend
+      radicaciones = (d.radicaciones || []).map(r => ({
+        ...r,
+        // El script puede devolver 'aprobadoPor' en vez de 'emailCoord'
+        emailCoord:      r.emailCoord      || r.aprobadoPor || "",
+        // Garantizar que estos campos siempre existan aunque vengan vacíos
+        evaluador:       r.evaluador       || "",
+        fechaComite:     r.fechaComite      || "",
+        decisionTutores: r.decisionTutores  || "",
+        diasRestantes:   r.diasRestantes    || "",
+        estado:          r.estado           || "Radicado",
+        notas:           r.notas            || "",
+        // Normalizar fechas que pueden venir como Date object o string
+        fechaRadicacion: r.fechaRadicacion
+          ? String(r.fechaRadicacion).split('T')[0]
+          : "",
+        fechaAprobacion: r.fechaAprobacion
+          ? String(r.fechaAprobacion).split('T')[0]
+          : ""
+      }));
       actualizarMetricas();
       poblarFiltroMod();
       renderTabla();
       setSyncState('ok');
     } else throw new Error(d.error);
-  } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
+  } catch(e) {
+    setSyncState('error');
+    toast('Error al cargar: ' + e.message, 'err');
+  }
 }
-
 function actualizarMetricas() {
   const s = { total: radicaciones.length, radicado: 0, revision: 0, pendienteComite: 0, aprobado: 0, devuelto: 0 };
   radicaciones.forEach(r => {
@@ -275,40 +296,54 @@ function fmtFecha(s) {
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
 function renderTabla() {
-  const q   = (document.getElementById('search').value || '').toLowerCase();
-  const fE  = document.getElementById('fEst').value;
-  const fM  = document.getElementById('fMod').value;
+  const q  = (document.getElementById('search').value || '').toLowerCase();
+  const fE = document.getElementById('fEst').value;
+  const fM = document.getElementById('fMod').value;
 
   let filtered = radicaciones.filter(r => {
-    const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.titulo, r.emailEstudiante, r.tutor1Nombre].join(' ').toLowerCase();
-    return (!q || txt.includes(q)) && (!fE || r.estado === fE) && (!fM || r.modalidad === fM);
+    const txt = [
+      r.numero, r.nombre1, r.nombre2, r.nombre3,
+      r.titulo, r.emailEstudiante, r.tutor1Nombre
+    ].join(' ').toLowerCase();
+    return (!q || txt.includes(q))
+      && (!fE || r.estado === fE)
+      && (!fM || r.modalidad === fM);
   });
 
   const body = document.getElementById('tbody');
-  if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
+  if (!filtered.length) {
+    body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>';
+    return;
+  }
 
   body.innerHTML = filtered.map(r => {
-    const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join('<br>');
-    const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).join('<br>');
+    // Nombres de estudiantes — defensivo contra undefined
+    const nombres = [r.nombre1, r.nombre2, r.nombre3]
+      .filter(Boolean).join('<br>') || '—';
+    const tutores = [r.tutor1Nombre, r.tutor2Nombre]
+      .filter(Boolean).join('<br>') || '—';
+    const titulo  = r.titulo || 'Sin título';
+    const fecha   = fmtFecha(r.fechaRadicacion);
+    const estado  = r.estado || 'Radicado';
+
     return `<tr>
-      <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td style="font-size:12px;max-width:160px">${nombres || '—'}</td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo)}">${esc(r.titulo||'Sin título')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:140px">${tutores||'—'}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
-      <td>${badgeEst(r.estado)}</td>
+      <td><div class="num-rad">${esc(r.numero || '')}</div></td>
+      <td style="font-size:12px;max-width:160px">${nombres}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+          title="${esc(titulo)}">${esc(titulo)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad || '—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:140px">${tutores}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fecha}</td>
+      <td>${badgeEst(estado)}</td>
       <td><div class="act">
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
-        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Estado</button>
-        <button class="btn gr" onclick="irA('coordinadora_validar_tutores?row=${r.rowIndex}')">✅ Tutores</button>
+        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero || '')}','${esc(estado)}')">✎ Estado</button>
+        <button class="btn gr" onclick="irA('coordinadora_validar_tutores.html?row=${r.rowIndex}')">✅ Tutores</button>
       </div></td>
     </tr>`;
   }).join('');
 }
-
 function abrirModalEst(ri, numero, estadoActual) {
   document.getElementById('mRowIndex').value = ri;
   document.getElementById('mEstLabel').textContent = 'Radicación: ' + numero;
