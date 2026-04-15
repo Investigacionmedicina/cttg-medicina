@@ -253,11 +253,11 @@ const estadoFinal = decision === 'Aprobado' ? 'Aprobado' : 'Devuelto';
     errModal.style.display = 'block';
   });
 }
-
 function logout() {
   localStorage.removeItem('cttg_admin');
-  window.location.href = 'coordinadora_login.html';
+  window.location.href = 'index.html';                // FIX: igual que todas las demás páginas
 }
+
 </script>
 </body>
 </html>
