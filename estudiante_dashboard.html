@@ -37,7 +37,12 @@
   .time-box{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:8px;padding:10px 13px;font-size:12px;color:#bfdbfe;margin-top:10px}
   .time-box strong{color:#dbeafe}
   .block-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);border-radius:10px;padding:12px 14px;font-size:12px;color:#fecaca;margin-bottom:14px;display:none}
- .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
+  .alert-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:14px}
+  .alert-card{background:rgba(30,64,175,.15);border:1px solid rgba(96,165,250,.35);border-radius:12px;padding:14px}
+  .alert-card h4{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:#93c5fd;margin-bottom:6px}
+  .alert-card p{font-size:13px;color:#e0ecff;line-height:1.45}
+  .readonly-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.32);border-radius:10px;padding:12px 14px;font-size:12px;color:#bbf7d0;margin-bottom:12px;display:none}
+  .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
   /* FORM */
   .form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:24px;margin-bottom:18px}
   .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
@@ -82,6 +87,7 @@
   </div>
 </header>
 <main>
+ <div id="alertasTiempo" class="alert-wrap" style="display:none"></div>
   <div class="tabs">
     <button class="tab on" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
     <button class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
@@ -103,8 +109,9 @@
 
   <!-- NUEVA RADICACIÓN -->
   <div class="panel" id="pan-nueva">
-   <div id="bloqueoRad" class="block-box"></div>
-    <div class="form-card">
+   <div id="readonlyRad" class="readonly-box"></div>
+    <div id="bloqueoRad" class="block-box"></div>
+       <div class="form-card">
       <h3><span class="dot"></span>Formulario de Radicación</h3>
       <p>Completa todos los campos marcados con *. El número de radicación se genera automáticamente.</p>
 
@@ -283,7 +290,7 @@ function fmtFecha(s) {
   const p = String(s).split('T')[0].split('-');
   return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
 }
-function parseFecha(s) {
+ function parseFecha(s) {
   if (!s) return null;
   const raw = String(s).split('T')[0];
   const d = new Date(raw + 'T00:00:00');
@@ -344,6 +351,45 @@ function construirCajaTiempos(r) {
   return `<div class="time-box">${txtTutor}<br>${txtActas}</div>`;
 }
 
+function setFormularioSoloLectura(flag) {
+  const panel = document.getElementById('pan-nueva');
+  panel.querySelectorAll('input,select,textarea,button').forEach(el => {
+    if (el.id === 'tabNueva') return;
+    if (el.classList.contains('btn-out')) return;
+    el.disabled = !!flag;
+  });
+}
+
+function renderAlertasSuperiores(radicaciones) {
+  const wrap = document.getElementById('alertasTiempo');
+  if (!radicaciones.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+
+  const sinRespuesta = radicaciones.filter(r => !['Aprobado','Devuelto'].includes(String(r.estado || '')));
+  if (!sinRespuesta.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+
+  const r = sinRespuesta[0];
+  const fechaRad = parseFecha(r.fechaRadicacion);
+  if (!fechaRad) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+
+  const limiteTutor = addBusinessDays(fechaRad, 15);
+  const diasTutor = diffDias(limiteTutor);
+  const semMax = semestreMayor(r);
+  const mesesActas = semMax >= 12 ? 3 : (semMax >= 11 ? 6 : 12);
+  const limiteActas = addMonths(parseFecha(r.fechaAprobacion) || fechaRad, mesesActas);
+  const diasActas = diffDias(limiteActas);
+
+  wrap.style.display = 'grid';
+  wrap.innerHTML = `
+    <div class="alert-card">
+      <h4>⏱ Respuesta tutor (15 días hábiles)</h4>
+      <p>Radicación <strong>${r.numero}</strong>. Fecha límite: <strong>${fmtFecha(limiteTutor.toISOString().split('T')[0])}</strong>. ${diasTutor >= 0 ? `Faltan ${diasTutor} días.` : 'Plazo vencido.'}</p>
+    </div>
+    <div class="alert-card">
+      <h4>📄 Plazo para actas</h4>
+      <p>Semestre mayor detectado: <strong>${semMax}</strong> (${mesesActas} meses). Fecha límite: <strong>${fmtFecha(limiteActas.toISOString().split('T')[0])}</strong>. ${diasActas >= 0 ? `Faltan ${diasActas} días.` : 'Plazo vencido.'}</p>
+    </div>`;
+}
+
 async function cargarMisRad() {
   const wrap = document.getElementById('misRadWrap');
   wrap.innerHTML = '<div class="empty">Cargando...</div>';
@@ -351,16 +397,23 @@ async function cargarMisRad() {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
     const data = await res.json();
     if (data.success && data.radicaciones.length > 0) {
-     bloquearNuevaRad = data.radicaciones.some(r => !['Aprobado','Devuelto'].includes(String(r.estado || '')));
+  renderAlertasSuperiores(data.radicaciones);
+      bloquearNuevaRad = data.radicaciones.some(r => !['Aprobado','Devuelto'].includes(String(r.estado || '')));
       const bloqueo = document.getElementById('bloqueoRad');
+      const readonly = document.getElementById('readonlyRad');
       const tabNueva = document.getElementById('tabNueva');
       if (bloquearNuevaRad) {
         bloqueo.style.display = 'block';
         bloqueo.innerHTML = '🚫 Ya tienes una radicación sin respuesta del comité. Debes esperar respuesta para poder crear una nueva.';
+        readonly.style.display = 'block';
+        readonly.innerHTML = '👁 Tu radicación ya quedó registrada y puedes verla en “Mis Radicaciones”. Mientras esté en trámite, no se puede modificar ni crear una nueva.';
         tabNueva.style.opacity = '.55';
+        setFormularioSoloLectura(true);
       } else {
         bloqueo.style.display = 'none';
+        readonly.style.display = 'none';
         tabNueva.style.opacity = '1';
+        setFormularioSoloLectura(false);
       }
       wrap.innerHTML = data.radicaciones.map(r => `
         <div class="rad-card">
@@ -377,8 +430,11 @@ async function cargarMisRad() {
         </div>`).join('');
     } else {
      bloquearNuevaRad = false;
+      renderAlertasSuperiores([]);
       document.getElementById('bloqueoRad').style.display = 'none';
+      document.getElementById('readonlyRad').style.display = 'none';
       document.getElementById('tabNueva').style.opacity = '1';
+      setFormularioSoloLectura(false);
       wrap.innerHTML = `<div class="empty">
         <div style="font-size:32px;margin-bottom:12px">📭</div>
         <div>No tienes radicaciones registradas aún.</div>
