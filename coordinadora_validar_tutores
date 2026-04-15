@@ -318,15 +318,16 @@ async function guardar() {
     vinculo:  t1Vinculo,
     relacion: t1Vinculo
   };
-  const t2Nombre = document.getElementById('t2Nombre').value.trim();
-  const t2Vinculo = document.getElementById('t2Relacion').value || 'No';
-  const tutor2 = t2Nombre ? {
-    nombre:   t2Nombre,
-    email:    document.getElementById('t2Email').value.trim(),
-    telefono: document.getElementById('t2Telefono').value.trim(),
-    vinculo:  t2Vinculo,
-    relacion: t2Vinculo
-  } : null;
+ 
+const t2Nombre  = document.getElementById('t2Nombre').value.trim();
+const t2Vinculo = document.getElementById('t2Relacion').value || '';    // FIX: vacío si no hay tutor2
+const tutor2    = t2Nombre ? {
+  nombre:   t2Nombre,
+  email:    document.getElementById('t2Email').value.trim(),
+  telefono: document.getElementById('t2Telefono').value.trim(),
+  vinculo:  t2Vinculo,
+  relacion: t2Vinculo
+} : null;
 
   const btn = document.getElementById('btnGuardar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
