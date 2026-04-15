@@ -395,8 +395,10 @@ function exportCSV() {
 });
 
 function irA(url) {
+  // FIX: asegurar que la URL tenga extensión .html si no la tiene
+  if (url && !url.includes('.html') && !url.startsWith('http')) {
+    var partes = url.split('?');
+    url = partes[0] + '.html' + (partes[1] ? '?' + partes[1] : '');
+  }
   window.location.href = url;
 }
-</script>
-</body>
-</html>
