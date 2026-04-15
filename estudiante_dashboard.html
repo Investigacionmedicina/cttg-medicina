@@ -471,6 +471,7 @@ async function cargarMisRad() {
 }
 
 async function actualizarBotonesFases(radicaciones) {
+ console.log('Estado actual:', JSON.stringify(radicaciones[0]?.estado));
   const btnActas    = document.getElementById('btnActas');
   const btnFase2    = document.getElementById('btnFase2');
   const btnFase3    = document.getElementById('btnFase3');
