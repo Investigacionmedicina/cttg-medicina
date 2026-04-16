@@ -228,8 +228,17 @@ function switchTab(name, btn) {
   document.getElementById('pan-' + name).classList.add('on');
   btn.classList.add('on');
   if (name === 'mis-actas') cargarActas();
+  if (name === 'cargar') {
+    document.getElementById('successBox').style.display = 'none';
+    document.getElementById('btnConfirmar').style.display = 'block';
+    document.getElementById('btnConfirmar').disabled = false;
+    document.getElementById('btnConfirmar').innerHTML = '✅ Ya envié mi acta';
+    document.getElementById('observaciones').value = '';
+    document.getElementById('paso1').classList.remove('done');
+    document.getElementById('paso2').classList.remove('done');
+    document.getElementById('paso3').classList.remove('done');
+  }
 }
-
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function fmtFecha(s) {
