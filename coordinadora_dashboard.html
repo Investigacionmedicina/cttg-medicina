@@ -1044,64 +1044,53 @@ function renderProtocolo() {
   if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos.</td></tr>'; return; }
   tbody.innerHTML = filtered.map(p => {
     const estadoBadge = {
-      'Cargado':'b-radicado','Revisado':'b-revision','Pendiente Comité':'b-comite',
+      'Cargado':'b-radicado','Enviado':'b-radicado','Revisado':'b-revision','Pendiente Comité':'b-comite',
       'Aprobado':'b-aprobado','Rechazado':'b-devuelto','Aprobado Directo':'b-aprobado'
     }[p.estado] || 'b-radicado';
     
-    // Color rojo si está vencido
-    const estadoClass = p.vencido ? 'b-devuelto' : estadoBadge;
-    const estadoTexto = p.vencido ? '🔴 VENCIDO' : esc(p.estado||'Cargado');
+    const estadoTexto = esc(p.estado||'Cargado');
     
-    // Mostrar días restantes solo si está "Cargado"
-    let diasTexto = '';
-    if (p.estado === 'Cargado') {
-      diasTexto = `<br><span style="font-size:11px;color:${p.vencido ? '#fca5a5' : '#fcd34d'};font-weight:600">${p.diasRestantes} días</span>`;
-    }
+    // Solo mostrar botones si está "Cargado" o "Enviado"
+    const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
     
-    let btnAccion = '';
-    if (p.estado === 'Cargado') {
-      btnAccion = `<button class="btn ${p.vencido ? 'rd' : 'am'}" onclick="abrirModalProtocolo(${p.rowIndex})">✎ Avaluar</button>`;
-    } else {
-      btnAccion = `<button class="btn bl" onclick="verDetalle(${p.rowIndex})">👁 Ver</button>`;
-    }
-    
-    return `<tr ${p.vencido ? 'style="background:rgba(239,68,68,.08)"' : ''}>
+    return `<tr>
       <td><div class="num-rad">${esc(p.numero||'')}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.email||'—')}</td>
       <td style="font-size:12px">${esc(p.anexo||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaComite||'—'}</td>
-      <td><span class="badge ${estadoClass}">${estadoTexto}</span>${diasTexto}</td>
-      <td>${btnAccion}</td>
+      <td><span class="badge ${estadoBadge}">${estadoTexto}</span></td>
+      <td><div class="act">
+        ${esPendiente ? `<button class="btn gr" onclick="abrirModalProtocolo(${p.rowIndex},'aprobar','${esc(p.numero||'')}')">✅ Aprobar</button>
+        <button class="btn rd" onclick="abrirModalProtocolo(${p.rowIndex},'rechazar','${esc(p.numero||'')}')">✕ Rechazar</button>` : ''}
+      </div></td>
     </tr>`;
   }).join('');
 }
  let protocoloActual = null;
 
-function abrirModalProtocolo(rowIndex) {
+function abrirModalProtocolo(rowIndex, accion, numero) {
   const p = protocolos.find(x => x.rowIndex === rowIndex);
   if (!p) return;
   
-  protocoloActual = p;
-  document.getElementById('pNum').textContent = esc(p.numero||'');
+  protocoloActual = { rowIndex, accion };
+  document.getElementById('pNum').textContent = numero;
   document.getElementById('pEst').textContent = esc(p.email||'');
-  document.getElementById('pDecision').value = '';
-  document.getElementById('pRequiereComite').value = '';
+  
+  // Pre-llenar decisión
+  document.getElementById('pDecision').value = accion === 'aprobar' ? 'aprobar' : 'rechazar';
   document.getElementById('pMotivo').value = '';
   document.getElementById('pObservaciones').value = '';
-  document.getElementById('pEmailEval').value = '';
-  document.getElementById('errProtocolo').style.display = 'none';
   
-  document.getElementById('seccionRechazo').style.display = 'none';
-  document.getElementById('seccionAprueba').style.display = 'none';
-  document.getElementById('seccionComite').style.display = 'none';
+  mostrarOpciones();
   
-  cargarEvaluadoresProtocolo();
-  cargarFechasComiteProtocolo();
+  if (accion === 'aprobar') {
+    cargarEvaluadoresProtocolo();
+    cargarFechasComiteProtocolo();
+  }
   
   document.getElementById('modalProtocolo').classList.add('open');
 }
-
 function mostrarOpciones() {
   const decision = document.getElementById('pDecision').value;
   document.getElementById('seccionRechazo').style.display = decision === 'rechazar' ? 'block' : 'none';
