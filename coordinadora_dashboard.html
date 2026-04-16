@@ -547,17 +547,15 @@ async function cargar() {
         fechaRadicacion: parsearFecha(r.fechaRadicacion),
         fechaAprobacion: parsearFecha(r.fechaAprobacion)
       }));
-      actualizarMetricas();
-       } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
-}
- contarVencimientos();     
- poblarFiltroMod();
+     actualizarMetricas();
+      contarVencimientos();
+      poblarFiltroMod();
       renderTabla();
       setSyncState('ok');
-    } else throw new Error(d.error);
+     } else throw new Error(d.error);
   } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
 }
-
+    
 function actualizarMetricas() {
   const s = { total: radicaciones.length, radicado:0, revision:0, pendienteComite:0, aprobado:0, devuelto:0, critico:0 };
   radicaciones.forEach(r => {
