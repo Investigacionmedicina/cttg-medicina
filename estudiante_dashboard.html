@@ -99,7 +99,6 @@
 </header>
 
 <main>
- <main>
   <!-- CONTADOR GENERAL DE PLAZO — CTTG MEDICINA -->
   <div style="background:linear-gradient(135deg,rgba(102,126,234,.2),rgba(167,139,250,.2));border:1px solid rgba(102,126,234,.3);border-radius:12px;padding:20px;margin-bottom:24px;text-align:center">
     <div style="font-size:12px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px">⏳ Plazo Total del Grado</div>
@@ -123,7 +122,6 @@
     <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:12px" id="alertaPlazo"></div>
   </div>
 
-  <div id="alertasTiempo" class="alert-wrap" style="display:none"></div>
   <div id="alertasTiempo" class="alert-wrap" style="display:none"></div>
   <div class="tabs">
     <button class="tab on" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
@@ -443,19 +441,10 @@ async function cargarMisRad() {
     const data = await res.json();
     if (data.success && data.radicaciones.length > 0) {
       misRadicaciones = data.radicaciones;
-     async function cargarMisRad() {
-  const wrap = document.getElementById('misRadWrap');
-  wrap.innerHTML = '<div class="empty">Cargando...</div>';
-  try {
-    const res  = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
-    const data = await res.json();
-    if (data.success && data.radicaciones.length > 0) {
-      misRadicaciones = data.radicaciones;
       
-      // ← AGREGA ESTA LÍNEA
+      // Actualizar contador general
       actualizarContadorGeneral(misRadicaciones[0]);
       
-      renderAlertasSuperiores(misRadicaciones);
       renderAlertasSuperiores(misRadicaciones);
       bloquearNuevaRad = misRadicaciones.some(r => !['Aprobado','Devuelto'].includes(String(r.estado||'')));
       const bloqueo  = document.getElementById('bloqueoRad');
@@ -509,7 +498,6 @@ async function cargarMisRad() {
 }
 
 async function actualizarBotonesFases(radicaciones) {
- console.log('Estado actual:', JSON.stringify(radicaciones[0]?.estado));
   const btnActas    = document.getElementById('btnActas');
   const btnFase2    = document.getElementById('btnFase2');
   const btnFase3    = document.getElementById('btnFase3');
@@ -521,9 +509,8 @@ async function actualizarBotonesFases(radicaciones) {
     [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'none'; });
     return;
   }
-// Asegurar que los botones siempre sean visibles si hay radicaciones
-[btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'flex'; });
-   const estadoActual = radicaciones[0].estado || '';
+  [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'flex'; });
+  const estadoActual = radicaciones[0].estado || '';
   const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Aprobado','Sustentado'];
 
   if (btnActas) {
@@ -657,14 +644,14 @@ async function radicar() {
   } catch(e) { toast('Error de conexión', 'err'); }
   finally { btn.disabled = false; if (btn.style.display !== 'none') btn.innerHTML = '📋 Radicar proyecto'; }
 }
-// Actualizar contador general cuando cargue datos
+
+// Función para actualizar contador general
 function actualizarContadorGeneral(radicacion) {
   if (radicacion) {
     document.getElementById('diasTotalRestantes').textContent = radicacion.diasRestantesTotales || 'N/A';
     document.getElementById('porcentajeAvance').textContent = (radicacion.porcentajePlazo || 0) + '%';
     document.getElementById('barraProgreso').style.width = (radicacion.porcentajePlazo || 0) + '%';
     
-    // Alerta si plazo es crítico
     if (radicacion.vencidoTotal) {
       document.getElementById('alertaPlazo').innerHTML = '🚨 <strong>PLAZO VENCIDO</strong> — El director de programa ha sido notificado.';
       document.getElementById('alertaPlazo').style.color = '#fca5a5';
@@ -676,6 +663,7 @@ function actualizarContadorGeneral(radicacion) {
     }
   }
 }
+
 document.getElementById('modalDet').addEventListener('click', e => {
   if (e.target === document.getElementById('modalDet')) document.getElementById('modalDet').classList.remove('open');
 });
