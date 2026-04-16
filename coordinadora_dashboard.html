@@ -123,6 +123,16 @@
     <div class="mc c5"><div class="ml">Pend. Comité</div><div class="mv" id="mPend">—</div></div>
     <div class="mc c2"><div class="ml">Aprobadas</div><div class="mv" id="mApro">—</div></div>
     <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
+   <div class="metrics">
+    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div></div>
+    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div></div>
+    <div class="mc c6"><div class="ml">En Revisión</div><div class="mv" id="mRev">—</div></div>
+    <div class="mc c5"><div class="ml">Pend. Comité</div><div class="mv" id="mPend">—</div></div>
+    <div class="mc c2"><div class="ml">Aprobadas</div><div class="mv" id="mApro">—</div></div>
+    <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
+    <!-- NUEVA MÉTRICA -->
+    <div class="mc c4"><div class="ml">⏰ Plazo Crítico</div><div class="mv" id="mCritico">—</div></div>
+  </div>
   </div>
 
  <div class="main-tabs">
@@ -231,6 +241,24 @@
         </div>
       </div>
     </div>
+   <!-- ALERTAS DE VENCIMIENTO POR FASE -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px">
+          <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:12px">
+            <div style="font-size:10px;text-transform:uppercase;color:rgba(167,139,250,.5);margin-bottom:6px">⏱️ Tutores (15 días)</div>
+            <div style="font-size:20px;font-weight:700;color:#c4b5fd" id="countVencTutores">0</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+          </div>
+          <div style="background:rgba(252,211,77,.08);border:1px solid rgba(252,211,77,.2);border-radius:10px;padding:12px">
+            <div style="font-size:10px;text-transform:uppercase;color:rgba(252,211,77,.5);margin-bottom:6px">📄 Actas (8 días)</div>
+            <div style="font-size:20px;font-weight:700;color:#fcd34d" id="countVencActas">0</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+          </div>
+          <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px">
+            <div style="font-size:10px;text-transform:uppercase;color:rgba(59,130,246,.5);margin-bottom:6px">📖 Protocolo (8 días)</div>
+            <div style="font-size:20px;font-weight:700;color:#93c5fd" id="countVencProtocolo">0</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+          </div>
+        </div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -529,6 +557,20 @@ async function cargar() {
         fechaAprobacion: parsearFecha(r.fechaAprobacion)
       }));
       actualizarMetricas();
+     async function cargar() {
+  setSyncState('loading');
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1' }) });
+    const d = await res.json();
+    if (d.success) {
+      radicaciones = (d.radicaciones || []).map(r => ({...}));
+      actualizarMetricas();
+      poblarFiltroMod();
+      renderTabla();
+      setSyncState('ok');
+    } else throw new Error(d.error);
+  } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
+}
       poblarFiltroMod();
       renderTabla();
       setSyncState('ok');
@@ -537,7 +579,7 @@ async function cargar() {
 }
 
 function actualizarMetricas() {
-  const s = { total: radicaciones.length, radicado:0, revision:0, pendienteComite:0, aprobado:0, devuelto:0 };
+  const s = { total: radicaciones.length, radicado:0, revision:0, pendienteComite:0, aprobado:0, devuelto:0, critico:0 };
   radicaciones.forEach(r => {
     const est = r.estado || 'Radicado';
     if (est === 'Radicado') s.radicado++;
@@ -545,6 +587,11 @@ function actualizarMetricas() {
     else if (['Pendiente Comité','Pendiente Comité Técnico'].includes(est)) s.pendienteComite++;
     else if (est === 'Aprobado') s.aprobado++;
     else if (est === 'Devuelto') s.devuelto++;
+    
+    // Contar plazo crítico (>60% del plazo transcurrido)
+    if (r.porcentajeAvance > 60 && !['Aprobado','Devuelto','Sustentado'].includes(est)) {
+      s.critico++;
+    }
   });
   document.getElementById('mTot').textContent  = s.total;
   document.getElementById('mRad').textContent  = s.radicado;
@@ -552,8 +599,8 @@ function actualizarMetricas() {
   document.getElementById('mPend').textContent = s.pendienteComite;
   document.getElementById('mApro').textContent = s.aprobado;
   document.getElementById('mDev').textContent  = s.devuelto;
+  document.getElementById('mCritico').textContent = s.critico;
 }
-
 function poblarFiltroMod() {
   const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
   const sel = document.getElementById('fMod'), cur = sel.value;
@@ -1280,6 +1327,53 @@ window.switchPanel = function(name, btn) {
   if (name === 'protocolo') cargarProtocolo();
   if (name === 'seguimiento') cargarSeguimiento();
 };
+ function contarVencimientos() {
+  let vencTutores = 0, vencActas = 0, vencProtocolo = 0;
+  
+  // Contar vencimiento de tutores (15 días desde radicación)
+  radicaciones.forEach(r => {
+    if (r.estado === 'Radicado' && r.fechaRadicacion) {
+      const dias = calcularDiasHabilesDesdeHoy(r.fechaRadicacion);
+      if (dias > 15) vencTutores++;
+    }
+  });
+  
+  // Contar vencimiento de actas (8 días desde que tutores fueron avalados)
+  actas.forEach(a => {
+    if (a.estado === 'Pendiente revisión' && a.fechaCarga) {
+      const dias = calcularDiasHabilesDesdeHoy(a.fechaCarga);
+      if (dias > 8) vencActas++;
+    }
+  });
+  
+  // Contar vencimiento de protocolos (8 días desde carga)
+  protocolos.forEach(p => {
+    if (p.estado === 'Cargado' && p.fechaCarga && p.vencido) {
+      vencProtocolo++;
+    }
+  });
+  
+  document.getElementById('countVencTutores').textContent = vencTutores;
+  document.getElementById('countVencActas').textContent = vencActas;
+  document.getElementById('countVencProtocolo').textContent = vencProtocolo;
+}
+
+function calcularDiasHabilesDesdeHoy(fecha) {
+  if (!fecha) return 0;
+  const inicio = new Date(fecha);
+  const hoy = new Date();
+  let dias = 0;
+  const actual = new Date(inicio);
+  
+  while (actual <= hoy) {
+    const diaSemana = actual.getDay();
+    if (diaSemana !== 0 && diaSemana !== 6) {
+      dias++;
+    }
+    actual.setDate(actual.getDate() + 1);
+  }
+  return dias;
+}
 </script>
  </body>
 </html>
