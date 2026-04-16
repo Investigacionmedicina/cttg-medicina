@@ -3,657 +3,226 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Coordinadora — CTTG</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Protocolo Fase 2 — CTTG</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Outfit',sans-serif;background:#0a0f1a;color:#e2e8f0;min-height:100vh}
-  header{background:linear-gradient(135deg,#064e3b,#059669 80%,#1a3a5c);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
-  .hdr-l{display:flex;align-items:center;gap:10px}
-  .logo{width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
-  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:18px;color:#fff}
-  .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
-  .hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .sync{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)}
-  .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0}
-  .dot.loading{background:#f59e0b;animation:pulse 1s infinite}.dot.error{background:#ef4444}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  .user-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
-  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
-  main{padding:24px 28px;max-width:1500px;margin:0 auto}
-  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
-  .mc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;position:relative;overflow:hidden}
-  .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-  .mc.c1::before{background:#3b82f6}.mc.c2::before{background:#10b981}.mc.c3::before{background:#f59e0b}.mc.c4::before{background:#ef4444}.mc.c5::before{background:#a78bfa}.mc.c6::before{background:#00c3a5}
-  .mc .ml{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:6px;font-family:'DM Mono',monospace}
-  .mc .mv{font-size:26px;font-weight:700;font-family:'DM Serif Display',serif}
-  .mc.c1 .mv{color:#60a5fa}.mc.c2 .mv{color:#34d399}.mc.c3 .mv{color:#fcd34d}.mc.c4 .mv{color:#fca5a5}.mc.c5 .mv{color:#c4b5fd}.mc.c6 .mv{color:#00c3a5}
-  /* TABS */
-  .main-tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:4px;width:fit-content}
-  .main-tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;position:relative}
-  .main-tab.on{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.4)}
-  .main-tab .badge-count{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:99px;min-width:16px;text-align:center}
-  .panel{display:none}.panel.on{display:block}
-  .filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-  .filters input,.filters select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:12px;padding:7px 11px;outline:none}
-  .filters input{min-width:200px}.filters input::placeholder{color:rgba(255,255,255,.3)}
-  .filters select option{background:#111827}
-  .tbl-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto}
-  table{width:100%;border-collapse:collapse;min-width:700px}
-  thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
-  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;white-space:nowrap}
-  td{padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;font-size:13px}
-  tr:last-child td{border-bottom:none}
-  tr:hover td{background:rgba(255,255,255,.02)}
-  .num-rad{font-family:'DM Mono',monospace;font-size:12px;color:#a78bfa;font-weight:600}
-  .badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap}
-  .b-radicado{background:rgba(102,126,234,.2);color:#a5b4fc}
-  .b-revision{background:rgba(245,158,11,.2);color:#fcd34d}
-  .b-comite{background:rgba(167,139,250,.2);color:#c4b5fd}
-  .b-aprobado{background:rgba(16,185,129,.2);color:#6ee7b7}
-  .b-devuelto{background:rgba(239,68,68,.2);color:#fca5a5}
-  .b-tutores{background:rgba(52,211,153,.2);color:#6ee7b7}
-  .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
-  .b-solicitud{background:rgba(59,130,246,.2);color:#93c5fd}
-  .act{display:flex;gap:4px;flex-wrap:wrap}
-  .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
-  .btn:hover{background:rgba(255,255,255,.07);color:#fff}
-  .btn.gr{color:#34d399;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
-  .btn.bl{color:#60a5fa;border-color:rgba(96,165,250,.3)}.btn.bl:hover{background:rgba(96,165,250,.1)}
-  .btn.am{color:#fcd34d;border-color:rgba(252,211,77,.3)}.btn.am:hover{background:rgba(252,211,77,.1)}
-  .btn.rd{color:#fca5a5;border-color:rgba(239,68,68,.3)}.btn.rd:hover{background:rgba(239,68,68,.1)}
-  .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
-  .btn-action:hover{transform:translateY(-1px)}
-  .btn-action:disabled{opacity:.6;transform:none;cursor:not-allowed}
-  .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
-  .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+  body{font-family:'Outfit',sans-serif;min-height:100vh;background:linear-gradient(135deg,#1a0533,#2d1b69,#1a3a5c);display:flex;align-items:center;justify-content:center;padding:20px}
+  .container{background:rgba(255,255,255,.07);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.13);border-radius:20px;padding:36px;width:100%;max-width:700px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+  .logo{width:48px;height:48px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+  .header-text h2{font-family:'DM Serif Display',serif;font-size:20px;color:#fff;margin-bottom:4px}
+  .header-text p{color:rgba(255,255,255,.5);font-size:12px}
+  .phase-indicator{display:inline-block;background:rgba(102,126,234,.2);border:1px solid rgba(102,126,234,.5);color:#a5b4fc;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;margin-bottom:20px}
+  .section{margin-bottom:24px}
+  .section-title{color:rgba(255,255,255,.7);font-size:12px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .fg{margin-bottom:16px}
+  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:6px}
+  input[type="text"],input[type="email"],input[type="number"],input[type="date"],select,textarea{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;padding:12px 14px;outline:none;transition:border-color .2s}
+  input::placeholder,textarea::placeholder{color:rgba(255,255,255,.3)}
+  input:focus,select:focus,textarea:focus{border-color:rgba(102,126,234,.7);background:rgba(255,255,255,.1)}
+  select option{background:#1a0533;color:#fff}
+  textarea{resize:vertical;min-height:80px}
+  .upload-area{border:2px dashed rgba(102,126,234,.5);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(102,126,234,.05)}
+  .upload-area:hover{border-color:rgba(102,126,234,.8);background:rgba(102,126,234,.1)}
+  .upload-area input[type="file"]{display:none}
+  .upload-area .ua-icon{font-size:28px;margin-bottom:8px}
+  .upload-area .ua-label{color:rgba(255,255,255,.7);font-size:14px;font-weight:600;margin-bottom:4px}
+  .upload-area .ua-sub{color:rgba(255,255,255,.35);font-size:12px}
+  .upload-status{margin-top:14px;border-radius:10px;padding:12px 14px;font-size:13px;display:none}
+  .upload-status.uploading{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);color:#a5b4fc}
+  .upload-status.done{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:#6ee7b7}
+  .upload-status.error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+  .err{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+  .success{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#86efac;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+  .btn-group{display:flex;gap:12px;margin-top:24px}
+  .btn{flex:1;padding:13px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;border:none;transition:all .2s}
+  .btn-submit{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 4px 15px rgba(102,126,234,.4)}
+  .btn-submit:hover:not(:disabled){transform:translateY(-1px)}
+  .btn-submit:disabled{opacity:.6;cursor:not-allowed}
+  .btn-back{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7)}
+  .btn-back:hover{background:rgba(255,255,255,.15)}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
-  .modal-bg.open{display:flex}
-  .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
-  .modal.wide{max-width:680px}
-  @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
-  .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
-  .mfg{margin-bottom:14px}
-  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);margin-bottom:5px}
-  .mfg select,.mfg textarea,.mfg input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
-  .mfg select option{background:#111827}
-  .mfg textarea{min-height:80px;resize:vertical}
-  .det-row{display:flex;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;gap:8px}
-  .det-label{min-width:130px;font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;flex-shrink:0}
-  .det-val{color:#e2e8f0;flex:1}
-  .alerta-plazo{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#fca5a5;margin-top:4px}
-  .solicitud-badge{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.35);border-radius:8px;padding:6px 10px;font-size:11px;color:#93c5fd;display:inline-flex;align-items:center;gap:4px}
-  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
-  .toast.show{transform:translateY(0);opacity:1}
-  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
-  @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
+  .info-box{background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:8px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:16px}
+  /* Nuevo: flujo Forms */
+  .rad-numero{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .rad-numero .num{font-size:18px;font-weight:700;color:#a78bfa;font-family:'DM Serif Display',serif}
+  .rad-numero .lbl{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+  .copy-btn{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#a78bfa;padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .pasos{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+  .paso{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px}
+  .paso-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+  .paso-txt strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
+  .paso-txt span{font-size:12px;color:rgba(255,255,255,.4)}
+  .paso.done .paso-num{background:linear-gradient(135deg,#059669,#10b981)}
+  .btn-forms{display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;width:100%;justify-content:center;margin-bottom:14px;transition:all .2s}
+  .btn-forms:hover{transform:translateY(-1px)}
+  .sep{display:flex;align-items:center;gap:10px;margin:14px 0;color:rgba(255,255,255,.2);font-size:12px}
+  .sep::before,.sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
 </style>
 </head>
 <body>
-<header>
-  <div class="hdr-l">
-    <div class="logo">👩‍💼</div>
-    <div><h1>CTTG Medicina · Coordinación</h1><p>Panel de Gestión de Radicaciones</p></div>
-  </div>
-  <div class="hdr-r">
-    <div class="sync"><span class="dot loading" id="syncDot"></span><span id="syncLbl">Conectando...</span></div>
-    <div class="user-chip" id="userChip">—</div>
-    <button class="btn-out" onclick="salir()">Salir</button>
-  </div>
-</header>
-
-<main>
-  <div class="metrics">
-    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div></div>
-    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div></div>
-    <div class="mc c6"><div class="ml">En Revisión</div><div class="mv" id="mRev">—</div></div>
-    <div class="mc c5"><div class="ml">Pend. Comité</div><div class="mv" id="mPend">—</div></div>
-    <div class="mc c2"><div class="ml">Aprobadas</div><div class="mv" id="mApro">—</div></div>
-    <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
-  </div>
-
-  <div class="main-tabs">
-    <button class="main-tab on" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
-    <button class="main-tab" id="tabActas" onclick="switchPanel('actas', this)">📄 Actas de Asesoría</button>
-  </div>
-
-  <!-- PANEL RADICACIONES -->
-  <div class="panel on" id="pan-rad">
-    <div class="filters">
-      <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTabla()">
-      <select id="fEst" onchange="renderTabla()">
-        <option value="">Todos los estados</option>
-        <option value="Radicado">Radicado</option>
-        <option value="Revisión">En Revisión</option>
-        <option value="Tutores avalados">Tutores Avalados</option>
-        <option value="Pendiente Comité Técnico">Pendiente Comité</option>
-        <option value="Aprobado">Aprobado</option>
-        <option value="Devuelto">Devuelto</option>
-      </select>
-      <select id="fMod" onchange="renderTabla()"><option value="">Todas las modalidades</option></select>
-      <button class="btn" onclick="cargar()">↻ Actualizar</button>
-      <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
-    </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor(es)</th><th>F. Radicación</th><th>Estado</th><th>Acciones</th>
-        </tr></thead>
-        <tbody id="tbody">
-          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando registros...</td></tr>
-        </tbody>
-      </table>
+<div class="container">
+  <div class="header">
+    <div class="logo">📄</div>
+    <div class="header-text">
+      <h2>Protocolo Fase 2</h2>
+      <p>Carga tu documento para evaluación del comité</p>
     </div>
   </div>
 
-  <!-- PANEL ACTAS -->
-  <div class="panel" id="pan-actas">
-    <div class="filters">
-      <input id="searchActas" placeholder="🔍 Buscar por número, estudiante..." oninput="renderActas()">
-      <select id="fEstActas" onchange="renderActas()">
-        <option value="">Todos los estados</option>
-        <option value="Pendiente revisión">Pendiente revisión</option>
-        <option value="Aprobada">Aprobada</option>
-        <option value="Rechazada">Rechazada</option>
-        <option value="Solicitud Fase 2">Solicitud Fase 2</option>
-      </select>
-      <button class="btn" onclick="cargarActas()">↻ Actualizar</button>
+  <div class="phase-indicator">📋 FASE 2 — PROTOCOLO</div>
+  <div id="err" class="err"></div>
+  <div id="success" class="success"></div>
+
+  <!-- Número de radicación -->
+  <div class="rad-numero">
+    <div>
+      <div class="lbl">Tu número de radicación</div>
+      <div class="num" id="numeroRadicacion">—</div>
     </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr>
-          <th>Fecha</th><th>N° Radicación</th><th>Estudiante</th><th>Archivo</th><th>Estado</th><th>Plazo restante</th><th>Actas totales</th><th>Acciones</th>
-        </tr></thead>
-        <tbody id="tbodyActas">
-          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>
-        </tbody>
-      </table>
+    <button class="copy-btn" onclick="copiar()">📋 Copiar</button>
+  </div>
+
+  <!-- Pasos -->
+  <div class="pasos">
+    <div class="paso" id="paso1">
+      <div class="paso-num">1</div>
+      <div class="paso-txt">
+        <strong>Abre el formulario de carga</strong>
+        <span>Se abrirá en nueva pestaña. Usa tu número de radicación y correo institucional.</span>
+      </div>
+    </div>
+    <div class="paso" id="paso2">
+      <div class="paso-num">2</div>
+      <div class="paso-txt">
+        <strong>Adjunta tu protocolo en PDF</strong>
+        <span>Asegúrate de que el documento esté completo y aprobado por tu tutor.</span>
+      </div>
+    </div>
+    <div class="paso" id="paso3">
+      <div class="paso-num">3</div>
+      <div class="paso-txt">
+        <strong>Vuelve aquí y completa los datos</strong>
+        <span>Indica qué anexo cambió y envía el registro al sistema.</span>
+      </div>
     </div>
   </div>
-</main>
 
-<!-- MODAL ESTADO RADICACIÓN -->
-<div class="modal-bg" id="modalEst">
-  <div class="modal">
-    <div class="modal-hdr">
-      <h3>Cambiar Estado</h3>
-      <button class="btn" onclick="closeModal('modalEst')">✕</button>
-    </div>
-    <p id="mEstLabel" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
-    <div class="mfg">
-      <label>Nuevo estado *</label>
-      <select id="mEstado">
-        <option value="Radicado">Radicado</option>
-        <option value="Revisión">En Revisión</option>
-        <option value="Pendiente Comité">Pendiente Comité</option>
-        <option value="Aprobado">Aprobado ✅</option>
-        <option value="Devuelto">Devuelto ↩</option>
+  <a href="https://forms.cloud.microsoft/r/33yWf7gqrA" target="_blank" class="btn-forms" onclick="marcarPasos()">
+    <span>📝</span> Abrir formulario de carga <span style="font-size:11px;opacity:.7">↗</span>
+  </a>
+
+  <div class="sep">una vez enviado el formulario</div>
+
+  <!-- Información del protocolo -->
+  <div class="section">
+    <div class="section-title"><span>🔄</span> Información del Protocolo</div>
+    <div class="fg">
+      <label>¿Qué Anexo Cambió? *</label>
+      <select id="anexoCambio">
+        <option value="">— Selecciona qué cambió —</option>
+        <option value="A1">Anexo 1 (Portada)</option>
+        <option value="A3">Anexo 3 (Índice)</option>
+        <option value="A10">Anexo 10 (Cronograma)</option>
+        <option value="Consentimiento">Consentimiento Informado</option>
+        <option value="Múltiples">Múltiples anexos</option>
+        <option value="Ninguno">Sin cambios de anexo</option>
       </select>
     </div>
-    <div class="mfg">
-      <label>Observaciones / Notas (se envían al estudiante)</label>
-      <textarea id="mNotas" placeholder="Motivo, indicaciones, comentarios..."></textarea>
-    </div>
-    <input type="hidden" id="mRowIndex">
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button class="btn" onclick="closeModal('modalEst')">Cancelar</button>
-      <button class="btn-action" id="btnGuardar" onclick="guardarEstado()">Guardar y notificar</button>
+    <div class="fg">
+      <label>Observaciones (Opcional)</label>
+      <textarea id="observaciones" placeholder="Describe brevemente tu protocolo o qué cambió..."></textarea>
     </div>
   </div>
-</div>
 
-<!-- MODAL DETALLE RADICACIÓN -->
-<div class="modal-bg" id="modalDet">
-  <div class="modal wide">
-    <div class="modal-hdr">
-      <h3>Detalle de Radicación</h3>
-      <button class="btn" onclick="closeModal('modalDet')">✕</button>
-    </div>
-    <div id="modalDetBody"></div>
+  <div class="btn-group">
+    <button class="btn btn-back" onclick="window.location.href='estudiante_dashboard.html'">← Volver</button>
+    <button class="btn btn-submit" id="btnSubmit" onclick="enviarProtocolo()">✅ Ya envié — Registrar protocolo</button>
+  </div>
+
+  <div class="success" id="successFinal" style="margin-top:16px">
+    <div style="font-size:15px;font-weight:600;margin-bottom:4px">🎉 ¡Protocolo registrado!</div>
+    <div style="font-size:12px;opacity:.8">La coordinadora lo evaluará pronto. Recibirás un correo con la decisión del comité.</div>
   </div>
 </div>
-
-<!-- MODAL APROBAR/RECHAZAR ACTA -->
-<div class="modal-bg" id="modalActa">
-  <div class="modal">
-    <div class="modal-hdr">
-      <h3 id="modalActaTitulo">Revisar Acta</h3>
-      <button class="btn" onclick="closeModal('modalActa')">✕</button>
-    </div>
-    <div id="modalActaInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></div>
-    <div class="mfg">
-      <label>Motivo / Observaciones (opcional para aprobar, requerido para rechazar)</label>
-      <textarea id="mActaMotivo" placeholder="Observaciones sobre el acta..."></textarea>
-    </div>
-    <input type="hidden" id="mActaRowIndex">
-    <input type="hidden" id="mActaEmail">
-    <input type="hidden" id="mActaAccion">
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button class="btn" onclick="closeModal('modalActa')">Cancelar</button>
-      <button class="btn-action" id="btnActaConfirm" onclick="confirmarAccionActa()">Confirmar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL SOLICITUD FASE 2 -->
-<div class="modal-bg" id="modalSolicitud">
-  <div class="modal">
-    <div class="modal-hdr">
-      <h3>Solicitud de Paso a Fase 2</h3>
-      <button class="btn" onclick="closeModal('modalSolicitud')">✕</button>
-    </div>
-    <div id="modalSolicitudInfo" style="margin-bottom:16px"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn rd" onclick="responderSolicitud(false)">✕ Rechazar</button>
-      <button class="btn-action" onclick="responderSolicitud(true)">✅ Aprobar Fase 2</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
-let radicaciones = [], actas = [], admin = null;
-let solicitudActual = null;
+let numeroRad = '—';
 
 (function(){
-  admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
-  document.getElementById('userChip').textContent = admin.nombre || admin.email;
-  cargar();
-  setInterval(cargar, 60000);
+  const user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
+  if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
+  cargarRadicacion(user.email);
 })();
 
-function salir() { localStorage.removeItem('cttg_admin'); window.location.href = 'index.html'; }
-
-function switchPanel(name, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
-  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('on'));
-  document.getElementById('pan-' + name).classList.add('on');
-  btn.classList.add('on');
-  if (name === 'actas') cargarActas();
-}
-
-function setSyncState(s) {
-  const dot = document.getElementById('syncDot'), lbl = document.getElementById('syncLbl');
-  if (s === 'loading') { dot.className = 'dot loading'; lbl.textContent = 'Sincronizando...'; }
-  else if (s === 'ok')  { dot.className = 'dot'; lbl.textContent = 'Conectado · Google Sheets'; }
-  else { dot.className = 'dot error'; lbl.textContent = 'Error de conexión'; }
-}
-
-function toast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast ' + type + ' show';
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
-
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function parsearFecha(val) {
-  if (!val) return "";
-  var s = String(val).trim();
-  if (!s) return "";
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  var d = new Date(s);
-  if (isNaN(d.getTime())) return s;
-  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-}
-
-function fmtFecha(s) {
-  if (!s || s === '') return '—';
-  const d = new Date(s);
-  if (!isNaN(d.getTime())) return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
-  const p = String(s).split('T')[0].split('-');
-  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
-}
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ── RADICACIONES ─────────────────────────────────────────────
-async function cargar() {
-  setSyncState('loading');
+async function cargarRadicacion(email) {
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1' }) });
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email }) });
+    const d = await res.json();
+    if (d.success && d.radicaciones.length > 0) {
+      numeroRad = d.radicaciones[0].numero || '—';
+      document.getElementById('numeroRadicacion').textContent = numeroRad;
+    } else {
+      document.getElementById('err').textContent = 'No se encontró radicación activa.';
+      document.getElementById('err').style.display = 'block';
+    }
+  } catch(e) {}
+}
+
+async function copiar() {
+  try {
+    await navigator.clipboard.writeText(numeroRad);
+    alert('Número copiado: ' + numeroRad);
+  } catch(e) {}
+}
+
+function marcarPasos() {
+  setTimeout(() => {
+    document.getElementById('paso1').classList.add('done');
+    document.getElementById('paso2').classList.add('done');
+  }, 500);
+}
+
+async function enviarProtocolo() {
+  const user   = JSON.parse(localStorage.getItem('cttg_user') || 'null');
+  const anexo  = document.getElementById('anexoCambio').value;
+  const obs    = document.getElementById('observaciones').value.trim();
+  const errEl  = document.getElementById('err');
+  errEl.style.display = 'none';
+
+  if (!anexo) { errEl.textContent = 'Selecciona qué anexo cambió'; errEl.style.display = 'block'; return; }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Registrando...';
+
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'crearProtocolo',
+      numeroRadicacion: numeroRad,
+      emailEstudiante: user.email,
+      nombreArchivo: 'Forms-Protocolo-' + new Date().toISOString().split('T')[0],
+      urlArchivo: '',
+      anexoCambio: anexo,
+      observaciones: obs || 'Enviado via Microsoft Forms'
+    })});
     const d = await res.json();
     if (d.success) {
-      radicaciones = (d.radicaciones || []).map(r => ({
-        ...r,
-        estado: r.estado || "Radicado",
-        notas:  r.notas  || "",
-        fechaRadicacion: parsearFecha(r.fechaRadicacion),
-        fechaAprobacion: parsearFecha(r.fechaAprobacion)
-      }));
-      actualizarMetricas();
-      poblarFiltroMod();
-      renderTabla();
-      setSyncState('ok');
-    } else throw new Error(d.error);
-  } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
-}
-
-function actualizarMetricas() {
-  const s = { total: radicaciones.length, radicado:0, revision:0, pendienteComite:0, aprobado:0, devuelto:0 };
-  radicaciones.forEach(r => {
-    const est = r.estado || 'Radicado';
-    if (est === 'Radicado') s.radicado++;
-    else if (est === 'Revisión') s.revision++;
-    else if (['Pendiente Comité','Pendiente Comité Técnico'].includes(est)) s.pendienteComite++;
-    else if (est === 'Aprobado') s.aprobado++;
-    else if (est === 'Devuelto') s.devuelto++;
-  });
-  document.getElementById('mTot').textContent  = s.total;
-  document.getElementById('mRad').textContent  = s.radicado;
-  document.getElementById('mRev').textContent  = s.revision;
-  document.getElementById('mPend').textContent = s.pendienteComite;
-  document.getElementById('mApro').textContent = s.aprobado;
-  document.getElementById('mDev').textContent  = s.devuelto;
-}
-
-function poblarFiltroMod() {
-  const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
-  const sel = document.getElementById('fMod'), cur = sel.value;
-  sel.innerHTML = '<option value="">Todas las modalidades</option>' + opts.map(o => `<option value="${o}" ${o===cur?'selected':''}>${o}</option>`).join('');
-}
-
-function badgeEst(est) {
-  const map = { 'Radicado':'b-radicado','Tutores avalados':'b-tutores','Tutores Avalados':'b-tutores','Fase 2 Desbloqueada':'b-comite','Pendiente Comité Técnico':'b-comite','Aprobado':'b-aprobado','Devuelto':'b-devuelto','Sustentado':'b-aprobado','Reprobado':'b-devuelto' };
-  return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
-}
-
-function renderTabla() {
-  const q  = (document.getElementById('search').value || '').toLowerCase();
-  const fE = document.getElementById('fEst').value;
-  const fM = document.getElementById('fMod').value;
-  const filtered = radicaciones.filter(r => {
-    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre].join(' ').toLowerCase();
-    return (!q || txt.includes(q)) && (!fE || r.estado === fE) && (!fM || r.modalidad === fM);
-  });
-  const body = document.getElementById('tbody');
-  if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
-  body.innerHTML = filtered.map(r => {
-    const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join('<br>') || '—';
-    const tutores = [r.tutor1Nombre,r.tutor2Nombre].filter(Boolean).join('<br>') || '—';
-    const estado  = r.estado || 'Radicado';
-    return `<tr>
-      <td><div class="num-rad">${esc(r.numero||'')}</div></td>
-      <td style="font-size:12px;max-width:160px">${nombres}</td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:140px">${tutores}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
-      <td>${badgeEst(estado)}</td>
-      <td><div class="act">
-        <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
-        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
-        <button class="btn gr" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">✅ Tutores</button>
-      </div></td>
-    </tr>`;
-  }).join('');
-}
-
-function abrirModalEst(ri, numero, estadoActual) {
-  document.getElementById('mRowIndex').value = ri;
-  document.getElementById('mEstLabel').textContent = 'Radicación: ' + numero;
-  document.getElementById('mEstado').value = estadoActual;
-  document.getElementById('mNotas').value = '';
-  document.getElementById('modalEst').classList.add('open');
-}
-
-async function guardarEstado() {
-  const ri = parseInt(document.getElementById('mRowIndex').value);
-  const est = document.getElementById('mEstado').value;
-  const notas = document.getElementById('mNotas').value.trim();
-  const btn = document.getElementById('btnGuardar');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
-  try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'updateEstado', rowIndex:ri, estado:est, notas, emailCoord:admin.email }) });
-    const d = await res.json();
-    if (d.success) { closeModal('modalEst'); await cargar(); toast('Estado actualizado ✓', 'ok'); }
-    else throw new Error(d.error);
-  } catch(e) { toast('Error: ' + e.message, 'err'); }
-  finally { btn.disabled = false; btn.innerHTML = 'Guardar y notificar'; }
-}
-
-function verDetalle(ri) {
-  const r = radicaciones.find(x => x.rowIndex === ri);
-  if (!r) return;
-  const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val">${esc(val)}</span></div>` : '';
-  document.getElementById('modalDetBody').innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div><div style="font-family:'DM Mono',monospace;font-size:13px;color:#a78bfa;margin-bottom:4px">${esc(r.numero)}</div>
-      <div style="font-size:16px;font-weight:600;color:#fff">${esc(r.titulo||'Sin título')}</div></div>
-      ${badgeEst(r.estado)}
-    </div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:6px">Proyecto</div>
-    ${fila('Modalidad',r.modalidad)}${fila('Área',r.area)}
-    ${fila('F. Radicación',fmtFecha(r.fechaRadicacion))}${fila('F. Aprobación',fmtFecha(r.fechaAprobacion))}
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Estudiantes</div>
-    ${fila('Estudiante 1', r.nombre1 ? r.nombre1+' · Ced: '+r.cedula1+' · Sem. '+r.semestre1 : '')}
-    ${fila('Email 1',r.email1)}${fila('Teléfono 1',r.telefono1)}
-    ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
-    ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
-    ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
-    ${fila('Email T1',r.tutor1Email)}
-    ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
-    ${r.notas ? `<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#fcd34d">📝 </span>${esc(r.notas)}</div>` : ''}
-    <div style="margin-top:14px">
-      <button class="btn am" onclick="closeModal('modalDet');abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Cambiar estado</button>
-    </div>`;
-  document.getElementById('modalDet').classList.add('open');
-}
-
-// ── ACTAS ────────────────────────────────────────────────────
-async function cargarActas() {
-  const tbody = document.getElementById('tbodyActas');
-  tbody.innerHTML = '<tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>';
-  try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getActasAsesoria' }) });
-    const d = await res.json();
-    if (!d.success) throw new Error(d.error);
-    actas = d.actas || [];
-
-    // contar pendientes para badge
-    const pendientes = actas.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2').length;
-    const tabActas = document.getElementById('tabActas');
-    const existing = tabActas.querySelector('.badge-count');
-    if (existing) existing.remove();
-    if (pendientes > 0) {
-      const span = document.createElement('span');
-      span.className = 'badge-count';
-      span.textContent = pendientes;
-      tabActas.appendChild(span);
+      document.getElementById('successFinal').style.display = 'block';
+      btn.style.display = 'none';
+      document.getElementById('paso3').classList.add('done');
+      setTimeout(() => { window.location.href = 'estudiante_dashboard.html'; }, 3000);
+    } else {
+      errEl.textContent = d.error || 'Error al registrar'; errEl.style.display = 'block';
+      btn.disabled = false; btn.innerHTML = '✅ Ya envié — Registrar protocolo';
     }
-
-    renderActas();
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty">Error al cargar actas.</td></tr>';
+    errEl.textContent = 'Error de conexión'; errEl.style.display = 'block';
+    btn.disabled = false; btn.innerHTML = '✅ Ya envié — Registrar protocolo';
   }
 }
-
-function calcularPlazo(emailEstudiante) {
-  const rad = radicaciones.find(r =>
-    [r.emailEstudiante, r.email1, r.email2, r.email3].some(e => String(e||'').toLowerCase() === emailEstudiante.toLowerCase())
-  );
-  if (!rad) return { texto: '—', alerta: false };
-  const sems = [rad.semestre1, rad.semestre2, rad.semestre3].map(v => parseInt(v||0)).filter(n => n > 0);
-  const semMax = sems.length ? Math.max(...sems) : 1;
-  const meses = semMax >= 12 ? 3 : semMax >= 10 ? 6 : 12;
-  const base = new Date(rad.fechaRadicacion || Date.now());
-  if (isNaN(base.getTime())) return { texto: '—', alerta: false };
-  const limite = new Date(base); limite.setMonth(limite.getMonth() + meses);
-  const dias = Math.ceil((limite - new Date()) / 86400000);
-  const alerta = dias < 30 && dias >= 0;
-  const vencido = dias < 0;
-  return {
-    texto: vencido ? '⚠️ Vencido' : `${dias} días (sem. ${semMax})`,
-    alerta: alerta || vencido,
-    vencido
-  };
-}
-
-function contarActas(emailEstudiante) {
-  return actas.filter(a => String(a.emailEstudiante||'').toLowerCase() === emailEstudiante.toLowerCase()).length;
-}
-
-function renderActas() {
-  const q  = (document.getElementById('searchActas').value || '').toLowerCase();
-  const fE = document.getElementById('fEstActas').value;
-  const filtered = actas.filter(a => {
-    const txt = [a.numero, a.emailEstudiante, a.nombreArchivo].join(' ').toLowerCase();
-    return (!q || txt.includes(q)) && (!fE || a.estado === fE);
-  });
-  const tbody = document.getElementById('tbodyActas');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin actas que coincidan.</td></tr>'; return; }
-
-  tbody.innerHTML = filtered.map(a => {
-    const badgeActa = {
-      'Pendiente revisión': '<span class="badge b-pend">Pendiente</span>',
-      'Aprobada':           '<span class="badge b-aprobado">Aprobada</span>',
-      'Rechazada':          '<span class="badge b-devuelto">Rechazada</span>',
-      'Solicitud Fase 2':   '<span class="badge b-solicitud">📨 Solicitud Fase 2</span>'
-    }[a.estado] || `<span class="badge b-pend">${a.estado}</span>`;
-
-    const plazo = calcularPlazo(a.emailEstudiante);
-    const total = contarActas(a.emailEstudiante);
-    const plazoHtml = plazo.alerta
-      ? `<div class="alerta-plazo">${esc(plazo.texto)}</div>`
-      : `<span style="font-size:12px;color:rgba(255,255,255,.5)">${esc(plazo.texto)}</span>`;
-
-    const esSolicitud = a.estado === 'Solicitud Fase 2';
-    const esPendiente = a.estado === 'Pendiente revisión';
-    const urlBtn = a.urlArchivo ? `<a href="${esc(a.urlArchivo)}" target="_blank" class="btn bl">👁 Ver PDF</a>` : '';
-
-    return `<tr>
-      <td style="font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace">${fmtFecha(a.fechaCarga)}</td>
-      <td><div class="num-rad">${esc(a.numero||'')}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.emailEstudiante||'')}</td>
-      <td style="font-size:12px">📄 ${esc(a.nombreArchivo||'')}</td>
-      <td>${badgeActa}</td>
-      <td>${plazoHtml}</td>
-      <td style="text-align:center"><span style="font-size:14px;font-weight:600;color:#a78bfa">${total}</span></td>
-      <td><div class="act">
-        ${urlBtn}
-        ${esPendiente ? `<button class="btn gr" onclick="abrirModalActa(${a.rowIndex},'${esc(a.emailEstudiante)}','aprobar','${esc(a.numero||'')}','${esc(a.nombreArchivo||'')}')">✅ Aprobar</button>
-        <button class="btn rd" onclick="abrirModalActa(${a.rowIndex},'${esc(a.emailEstudiante)}','rechazar','${esc(a.numero||'')}','${esc(a.nombreArchivo||'')}')">✕ Rechazar</button>` : ''}
-        ${esSolicitud ? `<button class="btn bl" onclick="abrirModalSolicitud(${a.rowIndex},'${esc(a.emailEstudiante)}','${esc(a.numero||'')}')">📨 Ver solicitud</button>` : ''}
-      </div></td>
-    </tr>`;
-  }).join('');
-}
-
-function abrirModalActa(ri, email, accion, numero, archivo) {
-  document.getElementById('mActaRowIndex').value = ri;
-  document.getElementById('mActaEmail').value    = email;
-  document.getElementById('mActaAccion').value   = accion;
-  document.getElementById('mActaMotivo').value   = '';
-  document.getElementById('modalActaTitulo').textContent = accion === 'aprobar' ? '✅ Aprobar Acta' : '✕ Rechazar Acta';
-  document.getElementById('modalActaInfo').innerHTML = `<span style="color:rgba(255,255,255,.5);font-size:12px">Radicación: <strong style="color:#a78bfa">${esc(numero)}</strong> · ${esc(archivo)}</span>`;
-  const btn = document.getElementById('btnActaConfirm');
-  btn.style.background = accion === 'aprobar' ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#b91c1c,#ef4444)';
-  btn.textContent = accion === 'aprobar' ? 'Confirmar aprobación' : 'Confirmar rechazo';
-  document.getElementById('modalActa').classList.add('open');
-}
-
-async function confirmarAccionActa() {
-  const ri     = parseInt(document.getElementById('mActaRowIndex').value);
-  const email  = document.getElementById('mActaEmail').value;
-  const accion = document.getElementById('mActaAccion').value;
-  const motivo = document.getElementById('mActaMotivo').value.trim();
-  const rechazar = accion === 'rechazar';
-  if (rechazar && !motivo) { toast('Escribe el motivo del rechazo', 'warn'); return; }
-  const btn = document.getElementById('btnActaConfirm');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
-  try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
-      action: 'aprobarActasAsesoria', rowIndex: ri, emailEstudiante: email,
-      emailCoord: admin.email, rechazar, motivo
-    })});
-    const d = await res.json();
-    if (d.success) {
-      closeModal('modalActa');
-      await cargarActas();
-      toast(rechazar ? 'Acta rechazada ✓' : 'Acta aprobada ✓', 'ok');
-    } else throw new Error(d.error);
-  } catch(e) { toast('Error: ' + e.message, 'err'); }
-  finally { btn.disabled = false; btn.textContent = accion === 'aprobar' ? 'Confirmar aprobación' : 'Confirmar rechazo'; }
-}
-
-function abrirModalSolicitud(ri, email, numero) {
-  solicitudActual = { ri, email, numero };
-  const misActas = actas.filter(a => String(a.emailEstudiante||'').toLowerCase() === email.toLowerCase() && a.estado !== 'Solicitud Fase 2');
-  const aprobadas  = misActas.filter(a => a.estado === 'Aprobada').length;
-  const rechazadas = misActas.filter(a => a.estado === 'Rechazada').length;
-  const pendientes = misActas.filter(a => a.estado === 'Pendiente revisión').length;
-  const filasActas = misActas.map(a => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px">
-      <span style="color:rgba(255,255,255,.6)">${esc(a.nombreArchivo||'Acta')}</span>
-      <span style="color:rgba(255,255,255,.4);font-size:11px">${fmtFecha(a.fechaCarga)}</span>
-      <span class="badge ${{Aprobada:'b-aprobado',Rechazada:'b-devuelto'}[a.estado]||'b-pend'}">${esc(a.estado)}</span>
-    </div>`).join('');
-  document.getElementById('modalSolicitudInfo').innerHTML = `
-    <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:14px;margin-bottom:12px">
-      <div style="font-size:13px;color:#93c5fd;margin-bottom:8px">📨 El estudiante solicita avanzar a Fase 2</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6)">Radicación: <strong style="color:#a78bfa">${esc(numero)}</strong></div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
-        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
-          <div style="font-size:18px;font-weight:700;color:#a78bfa">${misActas.length}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.4)">Total actas</div>
-        </div>
-        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
-          <div style="font-size:18px;font-weight:700;color:#34d399">${aprobadas}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.4)">Aprobadas</div>
-        </div>
-        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
-          <div style="font-size:18px;font-weight:700;color:#fcd34d">${pendientes}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.4)">Pendientes</div>
-        </div>
-      </div>
-    </div>
-    <div style="max-height:200px;overflow-y:auto">${filasActas || '<div style="text-align:center;color:rgba(255,255,255,.3);padding:12px;font-size:12px">Sin actas registradas</div>'}</div>`;
-  document.getElementById('modalSolicitud').classList.add('open');
-}
-
-async function responderSolicitud(aprobar) {
-  if (!solicitudActual) return;
-  try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
-      action: 'aprobarActasAsesoria',
-      rowIndex: solicitudActual.ri,
-      emailEstudiante: solicitudActual.email,
-      emailCoord: admin.email,
-      rechazar: !aprobar,
-      motivo: aprobar ? '' : 'Solicitud de Fase 2 rechazada por la coordinadora'
-    })});
-    const d = await res.json();
-    if (d.success) {
-      closeModal('modalSolicitud');
-      await cargarActas();
-      toast(aprobar ? 'Fase 2 desbloqueada ✓' : 'Solicitud rechazada', aprobar ? 'ok' : 'warn');
-    } else throw new Error(d.error);
-  } catch(e) { toast('Error: ' + e.message, 'err'); }
-}
-
-function exportCSV() {
-  if (!radicaciones.length) { toast('Sin datos para exportar', 'info'); return; }
-  const h = ['N° Radicación','Estado','Título','Modalidad','Área','Estudiante 1','Cédula 1','Email 1','Semestre 1','Estudiante 2','Estudiante 3','Tutor 1','Email Tutor 1','Tutor 2','F. Radicación','F. Aprobación','Notas'];
-  const rows = radicaciones.map(r => [r.numero,r.estado,`"${(r.titulo||'').replace(/"/g,'""')}"`,r.modalidad,r.area,`"${r.nombre1||''}"`,r.cedula1,r.email1,r.semestre1,`"${r.nombre2||''}"`,`"${r.nombre3||''}"`,`"${r.tutor1Nombre||''}"`,r.tutor1Email,`"${r.tutor2Nombre||''}"`,r.fechaRadicacion,r.fechaAprobacion,`"${(r.notas||'').replace(/"/g,'""')}"`]);
-  const csv = [h,...rows].map(r => r.join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'}));
-  a.download = 'radicaciones_cttg_' + new Date().toISOString().split('T')[0] + '.csv';
-  a.click();
-  toast('CSV exportado ✓', 'ok');
-}
-
-['modalEst','modalDet','modalActa','modalSolicitud'].forEach(id => {
-  document.getElementById(id).addEventListener('click', e => {
-    if (e.target === document.getElementById(id)) closeModal(id);
-  });
-});
 </script>
 </body>
 </html>
