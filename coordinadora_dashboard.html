@@ -85,7 +85,18 @@
   .det-val{color:#e2e8f0;flex:1}
   .alerta-plazo{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#fca5a5;margin-top:4px}
   .solicitud-badge{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.35);border-radius:8px;padding:6px 10px;font-size:11px;color:#93c5fd;display:inline-flex;align-items:center;gap:4px}
-  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
+ .b-cargado{background:rgba(96,165,250,.2);color:#93c5fd}
+  .b-revisado{background:rgba(102,126,234,.2);color:#a5b4fc}
+  .b-ensolicitud{background:rgba(59,130,246,.2);color:#93c5fd}
+  .b-evaluacion{background:rgba(167,139,250,.2);color:#c4b5fd}
+  .b-aprobadocomite{background:rgba(16,185,129,.2);color:#6ee7b7}
+  .alert-badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700}
+  .alert-critico{background:rgba(239,68,68,.3);color:#fca5a5}
+  .alert-s12{background:rgba(245,158,11,.3);color:#fcd34d}
+  .alert-gestion{background:rgba(59,130,246,.3);color:#93c5fd}
+  .progress-bar{width:100%;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#059669,#10b981);border-radius:3px}
+ .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
   @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
@@ -114,9 +125,13 @@
     <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
   </div>
 
-  <div class="main-tabs">
+ <div class="main-tabs">
     <button class="main-tab on" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
     <button class="main-tab" id="tabActas" onclick="switchPanel('actas', this)">📄 Actas de Asesoría</button>
+    <button class="main-tab" id="tabTutores" onclick="switchPanel('tutores', this)">👨‍🏫 Tutores</button>
+    <button class="main-tab" id="tabAlertas" onclick="switchPanel('alertas', this)">🚨 Alertas <span class="badge-count" style="display:none"></span></button>
+    <button class="main-tab" id="tabProtocolo" onclick="switchPanel('protocolo', this)">📖 Protocolo</button>
+    <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
   </div>
 
   <!-- PANEL RADICACIONES -->
@@ -168,6 +183,116 @@
         </tr></thead>
         <tbody id="tbodyActas">
           <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+ <!-- PANEL TUTORES -->
+  <div class="panel" id="pan-tutores">
+    <div class="filters">
+      <input id="searchTutores" placeholder="🔍 Buscar tutor..." oninput="renderTutores()">
+      <select id="fEstadoTutor" onchange="renderTutores()">
+        <option value="">Todos los estados</option>
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+      <button class="btn" onclick="cargarTutores()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Tutor</th><th>Total Trabajos</th><th>% Avance Promedio</th><th>En Radicación</th><th>En Fase 2</th><th>Aprobados</th><th>Pendientes</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyTutores">
+          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando tutores...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL ALERTAS -->
+  <div class="panel" id="pan-alertas">
+    <div style="margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+        <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px">
+          <div style="font-size:11px;text-transform:uppercase;color:rgba(239,68,68,.6);margin-bottom:6px">⚠️ CRÍTICO: >60% Plazo</div>
+          <div style="font-size:24px;font-weight:700;color:#fca5a5" id="countCritico">—</div>
+          <button class="btn rd" style="margin-top:8px;width:100%" onclick="switchToFilterAlertas('critico')">Ver detalles</button>
+        </div>
+        <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:14px">
+          <div style="font-size:11px;text-transform:uppercase;color:rgba(245,158,11,.6);margin-bottom:6px">⚡ SEMESTRE 12</div>
+          <div style="font-size:24px;font-weight:700;color:#fcd34d" id="countS12">—</div>
+          <button class="btn am" style="margin-top:8px;width:100%" onclick="switchToFilterAlertas('s12')">Ver detalles</button>
+        </div>
+        <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:14px">
+          <div style="font-size:11px;text-transform:uppercase;color:rgba(59,130,246,.6);margin-bottom:6px">ℹ️ GESTIÓN</div>
+          <div style="font-size:24px;font-weight:700;color:#93c5fd" id="countGestion">—</div>
+          <button class="btn bl" style="margin-top:8px;width:100%" onclick="switchToFilterAlertas('gestion')">Ver detalles</button>
+        </div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Tipo Alerta</th><th>N° Radicación</th><th>Estudiante(s)</th><th>Estado Actual</th><th>Plazo</th><th>Detalles</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyAlertas">
+          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando alertas...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL PROTOCOLO -->
+  <div class="panel" id="pan-protocolo">
+    <div class="filters">
+      <input id="searchProtocolo" placeholder="🔍 Buscar por número, estudiante..." oninput="renderProtocolo()">
+      <select id="fEstProtocolo" onchange="renderProtocolo()">
+        <option value="">Todos los estados</option>
+        <option value="Cargado">Cargado</option>
+        <option value="Revisado">Revisado</option>
+        <option value="En Solicitud">En Solicitud</option>
+        <option value="Aprobado">Aprobado</option>
+        <option value="Rechazado">Rechazado</option>
+        <option value="En Evaluación">En Evaluación</option>
+        <option value="Aprobado Comité">Aprobado Comité</option>
+      </select>
+      <button class="btn" onclick="cargarProtocolo()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante</th><th>Email</th><th>Anexo Cambió</th><th>Evaluador</th><th>Fecha Reunión</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyProtocolo">
+          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando protocolos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL SEGUIMIENTO -->
+  <div class="panel" id="pan-seguimiento">
+    <div class="filters">
+      <input id="searchSeguimiento" placeholder="🔍 Buscar número radicación..." oninput="renderSeguimiento()">
+      <select id="fFaseSeg" onchange="renderSeguimiento()">
+        <option value="">Todas las fases</option>
+        <option value="Radicado">Radicado</option>
+        <option value="Tutores Avalados">Tutores Avalados</option>
+        <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
+        <option value="Pendiente Comité">Pendiente Comité</option>
+        <option value="Aprobado">Aprobado</option>
+        <option value="Sustentado">Sustentado</option>
+      </select>
+      <button class="btn" onclick="cargarSeguimiento()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Fase Actual</th><th>% Avance</th><th>Días Transcurridos</th><th>Días Restantes</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodySeguimiento">
+          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando seguimiento...</td></tr>
         </tbody>
       </table>
     </div>
@@ -654,6 +779,260 @@ function exportCSV() {
     if (e.target === document.getElementById(id)) closeModal(id);
   });
 });
+ // ════════════════════════════════════════════════════════════
+// TAB 3: DASHBOARD TUTORES
+// ════════════════════════════════════════════════════════════
+let tutores = [];
+async function cargarTutores() {
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getEstadisticasTutores' }) });
+    const d = await res.json();
+    if (d.success) {
+      tutores = d.tutores || [];
+      renderTutores();
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error cargando tutores: ' + e.message, 'err'); }
+}
+
+function renderTutores() {
+  const q  = (document.getElementById('searchTutores').value || '').toLowerCase();
+  const fE = document.getElementById('fEstadoTutor').value;
+  const filtered = tutores.filter(t => {
+    const txt = (t.nombre || '').toLowerCase();
+    return (!q || txt.includes(q)) && (!fE || t.estado === fE);
+  });
+  const tbody = document.getElementById('tbodyTutores');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin tutores.</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(t => `<tr>
+    <td style="font-weight:600">${esc(t.nombre||'—')}</td>
+    <td><span style="font-size:16px;font-weight:700;color:#a78bfa">${t.totalTrabajos||0}</span></td>
+    <td>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="progress-bar" style="width:100px"><div class="progress-fill" style="width:${(t.promAvance||0)}%"></div></div>
+        <span style="font-size:11px;color:rgba(255,255,255,.5)">${(t.promAvance||0).toFixed(0)}%</span>
+      </div>
+    </td>
+    <td><span class="badge b-radicado">${t.enRadicacion||0}</span></td>
+    <td><span class="badge b-revision">${t.enFase2||0}</span></td>
+    <td><span class="badge b-aprobado">${t.aprobados||0}</span></td>
+    <td><span class="badge b-pend">${t.pendientes||0}</span></td>
+    <td><button class="btn bl" onclick="abrirDetallesTutor('${esc(t.nombre||'')}')">👁 Ver</button></td>
+  </tr>`).join('');
+}
+
+function abrirDetallesTutor(nombre) {
+  const t = tutores.find(x => x.nombre === nombre);
+  if (!t) return;
+  document.getElementById('modalDetBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+      <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#a78bfa">${t.totalTrabajos||0}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">Total</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#fcd34d">${t.promAvance||0}%</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">Avance</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#fca5a5">${t.pendientes||0}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">Pendientes</div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:8px">Distribución</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+          <span>En Radicación</span>
+          <span style="color:#a78bfa;font-weight:600">${t.enRadicacion||0}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+          <span>En Fase 2</span>
+          <span style="color:#fcd34d;font-weight:600">${t.enFase2||0}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+          <span>Aprobados</span>
+          <span style="color:#34d399;font-weight:600">${t.aprobados||0}</span>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('modalDet').classList.add('open');
+}
+
+// ════════════════════════════════════════════════════════════
+// TAB 4: ALERTAS CRÍTICAS
+// ════════════════════════════════════════════════════════════
+let alertas = [];
+let filtroAlertaActual = 'todos';
+
+async function cargarAlertas() {
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getAlertasCriticas' }) });
+    const d = await res.json();
+    if (d.success) {
+      alertas = d.alertas || [];
+      const countCritico = alertas.filter(a => a.tipo === 'critico').length;
+      const countS12 = alertas.filter(a => a.tipo === 's12').length;
+      const countGestion = alertas.filter(a => a.tipo === 'gestion').length;
+      document.getElementById('countCritico').textContent = countCritico;
+      document.getElementById('countS12').textContent = countS12;
+      document.getElementById('countGestion').textContent = countGestion;
+      const badge = document.getElementById('tabAlertas').querySelector('.badge-count');
+      if (countCritico + countS12 + countGestion > 0) {
+        badge.textContent = countCritico + countS12 + countGestion;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+      renderAlertas();
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error cargando alertas: ' + e.message, 'err'); }
+}
+
+function switchToFilterAlertas(tipo) {
+  filtroAlertaActual = tipo;
+  renderAlertas();
+}
+
+function renderAlertas() {
+  const filtered = filtroAlertaActual === 'todos' 
+    ? alertas 
+    : alertas.filter(a => a.tipo === filtroAlertaActual);
+  const tbody = document.getElementById('tbodyAlertas');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin alertas de este tipo.</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(a => {
+    const badgeAlert = a.tipo === 'critico' ? '<span class="alert-badge alert-critico">⚠️ >60% PLAZO</span>'
+                     : a.tipo === 's12' ? '<span class="alert-badge alert-s12">⚡ SEMESTRE 12</span>'
+                     : '<span class="alert-badge alert-gestion">ℹ️ GESTIÓN</span>';
+    return `<tr>
+      <td>${badgeAlert}</td>
+      <td><div class="num-rad">${esc(a.numero||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.estudiante||'—')}</td>
+      <td><span class="badge b-aprobado">${esc(a.estado||'—')}</span></td>
+      <td style="font-size:12px">${esc(a.plazo||'—')}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.5)">${esc(a.detalles||'—')}</td>
+      <td><button class="btn bl" onclick="verDetalle(${a.rowIndex||0})">👁 Ver</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// TAB 5: PROTOCOLO FASE 2
+// ════════════════════════════════════════════════════════════
+let protocolos = [];
+async function cargarProtocolo() {
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getFase2' }) });
+    const d = await res.json();
+    if (d.success) {
+      protocolos = d.protocolos || [];
+      renderProtocolo();
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error cargando protocolos: ' + e.message, 'err'); }
+}
+
+function renderProtocolo() {
+  const q  = (document.getElementById('searchProtocolo').value || '').toLowerCase();
+  const fE = document.getElementById('fEstProtocolo').value;
+  const filtered = protocolos.filter(p => {
+    const txt = [p.numero, p.email].join(' ').toLowerCase();
+    return (!q || txt.includes(q)) && (!fE || p.estado === fE);
+  });
+  const tbody = document.getElementById('tbodyProtocolo');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos.</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(p => {
+    const estadoBadge = {
+      'Cargado':'b-radicado','Revisado':'b-revision','En Solicitud':'b-solicitud',
+      'Aprobado':'b-aprobado','Rechazado':'b-devuelto','En Evaluación':'b-comite',
+      'Aprobado Comité':'b-aprobado'
+    }[p.estado] || 'b-radicado';
+    return `<tr>
+      <td><div class="num-rad">${esc(p.numero||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.estudiante||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(p.email||'—')}</td>
+      <td style="font-size:12px">${esc(p.anexo||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaReunion||'—'}</td>
+      <td><span class="badge ${estadoBadge}">${esc(p.estado||'Cargado')}</span></td>
+      <td><button class="btn bl" onclick="abrirModalProtocolo(${p.rowIndex||0})">✎ Revisar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function abrirModalProtocolo(rowIndex) {
+  const p = protocolos.find(x => x.rowIndex === rowIndex);
+  if (!p) return;
+  document.getElementById('mActaRowIndex').value = rowIndex;
+  document.getElementById('mActaEmail').value = p.email;
+  document.getElementById('modalActaTitulo').textContent = '📖 Revisar Protocolo';
+  document.getElementById('modalActaInfo').innerHTML = `<span style="color:rgba(255,255,255,.5);font-size:12px">Radicación: <strong style="color:#a78bfa">${esc(p.numero)}</strong> · Estado: <strong>${esc(p.estado)}</strong></span>`;
+  document.getElementById('modalActa').classList.add('open');
+}
+
+// ════════════════════════════════════════════════════════════
+// TAB 6: SEGUIMIENTO INDIVIDUAL
+// ════════════════════════════════════════════════════════════
+let seguimientos = [];
+async function cargarSeguimiento() {
+  seguimientos = radicaciones.map(r => ({
+    numero: r.numero,
+    estudiantes: [r.nombre1, r.nombre2, r.nombre3].filter(Boolean),
+    estado: r.estado,
+    fechaRad: r.fechaRadicacion,
+    fechaAprob: r.fechaAprobacion,
+    rowIndex: r.rowIndex,
+    diasTranscurridos: r.diasTranscurridos || 0,
+    diasRestantes: r.diasRestantes || 0,
+    porcentajeAvance: r.porcentajeAvance || 0
+  }));
+  renderSeguimiento();
+}
+
+function renderSeguimiento() {
+  const q  = (document.getElementById('searchSeguimiento').value || '').toLowerCase();
+  const fF = document.getElementById('fFaseSeg').value;
+  const filtered = seguimientos.filter(s => {
+    const txt = (s.numero || '').toLowerCase();
+    return (!q || txt.includes(q)) && (!fF || s.estado === fF);
+  });
+  const tbody = document.getElementById('tbodySeguimiento');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin registros de seguimiento.</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(s => {
+    const porcentaje = s.porcentajeAvance || 0;
+    const color = porcentaje > 60 ? '#fca5a5' : porcentaje > 30 ? '#fcd34d' : '#34d399';
+    return `<tr>
+      <td><div class="num-rad">${esc(s.numero||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${(s.estudiantes||[]).slice(0,2).map(e => esc(e)).join(', ')}</td>
+      <td><span class="badge b-aprobado">${esc(s.estado||'—')}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="progress-bar" style="width:100px"><div class="progress-fill" style="width:${porcentaje}%;background:${color}"></div></div>
+          <span style="font-size:11px;color:rgba(255,255,255,.5)">${porcentaje.toFixed(0)}%</span>
+        </div>
+      </td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${s.diasTranscurridos||0} días</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${s.diasRestantes||0} días</td>
+      <td><button class="btn bl" onclick="verDetalle(${s.rowIndex})">📊 Ver timeline</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// INICIALIZAR TABS AL CARGAR PÁGINA
+// ════════════════════════════════════════════════════════════
+const originalDOMContentLoaded = window.onload;
+window.onload = function() {
+  if (originalDOMContentLoaded) originalDOMContentLoaded();
+};
+
+// Reemplazar la función switchPanel existente
+const originalSwitchPanel = switchPanel;
+window.switchPanel = function(name, btn) {
+  originalSwitchPanel(name, btn);
+  if (name === 'tutores') cargarTutores();
+  if (name === 'alertas') cargarAlertas();
+  if (name === 'protocolo') cargarProtocolo();
+  if (name === 'seguimiento') cargarSeguimiento();
+};
 </script>
-</body>
+ </body>
 </html>
