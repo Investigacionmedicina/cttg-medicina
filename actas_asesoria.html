@@ -33,6 +33,7 @@
   .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
   .b-aprobada{background:rgba(16,185,129,.2);color:#6ee7b7}
   .b-rechazada{background:rgba(239,68,68,.2);color:#fca5a5}
+  .b-solicitud{background:rgba(59,130,246,.2);color:#93c5fd}
   .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
   .form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:24px;margin-bottom:18px}
   .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
@@ -54,7 +55,7 @@
   .paso-txt strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
   .paso-txt span{font-size:12px;color:rgba(255,255,255,.4)}
   .paso.done .paso-num{background:linear-gradient(135deg,#059669,#10b981)}
-  .btn-forms{display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;width:100%;justify-content:center;margin-bottom:14px;box-shadow:0 4px 15px rgba(0,120,212,.3);transition:all .2s}
+  .btn-forms{display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;width:100%;justify-content:center;margin-bottom:14px;transition:all .2s}
   .btn-forms:hover{transform:translateY(-1px)}
   .btn-rad{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:all .2s;width:100%}
   .btn-rad:hover{transform:translateY(-1px)}
@@ -67,6 +68,19 @@
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.err{background:rgba(239,68,68,.9);color:#fff}
+  /* Resumen actas */
+  .resumen-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:20px;margin-bottom:16px}
+  .resumen-card h4{font-size:14px;font-weight:600;color:#fff;margin-bottom:14px}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+  .stat-box{background:rgba(255,255,255,.05);border-radius:10px;padding:12px;text-align:center}
+  .stat-box .n{font-size:24px;font-weight:700;font-family:'DM Serif Display',serif}
+  .stat-box .l{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  .n-total{color:#a78bfa}.n-aprobadas{color:#34d399}.n-pendientes{color:#fcd34d}
+  /* Botón solicitar */
+  .btn-solicitar{width:100%;padding:13px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(16,185,129,.3);transition:all .2s;margin-top:4px}
+  .btn-solicitar:hover{transform:translateY(-1px)}
+  .btn-solicitar:disabled{opacity:.5;cursor:not-allowed;transform:none;background:rgba(255,255,255,.1)}
+  .solicitud-enviada{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:#93c5fd;text-align:center;margin-top:4px;display:none}
 </style>
 </head>
 <body>
@@ -90,6 +104,26 @@
 
   <!-- MIS ACTAS -->
   <div class="panel on" id="pan-mis-actas">
+
+    <!-- Resumen + solicitud -->
+    <div class="resumen-card" id="resumenCard" style="display:none">
+      <h4>Resumen de mis actas</h4>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="n n-total" id="statTotal">0</div><div class="l">Total</div></div>
+        <div class="stat-box"><div class="n n-aprobadas" id="statAprobadas">0</div><div class="l">Aprobadas</div></div>
+        <div class="stat-box"><div class="n n-pendientes" id="statPendientes">0</div><div class="l">Pendientes</div></div>
+      </div>
+      <button class="btn-solicitar" id="btnSolicitar" onclick="solicitarFase2()">
+        🚀 Solicitar activación de Fase 2
+      </button>
+      <div class="solicitud-enviada" id="solicitudEnviada">
+        📨 Solicitud enviada — La coordinadora revisará tus actas y te notificará.
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:8px" id="infoSolicitud">
+        Puedes solicitar el paso a Fase 2 cuando lo consideres oportuno.
+      </div>
+    </div>
+
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -209,6 +243,7 @@ function fmtFecha(s) {
 function badgeClass(estado) {
   if (estado === 'Aprobada') return 'b-aprobada';
   if (estado === 'Rechazada') return 'b-rechazada';
+  if (estado === 'Solicitud Fase 2') return 'b-solicitud';
   return 'b-pend';
 }
 
@@ -230,20 +265,81 @@ async function cargarActas() {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) });
     const d = await res.json();
     if (!d.success) throw new Error(d.error || 'Error al cargar');
-    const misActas = (d.actas || []).filter(a => String(a.emailEstudiante||'').toLowerCase() === user.email.toLowerCase());
+
+    const misActas = (d.actas || []).filter(a =>
+      String(a.emailEstudiante||'').toLowerCase() === user.email.toLowerCase()
+    );
+
     if (!misActas.length) {
       tbody.innerHTML = '<tr><td colspan="4" class="empty">Aún no tienes actas registradas.</td></tr>';
+      document.getElementById('resumenCard').style.display = 'none';
       return;
     }
-    tbody.innerHTML = misActas.map(a => `
+
+    // Calcular contadores — excluir solicitudes del conteo
+    const actasReales = misActas.filter(a => a.estado !== 'Solicitud Fase 2');
+    const aprobadas   = actasReales.filter(a => a.estado === 'Aprobada').length;
+    const pendientes  = actasReales.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Rechazada').length;
+    const yaSolicito  = misActas.some(a => a.estado === 'Solicitud Fase 2');
+
+    // Actualizar resumen
+    document.getElementById('statTotal').textContent     = actasReales.length;
+    document.getElementById('statAprobadas').textContent = aprobadas;
+    document.getElementById('statPendientes').textContent = pendientes;
+    document.getElementById('resumenCard').style.display = 'block';
+
+    // Estado del botón solicitar
+    const btnSolicitar = document.getElementById('btnSolicitar');
+    const solicitudEnviada = document.getElementById('solicitudEnviada');
+    const infoSolicitud = document.getElementById('infoSolicitud');
+
+    if (yaSolicito) {
+      btnSolicitar.style.display = 'none';
+      solicitudEnviada.style.display = 'block';
+      infoSolicitud.textContent = 'Solicitud en revisión por la coordinadora.';
+    } else {
+      btnSolicitar.style.display = 'block';
+      solicitudEnviada.style.display = 'none';
+      infoSolicitud.textContent = `Tienes ${aprobadas} acta(s) aprobada(s). Puedes solicitar el paso a Fase 2 cuando lo consideres.`;
+    }
+
+    // Renderizar tabla — ocultar filas de solicitud
+    tbody.innerHTML = actasReales.map(a => `
       <tr>
         <td style="font-size:12px;color:rgba(255,255,255,.5)">${fmtFecha(a.fechaCarga)}</td>
         <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(a.numero||'—')}</td>
         <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(a.observaciones||'Sin observaciones')}</td>
         <td><span class="badge ${badgeClass(a.estado)}">${esc(a.estado||'Pendiente revisión')}</span></td>
       </tr>`).join('');
+
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="4" class="empty">Error al cargar: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+async function solicitarFase2() {
+  const btn = document.getElementById('btnSolicitar');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'crearActasAsesoria',
+      numeroRadicacion,
+      emailEstudiante: user.email,
+      nombreArchivo: 'Solicitud activación Fase 2',
+      base64: '',
+      observaciones: 'El estudiante solicita activación de Fase 2'
+    })});
+    const d = await res.json();
+    if (d.success) {
+      btn.style.display = 'none';
+      document.getElementById('solicitudEnviada').style.display = 'block';
+      document.getElementById('infoSolicitud').textContent = 'Solicitud en revisión por la coordinadora.';
+      toast('Solicitud enviada ✓', 'ok');
+    } else throw new Error(d.error);
+  } catch(e) {
+    toast('Error: ' + e.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Solicitar activación de Fase 2';
   }
 }
 
