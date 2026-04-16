@@ -125,16 +125,25 @@
   <div class="section">
     <div class="section-title"><span>🔄</span> Información del Protocolo</div>
     <div class="fg">
-      <label>¿Qué Anexo Cambió? *</label>
-      <select id="anexoCambio">
-        <option value="">— Selecciona qué cambió —</option>
-        <option value="A1">Anexo 1 (Portada)</option>
-        <option value="A3">Anexo 3 (Índice)</option>
-        <option value="A10">Anexo 10 (Cronograma)</option>
-        <option value="Consentimiento">Consentimiento Informado</option>
-        <option value="Múltiples">Múltiples anexos</option>
-        <option value="Ninguno">Sin cambios de anexo</option>
-      </select>
+      <label>¿Qué Archivos Subiste? * (Selecciona todos los que apliquen)</label>
+      <div style="display:grid;grid-template-columns:repeat(1,1fr);gap:8px">
+        <label style="display:flex;align-items:flex-start;gap:6px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.7);cursor:pointer;margin-bottom:0;padding:8px;background:rgba(255,255,255,.03);border-radius:8px">
+          <input type="checkbox" name="archivo" value="Anexo A3 - Propuesta investigativa" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0">
+          <span>Anexo A3 - Propuesta investigativa (si modalidad es Investigación)</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:6px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.7);cursor:pointer;margin-bottom:0;padding:8px;background:rgba(255,255,255,.03);border-radius:8px">
+          <input type="checkbox" name="archivo" value="Anexo A10 - Protocolo de Monografía de Revisión" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0">
+          <span>Anexo A10 - Protocolo de Monografía de Revisión (si modalidad es Monografía)</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:6px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.7);cursor:pointer;margin-bottom:0;padding:8px;background:rgba(255,255,255,.03);border-radius:8px">
+          <input type="checkbox" name="archivo" value="Consentimiento Informado" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0">
+          <span>Consentimiento Informado / Asentimiento / Consentimiento Parental (si aplica)</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:6px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.7);cursor:pointer;margin-bottom:0;padding:8px;background:rgba(255,255,255,.03);border-radius:8px">
+          <input type="checkbox" name="archivo" value="Protocolo de Investigación o Monografía" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0">
+          <span>Protocolo de Investigación o Monografía</span>
+        </label>
+      </div>
     </div>
     <div class="fg">
       <label>Observaciones (Opcional)</label>
