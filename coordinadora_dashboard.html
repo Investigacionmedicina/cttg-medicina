@@ -977,21 +977,23 @@ function renderAlertas() {
   const tbody = document.getElementById('tbodyAlertas');
   if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin alertas de este tipo.</td></tr>'; return; }
   tbody.innerHTML = filtered.map(a => {
-    const badgeAlert = a.tipo === 'critico' ? '<span class="alert-badge alert-critico">⚠️ >60% PLAZO</span>'
-                     : a.tipo === 's12' ? '<span class="alert-badge alert-s12">⚡ SEMESTRE 12</span>'
-                     : '<span class="alert-badge alert-gestion">ℹ️ GESTIÓN</span>';
+    let badgeAlert = '';
+    if (a.tipo === 'critico') badgeAlert = '<span class="alert-badge alert-critico">⚠️ >60% PLAZO</span>';
+    else if (a.tipo === 's12') badgeAlert = '<span class="alert-badge alert-s12">⚡ SEMESTRE 12</span>';
+    else if (a.tipo === 'protocolo_vencido') badgeAlert = '<span class="alert-badge" style="background:rgba(239,68,68,.3);color:#fca5a5">🔴 PROTOCOLO VENCIDO</span>';
+    else badgeAlert = '<span class="alert-badge alert-gestion">ℹ️ GESTIÓN</span>';
+    
     return `<tr>
       <td>${badgeAlert}</td>
       <td><div class="num-rad">${esc(a.numero||'')}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.estudiante||'—')}</td>
-      <td><span class="badge b-aprobado">${esc(a.estado||'—')}</span></td>
+      <td><span class="badge ${a.tipo === 'protocolo_vencido' ? 'b-devuelto' : 'b-aprobado'}">${esc(a.estado||'—')}</span></td>
       <td style="font-size:12px">${esc(a.plazo||'—')}</td>
       <td style="font-size:11px;color:rgba(255,255,255,.5)">${esc(a.detalles||'—')}</td>
       <td><button class="btn bl" onclick="verDetalle(${a.rowIndex||0})">👁 Ver</button></td>
     </tr>`;
   }).join('');
 }
-
 // ════════════════════════════════════════════════════════════
 // TAB 5: PROTOCOLO FASE 2
 // ════════════════════════════════════════════════════════════
