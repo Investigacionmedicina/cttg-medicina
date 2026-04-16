@@ -157,11 +157,19 @@ function cargarProtocolos() {
       data.protocolos.forEach(p => {
         const tr = document.createElement('tr');
         const estadoBadge = {
+          'Cargado': '<span class="badge badge-enviado">📤 Cargado</span>',
           'Enviado': '<span class="badge badge-enviado">📤 Enviado</span>',
           'En Evaluación': '<span class="badge badge-evaluacion">📝 Evaluando</span>',
           'Aprobado': '<span class="badge badge-aprobado">✅ Aprobado</span>',
           'Devuelto': '<span class="badge badge-devuelto">↩️ Devuelto</span>'
         }[p.estado] || p.estado;
+
+        // Solo mostrar botones si está "Cargado" o "Enviado"
+        const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
+        const botonesAccion = esPendiente 
+          ? `<button class="btn-small btn-edit" style="background:rgba(34,197,94,.4);border:1px solid rgba(34,197,94,.6)" onclick="abrirModal('${p.numero}', ${p.rowIndex}, 'aprobar')">✅ Aprobar</button>
+             <button class="btn-small btn-view" style="background:rgba(239,68,68,.4);border:1px solid rgba(239,68,68,.6)" onclick="abrirModal('${p.numero}', ${p.rowIndex}, 'rechazar')">✕ Rechazar</button>`
+          : `<button class="btn-small btn-view" onclick="abrirModal('${p.numero}', ${p.rowIndex}, 'ver')">👁 Ver</button>`;
 
         tr.innerHTML = `
           <td><strong>${p.numero}</strong></td>
@@ -174,7 +182,7 @@ function cargarProtocolos() {
           <td>${p.decision || '—'}</td>
           <td>
             <div class="actions">
-              <button class="btn-small btn-view" onclick="abrirModal('${p.numero}', ${p.rowIndex})">Evaluar</button>
+              ${botonesAccion}
             </div>
           </td>
         `;
@@ -190,17 +198,26 @@ function cargarProtocolos() {
   });
 }
 
-function abrirModal(numero, rowIndex) {
-  protocoloActual = { numero, rowIndex };
+function abrirModal(numero, rowIndex, accion) {
+  protocoloActual = { numero, rowIndex, accion };
   document.getElementById('modalNumero').value          = numero;
   document.getElementById('modalEvaluador').value       = '';
   document.getElementById('modalEmailEvaluador').value  = '';
   document.getElementById('modalFechaReunion').value    = '';
-  document.getElementById('modalDecision').value        = '';
   document.getElementById('modalMotivo').value          = '';
-  document.getElementById('camposAprobacion').style.display = 'none';
-  document.getElementById('camposDevolucion').style.display = 'none';
   document.getElementById('errModal').style.display     = 'none';
+  
+  // Pre-llenar decisión según la acción
+  if (accion === 'aprobar') {
+    document.getElementById('modalDecision').value = 'Aprobado';
+    mostrarCamposDecision();
+  } else if (accion === 'rechazar') {
+    document.getElementById('modalDecision').value = 'Devuelto';
+    mostrarCamposDecision();
+  } else {
+    document.getElementById('modalDecision').value = '';
+  }
+  
   document.getElementById('modalEditar').classList.add('active');
 }
 
@@ -246,7 +263,8 @@ function guardarEvaluacion() {
     return;
   }
 
-  const estadoFinal = decision === 'Aprobado' ? 'Aprobado' : 'Devuelto';
+  // Guardar estado como "Pendiente Comité" si aprueba, "Devuelto" si rechaza
+  const estadoFinal = decision === 'Aprobado' ? 'Pendiente Comité' : 'Devuelto';
 
   fetch(URL_APP, {
     method: 'POST',
