@@ -75,7 +75,12 @@
   <div class="phase-indicator">📋 FASE 2 — PROTOCOLO</div>
   <div id="err" class="err"></div>
   <div id="success" class="success"></div>
-
+<!-- Información de plazo —8 días hábiles -->
+  <div id="infoPlazo" style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:8px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:16px;display:none">
+    <strong style="color:#fcd34d">⏱️ Plazo de revisión</strong><br>
+    El comité técnico tiene <strong>8 días hábiles</strong> para revisar tu protocolo y asignar la fecha de sustentación.<br>
+    <span id="diasRestantes" style="font-size:14px;font-weight:600;color:#a5b4fc;margin-top:8px;display:block">Días restantes: —</span>
+  </div>
   <!-- Número de radicación -->
   <div class="rad-numero">
     <div>
@@ -165,11 +170,30 @@ async function cargarRadicacion(email) {
     if (d.success && d.radicaciones.length > 0) {
       numeroRad = d.radicaciones[0].numero || '—';
       document.getElementById('numeroRadicacion').textContent = numeroRad;
+      
+      // Buscar protocolo cargado para este estudiante
+      const resFase2 = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
+      const dFase2 = await resFase2.json();
+      if (dFase2.success && dFase2.protocolos) {
+        const protocolo = dFase2.protocolos.find(p => String(p.emailEstudiante || '').toLowerCase() === email.toLowerCase());
+        if (protocolo && protocolo.estado === 'Cargado') {
+          document.getElementById('infoPlazo').style.display = 'block';
+          document.getElementById('diasRestantes').textContent = `Días restantes: ${protocolo.diasRestantes} días hábiles`;
+          
+          // Si está vencido
+          if (protocolo.vencido) {
+            document.getElementById('infoPlazo').style.background = 'rgba(239,68,68,.1)';
+            document.getElementById('infoPlazo').style.borderColor = 'rgba(239,68,68,.3)';
+            document.getElementById('diasRestantes').style.color = '#fca5a5';
+            document.getElementById('diasRestantes').textContent = `⚠️ PLAZO VENCIDO — ${Math.abs(protocolo.diasRestantes)} días`;
+          }
+        }
+      }
     } else {
       document.getElementById('err').textContent = 'No se encontró radicación activa.';
       document.getElementById('err').style.display = 'block';
     }
-  } catch(e) {}
+  } catch(e) { console.error('Error:', e); }
 }
 
 async function copiar() {
