@@ -116,14 +116,7 @@
 </header>
 
 <main>
-  <div class="metrics">
-    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div></div>
-    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div></div>
-    <div class="mc c6"><div class="ml">En Revisión</div><div class="mv" id="mRev">—</div></div>
-    <div class="mc c5"><div class="ml">Pend. Comité</div><div class="mv" id="mPend">—</div></div>
-    <div class="mc c2"><div class="ml">Aprobadas</div><div class="mv" id="mApro">—</div></div>
-    <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
-   <div class="metrics">
+    <div class="metrics">
     <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div></div>
     <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div></div>
     <div class="mc c6"><div class="ml">En Revisión</div><div class="mv" id="mRev">—</div></div>
@@ -132,8 +125,7 @@
     <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
     <!-- NUEVA MÉTRICA -->
     <div class="mc c4"><div class="ml">⏰ Plazo Crítico</div><div class="mv" id="mCritico">—</div></div>
-  </div>
-  </div>
+   </div>
 
  <div class="main-tabs">
     <button class="main-tab on" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
@@ -557,21 +549,10 @@ async function cargar() {
         fechaAprobacion: parsearFecha(r.fechaAprobacion)
       }));
       actualizarMetricas();
-     async function cargar() {
-  setSyncState('loading');
-  try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1' }) });
-    const d = await res.json();
-    if (d.success) {
-      radicaciones = (d.radicaciones || []).map(r => ({...}));
-      actualizarMetricas();
-      poblarFiltroMod();
-      renderTabla();
-      setSyncState('ok');
-    } else throw new Error(d.error);
-  } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
+       } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
 }
-      poblarFiltroMod();
+ contarVencimientos();     
+ poblarFiltroMod();
       renderTabla();
       setSyncState('ok');
     } else throw new Error(d.error);
