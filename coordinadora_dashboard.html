@@ -270,7 +270,84 @@
       </table>
     </div>
   </div>
+<!-- MODAL AVALUAR PROTOCOLO -->
+  <div class="modal-bg" id="modalProtocolo">
+    <div class="modal wide">
+      <div class="modal-hdr">
+        <h3>📖 Avaluar Protocolo</h3>
+        <button class="btn" onclick="closeModal('modalProtocolo')">✕</button>
+      </div>
+      
+      <div id="protocoloInfo" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;color:rgba(255,255,255,.5)">
+          Radicación: <strong style="color:#a78bfa" id="pNum">—</strong>
+          | Estudiante: <strong style="color:#a78bfa" id="pEst">—</strong>
+        </div>
+      </div>
 
+      <div class="mfg">
+        <label>¿El protocolo es CORRECTO? *</label>
+        <select id="pDecision" onchange="mostrarOpciones()">
+          <option value="">— Selecciona —</option>
+          <option value="rechazar">❌ NO — Rechazar y devolver</option>
+          <option value="aprobar">✅ SÍ — Aprobar protocolo</option>
+        </select>
+      </div>
+
+      <!-- SI RECHAZA -->
+      <div id="seccionRechazo" style="display:none">
+        <div class="mfg">
+          <label>Motivo de Rechazo *</label>
+          <textarea id="pMotivo" placeholder="Describe por qué el protocolo no es aprobado..."></textarea>
+        </div>
+      </div>
+
+      <!-- SI APRUEBA -->
+      <div id="seccionAprueba" style="display:none">
+        <div class="mfg">
+          <label>¿Requiere Comité Técnico? *</label>
+          <select id="pRequiereComite" onchange="mostrarComite()">
+            <option value="">— Selecciona —</option>
+            <option value="si">✅ SÍ — Enviar a comité técnico</option>
+            <option value="no">⏭️ NO — Aprobar directo a Fase 3</option>
+          </select>
+        </div>
+
+        <!-- Si requiere comité -->
+        <div id="seccionComite" style="display:none">
+          <div class="mfg">
+            <label>Evaluador Asignado *</label>
+            <select id="pEvaluador" onchange="cargarEmailEval()">
+              <option value="">— Selecciona evaluador —</option>
+            </select>
+          </div>
+          <div class="mfg">
+            <label>Email Evaluador *</label>
+            <input type="email" id="pEmailEval" placeholder="Se completa automáticamente" readonly>
+          </div>
+          <div class="mfg">
+            <label>Fecha Reunión Comité *</label>
+            <select id="pFechaComite">
+              <option value="">— Selecciona fecha —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="mfg">
+          <label>Observaciones (Opcional)</label>
+          <textarea id="pObservaciones" placeholder="Comentarios adicionales sobre el protocolo..."></textarea>
+        </div>
+      </div>
+
+      <div id="errProtocolo" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button class="btn" onclick="closeModal('modalProtocolo')">Cancelar</button>
+        <button class="btn-action" id="btnAvaluar" onclick="guardarAvaloProtocolo()">Guardar decisión</button>
+      </div>
+    </div>
+  </div>
   <!-- PANEL SEGUIMIENTO -->
   <div class="panel" id="pan-seguimiento">
     <div class="filters">
@@ -929,7 +1006,6 @@ async function cargarProtocolo() {
     } else throw new Error(d.error);
   } catch(e) { toast('Error cargando protocolos: ' + e.message, 'err'); }
 }
-
 function renderProtocolo() {
   const q  = (document.getElementById('searchProtocolo').value || '').toLowerCase();
   const fE = document.getElementById('fEstProtocolo').value;
@@ -941,31 +1017,190 @@ function renderProtocolo() {
   if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos.</td></tr>'; return; }
   tbody.innerHTML = filtered.map(p => {
     const estadoBadge = {
-      'Cargado':'b-radicado','Revisado':'b-revision','En Solicitud':'b-solicitud',
-      'Aprobado':'b-aprobado','Rechazado':'b-devuelto','En Evaluación':'b-comite',
-      'Aprobado Comité':'b-aprobado'
+      'Cargado':'b-radicado','Revisado':'b-revision','Pendiente Comité':'b-comite',
+      'Aprobado':'b-aprobado','Rechazado':'b-devuelto','Aprobado Directo':'b-aprobado'
     }[p.estado] || 'b-radicado';
+    
+    let btnAccion = '';
+    if (p.estado === 'Cargado') {
+      btnAccion = `<button class="btn am" onclick="abrirModalProtocolo(${p.rowIndex})">✎ Avaluar</button>`;
+    } else {
+      btnAccion = `<button class="btn bl" onclick="verDetalle(${p.rowIndex})">👁 Ver</button>`;
+    }
+    
     return `<tr>
       <td><div class="num-rad">${esc(p.numero||'')}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.estudiante||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(p.email||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.email||'—')}</td>
       <td style="font-size:12px">${esc(p.anexo||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaReunion||'—'}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaComite||'—'}</td>
       <td><span class="badge ${estadoBadge}">${esc(p.estado||'Cargado')}</span></td>
-      <td><button class="btn bl" onclick="abrirModalProtocolo(${p.rowIndex||0})">✎ Revisar</button></td>
+      <td>${btnAccion}</td>
     </tr>`;
   }).join('');
 }
+let protocoloActual = null;
 
 function abrirModalProtocolo(rowIndex) {
   const p = protocolos.find(x => x.rowIndex === rowIndex);
   if (!p) return;
-  document.getElementById('mActaRowIndex').value = rowIndex;
-  document.getElementById('mActaEmail').value = p.email;
-  document.getElementById('modalActaTitulo').textContent = '📖 Revisar Protocolo';
-  document.getElementById('modalActaInfo').innerHTML = `<span style="color:rgba(255,255,255,.5);font-size:12px">Radicación: <strong style="color:#a78bfa">${esc(p.numero)}</strong> · Estado: <strong>${esc(p.estado)}</strong></span>`;
-  document.getElementById('modalActa').classList.add('open');
+  
+  protocoloActual = p;
+  document.getElementById('pNum').textContent = esc(p.numero||'');
+  document.getElementById('pEst').textContent = esc(p.email||'');
+  document.getElementById('pDecision').value = '';
+  document.getElementById('pRequiereComite').value = '';
+  document.getElementById('pMotivo').value = '';
+  document.getElementById('pObservaciones').value = '';
+  document.getElementById('pEmailEval').value = '';
+  document.getElementById('errProtocolo').style.display = 'none';
+  
+  document.getElementById('seccionRechazo').style.display = 'none';
+  document.getElementById('seccionAprueba').style.display = 'none';
+  document.getElementById('seccionComite').style.display = 'none';
+  
+  cargarEvaluadoresProtocolo();
+  cargarFechasComiteProtocolo();
+  
+  document.getElementById('modalProtocolo').classList.add('open');
+}
+
+function mostrarOpciones() {
+  const decision = document.getElementById('pDecision').value;
+  document.getElementById('seccionRechazo').style.display = decision === 'rechazar' ? 'block' : 'none';
+  document.getElementById('seccionAprueba').style.display = decision === 'aprobar' ? 'block' : 'none';
+}
+
+function mostrarComite() {
+  const req = document.getElementById('pRequiereComite').value;
+  document.getElementById('seccionComite').style.display = req === 'si' ? 'block' : 'none';
+}
+
+function cargarEvaluadoresProtocolo() {
+  fetch(URL_APP, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'getEvaluadores' })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success && data.evaluadores) {
+      const select = document.getElementById('pEvaluador');
+      select.innerHTML = '<option value="">— Selecciona evaluador —</option>';
+      data.evaluadores.forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev.nombre + '|' + ev.email;
+        opt.textContent = ev.nombre + ' (' + ev.especialidad + ')';
+        select.appendChild(opt);
+      });
+    }
+  })
+  .catch(e => console.error('Error cargando evaluadores:', e));
+}
+
+function cargarFechasComiteProtocolo() {
+  fetch(URL_APP, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'getFechasComite' })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success && data.fechas) {
+      const select = document.getElementById('pFechaComite');
+      select.innerHTML = '<option value="">— Selecciona fecha —</option>';
+      data.fechas.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.fecha;
+        opt.textContent = f.fecha;
+        select.appendChild(opt);
+      });
+    }
+  })
+  .catch(e => console.error('Error cargando fechas:', e));
+}
+
+function cargarEmailEval() {
+  const sel = document.getElementById('pEvaluador').value;
+  if (sel) {
+    const [nombre, email] = sel.split('|');
+    document.getElementById('pEmailEval').value = email;
+  } else {
+    document.getElementById('pEmailEval').value = '';
+  }
+}
+
+async function guardarAvaloProtocolo() {
+  if (!protocoloActual) return;
+  
+  const decision = document.getElementById('pDecision').value;
+  const motivo = document.getElementById('pMotivo').value.trim();
+  const requiere = document.getElementById('pRequiereComite').value;
+  const evaluador = document.getElementById('pEvaluador').value;
+  const emailEval = document.getElementById('pEmailEval').value;
+  const fechaComite = document.getElementById('pFechaComite').value;
+  const obs = document.getElementById('pObservaciones').value.trim();
+  const errEl = document.getElementById('errProtocolo');
+  const admin = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
+  
+  errEl.style.display = 'none';
+  
+  if (!decision) { errEl.textContent = 'Selecciona si apruebas o rechazas'; errEl.style.display = 'block'; return; }
+  if (decision === 'rechazar' && !motivo) { errEl.textContent = 'Escribe el motivo del rechazo'; errEl.style.display = 'block'; return; }
+  if (decision === 'aprobar' && !requiere) { errEl.textContent = 'Indica si requiere comité técnico'; errEl.style.display = 'block'; return; }
+  if (decision === 'aprobar' && requiere === 'si') {
+    if (!evaluador) { errEl.textContent = 'Selecciona un evaluador'; errEl.style.display = 'block'; return; }
+    if (!fechaComite) { errEl.textContent = 'Selecciona una fecha de comité'; errEl.style.display = 'block'; return; }
+  }
+  
+  const btn = document.getElementById('btnAvaluar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  
+  try {
+    let estado = '';
+    let evalNombre = '';
+    
+    if (decision === 'rechazar') {
+      estado = 'Rechazado';
+    } else if (decision === 'aprobar') {
+      if (requiere === 'si') {
+        estado = 'Pendiente Comité';
+        evalNombre = evaluador.split('|')[0];
+      } else {
+        estado = 'Aprobado Directo';
+      }
+    }
+    
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'avalarProtocoloFase2',
+        rowIndex: protocoloActual.rowIndex,
+        estado: estado,
+        motivo: motivo,
+        evaluador: evalNombre,
+        emailEvaluador: requiere === 'si' ? emailEval : '',
+        fechaComite: requiere === 'si' ? fechaComite : '',
+        observaciones: obs,
+        emailCoord: admin.email
+      })
+    });
+    
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalProtocolo');
+      await cargarProtocolo();
+      toast('Protocolo avalado ✓', 'ok');
+    } else {
+      errEl.textContent = d.error || 'Error al guardar';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Error de conexión: ' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Guardar decisión';
+  }
 }
 
 // ════════════════════════════════════════════════════════════
