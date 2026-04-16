@@ -523,8 +523,8 @@ function renderActas() {
       ? `<div class="alerta-plazo">${esc(plazo.texto)}</div>`
       : `<span style="font-size:12px;color:rgba(255,255,255,.5)">${esc(plazo.texto)}</span>`;
 
-    const esSolicitud = a.estado === 'Solicitud Fase 2';
-    const esPendiente = a.estado === 'Pendiente revisión';
+    const esSolicitud = a.nombreArchivo === 'Solicitud activación Fase 2';
+const esPendiente = a.estado === 'Pendiente revisión' && !esSolicitud;
     const urlBtn = a.urlArchivo ? `<a href="${esc(a.urlArchivo)}" target="_blank" class="btn bl">👁 Ver PDF</a>` : '';
 
     return `<tr>
