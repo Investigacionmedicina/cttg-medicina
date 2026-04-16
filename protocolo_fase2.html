@@ -218,42 +218,59 @@ function marcarPasos() {
     document.getElementById('paso2').classList.add('done');
   }, 500);
 }
-
 async function enviarProtocolo() {
-  const user   = JSON.parse(localStorage.getItem('cttg_user') || 'null');
-  const anexo  = document.getElementById('anexoCambio').value;
-  const obs    = document.getElementById('observaciones').value.trim();
-  const errEl  = document.getElementById('err');
+  const user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
+  const obs = document.getElementById('observaciones').value.trim();
+  const errEl = document.getElementById('err');
   errEl.style.display = 'none';
 
-  if (!anexo) { errEl.textContent = 'Selecciona qué anexo cambió'; errEl.style.display = 'block'; return; }
+  // Obtener checkboxes seleccionados
+  const checkboxes = document.querySelectorAll('input[name="archivo"]:checked');
+  const archivosSeleccionados = Array.from(checkboxes).map(cb => cb.value);
+  const archivosTexto = archivosSeleccionados.length > 0 ? archivosSeleccionados.join(', ') : '';
+
+  if (archivosSeleccionados.length === 0) {
+    errEl.textContent = 'Selecciona al menos un archivo que subiste';
+    errEl.style.display = 'block';
+    return;
+  }
 
   const btn = document.getElementById('btnSubmit');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Registrando...';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Registrando...';
 
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-      action: 'crearProtocolo',
-      numeroRadicacion: numeroRad,
-      emailEstudiante: user.email,
-      nombreArchivo: 'Forms-Protocolo-' + new Date().toISOString().split('T')[0],
-      urlArchivo: '',
-      anexoCambio: anexo,
-      observaciones: obs || 'Enviado via Microsoft Forms'
-    })});
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'crearProtocolo',
+        numeroRadicacion: numeroRad,
+        emailEstudiante: user.email,
+        nombreArchivo: 'Forms-Protocolo-' + new Date().toISOString().split('T')[0],
+        urlArchivo: '',
+        anexoCambio: archivosTexto,
+        observaciones: obs || 'Enviado via Microsoft Forms'
+      })
+    });
     const d = await res.json();
     if (d.success) {
       document.getElementById('successFinal').style.display = 'block';
       btn.style.display = 'none';
       document.getElementById('paso3').classList.add('done');
-      setTimeout(() => { window.location.href = 'estudiante_dashboard.html'; }, 3000);
+      setTimeout(() => {
+        window.location.href = 'estudiante_dashboard.html';
+      }, 3000);
     } else {
-      errEl.textContent = d.error || 'Error al registrar'; errEl.style.display = 'block';
-      btn.disabled = false; btn.innerHTML = '✅ Ya envié — Registrar protocolo';
+      errEl.textContent = d.error || 'Error al registrar';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '✅ Ya envié — Registrar protocolo';
     }
   } catch(e) {
-    errEl.textContent = 'Error de conexión'; errEl.style.display = 'block';
-    btn.disabled = false; btn.innerHTML = '✅ Ya envié — Registrar protocolo';
+    errEl.textContent = 'Error de conexión';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '✅ Ya envié — Registrar protocolo';
   }
 }
 </script>
