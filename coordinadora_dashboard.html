@@ -584,14 +584,36 @@ async function confirmarAccionActa() {
 
 function abrirModalSolicitud(ri, email, numero) {
   solicitudActual = { ri, email, numero };
-  const total = contarActas(email);
-  const aprobadas = actas.filter(a => String(a.emailEstudiante||'').toLowerCase() === email.toLowerCase() && a.estado === 'Aprobada').length;
+  const misActas = actas.filter(a => String(a.emailEstudiante||'').toLowerCase() === email.toLowerCase() && a.estado !== 'Solicitud Fase 2');
+  const aprobadas  = misActas.filter(a => a.estado === 'Aprobada').length;
+  const rechazadas = misActas.filter(a => a.estado === 'Rechazada').length;
+  const pendientes = misActas.filter(a => a.estado === 'Pendiente revisión').length;
+  const filasActas = misActas.map(a => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px">
+      <span style="color:rgba(255,255,255,.6)">${esc(a.nombreArchivo||'Acta')}</span>
+      <span style="color:rgba(255,255,255,.4);font-size:11px">${fmtFecha(a.fechaCarga)}</span>
+      <span class="badge ${{Aprobada:'b-aprobado',Rechazada:'b-devuelto'}[a.estado]||'b-pend'}">${esc(a.estado)}</span>
+    </div>`).join('');
   document.getElementById('modalSolicitudInfo').innerHTML = `
-    <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:14px">
+    <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:14px;margin-bottom:12px">
       <div style="font-size:13px;color:#93c5fd;margin-bottom:8px">📨 El estudiante solicita avanzar a Fase 2</div>
       <div style="font-size:12px;color:rgba(255,255,255,.6)">Radicación: <strong style="color:#a78bfa">${esc(numero)}</strong></div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px">Actas totales: <strong>${total}</strong> · Aprobadas: <strong style="color:#34d399">${aprobadas}</strong></div>
-    </div>`;
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#a78bfa">${misActas.length}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4)">Total actas</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#34d399">${aprobadas}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4)">Aprobadas</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#fcd34d">${pendientes}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4)">Pendientes</div>
+        </div>
+      </div>
+    </div>
+    <div style="max-height:200px;overflow-y:auto">${filasActas || '<div style="text-align:center;color:rgba(255,255,255,.3);padding:12px;font-size:12px">Sin actas registradas</div>'}</div>`;
   document.getElementById('modalSolicitud').classList.add('open');
 }
 
