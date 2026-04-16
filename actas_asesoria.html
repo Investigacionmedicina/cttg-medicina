@@ -86,13 +86,13 @@
     <div><h1>CTTG Medicina</h1><p>Actas de Asesoría</p></div>
   </div>
   <div class="hdr-r">
-    <div class="user-chip">Demo Estudiante</div>
-    <button class="btn-out">Salir</button>
+    <div class="user-chip" id="userChip">—</div>
+    <button class="btn-out" onclick="salir()">Salir</button>
   </div>
 </header>
 
 <main>
-  <a href="#" class="back">← Volver al dashboard</a>
+  <a href="estudiante_dashboard.html" class="back">← Volver al dashboard</a>
 
   <div class="tabs">
     <button class="tab on" onclick="switchTab('mis-actas',this)">📋 Mis Actas</button>
@@ -159,8 +159,8 @@
       </div>
 
       <!-- Botón Forms -->
-      <a href="https://forms.cloud.microsoft/r/33yWf7gqrA" target="_blank" class="btn-forms" onclick="marcarPasos()">
-        <span class="icon">📝</span>
+      <a href="https://forms.office.com/r/33yWf7gqrA" target="_blank" class="btn-forms" onclick="marcarPasos()">
+     <span class="icon">📝</span>
         Abrir formulario de carga
         <span style="font-size:11px;opacity:.7">↗</span>
       </a>
@@ -191,24 +191,48 @@
 <div class="toast" id="toast"></div>
 
 <script>
+ let user = null;
+
+(function init() {
+  user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
+  if (!user || user.rol !== 'estudiante') {
+    window.location.href = 'estudiante_login.html';
+    return;
+  }
+  document.getElementById('userChip').textContent = user.nombre || user.email;
+})();
+
+function salir() {
+  localStorage.removeItem('cttg_user');
+  window.location.href = 'index.html';
+}
 function switchTab(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
   document.getElementById('pan-' + name).classList.add('on');
   btn.classList.add('on');
 }
-function copiar() {
-  navigator.clipboard.writeText('CTTG-2026-0010');
+
+ async function copiar() {
   const t = document.getElementById('toast');
-  t.textContent = 'Número copiado ✓'; t.className = 'toast ok show';
+  try {
+    await navigator.clipboard.writeText('CTTG-2026-0010');
+    t.textContent = 'Número copiado ✓';
+    t.className = 'toast ok show';
+  } catch (e) {
+    t.textContent = 'No fue posible copiar. Cópialo manualmente.';
+    t.className = 'toast warn show';
+  }
   setTimeout(() => t.classList.remove('show'), 2500);
 }
+ 
 function marcarPasos() {
   setTimeout(() => {
     document.getElementById('paso1').classList.add('done');
     document.getElementById('paso2').classList.add('done');
   }, 500);
 }
+ 
 function confirmarEnvio() {
   document.getElementById('successBox').style.display = 'block';
   document.getElementById('btnConfirmar').style.display = 'none';
