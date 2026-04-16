@@ -1023,25 +1023,35 @@ function renderProtocolo() {
       'Aprobado':'b-aprobado','Rechazado':'b-devuelto','Aprobado Directo':'b-aprobado'
     }[p.estado] || 'b-radicado';
     
+    // Color rojo si está vencido
+    const estadoClass = p.vencido ? 'b-devuelto' : estadoBadge;
+    const estadoTexto = p.vencido ? '🔴 VENCIDO' : esc(p.estado||'Cargado');
+    
+    // Mostrar días restantes solo si está "Cargado"
+    let diasTexto = '';
+    if (p.estado === 'Cargado') {
+      diasTexto = `<br><span style="font-size:11px;color:${p.vencido ? '#fca5a5' : '#fcd34d'};font-weight:600">${p.diasRestantes} días</span>`;
+    }
+    
     let btnAccion = '';
     if (p.estado === 'Cargado') {
-      btnAccion = `<button class="btn am" onclick="abrirModalProtocolo(${p.rowIndex})">✎ Avaluar</button>`;
+      btnAccion = `<button class="btn ${p.vencido ? 'rd' : 'am'}" onclick="abrirModalProtocolo(${p.rowIndex})">✎ Avaluar</button>`;
     } else {
       btnAccion = `<button class="btn bl" onclick="verDetalle(${p.rowIndex})">👁 Ver</button>`;
     }
     
-    return `<tr>
+    return `<tr ${p.vencido ? 'style="background:rgba(239,68,68,.08)"' : ''}>
       <td><div class="num-rad">${esc(p.numero||'')}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.email||'—')}</td>
       <td style="font-size:12px">${esc(p.anexo||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaComite||'—'}</td>
-      <td><span class="badge ${estadoBadge}">${esc(p.estado||'Cargado')}</span></td>
+      <td><span class="badge ${estadoClass}">${estadoTexto}</span>${diasTexto}</td>
       <td>${btnAccion}</td>
     </tr>`;
   }).join('');
 }
-let protocoloActual = null;
+ let protocoloActual = null;
 
 function abrirModalProtocolo(rowIndex) {
   const p = protocolos.find(x => x.rowIndex === rowIndex);
