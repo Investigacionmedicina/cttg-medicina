@@ -45,6 +45,21 @@
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .info-box{background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:8px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:16px}
+  /* Nuevo: flujo Forms */
+  .rad-numero{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .rad-numero .num{font-size:18px;font-weight:700;color:#a78bfa;font-family:'DM Serif Display',serif}
+  .rad-numero .lbl{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+  .copy-btn{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#a78bfa;padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .pasos{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+  .paso{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px}
+  .paso-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+  .paso-txt strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
+  .paso-txt span{font-size:12px;color:rgba(255,255,255,.4)}
+  .paso.done .paso-num{background:linear-gradient(135deg,#059669,#10b981)}
+  .btn-forms{display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;width:100%;justify-content:center;margin-bottom:14px;transition:all .2s}
+  .btn-forms:hover{transform:translateY(-1px)}
+  .sep{display:flex;align-items:center;gap:10px;margin:14px 0;color:rgba(255,255,255,.2);font-size:12px}
+  .sep::before,.sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
 </style>
 </head>
 <body>
@@ -53,7 +68,7 @@
     <div class="logo">📄</div>
     <div class="header-text">
       <h2>Protocolo Fase 2</h2>
-      <p>Carga tu documento para evaluación</p>
+      <p>Carga tu documento para evaluación del comité</p>
     </div>
   </div>
 
@@ -61,29 +76,47 @@
   <div id="err" class="err"></div>
   <div id="success" class="success"></div>
 
-  <div class="section">
-    <div class="section-title"><span>🎓</span> Datos de Radicación</div>
-    <div class="fg">
-      <label>Número de Radicación *</label>
-      <input type="text" id="numeroRadicacion" readonly style="opacity:.7">
+  <!-- Número de radicación -->
+  <div class="rad-numero">
+    <div>
+      <div class="lbl">Tu número de radicación</div>
+      <div class="num" id="numeroRadicacion">—</div>
+    </div>
+    <button class="copy-btn" onclick="copiar()">📋 Copiar</button>
+  </div>
+
+  <!-- Pasos -->
+  <div class="pasos">
+    <div class="paso" id="paso1">
+      <div class="paso-num">1</div>
+      <div class="paso-txt">
+        <strong>Abre el formulario de carga</strong>
+        <span>Se abrirá en nueva pestaña. Usa tu número de radicación y correo institucional.</span>
+      </div>
+    </div>
+    <div class="paso" id="paso2">
+      <div class="paso-num">2</div>
+      <div class="paso-txt">
+        <strong>Adjunta tu protocolo en PDF</strong>
+        <span>Asegúrate de que el documento esté completo y aprobado por tu tutor.</span>
+      </div>
+    </div>
+    <div class="paso" id="paso3">
+      <div class="paso-num">3</div>
+      <div class="paso-txt">
+        <strong>Vuelve aquí y completa los datos</strong>
+        <span>Indica qué anexo cambió y envía el registro al sistema.</span>
+      </div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title"><span>📤</span> Documento Protocolo</div>
-    <div class="info-box">📌 Sube tu archivo PDF o DOC. Máx. 50MB. Se guardará automáticamente en Drive al seleccionarlo.</div>
-    <div class="fg">
-      <label>Protocolo (PDF/DOC) *</label>
-      <label class="upload-area" onclick="document.getElementById('fileInput').click()">
-        <input type="file" id="fileInput" accept=".pdf,.doc,.docx" onchange="subirArchivo()">
-        <div class="ua-icon">📁</div>
-        <div class="ua-label">Selecciona tu archivo</div>
-        <div class="ua-sub">Haz clic aquí · PDF o DOC · Máx. 50MB</div>
-      </label>
-      <div class="upload-status" id="uploadStatus"></div>
-    </div>
-  </div>
+  <a href="https://forms.cloud.microsoft/r/33yWf7gqrA" target="_blank" class="btn-forms" onclick="marcarPasos()">
+    <span>📝</span> Abrir formulario de carga <span style="font-size:11px;opacity:.7">↗</span>
+  </a>
 
+  <div class="sep">una vez enviado el formulario</div>
+
+  <!-- Información del protocolo -->
   <div class="section">
     <div class="section-title"><span>🔄</span> Información del Protocolo</div>
     <div class="fg">
@@ -95,133 +128,101 @@
         <option value="A10">Anexo 10 (Cronograma)</option>
         <option value="Consentimiento">Consentimiento Informado</option>
         <option value="Múltiples">Múltiples anexos</option>
+        <option value="Ninguno">Sin cambios de anexo</option>
       </select>
     </div>
     <div class="fg">
       <label>Observaciones (Opcional)</label>
-      <textarea id="observaciones" placeholder="Describe brevemente qué cambió en tu protocolo..."></textarea>
+      <textarea id="observaciones" placeholder="Describe brevemente tu protocolo o qué cambió..."></textarea>
     </div>
   </div>
 
   <div class="btn-group">
-    <button class="btn btn-back" onclick="volver()">← Volver</button>
-    <button class="btn btn-submit" id="btnSubmit" onclick="enviarProtocolo()" disabled>Cargar Protocolo</button>
+    <button class="btn btn-back" onclick="window.location.href='estudiante_dashboard.html'">← Volver</button>
+    <button class="btn btn-submit" id="btnSubmit" onclick="enviarProtocolo()">✅ Ya envié — Registrar protocolo</button>
+  </div>
+
+  <div class="success" id="successFinal" style="margin-top:16px">
+    <div style="font-size:15px;font-weight:600;margin-bottom:4px">🎉 ¡Protocolo registrado!</div>
+    <div style="font-size:12px;opacity:.8">La coordinadora lo evaluará pronto. Recibirás un correo con la decisión del comité.</div>
   </div>
 </div>
 
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
-let driveUrl = null;
-let nombreArchivo = null;
+let numeroRad = '—';
 
-document.addEventListener('DOMContentLoaded', function() {
-  const user = JSON.parse(localStorage.getItem('cttg_user') || '{}');
-  if (!user.id) { window.location.href = 'estudiante_login.html'; return; }
-  cargarRadicacion();
-});
+(function(){
+  const user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
+  if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
+  cargarRadicacion(user.email);
+})();
 
-function cargarRadicacion() {
-  const user = JSON.parse(localStorage.getItem('cttg_user') || '{}');
-  fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success && data.radicaciones.length > 0) {
-        document.getElementById('numeroRadicacion').value = data.radicaciones[0].numero;
-      } else {
-        mostrarError('No se encontró radicación. Debes radicar un proyecto primero.');
-      }
-    }).catch(e => console.error(e));
+async function cargarRadicacion(email) {
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email }) });
+    const d = await res.json();
+    if (d.success && d.radicaciones.length > 0) {
+      numeroRad = d.radicaciones[0].numero || '—';
+      document.getElementById('numeroRadicacion').textContent = numeroRad;
+    } else {
+      document.getElementById('err').textContent = 'No se encontró radicación activa.';
+      document.getElementById('err').style.display = 'block';
+    }
+  } catch(e) {}
 }
 
-function mostrarError(msg) {
-  const el = document.getElementById('err');
-  el.textContent = msg; el.style.display = 'block';
+async function copiar() {
+  try {
+    await navigator.clipboard.writeText(numeroRad);
+    alert('Número copiado: ' + numeroRad);
+  } catch(e) {}
 }
 
-function setStatus(tipo, msg) {
-  const el = document.getElementById('uploadStatus');
-  el.className = 'upload-status ' + tipo;
-  el.style.display = 'block';
-  el.innerHTML = msg;
+function marcarPasos() {
+  setTimeout(() => {
+    document.getElementById('paso1').classList.add('done');
+    document.getElementById('paso2').classList.add('done');
+  }, 500);
 }
 
-function subirArchivo() {
-  const file = document.getElementById('fileInput').files[0];
-  if (!file) return;
-  if (file.size > 50 * 1024 * 1024) { setStatus('error', '❌ El archivo supera el límite de 50MB.'); return; }
-
-  driveUrl = null;
-  nombreArchivo = file.name;
-  document.getElementById('btnSubmit').disabled = true;
-  setStatus('uploading', '<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(165,180,252,.3);border-top-color:#a5b4fc;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px"></span>Subiendo <strong>' + file.name + '</strong> a Drive...');
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const base64 = e.target.result.split(',')[1];
-    fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-      action: 'subirArchivo', base64,
-      nombreArchivo: file.name,
-      tipoArchivo: file.type || 'application/pdf',
-      subcarpeta: 'Protocolos'
-    })})
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        driveUrl = data.url;
-        setStatus('done', '✅ <strong>' + file.name + '</strong> subido · <a href="' + data.url + '" target="_blank" style="color:#6ee7b7">Ver en Drive ↗</a>');
-        document.getElementById('btnSubmit').disabled = false;
-      } else {
-        setStatus('error', '❌ Error al subir: ' + (data.error || 'Intenta de nuevo'));
-      }
-    })
-    .catch(e => setStatus('error', '❌ Error de conexión: ' + e.message));
-  };
-  reader.readAsDataURL(file);
-}
-
-function enviarProtocolo() {
-  const user   = JSON.parse(localStorage.getItem('cttg_user') || '{}');
-  const numero = document.getElementById('numeroRadicacion').value;
+async function enviarProtocolo() {
+  const user   = JSON.parse(localStorage.getItem('cttg_user') || 'null');
   const anexo  = document.getElementById('anexoCambio').value;
-  const obs    = document.getElementById('observaciones').value;
-  document.getElementById('err').style.display = 'none';
-  document.getElementById('success').style.display = 'none';
+  const obs    = document.getElementById('observaciones').value.trim();
+  const errEl  = document.getElementById('err');
+  errEl.style.display = 'none';
 
-  if (!numero)   { mostrarError('No se encontró número de radicación'); return; }
-  if (!driveUrl) { mostrarError('Primero debes subir el archivo'); return; }
-  if (!anexo)    { mostrarError('Selecciona qué anexo cambió'); return; }
+  if (!anexo) { errEl.textContent = 'Selecciona qué anexo cambió'; errEl.style.display = 'block'; return; }
 
   const btn = document.getElementById('btnSubmit');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Registrando...';
 
-  fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-    action: 'crearProtocolo',
-    numeroRadicacion: numero,
-    emailEstudiante: user.email,
-    nombreArchivo,
-    urlArchivo: driveUrl,
-    anexoCambio: anexo,
-    observaciones: obs
-  })})
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      const suc = document.getElementById('success');
-      suc.textContent = '✅ Protocolo registrado exitosamente. La coordinadora lo evaluará pronto.';
-      suc.style.display = 'block';
-      setTimeout(() => { window.location.href = 'estudiante_dashboard.html'; }, 2000);
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'crearProtocolo',
+      numeroRadicacion: numeroRad,
+      emailEstudiante: user.email,
+      nombreArchivo: 'Forms-Protocolo-' + new Date().toISOString().split('T')[0],
+      urlArchivo: '',
+      anexoCambio: anexo,
+      observaciones: obs || 'Enviado via Microsoft Forms'
+    })});
+    const d = await res.json();
+    if (d.success) {
+      document.getElementById('successFinal').style.display = 'block';
+      btn.style.display = 'none';
+      document.getElementById('paso3').classList.add('done');
+      setTimeout(() => { window.location.href = 'estudiante_dashboard.html'; }, 3000);
     } else {
-      mostrarError(data.error || 'Error al registrar protocolo');
-      btn.disabled = false; btn.innerHTML = 'Cargar Protocolo';
+      errEl.textContent = d.error || 'Error al registrar'; errEl.style.display = 'block';
+      btn.disabled = false; btn.innerHTML = '✅ Ya envié — Registrar protocolo';
     }
-  })
-  .catch(e => {
-    mostrarError('Error de conexión: ' + e.message);
-    btn.disabled = false; btn.innerHTML = 'Cargar Protocolo';
-  });
+  } catch(e) {
+    errEl.textContent = 'Error de conexión'; errEl.style.display = 'block';
+    btn.disabled = false; btn.innerHTML = '✅ Ya envié — Registrar protocolo';
+  }
 }
-
-function volver() { window.location.href = 'estudiante_dashboard.html'; }
 </script>
 </body>
 </html>
