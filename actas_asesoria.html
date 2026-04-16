@@ -43,40 +43,30 @@
   input,textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
   input::placeholder,textarea::placeholder{color:rgba(255,255,255,.25)}
   textarea{min-height:65px;resize:vertical}
-  /* Número de radicación destacado */
   .rad-numero{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
   .rad-numero .label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
   .rad-numero .num{font-size:18px;font-weight:700;color:#a78bfa;font-family:'DM Serif Display',serif}
   .rad-numero .copy-btn{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#a78bfa;padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
   .rad-numero .copy-btn:hover{background:rgba(167,139,250,.25)}
-  /* Pasos */
   .pasos{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
   .paso{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px}
   .paso-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
-  .paso-txt{flex:1}
   .paso-txt strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
   .paso-txt span{font-size:12px;color:rgba(255,255,255,.4)}
   .paso.done .paso-num{background:linear-gradient(135deg,#059669,#10b981)}
-  /* Botón Forms */
   .btn-forms{display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;width:100%;justify-content:center;margin-bottom:14px;box-shadow:0 4px 15px rgba(0,120,212,.3);transition:all .2s}
-  .btn-forms:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,120,212,.4)}
-  .btn-forms .icon{font-size:20px}
-  /* Botón confirmar */
+  .btn-forms:hover{transform:translateY(-1px)}
   .btn-rad{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:all .2s;width:100%}
   .btn-rad:hover{transform:translateY(-1px)}
   .btn-rad:disabled{opacity:.6;cursor:not-allowed;transform:none}
-  /* Separador */
   .sep{display:flex;align-items:center;gap:10px;margin:16px 0;color:rgba(255,255,255,.2);font-size:12px}
   .sep::before,.sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
-  /* Info box */
-  .info-box{background:rgba(102,126,234,.08);border:1px solid rgba(102,126,234,.25);border-radius:8px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.6);margin-bottom:16px;line-height:1.6}
-  /* Success */
   .success-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:20px;text-align:center;display:none;margin-top:16px}
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
-  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
+  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.err{background:rgba(239,68,68,.9);color:#fff}
 </style>
 </head>
 <body>
@@ -93,7 +83,6 @@
 
 <main>
   <a href="estudiante_dashboard.html" class="back">← Volver al dashboard</a>
-
   <div class="tabs">
     <button class="tab on" onclick="switchTab('mis-actas',this)">📋 Mis Actas</button>
     <button class="tab" onclick="switchTab('cargar',this)">➕ Cargar Acta</button>
@@ -106,7 +95,7 @@
         <thead><tr>
           <th>Fecha</th><th>N° Radicación</th><th>Observaciones</th><th>Estado</th>
         </tr></thead>
-       <tbody id="tbodyActas">
+        <tbody id="tbodyActas">
           <tr><td colspan="4" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>
         </tbody>
       </table>
@@ -118,17 +107,15 @@
     <div class="form-card">
       <h3><span class="dot"></span>Cargar Acta de Asesoría</h3>
       <p>Sigue los pasos para registrar tu acta correctamente.</p>
-         <div class="num" id="numRadicacion">—</div>
-      <!-- Número de radicación -->
+
       <div class="rad-numero">
         <div>
           <div class="label">Tu número de radicación</div>
-          
+          <div class="num" id="numRadicacion">—</div>
         </div>
         <button class="copy-btn" onclick="copiar()">📋 Copiar</button>
       </div>
 
-      <!-- Pasos -->
       <div class="pasos">
         <div class="paso" id="paso1">
           <div class="paso-num">1</div>
@@ -153,25 +140,20 @@
         </div>
       </div>
 
-      <!-- Botón Forms -->
-      <a href="https://forms.office.com/r/33yWf7gqrA" target="_blank" class="btn-forms" onclick="marcarPasos()">
-     <span class="icon">📝</span>
+      <a href="https://forms.cloud.microsoft/r/33yWf7gqrA" target="_blank" class="btn-forms" onclick="marcarPasos()">
+        <span>📝</span>
         Abrir formulario de carga
         <span style="font-size:11px;opacity:.7">↗</span>
       </a>
 
       <div class="sep">una vez enviado el formulario</div>
 
-      <!-- Observaciones -->
       <div class="fg">
         <label>Observaciones (Opcional)</label>
         <textarea id="observaciones" placeholder="Número de sesión, fecha de asesoría, temas tratados..."></textarea>
       </div>
 
-      <!-- Botón confirmar -->
-      <button class="btn-rad" id="btnConfirmar" onclick="confirmarEnvio()">
-        ✅ Ya envié mi acta
-      </button>
+      <button class="btn-rad" id="btnConfirmar" onclick="confirmarEnvio()">✅ Ya envié mi acta</button>
 
       <div class="success-box" id="successBox">
         <div style="font-size:28px;margin-bottom:8px">🎉</div>
@@ -186,30 +168,23 @@
 <div class="toast" id="toast"></div>
 
 <script>
- const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 let user = null;
 let numeroRadicacion = '—';
 
 (function init() {
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
-  if (!user || user.rol !== 'estudiante') {
-    window.location.href = 'estudiante_login.html';
-    return;
-  }
+  if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
   cargarContexto();
   cargarActas();
 })();
 
-function salir() {
-  localStorage.removeItem('cttg_user');
-  window.location.href = 'index.html';
-}
+function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
 
-function toast(msg, type = 'ok') {
+function toast(msg, type) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast ' + type + ' show';
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
@@ -218,16 +193,17 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
   document.getElementById('pan-' + name).classList.add('on');
   btn.classList.add('on');
+  if (name === 'mis-actas') cargarActas();
 }
 
- function esc(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function fmtFecha(iso) {
-  if (!iso) return '—';
-  const p = String(iso).split('T')[0].split('-');
-  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
+function fmtFecha(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  const p = String(s).split('T')[0].split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
 }
 
 function badgeClass(estado) {
@@ -238,75 +214,80 @@ function badgeClass(estado) {
 
 async function cargarContexto() {
   try {
-    const res = await fetch(URL_APP, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email })
-    });
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
     const d = await res.json();
-    const misRad = (d.success ? (d.radicaciones || []) : []).filter(r => (r.estadoGeneral || '').toLowerCase() !== 'devuelto');
-    const actual = misRad[0] || null;
-    numeroRadicacion = actual?.numero || '—';
-    document.getElementById('numRadicacion').textContent = numeroRadicacion;
-  } catch (e) {
-    document.getElementById('numRadicacion').textContent = '—';
-  }
+    if (d.success && d.radicaciones.length > 0) {
+      numeroRadicacion = d.radicaciones[0].numero || '—';
+      document.getElementById('numRadicacion').textContent = numeroRadicacion;
+    }
+  } catch(e) {}
 }
 
 async function cargarActas() {
   const tbody = document.getElementById('tbodyActas');
+  tbody.innerHTML = '<tr><td colspan="4" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>';
   try {
-    const res = await fetch(URL_APP, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'getActasAsesoria' })
-    });
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) });
     const d = await res.json();
-    if (!d.success) throw new Error(d.error || 'No se pudieron cargar las actas');
-
-    const misActas = (d.actas || []).filter(a =>
-      String(a.emailEstudiante || '').toLowerCase() === String(user.email || '').toLowerCase()
-    );
-
+    if (!d.success) throw new Error(d.error || 'Error al cargar');
+    const misActas = (d.actas || []).filter(a => String(a.emailEstudiante||'').toLowerCase() === user.email.toLowerCase());
     if (!misActas.length) {
       tbody.innerHTML = '<tr><td colspan="4" class="empty">Aún no tienes actas registradas.</td></tr>';
       return;
     }
-
     tbody.innerHTML = misActas.map(a => `
       <tr>
         <td style="font-size:12px;color:rgba(255,255,255,.5)">${fmtFecha(a.fechaCarga)}</td>
-        <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(a.numero || '—')}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(a.observaciones || 'Sin observaciones')}</td>
-        <td><span class="badge ${badgeClass(a.estado)}">${esc(a.estado || 'Pendiente revisión')}</span></td>
-      </tr>
-    `).join('');
-  } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="4" class="empty">Error al cargar actas: ${esc(e.message)}</td></tr>`;
+        <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(a.numero||'—')}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(a.observaciones||'Sin observaciones')}</td>
+        <td><span class="badge ${badgeClass(a.estado)}">${esc(a.estado||'Pendiente revisión')}</span></td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty">Error al cargar: ${esc(e.message)}</td></tr>`;
   }
 }
 
 async function copiar() {
-  const valor = numeroRadicacion && numeroRadicacion !== '—' ? numeroRadicacion : 'CTTG-2026-0010';
   try {
-    await navigator.clipboard.writeText(valor);
+    await navigator.clipboard.writeText(numeroRadicacion);
     toast('Número copiado ✓', 'ok');
-  } catch (e) {
+  } catch(e) {
     toast('No fue posible copiar. Cópialo manualmente.', 'warn');
   }
- 
+}
+
 function marcarPasos() {
   setTimeout(() => {
     document.getElementById('paso1').classList.add('done');
     document.getElementById('paso2').classList.add('done');
   }, 500);
 }
- 
-function confirmarEnvio() {
-  document.getElementById('successBox').style.display = 'block';
-  document.getElementById('btnConfirmar').style.display = 'none';
-  document.getElementById('successBox').scrollIntoView({ behavior: 'smooth' });
-  document.getElementById('paso3').classList.add('done');
+
+async function confirmarEnvio() {
+  const obs = document.getElementById('observaciones').value.trim();
+  const btn = document.getElementById('btnConfirmar');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Registrando...';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'crearActasAsesoria',
+      numeroRadicacion,
+      emailEstudiante: user.email,
+      nombreArchivo: 'Forms-' + new Date().toISOString().split('T')[0],
+      base64: '',
+      observaciones: obs || 'Enviado via Microsoft Forms'
+    })});
+    const d = await res.json();
+    if (d.success) {
+      document.getElementById('successBox').style.display = 'block';
+      document.getElementById('btnConfirmar').style.display = 'none';
+      document.getElementById('successBox').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('paso3').classList.add('done');
+    } else throw new Error(d.error);
+  } catch(e) {
+    toast('Error al registrar: ' + e.message, 'err');
+    btn.disabled = false; btn.innerHTML = '✅ Ya envié mi acta';
+  }
 }
- cargarActas();
 </script>
 </body>
 </html>
