@@ -106,13 +106,8 @@
         <thead><tr>
           <th>Fecha</th><th>N° Radicación</th><th>Observaciones</th><th>Estado</th>
         </tr></thead>
-        <tbody>
-          <tr>
-            <td style="font-size:12px;color:rgba(255,255,255,.5)">15/04/2026</td>
-            <td style="font-size:12px;color:#a78bfa;font-weight:600">CTTG-2026-0010</td>
-            <td style="font-size:12px;color:rgba(255,255,255,.5)">Sesión 1 — revisión marco teórico</td>
-            <td><span class="badge b-pend">Pendiente revisión</span></td>
-          </tr>
+       <tbody id="tbodyActas">
+          <tr><td colspan="4" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>
         </tbody>
       </table>
     </div>
@@ -123,12 +118,12 @@
     <div class="form-card">
       <h3><span class="dot"></span>Cargar Acta de Asesoría</h3>
       <p>Sigue los pasos para registrar tu acta correctamente.</p>
-
+         <div class="num" id="numRadicacion">—</div>
       <!-- Número de radicación -->
       <div class="rad-numero">
         <div>
           <div class="label">Tu número de radicación</div>
-          <div class="num">CTTG-2026-0010</div>
+          
         </div>
         <button class="copy-btn" onclick="copiar()">📋 Copiar</button>
       </div>
@@ -191,7 +186,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
- let user = null;
+ const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+let user = null;
+let numeroRadicacion = '—';
 
 (function init() {
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
@@ -200,12 +197,22 @@
     return;
   }
   document.getElementById('userChip').textContent = user.nombre || user.email;
+  cargarContexto();
+  cargarActas();
 })();
 
 function salir() {
   localStorage.removeItem('cttg_user');
   window.location.href = 'index.html';
 }
+
+function toast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
 function switchTab(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
@@ -213,18 +220,78 @@ function switchTab(name, btn) {
   btn.classList.add('on');
 }
 
- async function copiar() {
-  const t = document.getElementById('toast');
-  try {
-    await navigator.clipboard.writeText('CTTG-2026-0010');
-    t.textContent = 'Número copiado ✓';
-    t.className = 'toast ok show';
-  } catch (e) {
-    t.textContent = 'No fue posible copiar. Cópialo manualmente.';
-    t.className = 'toast warn show';
-  }
-  setTimeout(() => t.classList.remove('show'), 2500);
+ function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
+function fmtFecha(iso) {
+  if (!iso) return '—';
+  const p = String(iso).split('T')[0].split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
+}
+
+function badgeClass(estado) {
+  if (estado === 'Aprobada') return 'b-aprobada';
+  if (estado === 'Rechazada') return 'b-rechazada';
+  return 'b-pend';
+}
+
+async function cargarContexto() {
+  try {
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email })
+    });
+    const d = await res.json();
+    const misRad = (d.success ? (d.radicaciones || []) : []).filter(r => (r.estadoGeneral || '').toLowerCase() !== 'devuelto');
+    const actual = misRad[0] || null;
+    numeroRadicacion = actual?.numero || '—';
+    document.getElementById('numRadicacion').textContent = numeroRadicacion;
+  } catch (e) {
+    document.getElementById('numRadicacion').textContent = '—';
+  }
+}
+
+async function cargarActas() {
+  const tbody = document.getElementById('tbodyActas');
+  try {
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getActasAsesoria' })
+    });
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error || 'No se pudieron cargar las actas');
+
+    const misActas = (d.actas || []).filter(a =>
+      String(a.emailEstudiante || '').toLowerCase() === String(user.email || '').toLowerCase()
+    );
+
+    if (!misActas.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">Aún no tienes actas registradas.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = misActas.map(a => `
+      <tr>
+        <td style="font-size:12px;color:rgba(255,255,255,.5)">${fmtFecha(a.fechaCarga)}</td>
+        <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(a.numero || '—')}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(a.observaciones || 'Sin observaciones')}</td>
+        <td><span class="badge ${badgeClass(a.estado)}">${esc(a.estado || 'Pendiente revisión')}</span></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty">Error al cargar actas: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+async function copiar() {
+  const valor = numeroRadicacion && numeroRadicacion !== '—' ? numeroRadicacion : 'CTTG-2026-0010';
+  try {
+    await navigator.clipboard.writeText(valor);
+    toast('Número copiado ✓', 'ok');
+  } catch (e) {
+    toast('No fue posible copiar. Cópialo manualmente.', 'warn');
+  }
  
 function marcarPasos() {
   setTimeout(() => {
@@ -239,6 +306,7 @@ function confirmarEnvio() {
   document.getElementById('successBox').scrollIntoView({ behavior: 'smooth' });
   document.getElementById('paso3').classList.add('done');
 }
+ cargarActas();
 </script>
 </body>
 </html>
