@@ -45,21 +45,6 @@
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .info-box{background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:8px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:16px}
-  /* Nuevo: flujo Forms */
-  .rad-numero{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .rad-numero .num{font-size:18px;font-weight:700;color:#a78bfa;font-family:'DM Serif Display',serif}
-  .rad-numero .lbl{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
-  .copy-btn{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#a78bfa;padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
-  .pasos{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-  .paso{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px}
-  .paso-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
-  .paso-txt strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
-  .paso-txt span{font-size:12px;color:rgba(255,255,255,.4)}
-  .paso.done .paso-num{background:linear-gradient(135deg,#059669,#10b981)}
-  .btn-forms{display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;width:100%;justify-content:center;margin-bottom:14px;transition:all .2s}
-  .btn-forms:hover{transform:translateY(-1px)}
-  .sep{display:flex;align-items:center;gap:10px;margin:14px 0;color:rgba(255,255,255,.2);font-size:12px}
-  .sep::before,.sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
 </style>
 </head>
 <body>
@@ -68,211 +53,216 @@
     <div class="logo">📄</div>
     <div class="header-text">
       <h2>Protocolo Fase 2</h2>
-      <p>Carga tu documento para evaluación del comité</p>
+      <p>Carga tu documento para evaluación</p>
     </div>
   </div>
 
   <div class="phase-indicator">📋 FASE 2 — PROTOCOLO</div>
   <div id="err" class="err"></div>
   <div id="success" class="success"></div>
-<!-- Información de plazo —8 días hábiles -->
-  <div id="infoPlazo" style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:8px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:16px;display:none">
-    <strong style="color:#fcd34d">⏱️ Plazo de revisión</strong><br>
-    El comité técnico tiene <strong>8 días hábiles</strong> para revisar tu protocolo y asignar la fecha de sustentación.<br>
-    <span id="diasRestantes" style="font-size:14px;font-weight:600;color:#a5b4fc;margin-top:8px;display:block">Días restantes: —</span>
-  </div>
-  <!-- Número de radicación -->
-  <div class="rad-numero">
-    <div>
-      <div class="lbl">Tu número de radicación</div>
-      <div class="num" id="numeroRadicacion">—</div>
-    </div>
-    <button class="copy-btn" onclick="copiar()">📋 Copiar</button>
-  </div>
 
-  <!-- Pasos -->
-  <div class="pasos">
-    <div class="paso" id="paso1">
-      <div class="paso-num">1</div>
-      <div class="paso-txt">
-        <strong>Abre el formulario de carga</strong>
-        <span>Se abrirá en nueva pestaña. Usa tu número de radicación y correo institucional.</span>
-      </div>
+  <div class="section">
+    <div class="section-title"><span>🎓</span> Datos de Radicación</div>
+    <div class="fg">
+      <label>Número de Radicación *</label>
+      <input type="text" id="numeroRadicacion" readonly style="opacity:.7">
     </div>
-    <div class="paso" id="paso2">
-      <div class="paso-num">2</div>
-      <div class="paso-txt">
-        <strong>Adjunta tu protocolo en PDF</strong>
-        <span>Asegúrate de que el documento esté completo y aprobado por tu tutor.</span>
+    <!-- Contador de protocolos -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;padding:12px 14px;text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,.4);letter-spacing:.7px;margin-bottom:4px">📖 Protocolos</div>
+        <div style="font-size:22px;font-weight:700;color:#a78bfa" id="contadorProtocolos">—</div>
       </div>
-    </div>
-    <div class="paso" id="paso3">
-      <div class="paso-num">3</div>
-      <div class="paso-txt">
-        <strong>Vuelve aquí y completa los datos</strong>
-        <span>Indica qué anexo cambió y envía el registro al sistema.</span>
+      <div style="background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:12px 14px;text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,.4);letter-spacing:.7px;margin-bottom:4px">✅ Estado</div>
+        <div style="font-size:13px;font-weight:600;color:#6ee7b7" id="estadoProtocolo">—</div>
       </div>
     </div>
   </div>
 
-  <a href="https://forms.office.com/r/SBFiqKTEKQ?origin=lprLink" target="_blank" class="btn-forms" onclick="marcarPasos()">
-    <span>📝</span> Abrir formulario de carga <span style="font-size:11px;opacity:.7">↗</span>
-  </a>
+  <div class="section">
+    <div class="section-title"><span>📤</span> Documento Protocolo</div>
+    <div class="info-box">📌 Sube tu archivo PDF o DOC. Máx. 50MB. Se guardará automáticamente en Drive al seleccionarlo.</div>
+    <div class="fg">
+      <label>Protocolo (PDF/DOC) *</label>
+      <label class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".pdf,.doc,.docx" onchange="subirArchivo()">
+        <div class="ua-icon">📁</div>
+        <div class="ua-label">Selecciona tu archivo</div>
+        <div class="ua-sub">Haz clic aquí · PDF o DOC · Máx. 50MB</div>
+      </label>
+      <div class="upload-status" id="uploadStatus"></div>
+    </div>
+  </div>
 
-  <div class="sep">una vez enviado el formulario</div>
-
-  <!-- Información del protocolo -->
   <div class="section">
     <div class="section-title"><span>🔄</span> Información del Protocolo</div>
     <div class="fg">
-      <label>¿Qué Archivos Subiste? * (Selecciona todos los que apliquen)</label>
-      <div style="display:grid;grid-template-columns:repeat(1,1fr);gap:8px">
-        <label style="display:flex;align-items:flex-start;gap:6px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.7);cursor:pointer;margin-bottom:0;padding:8px;background:rgba(255,255,255,.03);border-radius:8px">
-          <input type="checkbox" name="archivo" value="Anexo A3 - Propuesta investigativa" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0">
-          <span>Anexo A3 - Propuesta investigativa (si modalidad es Investigación)</span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:6px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.7);cursor:pointer;margin-bottom:0;padding:8px;background:rgba(255,255,255,.03);border-radius:8px">
-          <input type="checkbox" name="archivo" value="Anexo A10 - Protocolo de Monografía de Revisión" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0">
-          <span>Anexo A10 - Protocolo de Monografía de Revisión (si modalidad es Monografía)</span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:6px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.7);cursor:pointer;margin-bottom:0;padding:8px;background:rgba(255,255,255,.03);border-radius:8px">
-          <input type="checkbox" name="archivo" value="Consentimiento Informado" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0">
-          <span>Consentimiento Informado / Asentimiento / Consentimiento Parental (si aplica)</span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:6px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.7);cursor:pointer;margin-bottom:0;padding:8px;background:rgba(255,255,255,.03);border-radius:8px">
-          <input type="checkbox" name="archivo" value="Protocolo de Investigación o Monografía" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0">
-          <span>Protocolo de Investigación o Monografía</span>
-        </label>
-      </div>
+      <label>¿Qué Anexo Cambió? *</label>
+      <select id="anexoCambio">
+        <option value="">— Selecciona qué cambió —</option>
+        <option value="A1">Anexo 1 (Portada)</option>
+        <option value="A3">Anexo 3 (Índice)</option>
+        <option value="A10">Anexo 10 (Cronograma)</option>
+        <option value="Consentimiento">Consentimiento Informado</option>
+        <option value="Múltiples">Múltiples anexos</option>
+      </select>
     </div>
     <div class="fg">
       <label>Observaciones (Opcional)</label>
-      <textarea id="observaciones" placeholder="Describe brevemente tu protocolo o qué cambió..."></textarea>
+      <textarea id="observaciones" placeholder="Describe brevemente qué cambió en tu protocolo..."></textarea>
     </div>
   </div>
 
   <div class="btn-group">
-    <button class="btn btn-back" onclick="window.location.href='estudiante_dashboard.html'">← Volver</button>
-    <button class="btn btn-submit" id="btnSubmit" onclick="enviarProtocolo()">✅ Ya envié — Registrar protocolo</button>
-  </div>
-
-  <div class="success" id="successFinal" style="margin-top:16px">
-    <div style="font-size:15px;font-weight:600;margin-bottom:4px">🎉 ¡Protocolo registrado!</div>
-    <div style="font-size:12px;opacity:.8">La coordinadora lo evaluará pronto. Recibirás un correo con la decisión del comité.</div>
+    <button class="btn btn-back" onclick="volver()">← Volver</button>
+    <button class="btn btn-submit" id="btnSubmit" onclick="enviarProtocolo()" disabled>Cargar Protocolo</button>
   </div>
 </div>
 
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
-let numeroRad = '—';
+let driveUrl = null;
+let nombreArchivo = null;
 
-(function(){
-  const user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
-  if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
-  cargarRadicacion(user.email);
-})();
+document.addEventListener('DOMContentLoaded', function() {
+  const user = JSON.parse(localStorage.getItem('cttg_user') || '{}');
+  if (!user.id) { window.location.href = 'estudiante_login.html'; return; }
+  cargarRadicacion();
+});
 
-async function cargarRadicacion(email) {
-  try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email }) });
-    const d = await res.json();
-    if (d.success && d.radicaciones.length > 0) {
-      numeroRad = d.radicaciones[0].numero || '—';
-      document.getElementById('numeroRadicacion').textContent = numeroRad;
-      
-      // Buscar protocolo cargado para este estudiante
-      const resFase2 = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
-      const dFase2 = await resFase2.json();
-      if (dFase2.success && dFase2.protocolos) {
-        const protocolo = dFase2.protocolos.find(p => String(p.emailEstudiante || '').toLowerCase() === email.toLowerCase());
-        if (protocolo && protocolo.estado === 'Cargado') {
-          document.getElementById('infoPlazo').style.display = 'block';
-          document.getElementById('diasRestantes').textContent = `Días restantes: ${protocolo.diasRestantes} días hábiles`;
-          
-          // Si está vencido
-          if (protocolo.vencido) {
-            document.getElementById('infoPlazo').style.background = 'rgba(239,68,68,.1)';
-            document.getElementById('infoPlazo').style.borderColor = 'rgba(239,68,68,.3)';
-            document.getElementById('diasRestantes').style.color = '#fca5a5';
-            document.getElementById('diasRestantes').textContent = `⚠️ PLAZO VENCIDO — ${Math.abs(protocolo.diasRestantes)} días`;
-          }
-        }
+function cargarRadicacion() {
+  const user = JSON.parse(localStorage.getItem('cttg_user') || '{}');
+  fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success && data.radicaciones.length > 0) {
+        document.getElementById('numeroRadicacion').value = data.radicaciones[0].numero;
+        
+        // Cargar protocolos para contar
+        fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) })
+          .then(r => r.json())
+          .then(dataF2 => {
+            if (dataF2.success && dataF2.protocolos) {
+              const protocolosEstudiante = dataF2.protocolos.filter(p => 
+                String(p.emailEstudiante || '').toLowerCase() === user.email.toLowerCase()
+              );
+              
+              // Mostrar contador
+              document.getElementById('contadorProtocolos').textContent = protocolosEstudiante.length;
+              
+              // Mostrar estado del último protocolo
+              if (protocolosEstudiante.length > 0) {
+                const ultimo = protocolosEstudiante[protocolosEstudiante.length - 1];
+                const estadoMap = {
+                  'Cargado': '⏳ Esperando',
+                  'Revisado': '👁 Revisado',
+                  'Pendiente Comité': '⏱ En Comité',
+                  'Aprobado': '✅ Aprobado',
+                  'Rechazado': '❌ Rechazado',
+                  'Aprobado Directo': '✅ Aprobado'
+                };
+                document.getElementById('estadoProtocolo').textContent = estadoMap[ultimo.estado] || ultimo.estado;
+              }
+            }
+          }).catch(e => console.error('Error cargando Fase2:', e));
+      } else {
+        mostrarError('No se encontró radicación. Debes radicar un proyecto primero.');
       }
-    } else {
-      document.getElementById('err').textContent = 'No se encontró radicación activa.';
-      document.getElementById('err').style.display = 'block';
-    }
-  } catch(e) { console.error('Error:', e); }
+    }).catch(e => console.error(e));
 }
 
-async function copiar() {
-  try {
-    await navigator.clipboard.writeText(numeroRad);
-    alert('Número copiado: ' + numeroRad);
-  } catch(e) {}
+function mostrarError(msg) {
+  const el = document.getElementById('err');
+  el.textContent = msg; el.style.display = 'block';
 }
 
-function marcarPasos() {
-  setTimeout(() => {
-    document.getElementById('paso1').classList.add('done');
-    document.getElementById('paso2').classList.add('done');
-  }, 500);
+function setStatus(tipo, msg) {
+  const el = document.getElementById('uploadStatus');
+  el.className = 'upload-status ' + tipo;
+  el.style.display = 'block';
+  el.innerHTML = msg;
 }
-async function enviarProtocolo() {
-  const user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
-  const obs = document.getElementById('observaciones').value.trim();
-  const errEl = document.getElementById('err');
-  errEl.style.display = 'none';
 
-  // Obtener checkboxes seleccionados
-  const checkboxes = document.querySelectorAll('input[name="archivo"]:checked');
-  const archivosSeleccionados = Array.from(checkboxes).map(cb => cb.value);
-  const archivosTexto = archivosSeleccionados.length > 0 ? archivosSeleccionados.join(', ') : '';
+function subirArchivo() {
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) return;
+  if (file.size > 50 * 1024 * 1024) { setStatus('error', '❌ El archivo supera el límite de 50MB.'); return; }
 
-  if (archivosSeleccionados.length === 0) {
-    errEl.textContent = 'Selecciona al menos un archivo que subiste';
-    errEl.style.display = 'block';
-    return;
-  }
+  driveUrl = null;
+  nombreArchivo = file.name;
+  document.getElementById('btnSubmit').disabled = true;
+  setStatus('uploading', '<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(165,180,252,.3);border-top-color:#a5b4fc;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px"></span>Subiendo <strong>' + file.name + '</strong> a Drive...');
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64 = e.target.result.split(',')[1];
+    fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'subirArchivo', base64,
+      nombreArchivo: file.name,
+      tipoArchivo: file.type || 'application/pdf',
+      subcarpeta: 'Protocolos'
+    })})
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        driveUrl = data.url;
+        setStatus('done', '✅ <strong>' + file.name + '</strong> subido · <a href="' + data.url + '" target="_blank" style="color:#6ee7b7">Ver en Drive ↗</a>');
+        document.getElementById('btnSubmit').disabled = false;
+      } else {
+        setStatus('error', '❌ Error al subir: ' + (data.error || 'Intenta de nuevo'));
+      }
+    })
+    .catch(e => setStatus('error', '❌ Error de conexión: ' + e.message));
+  };
+  reader.readAsDataURL(file);
+}
+
+function enviarProtocolo() {
+  const user   = JSON.parse(localStorage.getItem('cttg_user') || '{}');
+  const numero = document.getElementById('numeroRadicacion').value;
+  const anexo  = document.getElementById('anexoCambio').value;
+  const obs    = document.getElementById('observaciones').value;
+  document.getElementById('err').style.display = 'none';
+  document.getElementById('success').style.display = 'none';
+
+  if (!numero)   { mostrarError('No se encontró número de radicación'); return; }
+  if (!driveUrl) { mostrarError('Primero debes subir el archivo'); return; }
+  if (!anexo)    { mostrarError('Selecciona qué anexo cambió'); return; }
 
   const btn = document.getElementById('btnSubmit');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Registrando...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Registrando...';
 
-  try {
-    const res = await fetch(URL_APP, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'crearProtocolo',
-        numeroRadicacion: numeroRad,
-        emailEstudiante: user.email,
-        nombreArchivo: 'Forms-Protocolo-' + new Date().toISOString().split('T')[0],
-        urlArchivo: '',
-        anexoCambio: archivosTexto,
-        observaciones: obs || 'Enviado via Microsoft Forms'
-      })
-    });
-    const d = await res.json();
-    if (d.success) {
-      document.getElementById('successFinal').style.display = 'block';
-      btn.style.display = 'none';
-      document.getElementById('paso3').classList.add('done');
-      setTimeout(() => {
-        window.location.href = 'estudiante_dashboard.html';
-      }, 3000);
+  fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+    action: 'crearProtocolo',
+    numeroRadicacion: numero,
+    emailEstudiante: user.email,
+    nombreArchivo,
+    urlArchivo: driveUrl,
+    anexoCambio: anexo,
+    observaciones: obs
+  })})
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      const suc = document.getElementById('success');
+      suc.textContent = '✅ Protocolo registrado exitosamente. La coordinadora lo evaluará pronto.';
+      suc.style.display = 'block';
+      // Recargar contador antes de redirigir
+      cargarRadicacion();
+      setTimeout(() => { window.location.href = 'estudiante_dashboard.html'; }, 2000);
     } else {
-      errEl.textContent = d.error || 'Error al registrar';
-      errEl.style.display = 'block';
-      btn.disabled = false;
-      btn.innerHTML = '✅ Ya envié — Registrar protocolo';
+      mostrarError(data.error || 'Error al registrar protocolo');
+      btn.disabled = false; btn.innerHTML = 'Cargar Protocolo';
     }
-  } catch(e) {
-    errEl.textContent = 'Error de conexión';
-    errEl.style.display = 'block';
-    btn.disabled = false;
-    btn.innerHTML = '✅ Ya envié — Registrar protocolo';
-  }
+  })
+  .catch(e => {
+    mostrarError('Error de conexión: ' + e.message);
+    btn.disabled = false; btn.innerHTML = 'Cargar Protocolo';
+  });
 }
+
+function volver() { window.location.href = 'estudiante_dashboard.html'; }
 </script>
 </body>
 </html>
