@@ -584,7 +584,7 @@ async function confirmarAccionActa() {
 
 function abrirModalSolicitud(ri, email, numero) {
   solicitudActual = { ri, email, numero };
-  const misActas = actas.filter(a => String(a.emailEstudiante||'').toLowerCase() === email.toLowerCase() && a.estado !== 'Solicitud Fase 2');
+  const misActas = actas.filter(a => String(a.emailEstudiante||'').toLowerCase() === email.toLowerCase() && a.nombreArchivo !== 'Solicitud activación Fase 2');
   const aprobadas  = misActas.filter(a => a.estado === 'Aprobada').length;
   const rechazadas = misActas.filter(a => a.estado === 'Rechazada').length;
   const pendientes = misActas.filter(a => a.estado === 'Pendiente revisión').length;
