@@ -61,20 +61,8 @@
 </style>
 </head>
 <body>
-<header>
-  <div class="hdr-l">
-    <div class="logo">📋</div>
-    <div><h1>CTTG Medicina</h1><p>Comité Técnico de Investigación</p></div>
-  </div>
-  <div class="hdr-r">
-    <div class="user-chip" id="userChip">—</div>
-    <button class="btn-out" onclick="salir()">Salir</button>
-  </div>
-</header>
 
 <main>
-  <a href="estudiante_dashboard.html" class="back">← Volver al dashboard</a>
-  
   <div class="tabs">
     <button class="tab on" onclick="switchTab('reuniones',this)">📅 Reuniones del Comité</button>
     <button class="tab" onclick="switchTab('mis-decisiones',this)">✅ Mis Decisiones</button>
@@ -150,8 +138,8 @@ const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7
 let user = null;
 
 (function init() {
-  user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
-  if (!user) { window.location.href = 'estudiante_login.html'; return; }
+  user = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
+  if (!user || user.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
   cargarReuniones();
 })();
