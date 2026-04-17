@@ -242,8 +242,19 @@ let protocoloActual = null;
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
   if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
+  cargarRadicacion();
   cargarProtocolos();
 })();
+
+async function cargarRadicacion() {
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
+    const d = await res.json();
+    if (d.success && d.radicaciones.length > 0) {
+      window.numeroRadicacion = d.radicaciones[0].numero || '';
+    }
+  } catch(e) { console.error(e); }
+}
 
 function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
 
@@ -370,11 +381,16 @@ async function confirmarEnvio() {
     return;
   }
 
+  if (!window.numeroRadicacion) {
+    toast('No se encontró tu número de radicación', 'err');
+    return;
+  }
+
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Registrando...';
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'crearProtocolo',
-      numeroRadicacion: document.querySelector('input[readonly]')?.value || '',
+      numeroRadicacion: window.numeroRadicacion,
       emailEstudiante: user.email,
       nombreArchivo: 'Forms-' + new Date().toISOString().split('T')[0],
       urlArchivo: '',
@@ -387,7 +403,7 @@ async function confirmarEnvio() {
       document.getElementById('btnConfirmar').style.display = 'none';
       document.getElementById('successBox').scrollIntoView({ behavior: 'smooth' });
       document.getElementById('paso3').classList.add('done');
-    } else throw new Error(d.error);
+    } else throw new Error(d.error || 'Error desconocido');
   } catch(e) {
     toast('Error al registrar: ' + e.message, 'err');
     btn.disabled = false; btn.innerHTML = '✅ Ya envié mi protocolo';
