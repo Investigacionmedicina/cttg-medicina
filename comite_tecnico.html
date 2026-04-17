@@ -58,6 +58,23 @@
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-bg.open{display:flex}
+  .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
+  @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
+  .mfg{margin-bottom:14px}
+  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);margin-bottom:5px}
+  .mfg select,.mfg textarea{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
+  .mfg select option{background:#111827}
+  .mfg textarea{min-height:80px;resize:vertical}
+  .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+  .btn-action:hover{transform:translateY(-1px)}
+  .btn-action:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
+  .btn:hover{background:rgba(255,255,255,.07);color:#fff}
+  .btn.gr{color:#34d399;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
 </style>
 </head>
 <body>
@@ -103,10 +120,10 @@
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>N° Radicación</th><th>Estudiante</th><th>Evaluador</th><th>Estado</th>
+              <th>N° Radicación</th><th>Estudiante</th><th>Evaluador</th><th>Estado</th><th>Acción</th>
             </tr></thead>
             <tbody id="detProtocolos">
-              <tr><td colspan="4" class="empty">Cargando protocolos...</td></tr>
+              <tr><td colspan="5" class="empty">Cargando protocolos...</td></tr>
             </tbody>
           </table>
         </div>
@@ -130,6 +147,49 @@
     </div>
   </div>
 </main>
+
+<!-- MODAL REGISTRAR DECISIÓN -->
+<div class="modal-bg" id="modalDecision">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>📋 Registrar Decisión</h3>
+      <button class="btn" onclick="closeModal('modalDecision')">✕</button>
+    </div>
+    
+    <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;color:rgba(255,255,255,.5)">
+        Radicación: <strong style="color:#a78bfa" id="decNum">—</strong>
+        | Estudiante: <strong style="color:#a78bfa" id="decEst">—</strong>
+      </div>
+    </div>
+
+    <div class="mfg">
+      <label>Decisión del Comité *</label>
+      <select id="decisionSelect">
+        <option value="">— Selecciona —</option>
+        <option value="Aprobado">✅ Aprobado</option>
+        <option value="Devuelto">↩️ Devuelto</option>
+      </select>
+    </div>
+
+    <div class="mfg" id="motivoDiv" style="display:none">
+      <label>Motivo de Devolución *</label>
+      <textarea id="motivoText" placeholder="Explica por qué fue devuelto..."></textarea>
+    </div>
+
+    <div class="mfg">
+      <label>Observaciones (Opcional)</label>
+      <textarea id="obsText" placeholder="Comentarios adicionales..."></textarea>
+    </div>
+
+    <div id="errDecision" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="closeModal('modalDecision')">Cancelar</button>
+      <button class="btn-action" id="btnGuardarDec" onclick="guardarDecision()">Guardar decisión</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -251,6 +311,7 @@ function mostrarDetalleReunion(fecha) {
           <td style="font-size:12px;color:rgba(255,255,255,.8)">${esc(p.emailEstudiante||'—')}</td>
           <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
           <td><span class="badge b-pend">⏱ Pendiente</span></td>
+          <td><button class="btn gr" onclick="abrirModalDecision(${p.rowIndex},'${esc(p.numero||'')}','${esc(p.emailEstudiante||'')}')">✅ Decisión</button></td>
         </tr>
       `).join('');
 
@@ -293,6 +354,86 @@ async function cargarDecisiones() {
     }).join('');
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="6" class="empty">Error: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+let protocoloActual = null;
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function abrirModalDecision(rowIndex, numero, email) {
+  const p = protocoloActual = { rowIndex, numero, email };
+  document.getElementById('decNum').textContent = numero;
+  document.getElementById('decEst').textContent = email;
+  document.getElementById('decisionSelect').value = '';
+  document.getElementById('motivoDiv').style.display = 'none';
+  document.getElementById('motivoText').value = '';
+  document.getElementById('obsText').value = '';
+  document.getElementById('errDecision').style.display = 'none';
+  document.getElementById('modalDecision').classList.add('open');
+}
+
+document.getElementById('decisionSelect')?.addEventListener('change', function() {
+  document.getElementById('motivoDiv').style.display = 
+    this.value === 'Devuelto' ? 'block' : 'none';
+});
+
+async function guardarDecision() {
+  if (!protocoloActual) return;
+  
+  const decision = document.getElementById('decisionSelect').value;
+  const motivo = document.getElementById('motivoText').value.trim();
+  const obs = document.getElementById('obsText').value.trim();
+  const errEl = document.getElementById('errDecision');
+  
+  errEl.style.display = 'none';
+  
+  if (!decision) { 
+    errEl.textContent = 'Selecciona una decisión';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (decision === 'Devuelto' && !motivo) {
+    errEl.textContent = 'Escribe el motivo de la devolución';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('btnGuardarDec');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Guardando...';
+
+  try {
+    const admin = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'registrarDecisionComite',
+        rowIndex: protocoloActual.rowIndex,
+        estado: decision,
+        motivoDevoluccion: decision === 'Devuelto' ? motivo : '',
+        observaciones: obs,
+        emailEvaluador: admin.email,
+        evaluador: admin.nombre || admin.email
+      })
+    });
+    
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalDecision');
+      toast('Decisión registrada ✓', 'ok');
+      // Recargar reuniones
+      await cargarReuniones();
+    } else {
+      errEl.textContent = d.error || 'Error al guardar';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Error de conexión: ' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Guardar decisión';
   }
 }
 </script>
