@@ -394,6 +394,11 @@
       </table>
     </div>
   </div>
+ <!-- PANEL COMITÉ TÉCNICO -->
+  <div class="panel" id="pan-comite">
+    <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
+    <iframe src="comite_tecnico.html" style="width:100%;height:800px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
+  </div>
  </main>
 
 <!-- MODAL ESTADO RADICACIÓN -->
@@ -1294,6 +1299,7 @@ window.switchPanel = function(name, btn) {
   if (name === 'alertas') cargarAlertas();
   if (name === 'protocolo') cargarProtocolo();
   if (name === 'seguimiento') cargarSeguimiento();
+  if (name === 'comite') console.log('Comité cargado');
 };
  function contarVencimientos() {
   let vencTutores = 0, vencActas = 0, vencProtocolo = 0;
