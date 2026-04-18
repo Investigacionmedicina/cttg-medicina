@@ -197,12 +197,12 @@
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 let user = null;
 
-(function init() {
+document.addEventListener('DOMContentLoaded', function() {
   user = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
   if (!user || user.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
-  document.getElementById('userChip').textContent = user.nombre || user.email;
+  console.log('=== INICIANDO COMITÉ TÉCNICO ===');
   cargarReuniones();
-})();
+});
 
 function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
 
@@ -234,14 +234,23 @@ async function cargarReuniones() {
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
     const d = await res.json();
+    console.log('Respuesta getFase2:', d); // DEBUG
     if (!d.success) throw new Error('Error al cargar');
 
     const protocolos = d.protocolos || [];
+    console.log('Total protocolos:', protocolos.length); // DEBUG
+    console.log('Protocolos recibidos:', protocolos); // DEBUG
+
     const reunionesMap = {};
 
     // Agrupar protocolos por fecha de comité
     protocolos.forEach(p => {
-      if (p.fechaComite && p.estado === 'Pendiente Comité') {
+      console.log(`Protocolo ${p.numero}: estado="${p.estado}", fechaComite="${p.fechaComite}"`); // DEBUG
+      const estadoNorm = String(p.estado || '').toLowerCase().trim();
+      const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'enviado' || estadoNorm === 'cargado';
+      
+      if (p.fechaComite && esPendiente) {
+        console.log(`✅ Incluido en reunión: ${p.numero}`); // DEBUG
         if (!reunionesMap[p.fechaComite]) {
           reunionesMap[p.fechaComite] = {
             fecha: p.fechaComite,
@@ -255,9 +264,17 @@ async function cargarReuniones() {
     });
 
     const reuniones = Object.values(reunionesMap).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    console.log('Reuniones agrupadas:', reuniones); // DEBUG
+
+    // Contar protocolos sin fecha o sin evaluador
+    const sinFecha = protocolos.filter(p => p.estado === 'Pendiente Comité' && !p.fechaComite).length;
+    const sinEvaluador = protocolos.filter(p => p.estado === 'Pendiente Comité' && !p.evaluador).length;
 
     if (!reuniones.length) {
-      document.getElementById('reunionesContainer').innerHTML = '<div class="empty">No hay reuniones programadas</div>';
+      let msg = 'No hay reuniones programadas';
+      if (sinFecha > 0) msg += ` (${sinFecha} protocolo(s) sin fecha de comité)`;
+      if (sinEvaluador > 0) msg += ` (${sinEvaluador} protocolo(s) sin evaluador)`;
+      document.getElementById('reunionesContainer').innerHTML = `<div class="empty">${msg}</div>`;
       return;
     }
 
@@ -279,6 +296,7 @@ async function cargarReuniones() {
       </div>
     `).join('');
   } catch(e) {
+    console.error('Error en cargarReuniones:', e); // DEBUG
     document.getElementById('reunionesContainer').innerHTML = `<div class="empty">Error: ${esc(e.message)}</div>`;
   }
 }
@@ -287,7 +305,11 @@ function mostrarDetalleReunion(fecha) {
   fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) })
     .then(r => r.json())
     .then(d => {
-      const protocolos = (d.protocolos || []).filter(p => p.fechaComite === fecha && p.estado === 'Pendiente Comité');
+      const protocolos = (d.protocolos || []).filter(p => {
+        const estadoNorm = String(p.estado || '').toLowerCase().trim();
+        const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'enviado' || estadoNorm === 'cargado';
+        return p.fechaComite === fecha && esPendiente;
+      });
       
       if (!protocolos.length) return;
 
