@@ -375,35 +375,35 @@ function mostrarDetalle(rowIndex) {
       document.getElementById('detFechaComite').textContent = fmtFecha(protocolo.fechaComite);
       
       // Mostrar decisión si ya fue evaluado
-      const yaEvaluado = protocolo.estado === 'Aprobado' || protocolo.estado === 'Devuelto' || protocolo.estado === 'Aprobado Directo';
+      // CORREGIDO: Los estados reales en columna I son: 
+// "Devuelto", "Aprobado Directo", "Pendiente Comité", "Cargado"
+const yaEvaluado = protocolo.estado === 'Devuelto' || 
+                   protocolo.estado === 'Aprobado Directo' ||
+                   protocolo.estado === 'Pendiente Comité';
       
       if (yaEvaluado) {
-        document.getElementById('estadoEvaluado').style.display = 'block';
-        document.getElementById('detDecisionRow').style.display = 'flex';
-        document.getElementById('detObservacionesRow').style.display = 'flex';
-        
-        const decisionTexto = protocolo.estado === 'Aprobado' ? '✅ Aprobado' : 
-                             protocolo.estado === 'Aprobado Directo' ? '✅ Aprobado Directo' : 
-                             '❌ Devuelto para correcciones';
-        document.getElementById('detDecision').textContent = decisionTexto;
-        document.getElementById('detObservaciones').textContent = esc(protocolo.observaciones || '—');
-        
-        if (protocolo.estado === 'Devuelto') {
-          document.getElementById('detMotivoDevolRow').style.display = 'flex';
-          document.getElementById('detMotivo').textContent = esc(protocolo.motivoDevolucio || '—');
-        } else {
-          document.getElementById('detMotivoDevolRow').style.display = 'none';
-        }
-      } else {
-        document.getElementById('estadoEvaluado').style.display = 'none';
-        document.getElementById('detDecisionRow').style.display = 'none';
-        document.getElementById('detObservacionesRow').style.display = 'none';
-        document.getElementById('detMotivoDevolRow').style.display = 'none';
-      }
-      
-      document.getElementById('detalleProtocolo').style.display = 'block';
-      document.getElementById('detalleProtocolo').scrollIntoView({ behavior: 'smooth' });
-    });
+  document.getElementById('estadoEvaluado').style.display = 'block';
+  document.getElementById('detDecisionRow').style.display = 'flex';
+  document.getElementById('detObservacionesRow').style.display = 'flex';
+  
+  const decisionTexto = protocolo.estado === 'Aprobado' ? '✅ Aprobado' : 
+                       protocolo.estado === 'Aprobado Directo' ? '✅ Aprobado Directo' : 
+                       '❌ Devuelto para correcciones';
+  document.getElementById('detDecision').textContent = decisionTexto;
+  document.getElementById('detObservaciones').textContent = esc(protocolo.observaciones || '—'); // CAMBIO: usar observaciones
+  
+  if (protocolo.estado === 'Devuelto') {
+    document.getElementById('detMotivoDevolRow').style.display = 'flex';
+    document.getElementById('detMotivo').textContent = esc(protocolo.observaciones || '—'); // CAMBIO: usar observaciones
+  } else {
+    document.getElementById('detMotivoDevolRow').style.display = 'none';
+  }
+} else {
+  document.getElementById('estadoEvaluado').style.display = 'none';
+  document.getElementById('detDecisionRow').style.display = 'none';
+  document.getElementById('detObservacionesRow').style.display = 'none';
+  document.getElementById('detMotivoDevolRow').style.display = 'none';
+}
 }
 
 function marcarPasos() {
