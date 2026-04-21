@@ -66,7 +66,7 @@
   .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
   .mfg{margin-bottom:14px}
   .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);margin-bottom:5px}
-  .mfg select,.mfg textarea{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
+  .mfg select,.mfg textarea,.mfg input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
   .mfg select option{background:#111827}
   .mfg textarea{min-height:80px;resize:vertical}
   .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
@@ -177,6 +177,22 @@
       <textarea id="motivoText" placeholder="Explica por qué fue devuelto..."></textarea>
     </div>
 
+    <!-- 🔴 NUEVO: Número de Acta (solo si es Aprobado) -->
+    <div class="mfg" id="actaDiv" style="display:none">
+      <label>Número de Acta *</label>
+      <input type="number" id="actaNum" placeholder="18" min="1">
+    </div>
+
+    <!-- 🔴 NUEVO: Aval CCEB (solo si es Aprobado) -->
+    <div class="mfg" id="avalDiv" style="display:none">
+      <label>¿Requiere Aval Comité de Ética (CCEB)? *</label>
+      <select id="avalSelect">
+        <option value="">— Selecciona —</option>
+        <option value="Sí">✅ Sí</option>
+        <option value="No">❌ No</option>
+      </select>
+    </div>
+
     <div class="mfg">
       <label>Observaciones (Opcional)</label>
       <textarea id="obsText" placeholder="Comentarios adicionales..."></textarea>
@@ -196,6 +212,7 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 let user = null;
+let ultimoNumeroActa = 17; // Tú nos dirás si cambiar
 
 document.addEventListener('DOMContentLoaded', function() {
   user = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
@@ -234,23 +251,23 @@ async function cargarReuniones() {
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
     const d = await res.json();
-    console.log('Respuesta getFase2:', d); // DEBUG
+    console.log('Respuesta getFase2:', d);
     if (!d.success) throw new Error('Error al cargar');
 
     const protocolos = d.protocolos || [];
-    console.log('Total protocolos:', protocolos.length); // DEBUG
-    console.log('Protocolos recibidos:', protocolos); // DEBUG
+    console.log('Total protocolos:', protocolos.length);
+    console.log('Protocolos recibidos:', protocolos);
 
     const reunionesMap = {};
 
     // Agrupar protocolos por fecha de comité
     protocolos.forEach(p => {
-      console.log(`Protocolo ${p.numero}: estado="${p.estado}", fechaComite="${p.fechaComite}"`); // DEBUG
+      console.log(`Protocolo ${p.numero}: estado="${p.estado}", fechaComite="${p.fechaComite}"`);
       const estadoNorm = String(p.estado || '').toLowerCase().trim();
-      const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'enviado' || estadoNorm === 'cargado';
+      const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'cargado';
       
       if (p.fechaComite && esPendiente) {
-        console.log(`✅ Incluido en reunión: ${p.numero}`); // DEBUG
+        console.log(`✅ Incluido en reunión: ${p.numero}`);
         if (!reunionesMap[p.fechaComite]) {
           reunionesMap[p.fechaComite] = {
             fecha: p.fechaComite,
@@ -264,9 +281,8 @@ async function cargarReuniones() {
     });
 
     const reuniones = Object.values(reunionesMap).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-    console.log('Reuniones agrupadas:', reuniones); // DEBUG
+    console.log('Reuniones agrupadas:', reuniones);
 
-    // Contar protocolos sin fecha o sin evaluador
     const sinFecha = protocolos.filter(p => p.estado === 'Pendiente Comité' && !p.fechaComite).length;
     const sinEvaluador = protocolos.filter(p => p.estado === 'Pendiente Comité' && !p.evaluador).length;
 
@@ -296,7 +312,7 @@ async function cargarReuniones() {
       </div>
     `).join('');
   } catch(e) {
-    console.error('Error en cargarReuniones:', e); // DEBUG
+    console.error('Error en cargarReuniones:', e);
     document.getElementById('reunionesContainer').innerHTML = `<div class="empty">Error: ${esc(e.message)}</div>`;
   }
 }
@@ -307,7 +323,7 @@ function mostrarDetalleReunion(fecha) {
     .then(d => {
       const protocolos = (d.protocolos || []).filter(p => {
         const estadoNorm = String(p.estado || '').toLowerCase().trim();
-        const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'enviado' || estadoNorm === 'cargado' || estadoNorm === 'pendiente comité';
+        const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'cargado';
         return p.fechaComite === fecha && esPendiente;
       });
       
@@ -390,14 +406,22 @@ function abrirModalDecision(rowIndex, numero, email) {
   document.getElementById('decisionSelect').value = '';
   document.getElementById('motivoDiv').style.display = 'none';
   document.getElementById('motivoText').value = '';
+  document.getElementById('actaDiv').style.display = 'none';
+  document.getElementById('actaNum').value = ultimoNumeroActa + 1; // Sugerir siguiente número
+  document.getElementById('avalDiv').style.display = 'none';
+  document.getElementById('avalSelect').value = '';
   document.getElementById('obsText').value = '';
   document.getElementById('errDecision').style.display = 'none';
   document.getElementById('modalDecision').classList.add('open');
 }
 
 document.getElementById('decisionSelect')?.addEventListener('change', function() {
-  document.getElementById('motivoDiv').style.display = 
-    this.value === 'Devuelto' ? 'block' : 'none';
+  const esAprobado = this.value === 'Aprobado';
+  const esDevuelto = this.value === 'Devuelto';
+  
+  document.getElementById('motivoDiv').style.display = esDevuelto ? 'block' : 'none';
+  document.getElementById('actaDiv').style.display = esAprobado ? 'block' : 'none';
+  document.getElementById('avalDiv').style.display = esAprobado ? 'block' : 'none';
 });
 
 async function guardarDecision() {
@@ -405,6 +429,8 @@ async function guardarDecision() {
   
   const decision = document.getElementById('decisionSelect').value;
   const motivo = document.getElementById('motivoText').value.trim();
+  const numActa = document.getElementById('actaNum').value.trim();
+  const aval = document.getElementById('avalSelect').value;
   const obs = document.getElementById('obsText').value.trim();
   const errEl = document.getElementById('errDecision');
   
@@ -417,6 +443,16 @@ async function guardarDecision() {
   }
   if (decision === 'Devuelto' && !motivo) {
     errEl.textContent = 'Escribe el motivo de la devolución';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (decision === 'Aprobado' && !numActa) {
+    errEl.textContent = 'Ingresa el número de acta';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (decision === 'Aprobado' && !aval) {
+    errEl.textContent = 'Indica si requiere aval CCEB';
     errEl.style.display = 'block';
     return;
   }
@@ -436,7 +472,9 @@ async function guardarDecision() {
         motivoDevoluccion: decision === 'Devuelto' ? motivo : '',
         observaciones: obs,
         emailEvaluador: admin.email,
-        evaluador: admin.nombre || admin.email
+        evaluador: admin.nombre || admin.email,
+        numeroActa: decision === 'Aprobado' ? numActa : '',
+        avalCCEB: decision === 'Aprobado' ? aval : ''
       })
     });
     
