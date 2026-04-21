@@ -406,11 +406,15 @@ function abrirModalDecision(rowIndex, numero, email) {
   document.getElementById('decisionSelect').value = '';
   document.getElementById('motivoDiv').style.display = 'none';
   document.getElementById('motivoText').value = '';
+  document.getElementById('actaDiv').style.display = 'none';
+  document.getElementById('actaNum').value = 18;  // El siguiente número
+  document.getElementById('avalDiv').style.display = 'none';
+  document.getElementById('avalSelect').value = '';
   document.getElementById('obsText').value = '';
   document.getElementById('errDecision').style.display = 'none';
   document.getElementById('modalDecision').classList.add('open');
 }
-document.getElementById('decisionSelect')?.addEventListener('change', function() {
+ document.getElementById('decisionSelect')?.addEventListener('change', function() {
   const esAprobado = this.value === 'Aprobado';
   const esDevuelto = this.value === 'Devuelto';
   
