@@ -380,10 +380,10 @@ function mostrarDetalle(rowIndex) {
       document.getElementById('detEvaluador').textContent = protocolo.evaluador || '—';
       document.getElementById('detFechaComite').textContent = fmtFecha(protocolo.fechaComite);
 
-      const yaEvaluado =
-        protocolo.estado === 'Devuelto' ||
-        protocolo.estado === 'Aprobado Directo' ||
-        protocolo.estado === 'Pendiente Comité';
+    const yaEvaluado =
+  protocolo.estado === 'Devuelto' ||
+  protocolo.estado === 'Aprobado' ||
+  protocolo.estado === 'Aprobado Directo';
 
       if (yaEvaluado) {
         document.getElementById('estadoEvaluado').style.display = 'block';
