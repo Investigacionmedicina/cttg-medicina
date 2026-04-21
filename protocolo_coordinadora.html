@@ -179,7 +179,7 @@ function cargarProtocolos() {
           <td>${p.anexoCambio}</td>
           <td>${estadoBadge}</td>
           <td>${p.evaluador || '—'}</td>
-          <td>${p.decision || '—'}</td>
+          <td>${p.estado === 'Pendiente Comité' ? '⏳ Pendiente decisión del Comité' : (p.decision || '—')}</td>
           <td>
             <div class="actions">
               ${botonesAccion}
