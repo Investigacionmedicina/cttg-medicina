@@ -663,7 +663,56 @@ function actualizarContadorGeneral(radicacion) {
     }
   }
 }
-
+async function cargarDatos() {
+  const user = JSON.parse(localStorage.getItem('cttg_user') || '{}');
+  const email = user.email;
+  
+  if (!email) {
+    window.location.href = 'estudiante_login.html';
+    return;
+  }
+  
+  try {
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'obtenerDatosEstudiante', email: email })
+    });
+    
+    const data = await res.json();
+    
+    if (data.success && data.estudiante) {
+      const est = data.estudiante;
+      
+      if (document.getElementById('numeroRadicacion')) 
+        document.getElementById('numeroRadicacion').textContent = est.numeroRadicacion || '—';
+      if (document.getElementById('estado')) 
+        document.getElementById('estado').textContent = est.estado || '—';
+      if (document.getElementById('titulo')) 
+        document.getElementById('titulo').textContent = est.titulo || '—';
+      if (document.getElementById('modalidad')) 
+        document.getElementById('modalidad').textContent = est.modalidad || '—';
+      if (document.getElementById('area')) 
+        document.getElementById('area').textContent = est.area || '—';
+      if (document.getElementById('tutor1')) 
+        document.getElementById('tutor1').textContent = est.tutor1Nombre || '—';
+      if (document.getElementById('tutor2')) 
+        document.getElementById('tutor2').textContent = est.tutor2Nombre || '—';
+      if (document.getElementById('fechaRadicacion')) 
+        document.getElementById('fechaRadicacion').textContent = est.fechaRadicacion || '—';
+      if (document.getElementById('fechaAprobacion')) 
+        document.getElementById('fechaAprobacion').textContent = est.fechaAprobacion || '—';
+      if (document.getElementById('notas')) 
+        document.getElementById('notas').textContent = est.notas || '—';
+        
+    } else {
+      console.log('No se encontraron datos del estudiante');
+    }
+  } catch(e) {
+    console.log('Error cargando datos: ' + e.message);
+  }
+}
+ 
+window.addEventListener('load', cargarDatos);
 document.getElementById('modalDet').addEventListener('click', e => {
   if (e.target === document.getElementById('modalDet')) document.getElementById('modalDet').classList.remove('open');
 });
