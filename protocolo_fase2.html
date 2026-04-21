@@ -390,12 +390,14 @@ function mostrarDetalle(rowIndex) {
         document.getElementById('detDecisionRow').style.display = 'flex';
         document.getElementById('detObservacionesRow').style.display = 'flex';
 
-        const decisionTexto =
-          protocolo.estado === 'Aprobado'
-            ? '✅ Aprobado'
-            : protocolo.estado === 'Aprobado Directo'
-            ? '✅ Aprobado Directo'
-            : '❌ Devuelto para correcciones';
+       const decisionTexto =
+  protocolo.estado === 'Aprobado'
+    ? '✅ Aprobado'
+    : protocolo.estado === 'Aprobado Directo'
+    ? '✅ Aprobado Directo'
+    : protocolo.estado === 'Devuelto'
+    ? '❌ Devuelto para correcciones'
+    : '⏳ Pendiente decisión del Comité';
 
         document.getElementById('detDecision').textContent = decisionTexto;
         document.getElementById('detObservaciones').textContent = protocolo.observaciones || '—';
