@@ -307,7 +307,7 @@ function mostrarDetalleReunion(fecha) {
     .then(d => {
       const protocolos = (d.protocolos || []).filter(p => {
         const estadoNorm = String(p.estado || '').toLowerCase().trim();
-        const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'enviado' || estadoNorm === 'cargado';
+        const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'enviado' || estadoNorm === 'cargado' || estadoNorm === 'pendiente comité';
         return p.fechaComite === fecha && esPendiente;
       });
       
