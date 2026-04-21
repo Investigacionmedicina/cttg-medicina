@@ -1079,7 +1079,7 @@ function abrirModalProtocolo(rowIndex, accion, numero) {
   
   protocoloActual = { rowIndex, accion };
   document.getElementById('pNum').textContent = numero;
-  document.getElementById('pEst').textContent = esc(p.email||'');
+  document.getElementById('pEst').textContent = esc(p.emailEstudiante||'');
   
   // Pre-llenar decisión
   document.getElementById('pDecision').value = accion === 'aprobar' ? 'aprobar' : 'rechazar';
