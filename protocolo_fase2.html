@@ -363,49 +363,60 @@ async function cargarProtocolos() {
 }
 
 function mostrarDetalle(rowIndex) {
-  const res = fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) })
+  fetch(URL_APP, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'getFase2' })
+  })
     .then(r => r.json())
     .then(d => {
       const protocolo = (d.protocolos || []).find(p => p.rowIndex === rowIndex);
       if (!protocolo) return;
-      
-      document.getElementById('detNumero').textContent = esc(protocolo.numero || '—');
-      document.getElementById('detEstado').textContent = esc(protocolo.estado || '—');
-      document.getElementById('detEvaluador').textContent = esc(protocolo.evaluador || '—');
-      document.getElementById('detFechaComite').textContent = fmtFecha(protocolo.fechaComite);
-      
-      // Mostrar decisión si ya fue evaluado
-      // CORREGIDO: Los estados reales en columna I son: 
-// "Devuelto", "Aprobado Directo", "Pendiente Comité", "Cargado"
-const yaEvaluado = protocolo.estado === 'Devuelto' || 
-                   protocolo.estado === 'Aprobado Directo' ||
-                   protocolo.estado === 'Pendiente Comité';
-      
-      if (yaEvaluado) {
-  document.getElementById('estadoEvaluado').style.display = 'block';
-  document.getElementById('detDecisionRow').style.display = 'flex';
-  document.getElementById('detObservacionesRow').style.display = 'flex';
-  
-  const decisionTexto = protocolo.estado === 'Aprobado' ? '✅ Aprobado' : 
-                       protocolo.estado === 'Aprobado Directo' ? '✅ Aprobado Directo' : 
-                       '❌ Devuelto para correcciones';
-  document.getElementById('detDecision').textContent = decisionTexto;
-  document.getElementById('detObservaciones').textContent = esc(protocolo.observaciones || '—'); // CAMBIO: usar observaciones
-  
-  if (protocolo.estado === 'Devuelto') {
-    document.getElementById('detMotivoDevolRow').style.display = 'flex';
-    document.getElementById('detMotivo').textContent = esc(protocolo.observaciones || '—'); // CAMBIO: usar observaciones
-  } else {
-    document.getElementById('detMotivoDevolRow').style.display = 'none';
-  }
-} else {
-  document.getElementById('estadoEvaluado').style.display = 'none';
-  document.getElementById('detDecisionRow').style.display = 'none';
-  document.getElementById('detObservacionesRow').style.display = 'none';
-  document.getElementById('detMotivoDevolRow').style.display = 'none';
-}
-}
 
+      document.getElementById('detNumero').textContent = protocolo.numero || '—';
+      document.getElementById('detEstado').textContent = protocolo.estado || '—';
+      document.getElementById('detEvaluador').textContent = protocolo.evaluador || '—';
+      document.getElementById('detFechaComite').textContent = fmtFecha(protocolo.fechaComite);
+
+      const yaEvaluado =
+        protocolo.estado === 'Devuelto' ||
+        protocolo.estado === 'Aprobado Directo' ||
+        protocolo.estado === 'Pendiente Comité';
+
+      if (yaEvaluado) {
+        document.getElementById('estadoEvaluado').style.display = 'block';
+        document.getElementById('detDecisionRow').style.display = 'flex';
+        document.getElementById('detObservacionesRow').style.display = 'flex';
+
+        const decisionTexto =
+          protocolo.estado === 'Aprobado'
+            ? '✅ Aprobado'
+            : protocolo.estado === 'Aprobado Directo'
+            ? '✅ Aprobado Directo'
+            : '❌ Devuelto para correcciones';
+
+        document.getElementById('detDecision').textContent = decisionTexto;
+        document.getElementById('detObservaciones').textContent = protocolo.observaciones || '—';
+
+        if (protocolo.estado === 'Devuelto') {
+          document.getElementById('detMotivoDevolRow').style.display = 'flex';
+          document.getElementById('detMotivo').textContent = protocolo.observaciones || '—';
+        } else {
+          document.getElementById('detMotivoDevolRow').style.display = 'none';
+        }
+      } else {
+        document.getElementById('estadoEvaluado').style.display = 'none';
+        document.getElementById('detDecisionRow').style.display = 'none';
+        document.getElementById('detObservacionesRow').style.display = 'none';
+        document.getElementById('detMotivoDevolRow').style.display = 'none';
+      }
+
+      document.getElementById('detalleProtocolo').style.display = 'block';
+    })
+    .catch(err => {
+      console.error(err);
+      toast('Error al cargar el detalle del protocolo', 'err');
+    });
+}
 function marcarPasos() {
   setTimeout(() => {
     document.getElementById('paso1').classList.add('done');
