@@ -1043,7 +1043,7 @@ function renderProtocolo() {
   const q  = (document.getElementById('searchProtocolo').value || '').toLowerCase();
   const fE = document.getElementById('fEstProtocolo').value;
   const filtered = protocolos.filter(p => {
-    const txt = [p.numero, p.email].join(' ').toLowerCase();
+    const txt = [p.numero, p.emailEstudiante].join(' ').toLowerCase();  // ← CAMBIO 1
     return (!q || txt.includes(q)) && (!fE || p.estado === fE);
   });
   const tbody = document.getElementById('tbodyProtocolo');
@@ -1055,14 +1055,12 @@ function renderProtocolo() {
     }[p.estado] || 'b-radicado';
     
     const estadoTexto = esc(p.estado||'Cargado');
-    
-    // Solo mostrar botones si está "Cargado" o "Enviado"
     const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
     
     return `<tr>
       <td><div class="num-rad">${esc(p.numero||'')}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.email||'—')}</td>
-      <td style="font-size:12px">${esc(p.anexo||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.emailEstudiante||'—')}</td>
+      <td style="font-size:12px">${esc(p.emailEstudiante||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaComite||'—'}</td>
       <td><span class="badge ${estadoBadge}">${estadoTexto}</span></td>
