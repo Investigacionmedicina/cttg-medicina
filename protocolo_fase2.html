@@ -370,7 +370,10 @@ function mostrarDetalle(rowIndex) {
     .then(r => r.json())
     .then(d => {
       const protocolo = (d.protocolos || []).find(p => p.rowIndex === rowIndex);
-      if (!protocolo) return;
+      if (!protocolo) {
+        toast('No se encontró el protocolo', 'warn');
+        return;
+      }
 
       document.getElementById('detNumero').textContent = protocolo.numero || '—';
       document.getElementById('detEstado').textContent = protocolo.estado || '—';
@@ -417,7 +420,7 @@ function mostrarDetalle(rowIndex) {
       toast('Error al cargar el detalle del protocolo', 'err');
     });
 }
-function marcarPasos() {
+ function marcarPasos() {
   setTimeout(() => {
     document.getElementById('paso1').classList.add('done');
     document.getElementById('paso2').classList.add('done');
