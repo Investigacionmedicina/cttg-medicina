@@ -621,8 +621,8 @@ async function actualizarBotonesFases(radicaciones) {
     const dF2   = await resF2.json();
     if (dF2.success) {
       fase2Aprobada = (dF2.protocolos || []).some(p =>
-        p.emailEstudiante.toLowerCase() === user.email.toLowerCase() && p.estado === 'Aprobado'
-      );
+  p.emailEstudiante.toLowerCase() === user.email.toLowerCase() && (p.estado === 'Aprobado' || p.estado === 'Aprobado Directo')
+);
     }
   } catch(e) {}
 
