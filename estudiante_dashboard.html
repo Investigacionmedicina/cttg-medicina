@@ -644,41 +644,40 @@ async function radicar() {
     const el = document.getElementById(id);
     if (!el || !el.value.trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
   }
-  const datos = {
+   const datos = {
     cedula1: document.getElementById('cedula1').value.trim(),
     nombre1: document.getElementById('nombre1').value.trim(),
-    email1:  document.getElementById('email1').value.trim(),
+    email1: document.getElementById('email1').value.trim(),
     telefono1: document.getElementById('telefono1').value.trim(),
     semestre1: document.getElementById('semestre1').value,
     semillero1: document.getElementById('semillero1').value.trim(),
-    cedula2: numEst>=2 ? document.getElementById('cedula2').value.trim() : '',
-    nombre2: numEst>=2 ? document.getElementById('nombre2').value.trim() : '',
-    email2:  numEst>=2 ? document.getElementById('email2').value.trim() : '',
-    telefono2: numEst>=2 ? document.getElementById('telefono2').value.trim() : '',
-    semestre2: numEst>=2 ? document.getElementById('semestre2').value : '',
-    semillero2: numEst>=2 ? document.getElementById('semillero2').value.trim() : '',
-    cedula3: numEst>=3 ? document.getElementById('cedula3').value.trim() : '',
-    nombre3: numEst>=3 ? document.getElementById('nombre3').value.trim() : '',
-    email3:  numEst>=3 ? document.getElementById('email3').value.trim() : '',
-    telefono3: numEst>=3 ? document.getElementById('telefono3').value.trim() : '',
-    semestre3: numEst>=3 ? document.getElementById('semestre3').value : '',
-    semillero3: numEst>=3 ? document.getElementById('semillero3').value.trim() : '',
+    cedula2: numEst >= 2 ? document.getElementById('cedula2').value.trim() : '',
+    nombre2: numEst >= 2 ? document.getElementById('nombre2').value.trim() : '',
+    email2: numEst >= 2 ? document.getElementById('email2').value.trim() : '',
+    telefono2: numEst >= 2 ? document.getElementById('telefono2').value.trim() : '',
+    semestre2: numEst >= 2 ? document.getElementById('semestre2').value : '',
+    semillero2: numEst >= 2 ? document.getElementById('semillero2').value.trim() : '',
+    cedula3: numEst >= 3 ? document.getElementById('cedula3').value.trim() : '',
+    nombre3: numEst >= 3 ? document.getElementById('nombre3').value.trim() : '',
+    email3: numEst >= 3 ? document.getElementById('email3').value.trim() : '',
+    telefono3: numEst >= 3 ? document.getElementById('telefono3').value.trim() : '',
+    semestre3: numEst >= 3 ? document.getElementById('semestre3').value : '',
+    semillero3: numEst >= 3 ? document.getElementById('semillero3').value.trim() : '',
     titulo: document.getElementById('titulo').value.trim(),
     modalidad: document.getElementById('modalidad').value,
     area: document.getElementById('area').value,
-   tutor1Nombre: (document.getElementById('tutor1Nombre')?.value || '').trim(),
-tutor1Email:  (document.getElementById('tutor1Email')?.value || '').trim(),
-tutor1Telefono: (document.getElementById('tutor1Telefono')?.value || '').trim(),
-tutor1Relacion: document.getElementById('tutor1Relacion')?.value || '',
-tutor2Nombre: (document.getElementById('tutor2Nombre')?.value || '').trim(),
-tutor2Email:  (document.getElementById('tutor2Email')?.value || '').trim(),
-tutor2Telefono: (document.getElementById('tutor2Telefono')?.value || '').trim(),
-tutor2Relacion: document.getElementById('tutor2Relacion')?.value || '',
+    tutor1Nombre: (document.getElementById('tutor1Nombre')?.value || '').trim(),
+    tutor1Email: (document.getElementById('tutor1Email')?.value || '').trim(),
+    tutor1Telefono: (document.getElementById('tutor1Telefono')?.value || '').trim(),
+    tutor1Relacion: document.getElementById('tutor1Relacion')?.value || '',
+    tutor2Nombre: (document.getElementById('tutor2Nombre')?.value || '').trim(),
+    tutor2Email: (document.getElementById('tutor2Email')?.value || '').trim(),
+    tutor2Telefono: (document.getElementById('tutor2Telefono')?.value || '').trim(),
+    tutor2Relacion: document.getElementById('tutor2Relacion')?.value || '',
     observaciones: document.getElementById('observaciones')?.value || ''
   };
-  };
-  const btn = document.getElementById('btnRad');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Radicando...';
+
+ btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Radicando...';
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'createRadicacion', datos, emailEstudiante: user.email }) });
     const d = await res.json();
