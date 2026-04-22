@@ -197,6 +197,7 @@ let user = null;
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
   if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
+  cargarEstadoFase3();
 })();
 
 function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
@@ -305,10 +306,50 @@ function reintentar() {
   btn.disabled = false;
   btn.innerHTML = '🎓 Solicitar Sustentación';
 }
-
 function volver() {
   window.location.href = 'estudiante_dashboard.html';
 }
+
+async function cargarEstadoFase3() {
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3' }) });
+    const d = await res.json();
+    if (d.success) {
+      const miSolicitud = (d.fase3 || []).find(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
+      if (miSolicitud && miSolicitud.nota) {
+        // Ya sustentó — mostrar resultado, ocultar formulario
+        document.querySelector('.form-card').style.display = 'none';
+        document.getElementById('successBox').innerHTML = `
+          <div style="font-size:28px;margin-bottom:8px">🎓</div>
+          <div style="font-size:15px;font-weight:600;color:#fff">Sustentación Completada</div>
+          <div style="font-size:24px;font-weight:700;color:#6ee7b7;margin:12px 0">Nota: ${miSolicitud.nota}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px">Acta: ${miSolicitud.numeroActa||'—'}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">¡Felicitaciones, completaste tu trabajo de grado!</div>
+          <button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver al dashboard</button>
+        `;
+        document.getElementById('successBox').style.display = 'block';
+      } else if (miSolicitud && miSolicitud.fechaSustentacion) {
+        // Ya tiene fecha asignada — mostrar info
+        document.querySelector('.form-card p').innerHTML += `
+          <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:12px;margin-top:12px;font-size:12px;color:#93c5fd">
+            📅 <strong>Tu sustentación ya está programada:</strong><br>
+            Fecha: ${formatearFecha(miSolicitud.fechaSustentacion)}<br>
+            Hora: ${miSolicitud.horaSustentacion||'—'}<br>
+            Jurado 1: ${miSolicitud.jurado1Nombre||'—'}<br>
+            Jurado 2: ${miSolicitud.jurado2Nombre||'—'}
+          </div>`;
+      }
+    }
+  } catch(e) { console.log('Error cargando estado Fase 3:', e); }
+}
+
+function formatearFecha(s) {
+  if (!s) return '—';
+  const p = String(s).split('T')[0].split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
+}
+</script>
+
 </script>
 </body>
 </html>
