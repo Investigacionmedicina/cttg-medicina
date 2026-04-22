@@ -658,6 +658,7 @@ async function radicar() {
     const el = document.getElementById(id);
     if (!el || !el.value.trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
   }
+ const btn = document.getElementById('btnRad');
    const datos = {
     cedula1: document.getElementById('cedula1').value.trim(),
     nombre1: document.getElementById('nombre1').value.trim(),
