@@ -486,6 +486,18 @@ async function cargarMisRad() {
     const data = await res.json();
     if (data.success && data.radicaciones.length > 0) {
       misRadicaciones = data.radicaciones;
+     const r = misRadicaciones[0];
+
+document.getElementById('numeroRadicacion').textContent = r.numero || '—';
+document.getElementById('estado').textContent = r.estado || '—';
+document.getElementById('tituloResumen').textContent = r.titulo || '—';
+document.getElementById('modalidadResumen').textContent = r.modalidad || '—';
+document.getElementById('areaResumen').textContent = r.area || '—';
+document.getElementById('tutor1').textContent = r.tutor1Nombre || '—';
+document.getElementById('tutor2').textContent = r.tutor2Nombre || '—';
+document.getElementById('fechaRadicacion').textContent = fmtFecha(r.fechaRadicacion);
+document.getElementById('fechaAprobacion').textContent = fmtFecha(r.fechaAprobacion);
+document.getElementById('notas').textContent = limpiarNotas(r.notas) || '—';
       
       // Actualizar contador general
       actualizarContadorGeneral(misRadicaciones[0]);
@@ -758,7 +770,7 @@ async function cargarDatos() {
   }
 }
  
-window.addEventListener('load', cargarDatos);
+
 document.getElementById('modalDet').addEventListener('click', e => {
   if (e.target === document.getElementById('modalDet')) document.getElementById('modalDet').classList.remove('open');
 });
