@@ -192,24 +192,14 @@
       </div>
       <span>→</span>
     </a>
-    <div style="display:flex;flex-direction:column;gap:10px" id="btnFase3Wrap">
-  <a id="btnFase3Ver" href="fase3_ver_solicitud.html" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:12px;text-decoration:none;color:#fff;opacity:0.4;pointer-events:none">
-    <span style="font-size:20px">📋</span>
-    <div style="flex:1">
-      <div style="font-weight:600;font-size:14px">Fase 3: Ver Solicitud</div>
-      <div id="btnFase3VerSub" style="font-size:12px;color:rgba(255,255,255,.5)">Pendiente: aprobación de protocolo</div>
-    </div>
-    <span>→</span>
-  </a>
-  <a id="btnFase3New" href="fase3_sustentacion.html" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:12px;text-decoration:none;color:#fff;opacity:0.4;pointer-events:none">
-    <span style="font-size:20px">📝</span>
-    <div style="flex:1">
-      <div style="font-weight:600;font-size:14px">Fase 3: Solicitar Sustentación</div>
-      <div id="btnFase3NewSub" style="font-size:12px;color:rgba(255,255,255,.5)">Pendiente: aprobación de protocolo</div>
-    </div>
-    <span>→</span>
-  </a>
-</div>
+    <a id="btnFase3" href="fase3_sustentacion.html" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:12px;text-decoration:none;color:#fff;opacity:0.4;pointer-events:none">
+  <span style="font-size:20px">📝</span>
+  <div style="flex:1">
+    <div style="font-weight:600;font-size:14px">Fase 3: Solicitar Sustentación</div>
+    <div id="btnFase3Sub" style="font-size:12px;color:rgba(255,255,255,.5)">Pendiente: aprobación de protocolo</div>
+  </div>
+  <span>→</span>
+</a>
 
   <div class="panel on" id="pan-mis-rad">
     <div id="misRadWrap"><div class="empty">Cargando...</div></div>
@@ -568,11 +558,9 @@ document.getElementById('d_notas').textContent = limpiarNotas(r.notas) || '—';
 async function actualizarBotonesFases(radicaciones) {
   const btnActas    = document.getElementById('btnActas');
   const btnFase2    = document.getElementById('btnFase2');
-  const btnFase3    = document.getElementById('btnFase3');
-  const btnActasSub = document.getElementById('btnActasSub');
+    const btnActasSub = document.getElementById('btnActasSub');
   const btnFase2Sub = document.getElementById('btnFase2Sub');
-  const btnFase3Sub = document.getElementById('btnFase3Sub');
-
+ 
   if (!radicaciones.length) {
     [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'none'; });
     return;
