@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fase 3 Sustentación — CTTG</title>
+<title>Sustentación Fase 3 — CTTG</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -13,69 +13,57 @@
   .logo{width:38px;height:38px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px}
   .hdr-l h1{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
   .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
-  .hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .hdr-r{display:flex;align-items:center;gap:10px}
   .user-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
   .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
-  main{padding:24px 28px;max-width:780px;margin:0 auto}
+  main{padding:24px 28px;max-width:900px;margin:0 auto}
   .back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
   .back:hover{color:#fff}
-  .phase-badge{display:inline-block;background:rgba(102,126,234,.2);border:1px solid rgba(102,126,234,.5);color:#a5b4fc;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;margin-bottom:18px}
   .form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:24px;margin-bottom:18px}
   .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
   .form-card h3 .dot{width:7px;height:7px;background:#a78bfa;border-radius:50%}
   .form-card p{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px}
-  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
-  .fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-  .fg.full{grid-column:1/-1}
-  .sec-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);font-weight:600;padding:10px 0 6px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:10px;grid-column:1/-1}
-  label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45)}
-  input,select,textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
-  input::placeholder,textarea::placeholder{color:rgba(255,255,255,.25)}
-  input:focus,select:focus,textarea:focus{border-color:rgba(102,126,234,.6);background:rgba(255,255,255,.1)}
-  select option{background:#1a1a2e}
-  .alert-s12{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);border-radius:10px;padding:12px 15px;font-size:13px;color:#fca5a5;margin-top:12px;display:none}
-  .alert-s12 strong{color:#f87171}
-  /* Uploads */
-  .upload-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
-  .upload-item .ui-icon{font-size:20px;flex-shrink:0}
-  .upload-item .ui-info{flex:1}
-  .upload-item .ui-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:3px}
-  .upload-item .ui-sub{font-size:11px;color:rgba(255,255,255,.4)}
-  .upload-item .ui-badge{font-size:11px;padding:3px 9px;border-radius:6px;font-weight:700;background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);flex-shrink:0}
-  .upload-item .ui-badge.done{background:rgba(16,185,129,.2);color:#6ee7b7}
-  .upload-item .ui-badge.opt{background:rgba(102,126,234,.15);color:#a5b4fc}
-  .upload-item .ui-badge.uploading{background:rgba(245,158,11,.15);color:#fcd34d}
-  .upload-item .ui-badge.error{background:rgba(239,68,68,.15);color:#fca5a5}
-  .upload-btn{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.35);color:#a5b4fc;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;flex-shrink:0}
-  .upload-btn:hover{background:rgba(102,126,234,.25)}
-  .upload-btn:disabled{opacity:.5;cursor:not-allowed}
-  input[type="file"]{display:none}
-  .turnitin-pct{display:flex;align-items:center;gap:10px;margin-top:10px}
-  .turnitin-pct input{max-width:90px}
-  .turnitin-pct span{font-size:12px;color:rgba(255,255,255,.4)}
-  .pct-warn{font-size:12px;color:#fca5a5;margin-top:4px;display:none}
-  /* Jurados */
-  .jurado-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;margin-bottom:12px}
-  .jurado-card h4{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);margin-bottom:10px}
-  .btn-rad{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:all .2s}
+  .pasos{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+  .paso{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px}
+  .paso-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+  .paso-txt strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
+  .paso-txt span{font-size:12px;color:rgba(255,255,255,.4)}
+  .paso.done .paso-num{background:linear-gradient(135deg,#059669,#10b981)}
+  .btn-forms{display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;width:100%;justify-content:center;margin-bottom:14px;transition:all .2s}
+  .btn-forms:hover{transform:translateY(-1px)}
+  .btn-rad{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:all .2s;width:100%}
   .btn-rad:hover{transform:translateY(-1px)}
-  .btn-rad:disabled{opacity:.6;transform:none;cursor:not-allowed}
-  .btn-sec{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:12px 20px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif}
-  .success-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:24px;text-align:center;display:none;margin-top:16px}
+  .btn-rad:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .sep{display:flex;align-items:center;gap:10px;margin:16px 0;color:rgba(255,255,255,.2);font-size:12px}
+  .sep::before,.sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
+  .success-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:20px;text-align:center;display:none;margin-top:16px}
+  .error-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:20px;text-align:center;display:none;margin-top:16px}
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
-  .toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
-  .info-box{background:rgba(102,126,234,.08);border:1px solid rgba(102,126,234,.25);border-radius:8px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:14px}
-  @media(max-width:600px){main{padding:16px}.form-grid{grid-template-columns:1fr}}
+  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.err{background:rgba(239,68,68,.9);color:#fff}
+  .fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+  .fg.full{grid-column:1/-1}
+  .sec-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);font-weight:600;padding:10px 0 6px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:4px;grid-column:1/-1}
+  label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45)}
+  input,textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
+  input::placeholder,textarea::placeholder{color:rgba(255,255,255,.25)}
+  input:focus,textarea:focus{border-color:rgba(102,126,234,.6);background:rgba(255,255,255,.1)}
+  textarea{min-height:65px;resize:vertical}
+  .checkbox-group{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px}
+  .checkbox-item{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .checkbox-item:last-child{margin-bottom:0}
+  .checkbox-item input{width:auto}
+  .checkbox-item label{margin-bottom:0}
 </style>
 </head>
 <body>
 <header>
   <div class="hdr-l">
     <div class="logo">🎓</div>
-    <div><h1>CTTG Medicina</h1><p>Fase 3 — Sustentación</p></div>
+    <div><h1>CTTG Medicina</h1><p>Sustentación Fase 3</p></div>
   </div>
   <div class="hdr-r">
     <div class="user-chip" id="userChip">—</div>
@@ -85,141 +73,117 @@
 
 <main>
   <a href="estudiante_dashboard.html" class="back">← Volver al dashboard</a>
-  <div class="phase-badge">🎓 FASE 3 — SUSTENTACIÓN</div>
 
-  <!-- SECCIÓN 1: INFORMACIÓN -->
   <div class="form-card">
-    <h3><span class="dot"></span>Información de Sustentación</h3>
-    <p>Completa los datos básicos para solicitar tu sustentación.</p>
+    <h3><span class="dot"></span>Solicitar Sustentación</h3>
+    <p>Carga todos los documentos requeridos en el formulario y completa los datos de tu sustentación.</p>
 
-    <div class="fg">
-      <label>N° Radicación</label>
-      <input id="numeroRad" readonly style="opacity:.7" placeholder="Se carga automáticamente...">
-    </div>
-
-    <div class="form-grid">
-      <div class="fg">
-        <label>Semestre actual *</label>
-        <select id="semestre" onchange="checkS12()">
-          <option value="">Seleccionar...</option>
-          <option>1</option><option>2</option><option>3</option><option>4</option>
-          <option>5</option><option>6</option><option>7</option><option>8</option>
-          <option>9</option><option>10</option><option>11</option><option>12</option>
-        </select>
-      </div>
-      <div class="fg">
-        <label>Nombres para el acta *</label>
-        <input id="nombres" placeholder="Juan Pérez, María García...">
-      </div>
-    </div>
-
-    <div class="alert-s12" id="alertaS12">
-      <strong>⚠️ Semestre 12 detectado.</strong> Tu tiempo es muy limitado. La coordinadora será notificada con alerta crítica para acelerar el proceso.
-    </div>
-  </div>
-
-  <!-- SECCIÓN 2: DOCUMENTOS -->
-  <div class="form-card">
-    <h3><span class="dot"></span>Documentos Requeridos</h3>
-    <p>Carga los archivos en formato PDF. Máximo 15MB cada uno.</p>
-
-    <div class="info-box">📌 Los 4 documentos marcados con * son obligatorios. El Aval CCEB es opcional según tu modalidad.</div>
-
-    <div class="upload-item">
-      <div class="ui-icon">📎</div>
-      <div class="ui-info">
-        <div class="ui-name">Anexo A7 *</div>
-        <div class="ui-sub">Formato de solicitud de sustentación</div>
-      </div>
-      <span class="ui-badge" id="badge-anexoA7">Pendiente</span>
-      <button class="upload-btn" onclick="document.getElementById('file-anexoA7').click()">Seleccionar</button>
-      <input type="file" id="file-anexoA7" accept=".pdf" onchange="archivoSeleccionado('anexoA7',this)">
-    </div>
-
-    <div class="upload-item">
-      <div class="ui-icon">📄</div>
-      <div class="ui-info">
-        <div class="ui-name">Artículo o Capítulo *</div>
-        <div class="ui-sub">Manuscrito del trabajo de grado</div>
-      </div>
-      <span class="ui-badge" id="badge-articulo">Pendiente</span>
-      <button class="upload-btn" onclick="document.getElementById('file-articulo').click()">Seleccionar</button>
-      <input type="file" id="file-articulo" accept=".pdf" onchange="archivoSeleccionado('articulo',this)">
-    </div>
-
-    <div class="upload-item">
-      <div class="ui-icon">📋</div>
-      <div class="ui-info">
-        <div class="ui-name">Guía para Autores *</div>
-        <div class="ui-sub">Guía de la revista objetivo</div>
-      </div>
-      <span class="ui-badge" id="badge-guia">Pendiente</span>
-      <button class="upload-btn" onclick="document.getElementById('file-guia').click()">Seleccionar</button>
-      <input type="file" id="file-guia" accept=".pdf" onchange="archivoSeleccionado('guia',this)">
-    </div>
-
-    <div class="upload-item">
-      <div class="ui-icon">🏥</div>
-      <div class="ui-info">
-        <div class="ui-name">Aval CCEB</div>
-        <div class="ui-sub">Comité de Ética (si aplica)</div>
-      </div>
-      <span class="ui-badge opt" id="badge-avalCCEB">Opcional</span>
-      <button class="upload-btn" onclick="document.getElementById('file-avalCCEB').click()">Seleccionar</button>
-      <input type="file" id="file-avalCCEB" accept=".pdf" onchange="archivoSeleccionado('avalCCEB',this)">
-    </div>
-
-    <div class="upload-item">
-      <div class="ui-icon">🔍</div>
-      <div class="ui-info">
-        <div class="ui-name">Reporte Turnitin *</div>
-        <div class="ui-sub">Porcentaje de similitud</div>
-        <div class="turnitin-pct">
-          <input type="number" id="pctTurnitin" min="0" max="100" placeholder="%" style="max-width:80px" oninput="validarTurnitin()">
-          <span>% de similitud (debe ser &lt; 20%)</span>
+    <div class="pasos">
+      <div class="paso" id="paso1">
+        <div class="paso-num">1</div>
+        <div class="paso-txt">
+          <strong>Abre el formulario de carga</strong>
+          <span>Se abrirá en una nueva pestaña. Carga todos los documentos y datos requeridos.</span>
         </div>
-        <div class="pct-warn" id="pctWarn">⚠️ El porcentaje debe ser menor al 20%</div>
       </div>
-      <span class="ui-badge" id="badge-turnitin">Pendiente</span>
-      <button class="upload-btn" onclick="document.getElementById('file-turnitin').click()">Seleccionar</button>
-      <input type="file" id="file-turnitin" accept=".pdf" onchange="archivoSeleccionado('turnitin',this)">
+      <div class="paso" id="paso2">
+        <div class="paso-num">2</div>
+        <div class="paso-txt">
+          <strong>Adjunta los documentos obligatorios</strong>
+          <span>Anexo A7, Artículo, Guía Autores, Aval CCEB, Turnitin. Máximo 100MB cada uno.</span>
+        </div>
+      </div>
+      <div class="paso" id="paso3">
+        <div class="paso-num">3</div>
+        <div class="paso-txt">
+          <strong>Vuelve aquí y confirma el envío</strong>
+          <span>Completa los datos faltantes y haz clic en "Solicitar Sustentación".</span>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- SECCIÓN 3: JURADOS -->
-  <div class="form-card">
-    <h3><span class="dot"></span>Sugerencia de Jurados (Opcional)</h3>
-    <p>Puedes sugerir dos jurados. La coordinadora los confirma o cambia.</p>
+    <a href="https://forms.cloud.microsoft/r/AHxLxkDDqw?origin=lprLink" target="_blank" class="btn-forms" onclick="marcarPasos()">
+      📝 Abrir formulario de carga ↗
+    </a>
 
-    <div class="jurado-card">
-      <h4>👤 Jurado 1 sugerido</h4>
+    <div class="sep">una vez enviado el formulario</div>
+
+    <div class="form-card" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);padding:20px;margin-bottom:0">
+      <h3><span class="dot"></span>Confirma tu solicitud</h3>
+
+      <div style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:16px;line-height:1.6">
+        <strong style="color:#a5b4fc">📋 Documentación requerida:</strong><br>
+        ✓ Anexo A7 (PDF)<br>
+        ✓ Artículo (PDF)<br>
+        ✓ Guía Autores (PDF)<br>
+        ✓ Aval CCEB (PDF)<br>
+        ✓ Turnitin (PDF)<br>
+        <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Máximo 100MB cada archivo</span>
+      </div>
+
+      <div class="checkbox-group">
+        <label style="margin-bottom:12px;color:rgba(255,255,255,.6)">🔍 Confirma qué cargaste en el formulario *</label>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check1">
+          <label for="check1">Cargué Anexo A7</label>
+        </div>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check2">
+          <label for="check2">Cargué Artículo</label>
+        </div>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check3">
+          <label for="check3">Cargué Guía Autores</label>
+        </div>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check4">
+          <label for="check4">Cargué Aval CCEB</label>
+        </div>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check5">
+          <label for="check5">Cargué Turnitin</label>
+        </div>
+      </div>
+
       <div class="form-grid">
-        <div class="fg"><label>Nombre</label><input id="j1Nombre" placeholder="Dr./Dra."></div>
-        <div class="fg"><label>Cédula</label><input id="j1Cedula" placeholder="Número de ID"></div>
-        <div class="fg"><label>Email</label><input type="email" id="j1Email" placeholder="jurado@usc.edu.co"></div>
+        <div class="sec-label">📊 Turnitin</div>
+        <div class="fg">
+          <label>% Turnitin *</label>
+          <input type="number" id="porcentajeTurnitin" placeholder="Ej: 15" min="0" max="100">
+        </div>
+
+        <div class="sec-label">👨‍🏫 Jurado 1 Temático (Opcional)</div>
+        <div class="fg"><label>Nombre</label><input id="jurado1Nombre" placeholder="Dr./Dra. (opcional)"></div>
+        <div class="fg"><label>Email</label><input type="email" id="jurado1Email" placeholder="jurado@usc.edu.co (opcional)"></div>
+        <div class="fg"><label>Teléfono</label><input id="jurado1Telefono" placeholder="300 000 0000 (opcional)"></div>
+
+        <div class="sec-label">👨‍🏫 Jurado 2 Metodológico (Opcional)</div>
+        <div class="fg"><label>Nombre</label><input id="jurado2Nombre" placeholder="Dr./Dra. (opcional)"></div>
+        <div class="fg"><label>Email</label><input type="email" id="jurado2Email" placeholder="jurado@usc.edu.co (opcional)"></div>
+        <div class="fg"><label>Teléfono</label><input id="jurado2Telefono" placeholder="300 000 0000 (opcional)"></div>
+      </div>
+
+      <button class="btn-rad" id="btnSolicitar" onclick="solicitarSustentacion()">🎓 Solicitar Sustentación</button>
+
+      <div class="success-box" id="successBox">
+        <div style="font-size:28px;margin-bottom:8px">🎉</div>
+        <div style="font-size:15px;font-weight:600;color:#fff">¡Solicitud enviada exitosamente!</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará tu solicitud y te notificará cuando asigne los jurados y la fecha de sustentación.</div>
+        <button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver al dashboard</button>
+      </div>
+
+      <div class="error-box" id="errorBox">
+        <div style="font-size:28px;margin-bottom:8px">❌</div>
+        <div style="font-size:15px;font-weight:600;color:#fca5a5" id="errorMsg">Error en la solicitud</div>
+        <div style="font-size:12px;color:rgba(252,165,165,.8);margin-top:6px" id="errorDetail">Verifica los documentos cargados y vuelve a intentar.</div>
+        <button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px;background:rgba(239,68,68,.8)" onclick="reintentar()">Reintentar</button>
       </div>
     </div>
-
-    <div class="jurado-card">
-      <h4>👤 Jurado 2 sugerido</h4>
-      <div class="form-grid">
-        <div class="fg"><label>Nombre</label><input id="j2Nombre" placeholder="Dr./Dra."></div>
-        <div class="fg"><label>Cédula</label><input id="j2Cedula" placeholder="Número de ID"></div>
-        <div class="fg"><label>Email</label><input type="email" id="j2Email" placeholder="jurado@usc.edu.co"></div>
-      </div>
-    </div>
-  </div>
-
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">
-    <button class="btn-rad" id="btnEnviar" onclick="enviarSolicitud()">📋 Solicitar Sustentación</button>
-    <button class="btn-sec" onclick="window.location.href='estudiante_dashboard.html'">Cancelar</button>
-  </div>
-
-  <div class="success-box" id="successBox">
-    <div style="font-size:28px;margin-bottom:8px">🎓</div>
-    <div style="font-size:15px;font-weight:600;color:#fff">¡Solicitud enviada exitosamente!</div>
-    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará tus documentos y asignará jurados y fecha de sustentación. Recibirás un correo pronto.</div>
-    <button class="btn-rad" style="margin-top:14px" onclick="window.location.href='estudiante_dashboard.html'">Volver al dashboard</button>
   </div>
 </main>
 
@@ -228,14 +192,11 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 let user = null;
-// Almacena URLs de Drive por campo (no base64)
-const driveUrls = {};
 
-(function(){
+(function init() {
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
   if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
-  cargarNumeroRad();
 })();
 
 function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
@@ -243,132 +204,110 @@ function salir() { localStorage.removeItem('cttg_user'); window.location.href = 
 function toast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast ' + type + ' show';
-  setTimeout(() => t.classList.remove('show'), 3500);
+  setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-async function cargarNumeroRad() {
+function marcarPasos() {
+  setTimeout(() => {
+    document.getElementById('paso1').classList.add('done');
+    document.getElementById('paso2').classList.add('done');
+  }, 500);
+}
+
+async function solicitarSustentacion() {
+  const check1 = document.getElementById('check1').checked;
+  const check2 = document.getElementById('check2').checked;
+  const check3 = document.getElementById('check3').checked;
+  const check4 = document.getElementById('check4').checked;
+  const check5 = document.getElementById('check5').checked;
+  const turnitin = document.getElementById('porcentajeTurnitin').value.trim();
+
+  // Validar que todos los documentos fueron cargados
+  if (!check1 || !check2 || !check3 || !check4 || !check5) {
+    document.getElementById('errorBox').style.display = 'block';
+    document.getElementById('errorMsg').textContent = '❌ Faltan documentos';
+    document.getElementById('errorDetail').textContent = 'Debes confirmar que cargaste TODOS los 5 documentos: Anexo A7, Artículo, Guía Autores, Aval CCEB y Turnitin.';
+    document.getElementById('errorBox').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
+  // Validar % Turnitin
+  if (!turnitin || isNaN(parseFloat(turnitin))) {
+    toast('Ingresa un porcentaje válido de Turnitin', 'warn');
+    document.getElementById('porcentajeTurnitin').focus();
+    return;
+  }
+
+  // Obtener radicación
+  let numeroRadicacion = '';
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
     const d = await res.json();
     if (d.success && d.radicaciones.length > 0) {
-      document.getElementById('numeroRad').value = d.radicaciones[0].numero;
+      numeroRadicacion = d.radicaciones[0].numero || '';
     }
-  } catch(e) {}
-}
-
-function checkS12() {
-  const s = parseInt(document.getElementById('semestre').value);
-  document.getElementById('alertaS12').style.display = s === 12 ? 'block' : 'none';
-}
-
-function validarTurnitin() {
-  const pct = parseFloat(document.getElementById('pctTurnitin').value);
-  document.getElementById('pctWarn').style.display = (!isNaN(pct) && pct >= 20) ? 'block' : 'none';
-}
-
-// Sube el archivo a Drive inmediatamente al seleccionarlo
-function archivoSeleccionado(campo, input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (!file.name.toLowerCase().endsWith('.pdf')) { toast('Solo se aceptan archivos PDF', 'warn'); input.value = ''; return; }
-  if (file.size > 15 * 1024 * 1024) { toast('El archivo supera 15MB', 'warn'); input.value = ''; return; }
-
-  const badge = document.getElementById('badge-' + campo);
-  const btn   = input.closest('.upload-item').querySelector('.upload-btn');
-  badge.textContent = '⏳ Subiendo...';
-  badge.className = 'ui-badge uploading';
-  btn.disabled = true;
-  delete driveUrls[campo];
-
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const base64 = e.target.result.split(',')[1];
-    try {
-      const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-        action: 'subirArchivo',
-        base64,
-        nombreArchivo: file.name,
-        tipoArchivo: 'application/pdf',
-        subcarpeta: 'Fase3'
-      })});
-      const d = await res.json();
-      if (d.success) {
-        driveUrls[campo] = d.url;
-        badge.textContent = '✓ ' + file.name.substring(0, 14) + (file.name.length > 14 ? '…' : '');
-        badge.className = 'ui-badge done';
-        btn.textContent = 'Cambiar';
-      } else {
-        badge.textContent = '❌ Error';
-        badge.className = 'ui-badge error';
-        toast('Error al subir ' + file.name + ': ' + (d.error || ''), 'err');
-        input.value = '';
-      }
-    } catch(err) {
-      badge.textContent = '❌ Sin conexión';
-      badge.className = 'ui-badge error';
-      toast('Error de conexión', 'err');
-      input.value = '';
-    } finally {
-      btn.disabled = false;
-    }
-  };
-  reader.readAsDataURL(file);
-}
-
-async function enviarSolicitud() {
-  const numero   = document.getElementById('numeroRad').value;
-  const semestre = document.getElementById('semestre').value;
-  const nombres  = document.getElementById('nombres').value.trim();
-  const pct      = document.getElementById('pctTurnitin').value;
-
-  if (!numero)              { toast('No se encontró número de radicación', 'warn'); return; }
-  if (!semestre)            { toast('Selecciona tu semestre', 'warn'); return; }
-  if (!nombres)             { toast('Ingresa los nombres para el acta', 'warn'); return; }
-  if (!driveUrls.anexoA7)  { toast('Espera a que el Anexo A7 termine de subir', 'warn'); return; }
-  if (!driveUrls.articulo) { toast('Espera a que el Artículo termine de subir', 'warn'); return; }
-  if (!driveUrls.guia)     { toast('Espera a que la Guía para Autores termine de subir', 'warn'); return; }
-  if (!driveUrls.turnitin) { toast('Espera a que el Reporte Turnitin termine de subir', 'warn'); return; }
-  if (!pct)                { toast('Ingresa el porcentaje Turnitin', 'warn'); return; }
-  if (parseFloat(pct) >= 20) { toast('El porcentaje Turnitin debe ser menor al 20%', 'err'); return; }
-
-  const archivos = {
-    anexoA7:     driveUrls.anexoA7  || '',
-    articulo:    driveUrls.articulo || '',
-    guia:        driveUrls.guia     || '',
-    avalCCEB:    driveUrls.avalCCEB || '',
-    turnitin:    driveUrls.turnitin || '',
-    pctTurnitin: pct
-  };
- 
-const jurados = [
-  {
-    nombre: document.getElementById('j1Nombre').value.trim(),
-    cedula: document.getElementById('j1Cedula').value.trim(),
-    email:  document.getElementById('j1Email').value.trim()
-  },
-  {
-    nombre: document.getElementById('j2Nombre').value.trim(),
-    cedula: document.getElementById('j2Cedula').value.trim(),
-    email:  document.getElementById('j2Email').value.trim()
+  } catch(e) {
+    console.error(e);
   }
-];
- const btn = document.getElementById('btnEnviar');
+
+  if (!numeroRadicacion) {
+    toast('No se encontró tu número de radicación', 'err');
+    return;
+  }
+
+  const btn = document.getElementById('btnSolicitar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
+
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-      action: 'crearFase3',
-      numeroRadicacion: numero,
+    const datos = {
+      action: 'crearSustentacion',
+      numeroRadicacion: numeroRadicacion,
       emailEstudiante: user.email,
-      semestre, nombres, archivos, jurados
-    })});
+      porcentajeTurnitin: parseFloat(turnitin),
+      jurado1Nombre: document.getElementById('jurado1Nombre').value.trim(),
+      jurado1Email: document.getElementById('jurado1Email').value.trim(),
+      jurado1Telefono: document.getElementById('jurado1Telefono').value.trim(),
+      jurado2Nombre: document.getElementById('jurado2Nombre').value.trim(),
+      jurado2Email: document.getElementById('jurado2Email').value.trim(),
+      jurado2Telefono: document.getElementById('jurado2Telefono').value.trim()
+    };
+
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify(datos) });
     const d = await res.json();
+
     if (d.success) {
       document.getElementById('successBox').style.display = 'block';
-      document.getElementById('successBox').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('errorBox').style.display = 'none';
       btn.style.display = 'none';
-    } else { toast('Error: ' + (d.error || 'Intenta de nuevo'), 'err'); }
-  } catch(e) { toast('Error de conexión', 'err'); }
-  finally { btn.disabled = false; if (btn.style.display !== 'none') btn.innerHTML = '📋 Solicitar Sustentación'; }
+      document.getElementById('paso3').classList.add('done');
+      document.getElementById('successBox').scrollIntoView({ behavior: 'smooth' });
+    } else {
+      document.getElementById('errorBox').style.display = 'block';
+      document.getElementById('errorMsg').textContent = '❌ ' + (d.error || 'Error desconocido');
+      document.getElementById('errorDetail').textContent = 'Verifica los datos y vuelve a intentar.';
+      document.getElementById('errorBox').scrollIntoView({ behavior: 'smooth' });
+      btn.disabled = false; btn.innerHTML = '🎓 Solicitar Sustentación';
+    }
+  } catch(e) {
+    document.getElementById('errorBox').style.display = 'block';
+    document.getElementById('errorMsg').textContent = '❌ Error de conexión';
+    document.getElementById('errorDetail').textContent = e.message;
+    document.getElementById('errorBox').scrollIntoView({ behavior: 'smooth' });
+    btn.disabled = false; btn.innerHTML = '🎓 Solicitar Sustentación';
+  }
+}
+
+function reintentar() {
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('successBox').style.display = 'none';
+  const btn = document.getElementById('btnSolicitar');
+  btn.style.display = 'block';
+  btn.disabled = false;
+  btn.innerHTML = '🎓 Solicitar Sustentación';
+}
+
+function volver() {
+  window.location.href = 'estudiante_dashboard.html';
 }
 </script>
 </body>
