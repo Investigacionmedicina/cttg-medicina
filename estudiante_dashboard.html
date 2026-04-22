@@ -94,7 +94,7 @@
   </div>
   <div class="hdr-r">
     <div class="user-chip" id="userChip">—</div>
-    <button class="btn-out" onclick="salir()">Salir</button>
+    <button class="btn-out" onclick="salirSession()">Salir</button>
   </div>
 </header>
 
@@ -169,9 +169,7 @@
 
   <div id="alertasTiempo" class="alert-wrap" style="display:none"></div>
   <div class="tabs">
-    <button class="tab on" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
-    <button class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
-  </div>
+      </div>
 
   <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;margin-bottom:20px">
     <a id="btnActas" href="actas_asesoria.html" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:12px;text-decoration:none;color:#fff">
@@ -310,7 +308,7 @@ let misRadicaciones = [];
   cargarMisRad();
 })();
 
-function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
+function salirSession() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
 
 function switchTab(name, btn) {
   if (name === 'nueva' && bloquearNuevaRad) { toast('Aún tienes una radicación sin respuesta. No puedes crear otra.', 'warn'); return; }
@@ -320,7 +318,9 @@ function switchTab(name, btn) {
   btn.classList.add('on');
   if (name === 'mis-rad') cargarMisRad();
 }
-
+<button class="tab on" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
+<button class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
+ 
 function setEst(n, btn) {
   numEst = n;
   document.querySelectorAll('.ne').forEach(b => b.classList.remove('on'));
