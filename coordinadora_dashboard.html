@@ -134,6 +134,7 @@
     <button class="main-tab" id="tabProtocolo" onclick="switchPanel('protocolo', this)">📖 Protocolo</button>
   <button class="main-tab" id="tabComite" onclick="switchPanel('comite', this)">📅 Comité Técnico</button>
   <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
+    <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
     </div>
 
   <!-- PANEL RADICACIONES -->
@@ -399,6 +400,84 @@
     <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
     <iframe src="comite_tecnico.html" style="width:100%;height:800px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
   </div>
+
+  <!-- PANEL FILTROS DINÁMICOS -->
+  <div class="panel" id="pan-filtros">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">🎓 Semestre</label>
+        <select id="fSem" onchange="renderFiltros()">
+          <option value="">— Todos —</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12 ⚡</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📋 Estado</label>
+        <select id="fEst" onchange="renderFiltros()">
+          <option value="">— Todos —</option>
+          <option value="Radicado">Radicado</option>
+          <option value="Tutores Avalados">Tutores Avalados</option>
+          <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
+          <option value="Pendiente Comité Técnico">Pendiente Comité</option>
+          <option value="Aprobado">Aprobado</option>
+          <option value="Devuelto">Devuelto</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">⏰ Plazo</label>
+        <select id="fPlazo" onchange="renderFiltros()">
+          <option value="">— Todos —</option>
+          <option value="vencido">🔴 Vencido</option>
+          <option value="0-30">🔴 0-30 días</option>
+          <option value="30-60">🟡 30-60 días</option>
+          <option value="60+">🟢 60+ días</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">👨‍🏫 Tutor</label>
+        <select id="fTutor" onchange="renderFiltros()">
+          <option value="">— Todos —</option>
+          <option value="con">✅ Con tutor</option>
+          <option value="sin">❌ Sin tutor</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📄 Actas</label>
+        <select id="fActas" onchange="renderFiltros()">
+          <option value="">— Todos —</option>
+          <option value="nocargadas">❌ No cargadas</option>
+          <option value="cargadas">📤 Cargadas</option>
+          <option value="aprobadas">✅ Aprobadas</option>
+          <option value="rechazadas">✕ Rechazadas</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">🔎 Buscar</label>
+        <input id="searchFiltros" type="text" placeholder="Número, nombre..." oninput="renderFiltros()">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn bl" onclick="renderFiltros()">🔄 Actualizar</button>
+      <button class="btn gr" onclick="exportarFiltrosCSV()">⬇ Exportar</button>
+      <button class="btn" onclick="limpiarFiltros()">✕ Limpiar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Sem.</th><th>Estado</th><th>Tutor 1</th><th>Actas</th><th>Días Trans.</th><th>Días Rest.</th><th>Riesgo</th><th>Acción</th>
+        </tr></thead>
+        <tbody id="tbodyFiltros">
+          <tr><td colspan="10" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
  </main>
 
 <!-- MODAL ESTADO RADICACIÓN -->
