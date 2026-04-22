@@ -692,7 +692,8 @@ async function radicar() {
     observaciones: document.getElementById('observaciones')?.value || ''
   };
 
- btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Radicando...';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Radicando...';
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'createRadicacion', datos, emailEstudiante: user.email }) });
     const d = await res.json();
