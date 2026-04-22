@@ -104,43 +104,42 @@
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
     <div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Número de Radicación</div>
-      <div style="font-size:18px;font-weight:600;color:#a5b4fc" id="numeroRadicacion">—</div>
+      <div style="font-size:18px;font-weight:600;color:#a5b4fc" id="d_numeroRadicacion">—</div>
     </div>
     <div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Estado</div>
-      <div style="font-size:18px;font-weight:600;color:#6ee7b7" id="estado">—</div>
+      <div style="font-size:18px;font-weight:600;color:#6ee7b7" id="d_estado">—</div>
     </div>
     <div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Título</div>
-      <div style="font-size:14px;color:#e2e8f0" id="titulo">—</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_titulo">—</div>
     </div>
     <div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Modalidad</div>
-      <div style="font-size:14px;color:#e2e8f0" id="modalidad">—</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_modalidad">—</div>
     </div>
     <div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Área</div>
-      <div style="font-size:14px;color:#e2e8f0" id="area">—</div>
+     <div style="font-size:14px;color:#e2e8f0" id="d_area">—</div>
     </div>
     <div>
-      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Tutor 1</div>
-      <div style="font-size:14px;color:#e2e8f0" id="tutor1">—</div>
+<div style="font-size:14px;color:#e2e8f0" id="d_tutor1">—</div>
     </div>
     <div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Tutor 2</div>
-      <div style="font-size:14px;color:#e2e8f0" id="tutor2">—</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_tutor2">—</div>
+   
     </div>
     <div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Fecha Radicación</div>
-      <div style="font-size:14px;color:#e2e8f0" id="fechaRadicacion">—</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_fechaRadicacion">—</div>
     </div>
     <div>
       <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Fecha Aprobación</div>
-      <div style="font-size:14px;color:#e2e8f0" id="fechaAprobacion">—</div>
-    </div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_fechaAprobacion">—</div>
     <div style="grid-column:1/-1">
       <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Notas</div>
-      <div style="font-size:14px;color:#e2e8f0" id="notas">—</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_notas">—</div>
     </div>
   </div>
 </div>
@@ -488,16 +487,16 @@ async function cargarMisRad() {
       misRadicaciones = data.radicaciones;
      const r = misRadicaciones[0];
 
-document.getElementById('numeroRadicacion').textContent = r.numero || '—';
-document.getElementById('estado').textContent = r.estado || '—';
-document.getElementById('tituloResumen').textContent = r.titulo || '—';
-document.getElementById('modalidadResumen').textContent = r.modalidad || '—';
-document.getElementById('areaResumen').textContent = r.area || '—';
-document.getElementById('tutor1').textContent = r.tutor1Nombre || '—';
-document.getElementById('tutor2').textContent = r.tutor2Nombre || '—';
-document.getElementById('fechaRadicacion').textContent = fmtFecha(r.fechaRadicacion);
-document.getElementById('fechaAprobacion').textContent = fmtFecha(r.fechaAprobacion);
-document.getElementById('notas').textContent = limpiarNotas(r.notas) || '—';
+document.getElementById('d_numeroRadicacion').textContent = r.numero || '—';
+document.getElementById('d_estado').textContent = r.estado || '—';
+document.getElementById('d_titulo').textContent = r.titulo || '—';
+document.getElementById('d_modalidad').textContent = r.modalidad || '—';
+document.getElementById('d_area').textContent = r.area || '—';
+document.getElementById('d_tutor1').textContent = r.tutor1Nombre || '—';
+document.getElementById('d_tutor2').textContent = r.tutor2Nombre || '—';
+document.getElementById('d_fechaRadicacion').textContent = fmtFecha(r.fechaRadicacion);
+document.getElementById('d_fechaAprobacion').textContent = fmtFecha(r.fechaAprobacion);
+document.getElementById('d_notas').textContent = limpiarNotas(r.notas) || '—';
       
       // Actualizar contador general
       actualizarContadorGeneral(misRadicaciones[0]);
