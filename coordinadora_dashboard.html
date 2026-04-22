@@ -1425,6 +1425,131 @@ function calcularDiasHabilesDesdeHoy(fecha) {
   }
   return dias;
 }
+
+function renderFiltros() {
+  const fSem = document.getElementById('fSem').value;
+  const fEst = document.getElementById('fEst').value;
+  const fPlazo = document.getElementById('fPlazo').value;
+  const fTutor = document.getElementById('fTutor').value;
+  const fActas = document.getElementById('fActas').value;
+  const q = (document.getElementById('searchFiltros').value || '').toLowerCase();
+
+  let filtered = radicaciones.filter(r => {
+    const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s||0)).filter(n => n > 0);
+    if (fSem && !semestres.includes(parseInt(fSem))) return false;
+    if (fEst && r.estado !== fEst) return false;
+    if (fPlazo) {
+      const dias = r.diasRestantes || 0;
+      if (fPlazo === 'vencido' && dias >= 0) return false;
+      if (fPlazo === '0-30' && (dias < 0 || dias > 30)) return false;
+      if (fPlazo === '30-60' && (dias < 30 || dias > 60)) return false;
+      if (fPlazo === '60+' && dias < 60) return false;
+    }
+    if (fTutor) {
+      const tieneTutor = !!(r.tutor1Nombre || r.tutor2Nombre);
+      if (fTutor === 'con' && !tieneTutor) return false;
+      if (fTutor === 'sin' && tieneTutor) return false;
+    }
+    if (fActas) {
+      const actasEste = actas.filter(a => a.numero === r.numero);
+      if (fActas === 'nocargadas' && actasEste.length > 0) return false;
+      if (fActas === 'cargadas' && actasEste.length === 0) return false;
+      if (fActas === 'aprobadas' && !actasEste.some(a => a.estado === 'Aprobada')) return false;
+      if (fActas === 'rechazadas' && !actasEste.some(a => a.estado === 'Rechazada')) return false;
+    }
+    if (q) {
+      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.tutor1Nombre].join(' ').toLowerCase();
+      if (!txt.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const tbody = document.getElementById('tbodyFiltros');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty">Sin registros que coincidan.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s||0)).filter(n => n > 0);
+    const semMax = semestres.length ? Math.max(...semestres) : '—';
+    const actasEste = actas.filter(a => a.numero === r.numero);
+    const actasTexto = actasEste.length === 0 ? '❌ 0' : `${actasEste.length} (${actasEste.filter(a => a.estado === 'Aprobada').length}✅)`;
+    const dias = r.diasRestantes || 0;
+    let riesgoTexto = '🟢 BAJO', riesgoColor = 'color:#6ee7b7';
+    if (dias < 0) { riesgoTexto = '🔴 VENCIDO'; riesgoColor = 'color:#fca5a5'; }
+    else if (dias < 30) { riesgoTexto = '🔴 CRÍTICO'; riesgoColor = 'color:#fca5a5'; }
+    else if (dias < 60) { riesgoTexto = '🟡 MEDIO'; riesgoColor = 'color:#fcd34d'; }
+    const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ');
+    const estado = r.estado || 'Radicado';
+    const estadoClass = estado === 'Radicado' ? 'b-radicado' : estado === 'Tutores Avalados' ? 'b-tutores' : estado === 'Pendiente Comité Técnico' ? 'b-comite' : estado === 'Aprobado' ? 'b-aprobado' : 'b-devuelto';
+    return `<tr><td><div class="num-rad">${esc(r.numero||'')}</div></td><td style="font-size:12px">${esc(nombres)}</td><td style="text-align:center;font-weight:600;color:#a78bfa">${semMax}</td><td><span class="badge ${estadoClass}">${esc(estado)}</span></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.tutor1Nombre||'—')}</td><td style="font-size:11px">${actasTexto}</td><td style="text-align:center;color:rgba(255,255,255,.5)">${r.diasTranscurridos||0}</td><td style="text-align:center;font-weight:600;color:#fcd34d">${dias < 0 ? 'Vencido' : dias + ' d'}</td><td style="${riesgoColor};font-weight:600">${riesgoTexto}</td><td><button class="btn bl" style="padding:4px 8px;font-size:11px" onclick="verDetalle(${r.rowIndex})">👁 Ver</button></td></tr>`;
+  }).join('');
+}
+
+function limpiarFiltros() {
+  document.getElementById('fSem').value = '';
+  document.getElementById('fEst').value = '';
+  document.getElementById('fPlazo').value = '';
+  document.getElementById('fTutor').value = '';
+  document.getElementById('fActas').value = '';
+  document.getElementById('searchFiltros').value = '';
+  renderFiltros();
+  toast('Filtros limpios', 'info');
+}
+
+function exportarFiltrosCSV() {
+  const fSem = document.getElementById('fSem').value;
+  const fEst = document.getElementById('fEst').value;
+  const fPlazo = document.getElementById('fPlazo').value;
+  const fTutor = document.getElementById('fTutor').value;
+  const fActas = document.getElementById('fActas').value;
+  const q = (document.getElementById('searchFiltros').value || '').toLowerCase();
+
+  let filtered = radicaciones.filter(r => {
+    const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s||0)).filter(n => n > 0);
+    if (fSem && !semestres.includes(parseInt(fSem))) return false;
+    if (fEst && r.estado !== fEst) return false;
+    if (fPlazo) {
+      const dias = r.diasRestantes || 0;
+      if (fPlazo === 'vencido' && dias >= 0) return false;
+      if (fPlazo === '0-30' && (dias < 0 || dias > 30)) return false;
+      if (fPlazo === '30-60' && (dias < 30 || dias > 60)) return false;
+      if (fPlazo === '60+' && dias < 60) return false;
+    }
+    if (fTutor) {
+      const tieneTutor = !!(r.tutor1Nombre || r.tutor2Nombre);
+      if (fTutor === 'con' && !tieneTutor) return false;
+      if (fTutor === 'sin' && tieneTutor) return false;
+    }
+    if (q) {
+      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3].join(' ').toLowerCase();
+      if (!txt.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) { toast('Sin datos para exportar', 'info'); return; }
+  const h = ['N° Radicación','Est. 1','Est. 2','Est. 3','Sem','Estado','Tutor 1','Tutor 2','Días T.','Días R.','Actas','Riesgo'];
+  const rows = filtered.map(r => {
+    const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s||0)).filter(n => n > 0);
+    const semMax = semestres.length ? Math.max(...semestres) : '';
+    const dias = r.diasRestantes || 0;
+    let riesgo = 'BAJO';
+    if (dias < 0 || dias < 30) riesgo = 'CRÍTICO';
+    else if (dias < 60) riesgo = 'MEDIO';
+    const actasEste = actas.filter(a => a.numero === r.numero).length;
+    return [r.numero, r.nombre1||'', r.nombre2||'', r.nombre3||'', semMax, r.estado||'', r.tutor1Nombre||'', r.tutor2Nombre||'', r.diasTranscurridos||0, dias, actasEste, riesgo];
+  });
+  const csv = [h, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'filtros_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  toast('CSV exportado ✓', 'ok');
+}
+</script>  return dias;
+}
 </script>
  </body>
 </html>
