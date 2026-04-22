@@ -406,7 +406,7 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px">
       <div style="display:flex;flex-direction:column;gap:6px">
         <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">🎓 Semestre</label>
-        <select id="fSem" onchange="renderFiltros()">
+        <select id="fEstFiltros" onchange="renderFiltros()">
           <option value="">— Todos —</option>
           <option value="7">7</option>
           <option value="8">8</option>
@@ -1429,7 +1429,7 @@ function calcularDiasHabilesDesdeHoy(fecha) {
 
 function renderFiltros() {
   const fSem = document.getElementById('fSem').value;
-  const fEst = document.getElementById('fEst').value;
+  const fEst = document.getElementById('fEstFiltros').value;
   const fPlazo = document.getElementById('fPlazo').value;
   const fTutor = document.getElementById('fTutor').value;
   const fActas = document.getElementById('fActas').value;
@@ -1501,7 +1501,7 @@ function limpiarFiltros() {
 
 function exportarFiltrosCSV() {
   const fSem = document.getElementById('fSem').value;
-  const fEst = document.getElementById('fEst').value;
+  const fEst = document.getElementById('fEstFiltros').value;
   const fPlazo = document.getElementById('fPlazo').value;
   const fTutor = document.getElementById('fTutor').value;
   const fActas = document.getElementById('fActas').value;
