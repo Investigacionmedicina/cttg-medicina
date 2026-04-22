@@ -673,7 +673,9 @@ tutor1Relacion: document.getElementById('tutor1Relacion')?.value || '',
 tutor2Nombre: (document.getElementById('tutor2Nombre')?.value || '').trim(),
 tutor2Email:  (document.getElementById('tutor2Email')?.value || '').trim(),
 tutor2Telefono: (document.getElementById('tutor2Telefono')?.value || '').trim(),
-tutor2Relacion: document.getElementById('tutor2Relacion')?.value || ''
+tutor2Relacion: document.getElementById('tutor2Relacion')?.value || '',
+    observaciones: document.getElementById('observaciones')?.value || ''
+  };
   };
   const btn = document.getElementById('btnRad');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Radicando...';
