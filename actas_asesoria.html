@@ -261,12 +261,17 @@ async function cargarContexto() {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
     const d = await res.json();
     if (d.success && d.radicaciones.length > 0) {
-      numeroRadicacion = d.radicaciones[0].numero || '—';
+      numeroRadicacion = String(d.radicaciones[0].numero || '').trim();
+      if (!numeroRadicacion || numeroRadicacion === '—') {
+        toast('No se encontró tu número de radicación. Recarga la página.', 'warn');
+      }
       document.getElementById('numRadicacion').textContent = numeroRadicacion;
     }
-  } catch(e) {}
+  } catch(e) {
+    console.error('Error cargando contexto:', e);
+    toast('Error al cargar tu información', 'err');
+  }
 }
-
 async function cargarActas() {
   const tbody = document.getElementById('tbodyActas');
   tbody.innerHTML = '<tr><td colspan="4" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>';
