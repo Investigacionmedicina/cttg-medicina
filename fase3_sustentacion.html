@@ -279,6 +279,7 @@ let user = null;
   if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
   cargarEstadoFase3();
+  cargarMisSolicitudes();
 })();
 
 function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
