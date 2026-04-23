@@ -279,7 +279,7 @@ let user = null;
   if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
   cargarEstadoFase3();
-  setTimeout(() => cargarMisSolicitudes(), 500);
+  cargarMisSolicitudes();
 })();
 
 function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
@@ -427,7 +427,6 @@ function formatearFecha(s) {
   const p = String(s).split('T')[0].split('-');
   return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
 }
-</script>
 </script>
 </body>
 </html>
