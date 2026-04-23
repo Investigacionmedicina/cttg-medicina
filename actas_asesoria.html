@@ -336,19 +336,19 @@ async function solicitarFase2() {
   const btn = document.getElementById('btnSolicitar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+   const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'crearActasAsesoria',
       numeroRadicacion,
       emailEstudiante: user.email,
-      nombreArchivo: 'Solicitud activación Fase 2',
+      nombreArchivo: 'Forms-' + new Date().toISOString().split('T')[0],
       base64: '',
-      observaciones: 'El estudiante solicita activación de Fase 2',
-      token: TOKEN 
-    }));
-    const d = await res.json();
+      observaciones: obs || 'Enviado via Microsoft Forms',
+      token: TOKEN
+    }) }); 
+   const d = await res.json();
     if (d.success) {
-      btn.style.display = 'none';
-      document.getElementById('solicitudEnviada').style.display = 'block';
+      btn.style.display = 'none'; 
+     document.getElementById('solicitudEnviada').style.display = 'block';
       document.getElementById('infoSolicitud').textContent = 'Solicitud en revisión por la coordinadora.';
       toast('Solicitud enviada ✓', 'ok');
     } else throw new Error(d.error);
