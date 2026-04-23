@@ -340,6 +340,9 @@ async function solicitarSustentacion() {
   const btn = document.getElementById('btnSolicitar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
 
+ const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
+
   try {
     const datos = {
       action: 'crearFase3',
@@ -354,7 +357,15 @@ async function solicitarSustentacion() {
       jurado2Telefono: document.getElementById('jurado2Telefono').value.trim()
     };
 
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify(datos) });
+    const controller = new AbortController();
+setTimeout(() => controller.abort(), 15000);
+const res = await fetch(URL_APP, { 
+  method: 'POST', 
+  body: JSON.stringify(datos),
+  signal: controller.signal
+});
+     
+    });
     const d = await res.json();
 
     if (d.success) {
@@ -398,12 +409,22 @@ function switchTab(name, btn) {
 
 async function cargarMisSolicitudes() {
   const tbody = document.getElementById('tbodySust');
+  if (!user || !user.email) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No autenticado.</td></tr>';
+    return;
+  }
+  
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3' }) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const d = await res.json();
-    if (d.success) {
-      const misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
-      
+    
+    if (!d.success) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Error: ' + (d.error || 'desconocido') + '</td></tr>';
+      return;
+    }
+    
+    const misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante && s.emailEstudiante.toLowerCase() === user.email.toLowerCase());      
       if (!misSolicitudes.length) {
         tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin solicitudes registradas aún.</td></tr>';
         document.getElementById('countTotal').textContent = '0';
