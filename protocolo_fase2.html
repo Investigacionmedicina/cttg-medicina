@@ -436,11 +436,10 @@ async function confirmarEnvio() {
   const check3 = document.getElementById('check3').checked;
   const btn = document.getElementById('btnConfirmar');
 
-  if (!check1 && !check2 && !check3) {
-    toast('Debes confirmar al menos un documento que incluiste', 'warn');
-    return;
-  }
-
+  if (!check1 || !check2 || !check3) {
+  toast('Debes confirmar que incluiste TODOS los documentos requeridos', 'warn');
+  return;
+}
   if (!window.numeroRadicacion) {
     toast('No se encontró tu número de radicación', 'err');
     return;
