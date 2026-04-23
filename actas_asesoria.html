@@ -259,7 +259,7 @@ function badgeClass(estado) {
 
 async function cargarContexto() {
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }), token: TOKEN});
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN })});
     const d = await res.json();
     if (d.success && d.radicaciones.length > 0) {
       numeroRadicacion = String(d.radicaciones[0].numero || '').trim();
@@ -277,7 +277,7 @@ async function cargarActas() {
   const tbody = document.getElementById('tbodyActas');
   tbody.innerHTML = '<tr><td colspan="4" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>';
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }), token: TOKEN });
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: TOKEN  })});
     const d = await res.json();
     if (!d.success) throw new Error(d.error || 'Error al cargar');
 
@@ -342,8 +342,8 @@ async function solicitarFase2() {
       emailEstudiante: user.email,
       nombreArchivo: 'Solicitud activación Fase 2',
       base64: '',
-      observaciones: 'El estudiante solicita activación de Fase 2'
-    }), token: TOKEN});
+      observaciones: 'El estudiante solicita activación de Fase 2' , token: TOKEN} 
+    }));
     const d = await res.json();
     if (d.success) {
       btn.style.display = 'none';
@@ -385,8 +385,8 @@ async function confirmarEnvio() {
       emailEstudiante: user.email,
       nombreArchivo: 'Forms-' + new Date().toISOString().split('T')[0],
       base64: '',
-      observaciones: obs || 'Enviado via Microsoft Forms'
-    }), token: TOKEN});
+      observaciones: obs || 'Enviado via Microsoft Forms', token: TOKEN
+    })});
     const d = await res.json();
     if (d.success) {
       document.getElementById('successBox').style.display = 'block';
