@@ -248,8 +248,8 @@ function fmtFecha(s) {
 
 async function cargarReuniones() {
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
-    const d = await res.json();
+   const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: localStorage.getItem('cttg_token') || '' }) });
+      const d = await res.json();
     console.log('Respuesta getFase2:', d);
     if (!d.success) {
   console.log('getFase2 error:', d.error);
@@ -321,7 +321,7 @@ async function cargarReuniones() {
 }
 
 function mostrarDetalleReunion(fecha) {
-  fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) })
+  fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: localStorage.getItem('cttg_token') || '' })
     .then(r => r.json())
     .then(d => {
       const protocolos = (d.protocolos || []).filter(p => {
@@ -366,7 +366,7 @@ async function cargarDecisiones() {
   tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando decisiones...</td></tr>';
   
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: localStorage.getItem('cttg_token') || '' }) });
     const d = await res.json();
     if (!d.success) throw new Error('Error al cargar');
 
