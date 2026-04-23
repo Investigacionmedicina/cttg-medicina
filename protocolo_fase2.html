@@ -374,32 +374,31 @@ function mostrarDetalle(rowIndex) {
       if (!protocolo) {
         toast('No se encontró el protocolo', 'warn');
         return;
-       , token: TOKEN
       }
 
       document.getElementById('detNumero').textContent = protocolo.numero || '—';
       document.getElementById('detEstado').textContent = protocolo.estado || '—';
       document.getElementById('detEvaluador').textContent = protocolo.evaluador || '—';
-    document.getElementById('detFechaComite').textContent = protocolo.fechaComite || '—';
+      document.getElementById('detFechaComite').textContent = protocolo.fechaComite || '—';
 
-    const yaEvaluado =
-  protocolo.estado === 'Devuelto' ||
-  protocolo.estado === 'Aprobado' ||
-  protocolo.estado === 'Aprobado Directo';
+      const yaEvaluado =
+        protocolo.estado === 'Devuelto' ||
+        protocolo.estado === 'Aprobado' ||
+        protocolo.estado === 'Aprobado Directo';
 
       if (yaEvaluado) {
         document.getElementById('estadoEvaluado').style.display = 'block';
         document.getElementById('detDecisionRow').style.display = 'flex';
         document.getElementById('detObservacionesRow').style.display = 'flex';
 
-       const decisionTexto =
-  protocolo.estado === 'Aprobado'
-    ? '✅ Aprobado'
-    : protocolo.estado === 'Aprobado Directo'
-    ? '✅ Aprobado Directo'
-    : protocolo.estado === 'Devuelto'
-    ? '❌ Devuelto para correcciones'
-    : '⏳ Pendiente decisión del Comité';
+        const decisionTexto =
+          protocolo.estado === 'Aprobado'
+            ? '✅ Aprobado'
+            : protocolo.estado === 'Aprobado Directo'
+            ? '✅ Aprobado Directo'
+            : protocolo.estado === 'Devuelto'
+            ? '❌ Devuelto para correcciones'
+            : '⏳ Pendiente decisión del Comité';
 
         document.getElementById('detDecision').textContent = decisionTexto;
         document.getElementById('detObservaciones').textContent = protocolo.observaciones || '—';
@@ -424,7 +423,8 @@ function mostrarDetalle(rowIndex) {
       toast('Error al cargar el detalle del protocolo', 'err');
     });
 }
- function marcarPasos() {
+
+function marcarPasos() {
   setTimeout(() => {
     document.getElementById('paso1').classList.add('done');
     document.getElementById('paso2').classList.add('done');
@@ -439,9 +439,9 @@ async function confirmarEnvio() {
   const btn = document.getElementById('btnConfirmar');
 
   if (!check1 || !check2 || !check3) {
-  toast('Debes confirmar que incluiste TODOS los documentos requeridos', 'warn');
-  return;
-}
+    toast('Debes confirmar que incluiste TODOS los documentos requeridos', 'warn');
+    return;
+  }
   if (!window.numeroRadicacion) {
     toast('No se encontró tu número de radicación', 'err');
     return;
@@ -456,8 +456,8 @@ async function confirmarEnvio() {
       nombreArchivo: 'Forms-' + new Date().toISOString().split('T')[0],
       urlArchivo: '',
       anexoCambio: 'Protocolo Completo',
-      observaciones: obs || 'Enviado via Microsoft Forms'
-     , token: TOKEN
+      observaciones: obs || 'Enviado via Microsoft Forms',
+      token: TOKEN
     })});
     const d = await res.json();
     if (d.success) {
