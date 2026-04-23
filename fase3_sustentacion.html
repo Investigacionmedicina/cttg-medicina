@@ -411,7 +411,8 @@ function switchTab(name, btn) {
 
 async function cargarMisSolicitudes() {
   const tbody = document.getElementById('tbodySust');
-  if (!user || !user.email) {
+  const currentUser = JSON.parse(localStorage.getItem('cttg_user') || 'null');
+  if (!currentUser || !currentUser.email) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">No autenticado.</td></tr>';
     return;
   }
