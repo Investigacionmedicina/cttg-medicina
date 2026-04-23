@@ -266,7 +266,7 @@ let protocoloActual = null;
 
 async function cargarRadicacion() {
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN }) });
     const d = await res.json();
     if (d.success && d.radicaciones.length > 0) {
       window.numeroRadicacion = d.radicaciones[0].numero || '';
@@ -373,6 +373,7 @@ function mostrarDetalle(rowIndex) {
       if (!protocolo) {
         toast('No se encontró el protocolo', 'warn');
         return;
+       , token: TOKEN
       }
 
       document.getElementById('detNumero').textContent = protocolo.numero || '—';
