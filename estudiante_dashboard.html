@@ -645,9 +645,9 @@ let actasAprobadas = false;
 
   try {
     const [dActas, dF2, dFase3] = await Promise.all([
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) }).then(r => r.json()),
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) }).then(r => r.json()),
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3' }) }).then(r => r.json())
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: TOKEN }) }).then(r => r.json()),
+fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: TOKEN }) }).then(r => r.json()),
+fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: TOKEN }) }).then(r => r.json())
     ]);
 
     if (dActas.success) {
