@@ -141,7 +141,7 @@
   <div class="panel on" id="pan-rad">
     <div class="filters">
       <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTabla()">
-      <select id="fEst" onchange="renderTabla()">
+      <select id="fEstFiltros" onchange="renderFiltros()">
         <option value="">Todos los estados</option>
         <option value="Radicado">Radicado</option>
         <option value="Revisión">En Revisión</option>
@@ -681,7 +681,7 @@ function badgeEst(est) {
 
 function renderTabla() {
   const q  = (document.getElementById('search').value || '').toLowerCase();
-  const fE = document.getElementById('fEst').value;
+  const fE = document.getElementById('fEstFiltros').value;
   const fM = document.getElementById('fMod').value;
   const filtered = radicaciones.filter(r => {
     const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre].join(' ').toLowerCase();
