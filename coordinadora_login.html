@@ -56,6 +56,7 @@ async function login() {
     const data = await res.json();
     if (data.success && data.user.rol === 'coordinadora') {
       localStorage.setItem('cttg_admin', JSON.stringify(data.user));
+     localStorage.setItem('cttg_token', data.token);
       window.location.href = 'coordinadora_dashboard.html';
     } else if (data.success) {
       err.textContent = 'Esta cuenta no tiene perfil de coordinadora.';
