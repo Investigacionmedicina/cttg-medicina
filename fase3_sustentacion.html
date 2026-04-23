@@ -387,6 +387,57 @@ function reintentar() {
   btn.disabled = false;
   btn.innerHTML = '🎓 Solicitar Sustentación';
 }
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  document.getElementById('pan-' + name).classList.add('on');
+  btn.classList.add('on');
+  if (name === 'mis-sust') cargarMisSolicitudes();
+}
+
+async function cargarMisSolicitudes() {
+  const tbody = document.getElementById('tbodySust');
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3' }) });
+    const d = await res.json();
+    if (d.success) {
+      const misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
+      
+      if (!misSolicitudes.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin solicitudes registradas aún.</td></tr>';
+        document.getElementById('countTotal').textContent = '0';
+        document.getElementById('countAprobadas').textContent = '0';
+        document.getElementById('countPendientes').textContent = '0';
+        return;
+      }
+      
+      document.getElementById('countTotal').textContent = misSolicitudes.length;
+      document.getElementById('countAprobadas').textContent = misSolicitudes.filter(s => s.nota).length;
+      document.getElementById('countPendientes').textContent = misSolicitudes.filter(s => !s.nota).length;
+      
+      tbody.innerHTML = misSolicitudes.map(s => {
+        const estado = s.nota ? 'Sustentado' : (s.fechaSustentacion ? 'Programado' : 'En revisión');
+        const badge = s.nota ? 'b-aprobado' : (s.fechaSustentacion ? 'b-comite' : 'b-pend');
+        const ico = s.nota ? '✅' : (s.fechaSustentacion ? '📅' : '⏳');
+        
+        return `<tr>
+          <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td>
+          <td><div class="num-rad">${s.numero}</div></td>
+          <td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td>
+          <td><span class="badge ${badge}">${ico} ${estado}</span></td>
+          <td><button class="btn-det" onclick="toast('${s.numero} - ${estado}', 'ok')">👁 Ver</button></td>
+        </tr>`;
+      }).join('');
+    }
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Error al cargar solicitudes.</td></tr>';
+  }
+}
+
+function volver() {
+  window.location.href = 'estudiante_dashboard.html';
+}
 function volver() {
   window.location.href = 'estudiante_dashboard.html';
 }
