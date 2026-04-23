@@ -52,10 +52,11 @@ async function login() {
   try {
     const res  = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'login', email, password: pass }) });
     const data = await res.json();
-    if (data.success && data.user.rol === 'estudiante') {
-      localStorage.setItem('cttg_user', JSON.stringify(data.user));
-      window.location.href = 'estudiante_dashboard.html';
-    } else if (data.success && data.user.rol !== 'estudiante') {
+  if (data.success && data.user.rol === 'estudiante') {
+  localStorage.setItem('cttg_user', JSON.stringify(data.user));
+  localStorage.setItem('cttg_token', data.token);
+  window.location.href = 'estudiante_dashboard.html';  
+  } else if (data.success && data.user.rol !== 'estudiante') {
       err.textContent = 'Esta cuenta no tiene perfil de estudiante.'; err.style.display = 'block';
     } else {
       err.textContent = data.error || 'Credenciales incorrectas'; err.style.display = 'block';
