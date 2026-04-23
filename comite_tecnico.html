@@ -221,8 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
   cargarReuniones();
 });
 
-function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
-
+function salir() { localStorage.removeItem('cttg_admin'); window.location.href = 'index.html'; }
 function toast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast ' + type + ' show';
