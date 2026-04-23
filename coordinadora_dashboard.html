@@ -1367,22 +1367,9 @@ function renderSeguimiento() {
 // ════════════════════════════════════════════════════════════
 // INICIALIZAR TABS AL CARGAR PÁGINA
 // ════════════════════════════════════════════════════════════
-const originalDOMContentLoaded = window.onload;
-window.onload = function() {
-  if (originalDOMContentLoaded) originalDOMContentLoaded();
-};
 
 // Reemplazar la función switchPanel existente
-const originalSwitchPanel = switchPanel;
-window.switchPanel = function(name, btn) {
-  originalSwitchPanel(name, btn);
-  if (name === 'tutores') cargarTutores();
-  if (name === 'alertas') cargarAlertas();
-  if (name === 'protocolo') cargarProtocolo();
-  if (name === 'seguimiento') cargarSeguimiento();
-  if (name === 'filtros') renderFiltros();
-  if (name === 'comite') console.log('Comité cargado');
-};
+
  function contarVencimientos() {
   let vencTutores = 0, vencActas = 0, vencProtocolo = 0;
   
