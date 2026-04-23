@@ -340,11 +340,11 @@ async function solicitarFase2() {
       action: 'crearActasAsesoria',
       numeroRadicacion,
       emailEstudiante: user.email,
-      nombreArchivo: 'Forms-' + new Date().toISOString().split('T')[0],
+      nombreArchivo: 'Solicitud activación Fase 2',
       base64: '',
-      observaciones: obs || 'Enviado via Microsoft Forms',
+      observaciones: 'El estudiante solicita activación de Fase 2',
       token: TOKEN
-    }) }); 
+    }) });
    const d = await res.json();
     if (d.success) {
       btn.style.display = 'none'; 
