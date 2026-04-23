@@ -141,15 +141,15 @@
   <div class="panel on" id="pan-rad">
     <div class="filters">
       <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTabla()">
-      <select id="fEstFiltros" onchange="renderFiltros()">
-        <option value="">Todos los estados</option>
-        <option value="Radicado">Radicado</option>
-        <option value="Revisión">En Revisión</option>
-        <option value="Tutores avalados">Tutores Avalados</option>
-        <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
-        <option value="Aprobado">Aprobado</option>
-        <option value="Devuelto">Devuelto</option>
-      </select>
+      <select id="fEstRad" onchange="renderTabla()">
+  <option value="">Todos los estados</option>
+  <option value="Radicado">Radicado</option>
+  <option value="Revisión">En Revisión</option>
+  <option value="Tutores avalados">Tutores Avalados</option>
+  <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
+  <option value="Aprobado">Aprobado</option>
+  <option value="Devuelto">Devuelto</option>
+</select>
       <select id="fMod" onchange="renderTabla()"><option value="">Todas las modalidades</option></select>
       <button class="btn" onclick="cargar()">↻ Actualizar</button>
       <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
@@ -681,7 +681,7 @@ function badgeEst(est) {
 
 function renderTabla() {
   const q  = (document.getElementById('search').value || '').toLowerCase();
-  const fE = document.getElementById('fEstFiltros').value;
+  const fE = document.getElementById('fEstRad').value;
   const fM = document.getElementById('fMod').value;
   const filtered = radicaciones.filter(r => {
     const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre].join(' ').toLowerCase();
@@ -1553,8 +1553,8 @@ function exportarFiltrosCSV() {
   a.click();
   toast('CSV exportado ✓', 'ok');
 }
-</script>  return dias;
-}
+</script>  
+ }
 </script>
- </body>
+</body>
 </html>
