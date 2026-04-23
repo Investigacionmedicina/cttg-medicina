@@ -639,13 +639,16 @@ async function actualizarBotonesFases(radicaciones) {
       if (btnActasSub) btnActasSub.textContent = 'Pendiente: aval de tutores';
     }
   }
-
-  let actasAprobadas = false;
-  let fase2Aprobada  = false;
+let actasAprobadas = false;
+  let fase2Aprobada = false;
 
   try {
-    const resActas = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) });
-    const dActas   = await resActas.json();
+    const [dActas, dF2, dFase3] = await Promise.all([
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria' }) }).then(r => r.json()),
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) }).then(r => r.json()),
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3' }) }).then(r => r.json())
+    ]);
+
     if (dActas.success) {
       const misActas = (dActas.actas || []).filter(a => a.emailEstudiante.toLowerCase() === user.email.toLowerCase());
       actasAprobadas = misActas.some(a => a.estado === 'Aprobada');
@@ -656,48 +659,13 @@ async function actualizarBotonesFases(radicaciones) {
         else if (estadosConAcceso.includes(estadoActual)) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
       }
     }
-  } catch(e) {}
 
-  if (btnFase2) {
-    btnFase2.style.display = 'flex';
-    if (actasAprobadas) {
-      btnFase2.style.opacity       = '1';
-      btnFase2.style.pointerEvents = 'auto';
-      if (btnFase2Sub) btnFase2Sub.textContent = 'Subir documento de protocolo';
-    } else {
-      btnFase2.style.opacity       = '0.4';
-      btnFase2.style.pointerEvents = 'none';
-      if (btnFase2Sub) btnFase2Sub.textContent = 'Pendiente: aprobación de actas';
-    }
-  }
-
-  try {
-    const resF2 = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
-    const dF2   = await resF2.json();
     if (dF2.success) {
       fase2Aprobada = (dF2.protocolos || []).some(p =>
-  p.emailEstudiante.toLowerCase() === user.email.toLowerCase() && (p.estado === 'Aprobado' || p.estado === 'Aprobado Directo')
-);
+        p.emailEstudiante.toLowerCase() === user.email.toLowerCase() && (p.estado === 'Aprobado' || p.estado === 'Aprobado Directo')
+      );
     }
-  } catch(e) {}
 
-  if (btnFase3) {
-    btnFase3.style.display = 'flex';
-    if (fase2Aprobada) {
-      btnFase3.style.opacity       = '1';
-      btnFase3.style.pointerEvents = 'auto';
-      if (btnFase3Sub) btnFase3Sub.textContent = 'Solicitar fecha de sustentación';
-    } else {
-      btnFase3.style.opacity       = '0.4';
-      btnFase3.style.pointerEvents = 'none';
-      if (btnFase3Sub) btnFase3Sub.textContent = 'Pendiente: aprobación de protocolo';
-    }
-  }
-
-  // Cargar y mostrar estado de Fase 3
-  try {
-    const resFase3 = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3' }) });
-    const dFase3 = await resFase3.json();
     if (dFase3.success) {
       const miSolicitud = (dFase3.fase3 || []).find(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
       if (miSolicitud) {
@@ -706,7 +674,6 @@ async function actualizarBotonesFases(radicaciones) {
         document.getElementById('f3Turnitin').textContent = (miSolicitud.pctTurnitin || '—') + '%';
         document.getElementById('f3Fecha').textContent = miSolicitud.fechaSustentacion ? fmtFecha(miSolicitud.fechaSustentacion) : '—';
         document.getElementById('f3Hora').textContent = miSolicitud.horaSustentacion || '—';
-        
         if (miSolicitud.fechaSustentacion) {
           document.getElementById('f3Jurados').style.display = 'block';
           document.getElementById('f3J1').textContent = miSolicitud.jurado1Nombre || '—';
@@ -714,7 +681,6 @@ async function actualizarBotonesFases(radicaciones) {
           document.getElementById('f3J2').textContent = miSolicitud.jurado2Nombre || '—';
           document.getElementById('f3J2Email').textContent = miSolicitud.jurado2Email || '—';
         }
-        
         if (miSolicitud.nota) {
           document.getElementById('f3Resultado').style.display = 'block';
           document.getElementById('f3Nota').textContent = miSolicitud.nota;
@@ -722,9 +688,33 @@ async function actualizarBotonesFases(radicaciones) {
         }
       }
     }
-  } catch(e) { console.log('Error cargando Fase 3:', e); }
-}
+  } catch(e) { console.log('Error cargando fases:', e); }
 
+  if (btnFase2) {
+    btnFase2.style.display = 'flex';
+    if (actasAprobadas) {
+      btnFase2.style.opacity = '1';
+      btnFase2.style.pointerEvents = 'auto';
+      if (btnFase2Sub) btnFase2Sub.textContent = 'Subir documento de protocolo';
+    } else {
+      btnFase2.style.opacity = '0.4';
+      btnFase2.style.pointerEvents = 'none';
+      if (btnFase2Sub) btnFase2Sub.textContent = 'Pendiente: aprobación de actas';
+    }
+  }
+
+  if (btnFase3) {
+    btnFase3.style.display = 'flex';
+    if (fase2Aprobada) {
+      btnFase3.style.opacity = '1';
+      btnFase3.style.pointerEvents = 'auto';
+      if (btnFase3Sub) btnFase3Sub.textContent = 'Solicitar fecha de sustentación';
+    } else {
+      btnFase3.style.opacity = '0.4';
+      btnFase3.style.pointerEvents = 'none';
+      if (btnFase3Sub) btnFase3Sub.textContent = 'Pendiente: aprobación de protocolo';
+    }
+  }
 function limpiar() {
   ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
