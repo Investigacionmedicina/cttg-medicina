@@ -279,23 +279,12 @@ let user = null;
   if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
   cargarEstadoFase3();
-  cargarMisSolicitudes();
+  setTimeout(() => cargarMisSolicitudes(), 500);
 })();
 
 function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
-
-function toast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast ' + type + ' show';
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-function marcarPasos() {
-  setTimeout(() => {
-    document.getElementById('paso1').classList.add('done');
-    document.getElementById('paso2').classList.add('done');
-  }, 500);
-}
+function toast(msg, type) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(() => t.classList.remove('show'), 2800); }
+function marcarPasos() { setTimeout(() => { document.getElementById('paso1').classList.add('done'); document.getElementById('paso2').classList.add('done'); }, 500); }
 
 async function solicitarSustentacion() {
   const check1 = document.getElementById('check1').checked;
@@ -305,90 +294,64 @@ async function solicitarSustentacion() {
   const check5 = document.getElementById('check5').checked;
   const turnitin = document.getElementById('porcentajeTurnitin').value.trim();
 
-  // Validar que todos los documentos fueron cargados
   if (!check1 || !check2 || !check3 || !check4 || !check5) {
     document.getElementById('errorBox').style.display = 'block';
     document.getElementById('errorMsg').textContent = '❌ Faltan documentos';
-    document.getElementById('errorDetail').textContent = 'Debes confirmar que cargaste TODOS los 5 documentos: Anexo A7, Artículo, Guía Autores, Aval CCEB y Turnitin.';
-    document.getElementById('errorBox').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('errorDetail').textContent = 'Debes confirmar que cargaste TODOS los 5 documentos.';
     return;
   }
 
-  // Validar % Turnitin
   if (!turnitin || isNaN(parseFloat(turnitin))) {
     toast('Ingresa un porcentaje válido de Turnitin', 'warn');
-    document.getElementById('porcentajeTurnitin').focus();
     return;
   }
 
-  // Obtener radicación
   let numeroRadicacion = '';
   try {
-    const res = await fetch(URL_APP, { 
-      method: 'POST', 
-      body: JSON.stringify(datos),
-      signal: controller.signal
-    });
-    
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
     const d = await res.json();
-    if (d.success && d.radicaciones.length > 0) {
-      numeroRadicacion = d.radicaciones[0].numero || '';
-    }
-  } catch(e) {
-    console.error(e);
-  }
+    if (d.success && d.radicaciones.length > 0) numeroRadicacion = d.radicaciones[0].numero || '';
+  } catch(e) { console.error(e); }
 
-  if (!numeroRadicacion) {
-    toast('No se encontró tu número de radicación', 'err');
-    return;
-  }
+  if (!numeroRadicacion) { toast('No se encontró tu número de radicación', 'err'); return; }
 
   const btn = document.getElementById('btnSolicitar');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
 
   try {
-    const datos = {
-      action: 'crearFase3',
-      numeroRadicacion: numeroRadicacion,
-      emailEstudiante: user.email,
-      porcentajeTurnitin: parseFloat(turnitin),
-      jurado1Nombre: document.getElementById('jurado1Nombre').value.trim(),
-      jurado1Email: document.getElementById('jurado1Email').value.trim(),
-      jurado1Telefono: document.getElementById('jurado1Telefono').value.trim(),
-      jurado2Nombre: document.getElementById('jurado2Nombre').value.trim(),
-      jurado2Email: document.getElementById('jurado2Email').value.trim(),
-      jurado2Telefono: document.getElementById('jurado2Telefono').value.trim()
-    };
-
     const res = await fetch(URL_APP, { 
       method: 'POST', 
-      body: JSON.stringify(datos),
-      signal: controller.signal
- 
-    
+      body: JSON.stringify({
+        action: 'crearFase3',
+        numeroRadicacion: numeroRadicacion,
+        emailEstudiante: user.email,
+        porcentajeTurnitin: parseFloat(turnitin),
+        jurado1Nombre: document.getElementById('jurado1Nombre').value.trim(),
+        jurado1Email: document.getElementById('jurado1Email').value.trim(),
+        jurado1Telefono: document.getElementById('jurado1Telefono').value.trim(),
+        jurado2Nombre: document.getElementById('jurado2Nombre').value.trim(),
+        jurado2Email: document.getElementById('jurado2Email').value.trim(),
+        jurado2Telefono: document.getElementById('jurado2Telefono').value.trim()
+      })
+    });
     const d = await res.json();
     if (d.success) {
       document.getElementById('successBox').style.display = 'block';
       document.getElementById('errorBox').style.display = 'none';
       btn.style.display = 'none';
       document.getElementById('paso3').classList.add('done');
-      document.getElementById('successBox').scrollIntoView({ behavior: 'smooth' });
     } else {
       document.getElementById('errorBox').style.display = 'block';
-      document.getElementById('errorMsg').textContent = '❌ ' + (d.error || 'Error desconocido');
-      document.getElementById('errorDetail').textContent = 'Verifica los datos y vuelve a intentar.';
-      document.getElementById('errorBox').scrollIntoView({ behavior: 'smooth' });
-      btn.disabled = false; btn.innerHTML = '🎓 Solicitar Sustentación';
+      document.getElementById('errorMsg').textContent = '❌ ' + (d.error || 'Error');
+      btn.disabled = false;
+      btn.innerHTML = '🎓 Solicitar Sustentación';
     }
   } catch(e) {
     document.getElementById('errorBox').style.display = 'block';
-    document.getElementById('errorMsg').textContent = '❌ Error de conexión';
-    document.getElementById('errorDetail').textContent = e.message;
-    document.getElementById('errorBox').scrollIntoView({ behavior: 'smooth' });
-    btn.disabled = false; btn.innerHTML = '🎓 Solicitar Sustentación';
+    document.getElementById('errorMsg').textContent = '❌ Error: ' + e.message;
+    btn.disabled = false;
+    btn.innerHTML = '🎓 Solicitar Sustentación';
   }
 }
 
@@ -411,57 +374,38 @@ function switchTab(name, btn) {
 
 async function cargarMisSolicitudes() {
   const tbody = document.getElementById('tbodySust');
-  const currentUser = JSON.parse(localStorage.getItem('cttg_user') || 'null');
-  if (!currentUser || !currentUser.email) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">No autenticado.</td></tr>';
-    return;
-  }
-  
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3' }) });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
     const d = await res.json();
+    if (!d.success) { tbody.innerHTML = '<tr><td colspan="5" class="empty">Error cargando datos.</td></tr>'; return; }
     
-    if (!d.success) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty">Error: ' + (d.error || 'desconocido') + '</td></tr>';
+    const email = user.email.toLowerCase();
+    const misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante && s.emailEstudiante.toLowerCase() === email);
+    
+    if (!misSolicitudes.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin solicitudes registradas aún.</td></tr>';
+      document.getElementById('countTotal').textContent = '0';
+      document.getElementById('countAprobadas').textContent = '0';
+      document.getElementById('countPendientes').textContent = '0';
       return;
     }
     
-    const misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante && s.emailEstudiante.toLowerCase() === currentUser.email.toLowerCase());     
-      if (!misSolicitudes.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin solicitudes registradas aún.</td></tr>';
-        document.getElementById('countTotal').textContent = '0';
-        document.getElementById('countAprobadas').textContent = '0';
-        document.getElementById('countPendientes').textContent = '0';
-        return;
-      }
-      
-      document.getElementById('countTotal').textContent = misSolicitudes.length;
-      document.getElementById('countAprobadas').textContent = misSolicitudes.filter(s => s.nota).length;
-      document.getElementById('countPendientes').textContent = misSolicitudes.filter(s => !s.nota).length;
-      
-      tbody.innerHTML = misSolicitudes.map(s => {
-        const estado = s.nota ? 'Sustentado' : (s.fechaSustentacion ? 'Programado' : 'En revisión');
-        const badge = s.nota ? 'b-aprobado' : (s.fechaSustentacion ? 'b-comite' : 'b-pend');
-        const ico = s.nota ? '✅' : (s.fechaSustentacion ? '📅' : '⏳');
-        
-        return `<tr>
-          <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td>
-          <td><div class="num-rad">${s.numero}</div></td>
-          <td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td>
-          <td><span class="badge ${badge}">${ico} ${estado}</span></td>
-          <td><button class="btn-det" onclick="toast('${s.numero} - ${estado}', 'ok')">👁 Ver</button></td>
-        </tr>`;
-      }).join('');
-    }
+    document.getElementById('countTotal').textContent = misSolicitudes.length;
+    document.getElementById('countAprobadas').textContent = misSolicitudes.filter(s => s.nota).length;
+    document.getElementById('countPendientes').textContent = misSolicitudes.filter(s => !s.nota).length;
+    
+    tbody.innerHTML = misSolicitudes.map(s => {
+      const estado = s.nota ? 'Sustentado' : (s.fechaSustentacion ? 'Programado' : 'En revisión');
+      const badge = s.nota ? 'b-aprobado' : (s.fechaSustentacion ? 'b-comite' : 'b-pend');
+      const ico = s.nota ? '✅' : (s.fechaSustentacion ? '📅' : '⏳');
+      return `<tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td><td><div class="num-rad">${s.numero}</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td><td><span class="badge ${badge}">${ico} ${estado}</span></td><td><button class="btn-det" onclick="toast('${s.numero} - ${estado}', 'ok')">👁 Ver</button></td></tr>`;
+    }).join('');
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Error al cargar solicitudes.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Error al cargar.</td></tr>';
   }
 }
 
-function volver() {
-  window.location.href = 'estudiante_dashboard.html';
-}
+function volver() { window.location.href = 'estudiante_dashboard.html'; }
 
 async function cargarEstadoFase3() {
   try {
@@ -470,30 +414,12 @@ async function cargarEstadoFase3() {
     if (d.success) {
       const miSolicitud = (d.fase3 || []).find(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
       if (miSolicitud && miSolicitud.nota) {
-        // Ya sustentó — mostrar resultado, ocultar formulario
         document.querySelector('.form-card').style.display = 'none';
-        document.getElementById('successBox').innerHTML = `
-          <div style="font-size:28px;margin-bottom:8px">🎓</div>
-          <div style="font-size:15px;font-weight:600;color:#fff">Sustentación Completada</div>
-          <div style="font-size:24px;font-weight:700;color:#6ee7b7;margin:12px 0">Nota: ${miSolicitud.nota}</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px">Acta: ${miSolicitud.numeroActa||'—'}</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.5)">¡Felicitaciones, completaste tu trabajo de grado!</div>
-          <button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver al dashboard</button>
-        `;
+        document.getElementById('successBox').innerHTML = `<div style="font-size:28px;margin-bottom:8px">🎓</div><div style="font-size:15px;font-weight:600;color:#fff">Sustentación Completada</div><div style="font-size:24px;font-weight:700;color:#6ee7b7;margin:12px 0">Nota: ${miSolicitud.nota}</div><div style="font-size:12px;color:rgba(255,255,255,.5)">¡Felicitaciones!</div><button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver</button>`;
         document.getElementById('successBox').style.display = 'block';
-      } else if (miSolicitud && miSolicitud.fechaSustentacion) {
-        // Ya tiene fecha asignada — mostrar info
-        document.querySelector('.form-card p').innerHTML += `
-          <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:12px;margin-top:12px;font-size:12px;color:#93c5fd">
-            📅 <strong>Tu sustentación ya está programada:</strong><br>
-            Fecha: ${formatearFecha(miSolicitud.fechaSustentacion)}<br>
-            Hora: ${miSolicitud.horaSustentacion||'—'}<br>
-            Jurado 1: ${miSolicitud.jurado1Nombre||'—'}<br>
-            Jurado 2: ${miSolicitud.jurado2Nombre||'—'}
-          </div>`;
       }
     }
-  } catch(e) { console.log('Error cargando estado Fase 3:', e); }
+  } catch(e) { console.log('Error:', e); }
 }
 
 function formatearFecha(s) {
@@ -502,7 +428,6 @@ function formatearFecha(s) {
   return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
 }
 </script>
-
 </script>
 </body>
 </html>
