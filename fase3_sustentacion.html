@@ -398,11 +398,12 @@ async function cargarMisSolicitudes() {
     document.getElementById('countAprobadas').textContent = misSolicitudes.filter(s => s.nota).length;
     document.getElementById('countPendientes').textContent = misSolicitudes.filter(s => !s.nota).length;
     
-    tbody.innerHTML = misSolicitudes.map(s => {
+    window._solicitudes = misSolicitudes;
+    tbody.innerHTML = misSolicitudes.map((s, idx) => {
       const estado = s.nota ? 'Sustentado' : (s.fechaSustentacion ? 'Programado' : 'En revisión');
       const badge = s.nota ? 'b-aprobado' : (s.fechaSustentacion ? 'b-comite' : 'b-pend');
       const ico = s.nota ? '✅' : (s.fechaSustentacion ? '📅' : '⏳');
-    return `<tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td><td><div class="num-rad">${s.numero}</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td><td><span class="badge ${badge}">${ico} ${estado}</span></td><td><button class="btn-det" onclick="verDetalle(${JSON.stringify(s).replace(/'/g, '&#39;')})">👁 Ver</button></td></tr>`; 
+      return `<tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td><td><div class="num-rad">${s.numero}</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td><td><span class="badge ${badge}">${ico} ${estado}</span></td><td><button class="btn-det" onclick="verDetalle(window._solicitudes[${idx}])">👁 Ver</button></td></tr>`;
     }).join('');
   } catch(e) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">Error al cargar.</td></tr>';
