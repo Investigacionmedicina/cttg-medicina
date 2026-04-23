@@ -145,11 +145,12 @@
     <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
 
     <div class="msec">Fecha y hora</div>
-    <div class="mgrid" style="margin-bottom:14px">
-      <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
-      <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
-    </div>
-
+<div class="mgrid" style="margin-bottom:14px">
+  <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
+  <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
+</div>
+<div class="mfg" style="margin-bottom:14px"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
+   
     <div class="msec">Jurado 1</div>
     <div class="mgrid" style="margin-bottom:4px">
       <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
@@ -305,6 +306,7 @@ function abrirAsignar(rowIndex) {
   document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero;
   document.getElementById('mFecha').value = '';
   document.getElementById('mHora').value = '';
+ document.getElementById('mLugar').value = '';
   document.getElementById('mJ1Nombre').value = r.jurado1Nombre || '';
   document.getElementById('mJ1Cedula').value = r.jurado1Cedula || '';
   document.getElementById('mJ1Email').value = r.jurado1Email || '';
@@ -329,13 +331,15 @@ async function asignarJurados() {
   const rowIndex = parseInt(document.getElementById('mAsignarRow').value);
   const fecha    = document.getElementById('mFecha').value;
   const hora     = document.getElementById('mHora').value;
-  const j1n      = document.getElementById('mJ1Nombre').value.trim();
+ const lugar = document.getElementById('mLugar').value.trim(); 
+ const j1n      = document.getElementById('mJ1Nombre').value.trim();
   const j1e      = document.getElementById('mJ1Email').value.trim();
   const j2n      = document.getElementById('mJ2Nombre').value.trim();
   const j2e      = document.getElementById('mJ2Email').value.trim();
 
   if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
   if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
+ if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
   if (!j1n || !j1e) { toast('Completa los datos del Jurado 1', 'warn'); return; }
   if (!j2n || !j2e) { toast('Completa los datos del Jurado 2', 'warn'); return; }
 
@@ -347,6 +351,7 @@ async function asignarJurados() {
       rowIndex,
       fechaSustentacion: fecha,
       horaSustentacion: hora,
+     lugar: lugar,
       jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e },
       jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e },
       emailCoord: admin.email
