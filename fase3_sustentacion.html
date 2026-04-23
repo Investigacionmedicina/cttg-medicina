@@ -280,7 +280,6 @@ let numeroRadicacionGlobal = '';
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
   if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
-  cargarEstadoFase3();
   cargarMisSolicitudes();
   fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) })
     .then(r => r.json())
@@ -405,7 +404,14 @@ async function cargarMisSolicitudes() {
       const ico = s.nota ? '✅' : (s.fechaSustentacion ? '📅' : '⏳');
       return `<tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td><td><div class="num-rad">${s.numero}</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td><td><span class="badge ${badge}">${ico} ${estado}</span></td><td><button class="btn-det" onclick="verDetalle(window._solicitudes[${idx}])">👁 Ver</button></td></tr>`;
     }).join('');
-  } catch(e) {
+  } 
+  const sustentada = misSolicitudes.find(s => s.nota);
+    if (sustentada) {
+      document.querySelector('.form-card').style.display = 'none';
+      document.getElementById('successBox').innerHTML = `<div style="font-size:28px;margin-bottom:8px">🎓</div><div style="font-size:15px;font-weight:600;color:#fff">Sustentación Completada</div><div style="font-size:24px;font-weight:700;color:#6ee7b7;margin:12px 0">Nota: ${sustentada.nota}</div><div style="font-size:12px;color:rgba(255,255,255,.5)">¡Felicitaciones!</div><button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver</button>`;
+      document.getElementById('successBox').style.display = 'block';
+    }
+  catch(e) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">Error al cargar.</td></tr>';
   }
 }
@@ -433,21 +439,6 @@ function verDetalle(s) {
   document.body.insertAdjacentHTML('beforeend', html);
 }
 function volver() { window.location.href = 'estudiante_dashboard.html'; }
-
-async function cargarEstadoFase3() {
-  try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3' }) });
-    const d = await res.json();
-    if (d.success) {
-      const miSolicitud = (d.fase3 || []).find(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
-      if (miSolicitud && miSolicitud.nota) {
-        document.querySelector('.form-card').style.display = 'none';
-        document.getElementById('successBox').innerHTML = `<div style="font-size:28px;margin-bottom:8px">🎓</div><div style="font-size:15px;font-weight:600;color:#fff">Sustentación Completada</div><div style="font-size:24px;font-weight:700;color:#6ee7b7;margin:12px 0">Nota: ${miSolicitud.nota}</div><div style="font-size:12px;color:rgba(255,255,255,.5)">¡Felicitaciones!</div><button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver</button>`;
-        document.getElementById('successBox').style.display = 'block';
-      }
-    }
-  } catch(e) { console.log('Error:', e); }
-}
 
 function formatearFecha(s) {
   if (!s) return '—';
