@@ -427,7 +427,7 @@ async function cargarMisSolicitudes() {
       return;
     }
     
-    const misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante && s.emailEstudiante.toLowerCase() === user.email.toLowerCase());      
+    const misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante && s.emailEstudiante.toLowerCase() === currentUser.email.toLowerCase());     
       if (!misSolicitudes.length) {
         tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin solicitudes registradas aún.</td></tr>';
         document.getElementById('countTotal').textContent = '0';
