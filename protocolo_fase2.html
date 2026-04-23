@@ -253,6 +253,7 @@
 
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+const TOKEN = localStorage.getItem('cttg_token') || '';
 let user = null;
 let protocoloActual = null;
 
@@ -325,7 +326,7 @@ async function cargarProtocolos() {
   const tbody = document.getElementById('tbodyProtocolos');
   tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando protocolos...</td></tr>';
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: TOKEN }) });
     const d = await res.json();
     if (!d.success) throw new Error(d.error || 'Error al cargar');
 
@@ -365,7 +366,7 @@ async function cargarProtocolos() {
 function mostrarDetalle(rowIndex) {
   fetch(URL_APP, {
     method: 'POST',
-    body: JSON.stringify({ action: 'getFase2' })
+    body: JSON.stringify({ action: 'getFase2', token: TOKEN })
   })
     .then(r => r.json())
     .then(d => {
@@ -456,6 +457,7 @@ async function confirmarEnvio() {
       urlArchivo: '',
       anexoCambio: 'Protocolo Completo',
       observaciones: obs || 'Enviado via Microsoft Forms'
+     , token: TOKEN
     })});
     const d = await res.json();
     if (d.success) {
