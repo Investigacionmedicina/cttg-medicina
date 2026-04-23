@@ -251,7 +251,11 @@ async function cargarReuniones() {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2' }) });
     const d = await res.json();
     console.log('Respuesta getFase2:', d);
-    if (!d.success) throw new Error('Error al cargar');
+    if (!d.success) {
+  console.log('getFase2 error:', d.error);
+  document.getElementById('reunionesContainer').innerHTML = '<div class="empty">Sin reuniones programadas</div>';
+  return;
+}
 
     const protocolos = d.protocolos || [];
     console.log('Total protocolos:', protocolos.length);
