@@ -342,7 +342,8 @@ async function solicitarFase2() {
       emailEstudiante: user.email,
       nombreArchivo: 'Solicitud activación Fase 2',
       base64: '',
-      observaciones: 'El estudiante solicita activación de Fase 2' , token: TOKEN} 
+      observaciones: 'El estudiante solicita activación de Fase 2',
+      token: TOKEN 
     }));
     const d = await res.json();
     if (d.success) {
