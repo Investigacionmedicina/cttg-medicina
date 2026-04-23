@@ -380,14 +380,15 @@ async function confirmarEnvio() {
   const btn = document.getElementById('btnConfirmar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Registrando...';
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+
+   const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'crearActasAsesoria',
       numeroRadicacion,
       emailEstudiante: user.email,
-      nombreArchivo: 'Forms-' + new Date().toISOString().split('T')[0],
+      nombreArchivo: 'Solicitud activación Fase 2',
       base64: '',
-      observaciones: obs || 'Enviado via Microsoft Forms', 
-     token: TOKEN
+      observaciones: 'El estudiante solicita activación de Fase 2',
+      token: TOKEN 
     })});
     const d = await res.json();
     if (d.success) {
