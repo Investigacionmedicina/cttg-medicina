@@ -704,7 +704,7 @@ let actasAprobadas = false;
     }
   }
 
-  if (btnFase3) {
+ if (btnFase3) {
     btnFase3.style.display = 'flex';
     if (fase2Aprobada) {
       btnFase3.style.opacity = '1';
@@ -716,8 +716,10 @@ let actasAprobadas = false;
       if (btnFase3Sub) btnFase3Sub.textContent = 'Pendiente: aprobación de protocolo';
     }
   }
+}
+
 function limpiar() {
-  ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono'].forEach(id => {
+ ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   ['semestre1','semestre2','semestre3','modalidad','area','tutor1Relacion','tutor2Relacion'].forEach(id => {
