@@ -272,7 +272,7 @@ function renderTablas() {
   } else {
     tbA.innerHTML = sinFecha.map(r => `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.emailEstudiante)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
       <td style="font-size:13px">${r.semestre}${r.alertaS12==='SÍ'?'<span class="alert-s12">⚠️ S12</span>':''}</td>
       <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
@@ -289,7 +289,7 @@ function renderTablas() {
   } else {
     tbR.innerHTML = conFecha.map(r => `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.emailEstudiante)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:12px;color:#fcd34d">${fmtFecha(r.fechaSustentacion)}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${r.horaSustentacion||'—'}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado1Nombre||'—')}</td>
