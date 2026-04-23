@@ -261,7 +261,7 @@ async function cargar() {
     document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
   }
 }
-
+window._fase3 = fase3;
 function renderTablas() {
   // Pendiente asignación: sin fecha de sustentación
   const sinFecha = fase3.filter(r => !r.fechaSustentacion || r.fechaSustentacion === '');
@@ -276,8 +276,8 @@ function renderTablas() {
       <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(([r.jurado1Nombre,r.jurado2Nombre].filter(Boolean).join(', ')||'—'))}</td>
-      <td><button class="btn gr" onclick="abrirAsignar(${r.rowIndex},'${esc(r.numero)}',${JSON.stringify(r).replace(/'/g,"&#39;")})">📅 Asignar</button></td>
-    </tr>`).join('');
+     <td><button class="btn gr" onclick="abrirAsignar(${r.rowIndex})">📅 Asignar</button></td>
+     </tr>`).join('');
   }
 
   // Pendiente resultado: con fecha pero sin nota
@@ -298,17 +298,19 @@ function renderTablas() {
   }
 }
 
-function abrirAsignar(rowIndex, numero, r) {
+function abrirAsignar(rowIndex) {
+  const r = window._fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
   document.getElementById('mAsignarRow').value = rowIndex;
-  document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + numero;
+  document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero;
   document.getElementById('mFecha').value = '';
   document.getElementById('mHora').value = '';
   document.getElementById('mJ1Nombre').value = r.jurado1Nombre || '';
   document.getElementById('mJ1Cedula').value = r.jurado1Cedula || '';
-  document.getElementById('mJ1Email').value  = r.jurado1Email  || '';
+  document.getElementById('mJ1Email').value = r.jurado1Email || '';
   document.getElementById('mJ2Nombre').value = r.jurado2Nombre || '';
   document.getElementById('mJ2Cedula').value = r.jurado2Cedula || '';
-  document.getElementById('mJ2Email').value  = r.jurado2Email  || '';
+  document.getElementById('mJ2Email').value = r.jurado2Email || '';
   document.getElementById('modalAsignar').classList.add('open');
 }
 
