@@ -274,12 +274,17 @@
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 let user = null;
 
+let numeroRadicacionGlobal = '';
+
 (function init() {
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
   if (!user || user.rol !== 'estudiante') { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
   cargarEstadoFase3();
   cargarMisSolicitudes();
+  fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) })
+    .then(r => r.json())
+    .then(d => { if (d.success && d.radicaciones.length > 0) numeroRadicacionGlobal = d.radicaciones[0].numero || ''; });
 })();
 
 function salir() { localStorage.removeItem('cttg_user'); window.location.href = 'index.html'; }
@@ -306,15 +311,9 @@ async function solicitarSustentacion() {
     return;
   }
 
-  let numeroRadicacion = '';
-  try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
-    const d = await res.json();
-    if (d.success && d.radicaciones.length > 0) numeroRadicacion = d.radicaciones[0].numero || '';
-  } catch(e) { console.error(e); }
-
+  const numeroRadicacion = numeroRadicacionGlobal;
   if (!numeroRadicacion) { toast('No se encontró tu número de radicación', 'err'); return; }
-
+ 
   const btn = document.getElementById('btnSolicitar');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
