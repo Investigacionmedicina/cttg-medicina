@@ -340,8 +340,8 @@ async function solicitarSustentacion() {
   const btn = document.getElementById('btnSolicitar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
 
- const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
   try {
     const datos = {
@@ -357,17 +357,13 @@ async function solicitarSustentacion() {
       jurado2Telefono: document.getElementById('jurado2Telefono').value.trim()
     };
 
-    const controller = new AbortController();
-setTimeout(() => controller.abort(), 15000);
-const res = await fetch(URL_APP, { 
-  method: 'POST', 
-  body: JSON.stringify(datos),
-  signal: controller.signal
-});
-     
+    const res = await fetch(URL_APP, { 
+      method: 'POST', 
+      body: JSON.stringify(datos),
+      signal: controller.signal
     });
+    
     const d = await res.json();
-
     if (d.success) {
       document.getElementById('successBox').style.display = 'block';
       document.getElementById('errorBox').style.display = 'none';
