@@ -323,7 +323,12 @@ async function solicitarSustentacion() {
   // Obtener radicación
   let numeroRadicacion = '';
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email }) });
+    const res = await fetch(URL_APP, { 
+      method: 'POST', 
+      body: JSON.stringify(datos),
+      signal: controller.signal
+    });
+    
     const d = await res.json();
     if (d.success && d.radicaciones.length > 0) {
       numeroRadicacion = d.radicaciones[0].numero || '';
