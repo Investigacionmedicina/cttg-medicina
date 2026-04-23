@@ -581,6 +581,10 @@ function switchPanel(name, btn) {
   document.getElementById('pan-' + name).classList.add('on');
   btn.classList.add('on');
   if (name === 'actas') cargarActas();
+  else if (name === 'tutores') cargarTutores();
+  else if (name === 'alertas') cargarAlertas();
+  else if (name === 'protocolo') cargarProtocolo();
+  else if (name === 'seguimiento') cargarSeguimiento();
 }
 
 function setSyncState(s) {
