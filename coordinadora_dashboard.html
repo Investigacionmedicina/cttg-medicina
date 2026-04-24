@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Coordinadora — CTTG</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Outfit',sans-serif;background:#0a0f1a;color:#e2e8f0;min-height:100vh}
+  header{background:linear-gradient(135deg,#064e3b,#059669 80%,#1a3a5c);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+  .hdr-l{display:flex;align-items:center;gap:10px}
+  .logo{width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:18px;color:#fff}
+  .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
+  .hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .sync{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)}
+  .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0}
+  .dot.loading{background:#f59e0b;animation:pulse 1s infinite}.dot.error{background:#ef4444}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .user-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
+  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  main{padding:24px 28px;max-width:1500px;margin:0 auto}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+  .mc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;position:relative;overflow:hidden}
+  .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+  .mc.c1::before{background:#3b82f6}.mc.c2::before{background:#10b981}.mc.c3::before{background:#f59e0b}.mc.c4::before{background:#ef4444}.mc.c5::before{background:#a78bfa}.mc.c6::before{background:#00c3a5}
+  .mc .ml{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:6px;font-family:'DM Mono',monospace}
+  .mc .mv{font-size:26px;font-weight:700;font-family:'DM Serif Display',serif}
+  .mc.c1 .mv{color:#60a5fa}.mc.c2 .mv{color:#34d399}.mc.c3 .mv{color:#fcd34d}.mc.c4 .mv{color:#fca5a5}.mc.c5 .mv{color:#c4b5fd}.mc.c6 .mv{color:#00c3a5}
+  /* TABS */
+  .main-tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:4px;width:fit-content}
+  .main-tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;position:relative}
+  .main-tab.on{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.4)}
+  .main-tab .badge-count{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:99px;min-width:16px;text-align:center}
+  .panel{display:none}.panel.on{display:block}
+  .filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+  .filters input,.filters select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:12px;padding:7px 11px;outline:none}
+  .filters input{min-width:200px}.filters input::placeholder{color:rgba(255,255,255,.3)}
+  .filters select option{background:#111827}
+  .tbl-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto}
+  table{width:100%;border-collapse:collapse;min-width:700px}
+  thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
+  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;white-space:nowrap}
+  td{padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  .num-rad{font-family:'DM Mono',monospace;font-size:12px;color:#a78bfa;font-weight:600}
+  .badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap}
+  .b-radicado{background:rgba(102,126,234,.2);color:#a5b4fc}
+  .b-revision{background:rgba(245,158,11,.2);color:#fcd34d}
+  .b-comite{background:rgba(167,139,250,.2);color:#c4b5fd}
+  .b-aprobado{background:rgba(16,185,129,.2);color:#6ee7b7}
+  .b-devuelto{background:rgba(239,68,68,.2);color:#fca5a5}
+  .b-tutores{background:rgba(52,211,153,.2);color:#6ee7b7}
+  .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
+  .b-solicitud{background:rgba(59,130,246,.2);color:#93c5fd}
+  .act{display:flex;gap:4px;flex-wrap:wrap}
+  .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
+  .btn:hover{background:rgba(255,255,255,.07);color:#fff}
+  .btn.gr{color:#34d399;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
+  .btn.bl{color:#60a5fa;border-color:rgba(96,165,250,.3)}.btn.bl:hover{background:rgba(96,165,250,.1)}
+  .btn.am{color:#fcd34d;border-color:rgba(252,211,77,.3)}.btn.am:hover{background:rgba(252,211,77,.1)}
+  .btn.rd{color:#fca5a5;border-color:rgba(239,68,68,.3)}.btn.rd:hover{background:rgba(239,68,68,.1)}
+  .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+  .btn-action:hover{transform:translateY(-1px)}
+  .btn-action:disabled{opacity:.6;transform:none;cursor:not-allowed}
+  .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
+  .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-bg.open{display:flex}
+  .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
+  .modal.wide{max-width:680px}
+  @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
+  .mfg{margin-bottom:14px}
+  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);margin-bottom:5px}
+  .mfg select,.mfg textarea,.mfg input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
+  .mfg select option{background:#111827}
+  .mfg textarea{min-height:80px;resize:vertical}
+  .det-row{display:flex;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;gap:8px}
+  .det-label{min-width:130px;font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;flex-shrink:0}
+  .det-val{color:#e2e8f0;flex:1}
+  .alerta-plazo{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#fca5a5;margin-top:4px}
+  .solicitud-badge{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.35);border-radius:8px;padding:6px 10px;font-size:11px;color:#93c5fd;display:inline-flex;align-items:center;gap:4px}
+ .b-cargado{background:rgba(96,165,250,.2);color:#93c5fd}
+  .b-revisado{background:rgba(102,126,234,.2);color:#a5b4fc}
+  .b-ensolicitud{background:rgba(59,130,246,.2);color:#93c5fd}
+  .b-evaluacion{background:rgba(167,139,250,.2);color:#c4b5fd}
+  .b-aprobadocomite{background:rgba(16,185,129,.2);color:#6ee7b7}
+  .alert-badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700}
+  .alert-critico{background:rgba(239,68,68,.3);color:#fca5a5}
+  .alert-s12{background:rgba(245,158,11,.3);color:#fcd34d}
+  .alert-gestion{background:rgba(59,130,246,.3);color:#93c5fd}
+  .progress-bar{width:100%;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#059669,#10b981);border-radius:3px}
+ .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
+  @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-l">
+    <div class="logo">👩‍💼</div>
+    <div><h1>CTTG Medicina · Coordinación</h1><p>Panel de Gestión de Radicaciones</p></div>
+  </div>
+  <div class="hdr-r">
+    <div class="sync"><span class="dot loading" id="syncDot"></span><span id="syncLbl">Conectando...</span></div>
+    <div class="user-chip" id="userChip">—</div>
+    <button class="btn-out" onclick="salir()">Salir</button>
+  </div>
+</header>
+
+<main>
+    <div class="metrics">
+    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div></div>
+    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div></div>
+    <div class="mc c6"><div class="ml">En Revisión</div><div class="mv" id="mRev">—</div></div>
+    <div class="mc c5"><div class="ml">Pend. Comité</div><div class="mv" id="mPend">—</div></div>
+    <div class="mc c2"><div class="ml">Aprobadas</div><div class="mv" id="mApro">—</div></div>
+    <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
+    <div class="mc c4"><div class="ml">⏰ Plazo Crítico</div><div class="mv" id="mCritico">—</div></div>
+   </div>
+
+ <div class="main-tabs">
+    <button class="main-tab on" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
+    <button class="main-tab" id="tabActas" onclick="switchPanel('actas', this)">📄 Actas de Asesoría</button>
+    <button class="main-tab" id="tabTutores" onclick="switchPanel('tutores', this)">👨‍🏫 Tutores</button>
+    <button class="main-tab" id="tabAlertas" onclick="switchPanel('alertas', this)">🚨 Alertas <span class="badge-count" style="display:none"></span></button>
+    <button class="main-tab" id="tabProtocolo" onclick="switchPanel('protocolo', this)">📖 Protocolo</button>
+  <button class="main-tab" id="tabComite" onclick="switchPanel('comite', this)">📅 Comité Técnico</button>
+  <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
+    <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
+    </div>
+
+  <!-- PANEL RADICACIONES -->
+  <div class="panel on" id="pan-rad">
+    <div class="filters">
+      <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTabla()">
+      <select id="fEstRad" onchange="renderTabla()">
+  <option value="">Todos los estados</option>
+  <option value="Radicado">Radicado</option>
+  <option value="Revisión">En Revisión</option>
+  <option value="Tutores avalados">Tutores Avalados</option>
+  <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
+  <option value="Aprobado">Aprobado</option>
+  <option value="Devuelto">Devuelto</option>
+</select>
+      <select id="fMod" onchange="renderTabla()"><option value="">Todas las modalidades</option></select>
+      <button class="btn" onclick="cargar()">↻ Actualizar</button>
+      <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor(es)</th><th>F. Radicación</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbody">
+          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando registros...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL ACTAS -->
+  <div class="panel" id="pan-actas">
+    <div class="filters">
+      <input id="searchActas" placeholder="🔍 Buscar por número, estudiante..." oninput="renderActas()">
+      <select id="fEstActas" onchange="renderActas()">
+        <option value="">Todos los estados</option>
+        <option value="Pendiente revisión">Pendiente revisión</option>
+        <option value="Aprobada">Aprobada</option>
+        <option value="Rechazada">Rechazada</option>
+        <option value="Solicitud Fase 2">Solicitud Fase 2</option>
+      </select>
+      <button class="btn" onclick="cargarActas()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Fecha</th><th>N° Radicación</th><th>Estudiante</th><th>Archivo</th><th>Estado</th><th>Plazo restante</th><th>Actas totales</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyActas">
+          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+ <!-- PANEL TUTORES -->
+  <div class="panel" id="pan-tutores">
+    <div class="filters">
+      <input id="searchTutores" placeholder="🔍 Buscar tutor..." oninput="renderTutores()">
+      <select id="fEstadoTutor" onchange="renderTutores()">
+        <option value="">Todos los estados</option>
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+      <button class="btn" onclick="cargarTutores()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Tutor</th><th>Total Trabajos</th><th>% Avance Promedio</th><th>En Radicación</th><th>En Fase 2</th><th>Aprobados</th><th>Pendientes</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyTutores">
+          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando tutores...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL ALERTAS -->
+  <div class="panel" id="pan-alertas">
+    <div style="margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+        <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px">
+          <div style="font-size:11px;text-transform:uppercase;color:rgba(239,68,68,.6);margin-bottom:6px">⚠️ CRÍTICO: >60% Plazo</div>
+          <div style="font-size:24px;font-weight:700;color:#fca5a5" id="countCritico">—</div>
+          <button class="btn rd" style="margin-top:8px;width:100%" onclick="switchToFilterAlertas('critico')">Ver detalles</button>
+        </div>
+        <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:14px">
+          <div style="font-size:11px;text-transform:uppercase;color:rgba(245,158,11,.6);margin-bottom:6px">⚡ SEMESTRE 12</div>
+          <div style="font-size:24px;font-weight:700;color:#fcd34d" id="countS12">—</div>
+          <button class="btn am" style="margin-top:8px;width:100%" onclick="switchToFilterAlertas('s12')">Ver detalles</button>
+        </div>
+        <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:14px">
+          <div style="font-size:11px;text-transform:uppercase;color:rgba(59,130,246,.6);margin-bottom:6px">ℹ️ GESTIÓN</div>
+          <div style="font-size:24px;font-weight:700;color:#93c5fd" id="countGestion">—</div>
+          <button class="btn bl" style="margin-top:8px;width:100%" onclick="switchToFilterAlertas('gestion')">Ver detalles</button>
+        </div>
+      </div>
+    </div>
+   <!-- ALERTAS DE VENCIMIENTO POR FASE -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px">
+          <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:12px">
+            <div style="font-size:10px;text-transform:uppercase;color:rgba(167,139,250,.5);margin-bottom:6px">⏱️ Tutores (15 días)</div>
+            <div style="font-size:20px;font-weight:700;color:#c4b5fd" id="countVencTutores">0</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+          </div>
+          <div style="background:rgba(252,211,77,.08);border:1px solid rgba(252,211,77,.2);border-radius:10px;padding:12px">
+            <div style="font-size:10px;text-transform:uppercase;color:rgba(252,211,77,.5);margin-bottom:6px">📄 Actas (8 días)</div>
+            <div style="font-size:20px;font-weight:700;color:#fcd34d" id="countVencActas">0</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+          </div>
+          <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px">
+            <div style="font-size:10px;text-transform:uppercase;color:rgba(59,130,246,.5);margin-bottom:6px">📖 Protocolo (8 días)</div>
+            <div style="font-size:20px;font-weight:700;color:#93c5fd" id="countVencProtocolo">0</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+          </div>
+        </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Tipo Alerta</th><th>N° Radicación</th><th>Estudiante(s)</th><th>Estado Actual</th><th>Plazo</th><th>Detalles</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyAlertas">
+          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando alertas...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL PROTOCOLO -->
+  <div class="panel" id="pan-protocolo">
+    <div class="filters">
+      <input id="searchProtocolo" placeholder="🔍 Buscar por número, estudiante..." oninput="renderProtocolo()">
+      <select id="fEstProtocolo" onchange="renderProtocolo()">
+        <option value="">Todos los estados</option>
+        <option value="Cargado">Cargado</option>
+        <option value="Revisado">Revisado</option>
+        <option value="En Solicitud">En Solicitud</option>
+        <option value="Aprobado">Aprobado</option>
+        <option value="Rechazado">Rechazado</option>
+        <option value="En Evaluación">En Evaluación</option>
+        <option value="Aprobado Comité">Aprobado Comité</option>
+      </select>
+      <button class="btn" onclick="cargarProtocolo()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante</th><th>Email</th><th>Anexo Cambió</th><th>Evaluador</th><th>Fecha Reunión</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyProtocolo">
+          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando protocolos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<!-- MODAL AVALUAR PROTOCOLO -->
+  <div class="modal-bg" id="modalProtocolo">
+    <div class="modal wide">
+      <div class="modal-hdr">
+        <h3>📖 Avaluar Protocolo</h3>
+        <button class="btn" onclick="closeModal('modalProtocolo')">✕</button>
+      </div>
+      
+      <div id="protocoloInfo" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;color:rgba(255,255,255,.5)">
+          Radicación: <strong style="color:#a78bfa" id="pNum">—</strong>
+          | Estudiante: <strong style="color:#a78bfa" id="pEst">—</strong>
+        </div>
+      </div>
+
+      <div class="mfg">
+        <label>¿El protocolo es CORRECTO? *</label>
+        <select id="pDecision" onchange="mostrarOpciones()">
+          <option value="">— Selecciona —</option>
+          <option value="rechazar">❌ NO — Rechazar y devolver</option>
+          <option value="aprobar">✅ SÍ — Aprobar protocolo</option>
+        </select>
+      </div>
+
+      <!-- SI RECHAZA -->
+      <div id="seccionRechazo" style="display:none">
+        <div class="mfg">
+          <label>Motivo de Rechazo *</label>
+          <textarea id="pMotivo" placeholder="Describe por qué el protocolo no es aprobado..."></textarea>
+        </div>
+      </div>
+
+      <!-- SI APRUEBA -->
+      <div id="seccionAprueba" style="display:none">
+        <div class="mfg">
+          <label>¿Requiere Comité Técnico? *</label>
+          <select id="pRequiereComite" onchange="mostrarComite()">
+            <option value="">— Selecciona —</option>
+            <option value="si">✅ SÍ — Enviar a comité técnico</option>
+            <option value="no">⏭️ NO — Aprobar directo a Fase 3</option>
+          </select>
+        </div>
+
+        <!-- Si requiere comité -->
+        <div id="seccionComite" style="display:none">
+          <div class="mfg">
+            <label>Evaluador Asignado *</label>
+            <select id="pEvaluador" onchange="cargarEmailEval()">
+              <option value="">— Selecciona evaluador —</option>
+            </select>
+          </div>
+          <div class="mfg">
+            <label>Email Evaluador *</label>
+            <input type="email" id="pEmailEval" placeholder="Se completa automáticamente" readonly>
+          </div>
+          <div class="mfg">
+            <label>Fecha Reunión Comité *</label>
+            <select id="pFechaComite">
+              <option value="">— Selecciona fecha —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="mfg">
+          <label>Observaciones (Opcional)</label>
+          <textarea id="pObservaciones" placeholder="Comentarios adicionales sobre el protocolo..."></textarea>
+        </div>
+      </div>
+
+      <div id="errProtocolo" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button class="btn" onclick="closeModal('modalProtocolo')">Cancelar</button>
+        <button class="btn-action" id="btnAvaluar" onclick="guardarAvaloProtocolo()">Guardar decisión</button>
+      </div>
+    </div>
+  </div>
+  <!-- PANEL SEGUIMIENTO -->
+  <div class="panel" id="pan-seguimiento">
+    <div class="filters">
+      <input id="searchSeguimiento" placeholder="🔍 Buscar número radicación..." oninput="renderSeguimiento()">
+      <select id="fFaseSeg" onchange="renderSeguimiento()">
+        <option value="">Todas las fases</option>
+        <option value="Radicado">Radicado</option>
+        <option value="Tutores Avalados">Tutores Avalados</option>
+        <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
+        <option value="Pendiente Comité">Pendiente Comité</option>
+        <option value="Aprobado">Aprobado</option>
+        <option value="Sustentado">Sustentado</option>
+      </select>
+      <button class="btn" onclick="cargarSeguimiento()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Fase Actual</th><th>% Avance</th><th>Días Transcurridos</th><th>Días Restantes</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodySeguimiento">
+          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando seguimiento...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+ <!-- PANEL COMITÉ TÉCNICO -->
+  <div class="panel" id="pan-comite">
+    <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
+    <iframe src="comite_tecnico.html" style="width:100%;height:800px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
+  </div>
+
+  <!-- PANEL FILTROS DINÁMICOS -->
+  <div class="panel" id="pan-filtros">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">🎓 Semestre</label>
+        <select id="fSem" onchange="renderFiltros()">
+  <option value="">— Todos —</option>
+  <option value="7">7</option>
+  <option value="8">8</option>
+  <option value="9">9</option>
+  <option value="10">10</option>
+  <option value="11">11</option>
+  <option value="12">12 ⚡</option>
+</select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📋 Estado</label>
+        <select id="fEst" onchange="renderFiltros()">
+          <option value="">— Todos —</option>
+          <option value="Radicado">Radicado</option>
+          <option value="Tutores Avalados">Tutores Avalados</option>
+          <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
+          <option value="Pendiente Comité Técnico">Pendiente Comité</option>
+          <option value="Aprobado">Aprobado</option>
+          <option value="Devuelto">Devuelto</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">⏰ Plazo</label>
+        <select id="fPlazo" onchange="renderFiltros()">
+          <option value="">— Todos —</option>
+          <option value="vencido">🔴 Vencido</option>
+          <option value="0-30">🔴 0-30 días</option>
+          <option value="30-60">🟡 30-60 días</option>
+          <option value="60+">🟢 60+ días</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">👨‍🏫 Tutor</label>
+        <select id="fTutor" onchange="renderFiltros()">
+          <option value="">— Todos —</option>
+          <option value="con">✅ Con tutor</option>
+          <option value="sin">❌ Sin tutor</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📄 Actas</label>
+        <select id="fActas" onchange="renderFiltros()">
+          <option value="">— Todos —</option>
+          <option value="nocargadas">❌ No cargadas</option>
+          <option value="cargadas">📤 Cargadas</option>
+          <option value="aprobadas">✅ Aprobadas</option>
+          <option value="rechazadas">✕ Rechazadas</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">🔎 Buscar</label>
+        <input id="searchFiltros" type="text" placeholder="Número, nombre..." oninput="renderFiltros()">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn bl" onclick="renderFiltros()">🔄 Actualizar</button>
+      <button class="btn gr" onclick="exportarFiltrosCSV()">⬇ Exportar</button>
+      <button class="btn" onclick="limpiarFiltros()">✕ Limpiar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Sem.</th><th>Estado</th><th>Tutor 1</th><th>Actas</th><th>Días Trans.</th><th>Días Rest.</th><th>Riesgo</th><th>Acción</th>
+        </tr></thead>
+        <tbody id="tbodyFiltros">
+          <tr><td colspan="10" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+ </main>
+
+<!-- MODAL ESTADO RADICACIÓN -->
+<div class="modal-bg" id="modalEst">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Cambiar Estado</h3>
+      <button class="btn" onclick="closeModal('modalEst')">✕</button>
+    </div>
+    <p id="mEstLabel" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
+    <div class="mfg">
+      <label>Nuevo estado *</label>
+      <select id="mEstado">
+        <option value="Radicado">Radicado</option>
+        <option value="Revisión">En Revisión</option>
+        <option value="Pendiente Comité">Pendiente Comité</option>
+        <option value="Aprobado">Aprobado ✅</option>
+        <option value="Devuelto">Devuelto ↩</option>
+      </select>
+    </div>
+    <div class="mfg">
+      <label>Observaciones / Notas (se envían al estudiante)</label>
+      <textarea id="mNotas" placeholder="Motivo, indicaciones, comentarios..."></textarea>
+    </div>
+    <input type="hidden" id="mRowIndex">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalEst')">Cancelar</button>
+      <button class="btn-action" id="btnGuardar" onclick="guardarEstado()">Guardar y notificar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE RADICACIÓN -->
+<div class="modal-bg" id="modalDet">
+  <div class="modal wide">
+    <div class="modal-hdr">
+      <h3>Detalle de Radicación</h3>
+      <button class="btn" onclick="closeModal('modalDet')">✕</button>
+    </div>
+    <div id="modalDetBody"></div>
+  </div>
+</div>
+
+<!-- MODAL APROBAR/RECHAZAR ACTA -->
+<div class="modal-bg" id="modalActa">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 id="modalActaTitulo">Revisar Acta</h3>
+      <button class="btn" onclick="closeModal('modalActa')">✕</button>
+    </div>
+    <div id="modalActaInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></div>
+    <div class="mfg">
+      <label>Motivo / Observaciones (opcional para aprobar, requerido para rechazar)</label>
+      <textarea id="mActaMotivo" placeholder="Observaciones sobre el acta..."></textarea>
+    </div>
+    <input type="hidden" id="mActaRowIndex">
+    <input type="hidden" id="mActaEmail">
+    <input type="hidden" id="mActaAccion">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalActa')">Cancelar</button>
+      <button class="btn-action" id="btnActaConfirm" onclick="confirmarAccionActa()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SOLICITUD FASE 2 -->
+<div class="modal-bg" id="modalSolicitud">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Solicitud de Paso a Fase 2</h3>
+      <button class="btn" onclick="closeModal('modalSolicitud')">✕</button>
+    </div>
+    <div id="modalSolicitudInfo" style="margin-bottom:16px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn rd" onclick="responderSolicitud(false)">✕ Rechazar</button>
+      <button class="btn-action" onclick="responderSolicitud(true)">✅ Aprobar Fase 2</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+function coordToken() { return localStorage.getItem('cttg_token') || ''; }
+let radicaciones = [], actas = [], admin = null;
+let solicitudActual = null;
+
+(function(){
+  admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
+  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  document.getElementById('userChip').textContent = admin.nombre || admin.email;
+  cargar();
+  setInterval(cargar, 60000);
+})();
+
+function salir() {
+  localStorage.removeItem('cttg_admin');
+  localStorage.removeItem('cttg_token');
+  window.location.href = 'index.html';
+}
+
+function switchPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('on'));
+  document.getElementById('pan-' + name).classList.add('on');
+  btn.classList.add('on');
+  if (name === 'actas') cargarActas();
+  else if (name === 'tutores') cargarTutores();
+  else if (name === 'alertas') cargarAlertas();
+  else if (name === 'protocolo') cargarProtocolo();
+  else if (name === 'seguimiento') cargarSeguimiento();
+  else if (name === 'filtros') {
+    (async () => {
+      try { if (!actas.length) await cargarActas(); } catch (e) {}
+      renderFiltros();
+    })();
+  }
+}
+
+function setSyncState(s) {
+  const dot = document.getElementById('syncDot'), lbl = document.getElementById('syncLbl');
+  if (s === 'loading') { dot.className = 'dot loading'; lbl.textContent = 'Sincronizando...'; }
+  else if (s === 'ok')  { dot.className = 'dot'; lbl.textContent = 'Conectado · Google Sheets'; }
+  else { dot.className = 'dot error'; lbl.textContent = 'Error de conexión'; }
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function parsearFecha(val) {
+  if (!val) return "";
+  var s = String(val).trim();
+  if (!s) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+
+function fmtFecha(s) {
+  if (!s || s === '') return '—';
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  const p = String(s).split('T')[0].split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── RADICACIONES ─────────────────────────────────────────────
+async function cargar() {
+  setSyncState('loading');
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1', token: coordToken() }) });
+    const d = await res.json();
+    if (d.success) {
+      radicaciones = (d.radicaciones || []).map(r => ({
+        ...r,
+        estado: r.estado || "Radicado",
+        notas:  r.notas  || "",
+        fechaRadicacion: parsearFecha(r.fechaRadicacion),
+        fechaAprobacion: parsearFecha(r.fechaAprobacion)
+      }));
+     actualizarMetricas();
+      contarVencimientos();
+      poblarFiltroMod();
+      renderTabla();
+      setSyncState('ok');
+     } else throw new Error(d.error);
+  } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
+}
+    
+function actualizarMetricas() {
+  const s = { total: radicaciones.length, radicado:0, revision:0, pendienteComite:0, aprobado:0, devuelto:0, critico:0 };
+  radicaciones.forEach(r => {
+    const est = r.estado || 'Radicado';
+    if (est === 'Radicado') s.radicado++;
+    else if (est === 'Revisión') s.revision++;
+    else if (['Pendiente Comité','Pendiente Comité Técnico'].includes(est)) s.pendienteComite++;
+    else if (est === 'Aprobado') s.aprobado++;
+    else if (est === 'Devuelto') s.devuelto++;
+    
+    // Contar plazo crítico (>60% del plazo transcurrido)
+    const pctPlazo = Number(r.porcentajeAvance ?? r.porcentajePlazo ?? 0);
+    if (pctPlazo > 60 && !['Aprobado','Devuelto','Sustentado'].includes(est)) {
+      s.critico++;
+    }
+  });
+  document.getElementById('mTot').textContent  = s.total;
+  document.getElementById('mRad').textContent  = s.radicado;
+  document.getElementById('mRev').textContent  = s.revision;
+  document.getElementById('mPend').textContent = s.pendienteComite;
+  document.getElementById('mApro').textContent = s.aprobado;
+  document.getElementById('mDev').textContent  = s.devuelto;
+  document.getElementById('mCritico').textContent = s.critico;
+}
+function poblarFiltroMod() {
+  const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
+  const sel = document.getElementById('fMod'), cur = sel.value;
+  sel.innerHTML = '<option value="">Todas las modalidades</option>' + opts.map(o => `<option value="${o}" ${o===cur?'selected':''}>${o}</option>`).join('');
+}
+
+function badgeEst(est) {
+  const map = { 'Radicado':'b-radicado','Tutores avalados':'b-tutores','Tutores Avalados':'b-tutores','Fase 2 Desbloqueada':'b-comite','Pendiente Comité Técnico':'b-comite','Aprobado':'b-aprobado','Devuelto':'b-devuelto','Sustentado':'b-aprobado','Reprobado':'b-devuelto' };
+  return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
+}
+
+function renderTabla() {
+  const q  = (document.getElementById('search').value || '').toLowerCase();
+  const fE = document.getElementById('fEstRad').value;
+  const fM = document.getElementById('fMod').value;
+  const filtered = radicaciones.filter(r => {
+    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre].join(' ').toLowerCase();
+    return (!q || txt.includes(q)) && (!fE || r.estado === fE) && (!fM || r.modalidad === fM);
+  });
+  const body = document.getElementById('tbody');
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
+  body.innerHTML = filtered.map(r => {
+    const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join('<br>') || '—';
+    const tutores = [r.tutor1Nombre,r.tutor2Nombre].filter(Boolean).join('<br>') || '—';
+    const estado  = r.estado || 'Radicado';
+    return `<tr>
+      <td><div class="num-rad">${esc(r.numero||'')}</div></td>
+      <td style="font-size:12px;max-width:160px">${nombres}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:140px">${tutores}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
+      <td>${badgeEst(estado)}</td>
+      <td><div class="act">
+        <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
+        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
+        <button class="btn gr" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">✅ Tutores</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function abrirModalEst(ri, numero, estadoActual) {
+  document.getElementById('mRowIndex').value = ri;
+  document.getElementById('mEstLabel').textContent = 'Radicación: ' + numero;
+  document.getElementById('mEstado').value = estadoActual;
+  document.getElementById('mNotas').value = '';
+  document.getElementById('modalEst').classList.add('open');
+}
+
+async function guardarEstado() {
+  const ri = parseInt(document.getElementById('mRowIndex').value);
+  const est = document.getElementById('mEstado').value;
+  const notas = document.getElementById('mNotas').value.trim();
+  const btn = document.getElementById('btnGuardar');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'updateEstado', rowIndex:ri, estado:est, notas, emailCoord:admin.email, token: coordToken() }) });
+    const d = await res.json();
+    if (d.success) { closeModal('modalEst'); await cargar(); toast('Estado actualizado ✓', 'ok'); }
+    else throw new Error(d.error);
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = 'Guardar y notificar'; }
+}
+
+function verDetalle(ri) {
+  const r = radicaciones.find(x => x.rowIndex === ri);
+  if (!r) return;
+  const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val">${esc(val)}</span></div>` : '';
+  document.getElementById('modalDetBody').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div><div style="font-family:'DM Mono',monospace;font-size:13px;color:#a78bfa;margin-bottom:4px">${esc(r.numero)}</div>
+      <div style="font-size:16px;font-weight:600;color:#fff">${esc(r.titulo||'Sin título')}</div></div>
+      ${badgeEst(r.estado)}
+    </div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:6px">Proyecto</div>
+    ${fila('Modalidad',r.modalidad)}${fila('Área',r.area)}
+    ${fila('F. Radicación',fmtFecha(r.fechaRadicacion))}${fila('F. Aprobación',fmtFecha(r.fechaAprobacion))}
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Estudiantes</div>
+    ${fila('Estudiante 1', r.nombre1 ? r.nombre1+' · Ced: '+r.cedula1+' · Sem. '+r.semestre1 : '')}
+    ${fila('Email 1',r.email1)}${fila('Teléfono 1',r.telefono1)}
+    ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
+    ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
+    ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
+    ${fila('Email T1',r.tutor1Email)}
+    ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
+    ${r.notas ? `<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#fcd34d">📝 </span>${esc(r.notas)}</div>` : ''}
+    <div style="margin-top:14px">
+      <button class="btn am" onclick="closeModal('modalDet');abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Cambiar estado</button>
+    </div>`;
+  document.getElementById('modalDet').classList.add('open');
+}
+
+// ── ACTAS ────────────────────────────────────────────────────
+async function cargarActas() {
+  const tbody = document.getElementById('tbodyActas');
+  tbody.innerHTML = '<tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>';
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getActasAsesoria', token: coordToken() }) });
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error);
+    actas = d.actas || [];
+
+    // contar pendientes para badge
+    const pendientes = actas.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2').length;
+    const tabActas = document.getElementById('tabActas');
+    const existing = tabActas.querySelector('.badge-count');
+    if (existing) existing.remove();
+    if (pendientes > 0) {
+      const span = document.createElement('span');
+      span.className = 'badge-count';
+      span.textContent = pendientes;
+      tabActas.appendChild(span);
+    }
+
+    renderActas();
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">Error al cargar actas.</td></tr>';
+  }
+}
+
+function calcularPlazo(emailEstudiante) {
+  const rad = radicaciones.find(r =>
+    [r.emailEstudiante, r.email1, r.email2, r.email3].some(e => String(e||'').toLowerCase() === emailEstudiante.toLowerCase())
+  );
+  if (!rad) return { texto: '—', alerta: false };
+  const sems = [rad.semestre1, rad.semestre2, rad.semestre3].map(v => parseInt(v||0)).filter(n => n > 0);
+  const semMax = sems.length ? Math.max(...sems) : 1;
+  const meses = semMax >= 12 ? 3 : semMax >= 10 ? 6 : 12;
+  const base = new Date(rad.fechaRadicacion || Date.now());
+  if (isNaN(base.getTime())) return { texto: '—', alerta: false };
+  const limite = new Date(base); limite.setMonth(limite.getMonth() + meses);
+  const dias = Math.ceil((limite - new Date()) / 86400000);
+  const alerta = dias < 30 && dias >= 0;
+  const vencido = dias < 0;
+  return {
+    texto: vencido ? '⚠️ Vencido' : `${dias} días (sem. ${semMax})`,
+    alerta: alerta || vencido,
+    vencido
+  };
+}
+
+function contarActas(emailEstudiante) {
+  return actas.filter(a => String(a.emailEstudiante||'').toLowerCase() === emailEstudiante.toLowerCase()).length;
+}
+
+function renderActas() {
+  const q  = (document.getElementById('searchActas').value || '').toLowerCase();
+  const fE = document.getElementById('fEstActas').value;
+  const filtered = actas.filter(a => {
+    const txt = [a.numero, a.emailEstudiante, a.nombreArchivo].join(' ').toLowerCase();
+    return (!q || txt.includes(q)) && (!fE || a.estado === fE);
+  });
+  const tbody = document.getElementById('tbodyActas');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin actas que coincidan.</td></tr>'; return; }
+
+  tbody.innerHTML = filtered.map(a => {
+    const badgeActa = {
+      'Pendiente revisión': '<span class="badge b-pend">Pendiente</span>',
+      'Aprobada':           '<span class="badge b-aprobado">Aprobada</span>',
+      'Rechazada':          '<span class="badge b-devuelto">Rechazada</span>',
+      'Solicitud Fase 2':   '<span class="badge b-solicitud">📨 Solicitud Fase 2</span>'
+    }[a.estado] || `<span class="badge b-pend">${a.estado}</span>`;
+
+    const plazo = calcularPlazo(a.emailEstudiante);
+    const total = contarActas(a.emailEstudiante);
+    const plazoHtml = plazo.alerta
+      ? `<div class="alerta-plazo">${esc(plazo.texto)}</div>`
+      : `<span style="font-size:12px;color:rgba(255,255,255,.5)">${esc(plazo.texto)}</span>`;
+
+    const esSolicitud = a.nombreArchivo === 'Solicitud activación Fase 2';
+const esPendiente = a.estado === 'Pendiente revisión' && !esSolicitud;
+    const urlBtn = a.urlArchivo ? `<a href="${esc(a.urlArchivo)}" target="_blank" class="btn bl">👁 Ver PDF</a>` : '';
+
+    return `<tr>
+      <td style="font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace">${fmtFecha(a.fechaCarga)}</td>
+      <td><div class="num-rad">${esc(a.numero||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.emailEstudiante||'')}</td>
+      <td style="font-size:12px">📄 ${esc(a.nombreArchivo||'')}</td>
+      <td>${badgeActa}</td>
+      <td>${plazoHtml}</td>
+      <td style="text-align:center"><span style="font-size:14px;font-weight:600;color:#a78bfa">${total}</span></td>
+      <td><div class="act">
+        ${urlBtn}
+        ${esPendiente ? `<button class="btn gr" onclick="abrirModalActa(${a.rowIndex},'${esc(a.emailEstudiante)}','aprobar','${esc(a.numero||'')}','${esc(a.nombreArchivo||'')}')">✅ Aprobar</button>
+        <button class="btn rd" onclick="abrirModalActa(${a.rowIndex},'${esc(a.emailEstudiante)}','rechazar','${esc(a.numero||'')}','${esc(a.nombreArchivo||'')}')">✕ Rechazar</button>` : ''}
+        ${esSolicitud ? `<button class="btn bl" onclick="abrirModalSolicitud(${a.rowIndex},'${esc(a.emailEstudiante)}','${esc(a.numero||'')}')">📨 Ver solicitud</button>` : ''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function abrirModalActa(ri, email, accion, numero, archivo) {
+  document.getElementById('mActaRowIndex').value = ri;
+  document.getElementById('mActaEmail').value    = email;
+  document.getElementById('mActaAccion').value   = accion;
+  document.getElementById('mActaMotivo').value   = '';
+  document.getElementById('modalActaTitulo').textContent = accion === 'aprobar' ? '✅ Aprobar Acta' : '✕ Rechazar Acta';
+  document.getElementById('modalActaInfo').innerHTML = `<span style="color:rgba(255,255,255,.5);font-size:12px">Radicación: <strong style="color:#a78bfa">${esc(numero)}</strong> · ${esc(archivo)}</span>`;
+  const btn = document.getElementById('btnActaConfirm');
+  btn.style.background = accion === 'aprobar' ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#b91c1c,#ef4444)';
+  btn.textContent = accion === 'aprobar' ? 'Confirmar aprobación' : 'Confirmar rechazo';
+  document.getElementById('modalActa').classList.add('open');
+}
+
+async function confirmarAccionActa() {
+  const ri     = parseInt(document.getElementById('mActaRowIndex').value);
+  const email  = document.getElementById('mActaEmail').value;
+  const accion = document.getElementById('mActaAccion').value;
+  const motivo = document.getElementById('mActaMotivo').value.trim();
+  const rechazar = accion === 'rechazar';
+  if (rechazar && !motivo) { toast('Escribe el motivo del rechazo', 'warn'); return; }
+  const btn = document.getElementById('btnActaConfirm');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
+      action: 'aprobarActasAsesoria', rowIndex: ri, emailEstudiante: email,
+      emailCoord: admin.email, rechazar, motivo, token: coordToken()
+    })});
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalActa');
+      await cargarActas();
+      toast(rechazar ? 'Acta rechazada ✓' : 'Acta aprobada ✓', 'ok');
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.textContent = accion === 'aprobar' ? 'Confirmar aprobación' : 'Confirmar rechazo'; }
+}
+
+function abrirModalSolicitud(ri, email, numero) {
+  solicitudActual = { ri, email, numero };
+  const misActas = actas.filter(a => String(a.emailEstudiante||'').toLowerCase() === email.toLowerCase() && a.nombreArchivo !== 'Solicitud activación Fase 2');
+  const aprobadas  = misActas.filter(a => a.estado === 'Aprobada').length;
+  const rechazadas = misActas.filter(a => a.estado === 'Rechazada').length;
+  const pendientes = misActas.filter(a => a.estado === 'Pendiente revisión').length;
+  const filasActas = misActas.map(a => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px">
+      <span style="color:rgba(255,255,255,.6)">${esc(a.nombreArchivo||'Acta')}</span>
+      <span style="color:rgba(255,255,255,.4);font-size:11px">${fmtFecha(a.fechaCarga)}</span>
+      <span class="badge ${{Aprobada:'b-aprobado',Rechazada:'b-devuelto'}[a.estado]||'b-pend'}">${esc(a.estado)}</span>
+    </div>`).join('');
+  document.getElementById('modalSolicitudInfo').innerHTML = `
+    <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="font-size:13px;color:#93c5fd;margin-bottom:8px">📨 El estudiante solicita avanzar a Fase 2</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6)">Radicación: <strong style="color:#a78bfa">${esc(numero)}</strong></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#a78bfa">${misActas.length}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4)">Total actas</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#34d399">${aprobadas}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4)">Aprobadas</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#fcd34d">${pendientes}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4)">Pendientes</div>
+        </div>
+      </div>
+    </div>
+    <div style="max-height:200px;overflow-y:auto">${filasActas || '<div style="text-align:center;color:rgba(255,255,255,.3);padding:12px;font-size:12px">Sin actas registradas</div>'}</div>`;
+  document.getElementById('modalSolicitud').classList.add('open');
+}
+
+async function responderSolicitud(aprobar) {
+  if (!solicitudActual) return;
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
+      action: 'aprobarActasAsesoria',
+      rowIndex: solicitudActual.ri,
+      emailEstudiante: solicitudActual.email,
+      emailCoord: admin.email,
+      rechazar: !aprobar,
+      motivo: aprobar ? '' : 'Solicitud de Fase 2 rechazada por la coordinadora',
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalSolicitud');
+      await cargarActas();
+      toast(aprobar ? 'Fase 2 desbloqueada ✓' : 'Solicitud rechazada', aprobar ? 'ok' : 'warn');
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+}
+
+function exportCSV() {
+  if (!radicaciones.length) { toast('Sin datos para exportar', 'info'); return; }
+  const h = ['N° Radicación','Estado','Título','Modalidad','Área','Estudiante 1','Cédula 1','Email 1','Semestre 1','Estudiante 2','Estudiante 3','Tutor 1','Email Tutor 1','Tutor 2','F. Radicación','F. Aprobación','Notas'];
+  const rows = radicaciones.map(r => [r.numero,r.estado,`"${(r.titulo||'').replace(/"/g,'""')}"`,r.modalidad,r.area,`"${r.nombre1||''}"`,r.cedula1,r.email1,r.semestre1,`"${r.nombre2||''}"`,`"${r.nombre3||''}"`,`"${r.tutor1Nombre||''}"`,r.tutor1Email,`"${r.tutor2Nombre||''}"`,r.fechaRadicacion,r.fechaAprobacion,`"${(r.notas||'').replace(/"/g,'""')}"`]);
+  const csv = [h,...rows].map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'}));
+  a.download = 'radicaciones_cttg_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  toast('CSV exportado ✓', 'ok');
+}
+
+['modalEst','modalDet','modalActa','modalSolicitud'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target === document.getElementById(id)) closeModal(id);
+  });
+});
+ // ════════════════════════════════════════════════════════════
+// TAB 3: DASHBOARD TUTORES
+// ════════════════════════════════════════════════════════════
+let tutores = [];
+async function cargarTutores() {
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getEstadisticasTutores', token: coordToken() }) });
+    const d = await res.json();
+    if (d.success) {
+      tutores = d.tutores || [];
+      renderTutores();
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error cargando tutores: ' + e.message, 'err'); }
+}
+
+function renderTutores() {
+  const q  = (document.getElementById('searchTutores').value || '').toLowerCase();
+  const fE = document.getElementById('fEstadoTutor').value;
+  const filtered = tutores.filter(t => {
+    const txt = (t.nombre || '').toLowerCase();
+    return (!q || txt.includes(q)) && (!fE || t.estado === fE);
+  });
+  const tbody = document.getElementById('tbodyTutores');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin tutores.</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(t => `<tr>
+    <td style="font-weight:600">${esc(t.nombre||'—')}</td>
+    <td><span style="font-size:16px;font-weight:700;color:#a78bfa">${t.totalTrabajos||0}</span></td>
+    <td>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="progress-bar" style="width:100px"><div class="progress-fill" style="width:${(t.promAvance||0)}%"></div></div>
+        <span style="font-size:11px;color:rgba(255,255,255,.5)">${(t.promAvance||0).toFixed(0)}%</span>
+      </div>
+    </td>
+    <td><span class="badge b-radicado">${t.enRadicacion||0}</span></td>
+    <td><span class="badge b-revision">${t.enFase2||0}</span></td>
+    <td><span class="badge b-aprobado">${t.aprobados||0}</span></td>
+    <td><span class="badge b-pend">${t.pendientes||0}</span></td>
+    <td><button class="btn bl" onclick="abrirDetallesTutor('${esc(t.nombre||'')}')">👁 Ver</button></td>
+  </tr>`).join('');
+}
+
+function abrirDetallesTutor(nombre) {
+  const t = tutores.find(x => x.nombre === nombre);
+  if (!t) return;
+  document.getElementById('modalDetBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+      <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#a78bfa">${t.totalTrabajos||0}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">Total</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#fcd34d">${t.promAvance||0}%</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">Avance</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#fca5a5">${t.pendientes||0}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">Pendientes</div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:8px">Distribución</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+          <span>En Radicación</span>
+          <span style="color:#a78bfa;font-weight:600">${t.enRadicacion||0}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+          <span>En Fase 2</span>
+          <span style="color:#fcd34d;font-weight:600">${t.enFase2||0}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+          <span>Aprobados</span>
+          <span style="color:#34d399;font-weight:600">${t.aprobados||0}</span>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('modalDet').classList.add('open');
+}
+
+// ════════════════════════════════════════════════════════════
+// TAB 4: ALERTAS CRÍTICAS
+// ════════════════════════════════════════════════════════════
+let alertas = [];
+let filtroAlertaActual = 'todos';
+
+async function cargarAlertas() {
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getAlertasCriticas', token: coordToken() }) });
+    const d = await res.json();
+    if (d.success) {
+      alertas = d.alertas || [];
+      const countCritico = alertas.filter(a => a.tipo === 'critico').length;
+      const countS12 = alertas.filter(a => a.tipo === 's12').length;
+      const countGestion = alertas.filter(a => a.tipo === 'gestion').length;
+      document.getElementById('countCritico').textContent = countCritico;
+      document.getElementById('countS12').textContent = countS12;
+      document.getElementById('countGestion').textContent = countGestion;
+      const badge = document.getElementById('tabAlertas').querySelector('.badge-count');
+      if (countCritico + countS12 + countGestion > 0) {
+        badge.textContent = countCritico + countS12 + countGestion;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+      renderAlertas();
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error cargando alertas: ' + e.message, 'err'); }
+}
+
+function switchToFilterAlertas(tipo) {
+  filtroAlertaActual = tipo;
+  renderAlertas();
+}
+
+function renderAlertas() {
+  const filtered = filtroAlertaActual === 'todos' 
+    ? alertas 
+    : alertas.filter(a => a.tipo === filtroAlertaActual);
+  const tbody = document.getElementById('tbodyAlertas');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin alertas de este tipo.</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(a => {
+    let badgeAlert = '';
+    if (a.tipo === 'critico') badgeAlert = '<span class="alert-badge alert-critico">⚠️ >60% PLAZO</span>';
+    else if (a.tipo === 's12') badgeAlert = '<span class="alert-badge alert-s12">⚡ SEMESTRE 12</span>';
+    else if (a.tipo === 'protocolo_vencido') badgeAlert = '<span class="alert-badge" style="background:rgba(239,68,68,.3);color:#fca5a5">🔴 PROTOCOLO VENCIDO</span>';
+    else badgeAlert = '<span class="alert-badge alert-gestion">ℹ️ GESTIÓN</span>';
+    
+    return `<tr>
+      <td>${badgeAlert}</td>
+      <td><div class="num-rad">${esc(a.numero||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.estudiante||'—')}</td>
+      <td><span class="badge ${a.tipo === 'protocolo_vencido' ? 'b-devuelto' : 'b-aprobado'}">${esc(a.estado||'—')}</span></td>
+      <td style="font-size:12px">${esc(a.plazo||'—')}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.5)">${esc(a.detalles||'—')}</td>
+      <td><button class="btn bl" onclick="verDetalle(${a.rowIndex||0})">👁 Ver</button></td>
+    </tr>`;
+  }).join('');
+}
+// ════════════════════════════════════════════════════════════
+// TAB 5: PROTOCOLO FASE 2
+// ════════════════════════════════════════════════════════════
+let protocolos = [];
+async function cargarProtocolo() {
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getFase2', token: coordToken() }) });
+    const d = await res.json();
+    if (d.success) {
+      protocolos = d.protocolos || [];
+      renderProtocolo();
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error cargando protocolos: ' + e.message, 'err'); }
+}
+
+function nombreEstudianteDesdeRad(p) {
+  const em = String(p.emailEstudiante || '').toLowerCase();
+  const num = String(p.numero || '');
+  const rad = radicaciones.find(r =>
+    String(r.numero || '') === num ||
+    [r.email1, r.email2, r.email3, r.emailEstudiante].some(e => String(e || '').toLowerCase() === em)
+  );
+  if (!rad) return '—';
+  const n = [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ');
+  return n || rad.email1 || em || '—';
+}
+
+function renderProtocolo() {
+  const q  = (document.getElementById('searchProtocolo').value || '').toLowerCase();
+  const fE = document.getElementById('fEstProtocolo').value;
+  const filtered = protocolos.filter(p => {
+    const nom = nombreEstudianteDesdeRad(p);
+    const txt = [p.numero, p.emailEstudiante, nom].join(' ').toLowerCase();
+    return (!q || txt.includes(q)) && (!fE || p.estado === fE);
+  });
+  const tbody = document.getElementById('tbodyProtocolo');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos.</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(p => {
+    const estadoBadge = {
+      'Cargado':'b-radicado','Enviado':'b-radicado','Revisado':'b-revisado','En Solicitud':'b-ensolicitud',
+      'Pendiente Comité':'b-comite','En Evaluación':'b-evaluacion','Aprobado':'b-aprobado','Rechazado':'b-devuelto',
+      'Aprobado Directo':'b-aprobado','Aprobado Comité':'b-aprobadocomite'
+    }[p.estado] || 'b-radicado';
+    
+    const estadoTexto = esc(p.estado||'Cargado');
+    const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
+    const nomEst = esc(nombreEstudianteDesdeRad(p));
+    const fechaReu = p.fechaComite ? fmtFecha(p.fechaComite) : '—';
+    
+    return `<tr>
+      <td><div class="num-rad">${esc(p.numero||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.85)">${nomEst}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.emailEstudiante||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.anexoCambio||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(fechaReu)}</td>
+      <td><span class="badge ${estadoBadge}">${estadoTexto}</span></td>
+      <td><div class="act">
+        ${esPendiente ? `<button class="btn gr" onclick="abrirModalProtocolo(${p.rowIndex},'aprobar','${esc(p.numero||'')}')">✅ Aprobar</button>
+        <button class="btn rd" onclick="abrirModalProtocolo(${p.rowIndex},'rechazar','${esc(p.numero||'')}')">✕ Rechazar</button>` : ''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+ let protocoloActual = null;
+
+function abrirModalProtocolo(rowIndex, accion, numero) {
+  const p = protocolos.find(x => x.rowIndex === rowIndex);
+  if (!p) return;
+  
+  protocoloActual = { rowIndex, accion };
+  document.getElementById('pNum').textContent = numero;
+  document.getElementById('pEst').textContent = p.emailEstudiante || '—';
+  
+  // Pre-llenar decisión
+  document.getElementById('pDecision').value = accion === 'aprobar' ? 'aprobar' : 'rechazar';
+  document.getElementById('pMotivo').value = '';
+  document.getElementById('pObservaciones').value = '';
+  
+  mostrarOpciones();
+  
+  if (accion === 'aprobar') {
+    cargarEvaluadoresProtocolo();
+    cargarFechasComiteProtocolo();
+  }
+  
+  document.getElementById('modalProtocolo').classList.add('open');
+}
+function mostrarOpciones() {
+  const decision = document.getElementById('pDecision').value;
+  document.getElementById('seccionRechazo').style.display = decision === 'rechazar' ? 'block' : 'none';
+  document.getElementById('seccionAprueba').style.display = decision === 'aprobar' ? 'block' : 'none';
+}
+
+function mostrarComite() {
+  const req = document.getElementById('pRequiereComite').value;
+  document.getElementById('seccionComite').style.display = req === 'si' ? 'block' : 'none';
+}
+
+function cargarEvaluadoresProtocolo() {
+  fetch(URL_APP, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'getEvaluadores', token: coordToken() })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success && data.evaluadores) {
+      const select = document.getElementById('pEvaluador');
+      select.innerHTML = '<option value="">— Selecciona evaluador —</option>';
+      data.evaluadores.forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev.nombre + '|' + ev.email;
+        opt.textContent = ev.nombre + ' (' + ev.especialidad + ')';
+        select.appendChild(opt);
+      });
+    }
+  })
+  .catch(e => console.error('Error cargando evaluadores:', e));
+}
+
+function cargarFechasComiteProtocolo() {
+  fetch(URL_APP, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'getFechasComite', token: coordToken() })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success && data.fechas) {
+      const select = document.getElementById('pFechaComite');
+      select.innerHTML = '<option value="">— Selecciona fecha —</option>';
+      data.fechas.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.fecha;
+        opt.textContent = f.fecha;
+        select.appendChild(opt);
+      });
+    }
+  })
+  .catch(e => console.error('Error cargando fechas:', e));
+}
+
+function cargarEmailEval() {
+  const sel = document.getElementById('pEvaluador').value;
+  if (sel) {
+    const [nombre, email] = sel.split('|');
+    document.getElementById('pEmailEval').value = email;
+  } else {
+    document.getElementById('pEmailEval').value = '';
+  }
+}
+
+async function guardarAvaloProtocolo() {
+  if (!protocoloActual) return;
+  
+  const decision = document.getElementById('pDecision').value;
+  const motivo = document.getElementById('pMotivo').value.trim();
+  const requiere = document.getElementById('pRequiereComite').value;
+  const evaluador = document.getElementById('pEvaluador').value;
+  const emailEval = document.getElementById('pEmailEval').value;
+  const fechaComite = document.getElementById('pFechaComite').value;
+  const obs = document.getElementById('pObservaciones').value.trim();
+  const errEl = document.getElementById('errProtocolo');
+  const admin = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
+  
+  errEl.style.display = 'none';
+  
+  if (!decision) { errEl.textContent = 'Selecciona si apruebas o rechazas'; errEl.style.display = 'block'; return; }
+  if (decision === 'rechazar' && !motivo) { errEl.textContent = 'Escribe el motivo del rechazo'; errEl.style.display = 'block'; return; }
+  if (decision === 'aprobar' && !requiere) { errEl.textContent = 'Indica si requiere comité técnico'; errEl.style.display = 'block'; return; }
+  if (decision === 'aprobar' && requiere === 'si') {
+    if (!evaluador) { errEl.textContent = 'Selecciona un evaluador'; errEl.style.display = 'block'; return; }
+    if (!fechaComite) { errEl.textContent = 'Selecciona una fecha de comité'; errEl.style.display = 'block'; return; }
+  }
+  
+  const btn = document.getElementById('btnAvaluar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  
+  try {
+    let estado = '';
+    let evalNombre = '';
+    
+    if (decision === 'rechazar') {
+  estado = 'Devuelto';
+    } else if (decision === 'aprobar') {
+      if (requiere === 'si') {
+        estado = 'Pendiente Comité';
+        evalNombre = evaluador.split('|')[0];
+      } else {
+        estado = 'Aprobado Directo';
+      }
+    }
+    
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'avalarProtocoloFase2',
+        rowIndex: protocoloActual.rowIndex,
+        estado: estado,
+        motivo: motivo,
+        evaluador: evalNombre,
+        emailEvaluador: requiere === 'si' ? emailEval : '',
+        fechaComite: requiere === 'si' ? fechaComite : '',
+        observaciones: obs,
+        emailCoord: admin.email,
+        token: coordToken()
+      })
+    });
+    
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalProtocolo');
+      await cargarProtocolo();
+      toast('Protocolo avalado ✓', 'ok');
+    } else {
+      errEl.textContent = d.error || 'Error al guardar';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Error de conexión: ' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Guardar decisión';
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// TAB 6: SEGUIMIENTO INDIVIDUAL
+// ════════════════════════════════════════════════════════════
+let seguimientos = [];
+async function cargarSeguimiento() {
+  seguimientos = radicaciones.map(r => ({
+    numero: r.numero,
+    estudiantes: [r.nombre1, r.nombre2, r.nombre3].filter(Boolean),
+    estado: r.estado,
+    fechaRad: r.fechaRadicacion,
+    fechaAprob: r.fechaAprobacion,
+    rowIndex: r.rowIndex,
+    diasTranscurridos: r.diasTranscurridos || 0,
+    diasRestantes: r.diasRestantes || 0,
+    porcentajeAvance: r.porcentajeAvance || 0
+  }));
+  renderSeguimiento();
+}
+
+function renderSeguimiento() {
+  const q  = (document.getElementById('searchSeguimiento').value || '').toLowerCase();
+  const fF = document.getElementById('fFaseSeg').value;
+  const filtered = seguimientos.filter(s => {
+    const txt = (s.numero || '').toLowerCase();
+    return (!q || txt.includes(q)) && (!fF || s.estado === fF);
+  });
+  const tbody = document.getElementById('tbodySeguimiento');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin registros de seguimiento.</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(s => {
+    const porcentaje = s.porcentajeAvance || 0;
+    const color = porcentaje > 60 ? '#fca5a5' : porcentaje > 30 ? '#fcd34d' : '#34d399';
+    return `<tr>
+      <td><div class="num-rad">${esc(s.numero||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${(s.estudiantes||[]).slice(0,2).map(e => esc(e)).join(', ')}</td>
+      <td><span class="badge b-aprobado">${esc(s.estado||'—')}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="progress-bar" style="width:100px"><div class="progress-fill" style="width:${porcentaje}%;background:${color}"></div></div>
+          <span style="font-size:11px;color:rgba(255,255,255,.5)">${porcentaje.toFixed(0)}%</span>
+        </div>
+      </td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${s.diasTranscurridos||0} días</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${s.diasRestantes||0} días</td>
+      <td><button class="btn bl" onclick="verDetalle(${s.rowIndex})">📊 Ver timeline</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// INICIALIZAR TABS AL CARGAR PÁGINA
+// ════════════════════════════════════════════════════════════
+
+// Reemplazar la función switchPanel existente
+
+ function contarVencimientos() {
+  let vencTutores = 0, vencActas = 0, vencProtocolo = 0;
+  
+  // Contar vencimiento de tutores (15 días desde radicación)
+  radicaciones.forEach(r => {
+    if (r.estado === 'Radicado' && r.fechaRadicacion) {
+      const dias = calcularDiasHabilesDesdeHoy(r.fechaRadicacion);
+      if (dias > 15) vencTutores++;
+    }
+  });
+  
+  // Contar vencimiento de actas (8 días desde que tutores fueron avalados)
+  actas.forEach(a => {
+    if (a.estado === 'Pendiente revisión' && a.fechaCarga) {
+      const dias = calcularDiasHabilesDesdeHoy(a.fechaCarga);
+      if (dias > 8) vencActas++;
+    }
+  });
+  
+  // Contar vencimiento de protocolos (8 días desde carga)
+  protocolos.forEach(p => {
+    if (p.estado === 'Cargado' && p.fechaCarga && p.vencido) {
+      vencProtocolo++;
+    }
+  });
+  
+  document.getElementById('countVencTutores').textContent = vencTutores;
+  document.getElementById('countVencActas').textContent = vencActas;
+  document.getElementById('countVencProtocolo').textContent = vencProtocolo;
+}
+
+function calcularDiasHabilesDesdeHoy(fecha) {
+  if (!fecha) return 0;
+  const inicio = new Date(fecha);
+  const hoy = new Date();
+  let dias = 0;
+  const actual = new Date(inicio);
+  
+  while (actual <= hoy) {
+    const diaSemana = actual.getDay();
+    if (diaSemana !== 0 && diaSemana !== 6) {
+      dias++;
+    }
+    actual.setDate(actual.getDate() + 1);
+  }
+  return dias;
+}
+
+function renderFiltros() {
+  const fSem = document.getElementById('fSem').value;
+  const fEst = document.getElementById('fEst').value;
+  const fPlazo = document.getElementById('fPlazo').value;
+  const fTutor = document.getElementById('fTutor').value;
+  const fActas = document.getElementById('fActas').value;
+  const q = (document.getElementById('searchFiltros').value || '').toLowerCase();
+
+  let filtered = radicaciones.filter(r => {
+    const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s||0)).filter(n => n > 0);
+    if (fSem && !semestres.includes(parseInt(fSem))) return false;
+    if (fEst && r.estado !== fEst) return false;
+    if (fPlazo) {
+      const dias = r.diasRestantes || 0;
+      if (fPlazo === 'vencido' && dias >= 0) return false;
+      if (fPlazo === '0-30' && (dias < 0 || dias > 30)) return false;
+      if (fPlazo === '30-60' && (dias < 30 || dias > 60)) return false;
+      if (fPlazo === '60+' && dias < 60) return false;
+    }
+    if (fTutor) {
+      const tieneTutor = !!(r.tutor1Nombre || r.tutor2Nombre);
+      if (fTutor === 'con' && !tieneTutor) return false;
+      if (fTutor === 'sin' && tieneTutor) return false;
+    }
+    if (fActas) {
+      const actasEste = actas.filter(a => a.numero === r.numero);
+      if (fActas === 'nocargadas' && actasEste.length > 0) return false;
+      if (fActas === 'cargadas' && actasEste.length === 0) return false;
+      if (fActas === 'aprobadas' && !actasEste.some(a => a.estado === 'Aprobada')) return false;
+      if (fActas === 'rechazadas' && !actasEste.some(a => a.estado === 'Rechazada')) return false;
+    }
+    if (q) {
+      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.tutor1Nombre].join(' ').toLowerCase();
+      if (!txt.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const tbody = document.getElementById('tbodyFiltros');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty">Sin registros que coincidan.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s||0)).filter(n => n > 0);
+    const semMax = semestres.length ? Math.max(...semestres) : '—';
+    const actasEste = actas.filter(a => a.numero === r.numero);
+    const actasTexto = actasEste.length === 0 ? '❌ 0' : `${actasEste.length} (${actasEste.filter(a => a.estado === 'Aprobada').length}✅)`;
+    const dias = r.diasRestantes || 0;
+    let riesgoTexto = '🟢 BAJO', riesgoColor = 'color:#6ee7b7';
+    if (dias < 0) { riesgoTexto = '🔴 VENCIDO'; riesgoColor = 'color:#fca5a5'; }
+    else if (dias < 30) { riesgoTexto = '🔴 CRÍTICO'; riesgoColor = 'color:#fca5a5'; }
+    else if (dias < 60) { riesgoTexto = '🟡 MEDIO'; riesgoColor = 'color:#fcd34d'; }
+    const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ');
+    const estado = r.estado || 'Radicado';
+    const estadoClass = estado === 'Radicado' ? 'b-radicado' : estado === 'Tutores Avalados' ? 'b-tutores' : estado === 'Pendiente Comité Técnico' ? 'b-comite' : estado === 'Aprobado' ? 'b-aprobado' : 'b-devuelto';
+    return `<tr><td><div class="num-rad">${esc(r.numero||'')}</div></td><td style="font-size:12px">${esc(nombres)}</td><td style="text-align:center;font-weight:600;color:#a78bfa">${semMax}</td><td><span class="badge ${estadoClass}">${esc(estado)}</span></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.tutor1Nombre||'—')}</td><td style="font-size:11px">${actasTexto}</td><td style="text-align:center;color:rgba(255,255,255,.5)">${r.diasTranscurridos||0}</td><td style="text-align:center;font-weight:600;color:#fcd34d">${dias < 0 ? 'Vencido' : dias + ' d'}</td><td style="${riesgoColor};font-weight:600">${riesgoTexto}</td><td><button class="btn bl" style="padding:4px 8px;font-size:11px" onclick="verDetalle(${r.rowIndex})">👁 Ver</button></td></tr>`;
+  }).join('');
+}
+
+function limpiarFiltros() {
+  document.getElementById('fSem').value = '';
+  document.getElementById('fEst').value = '';
+  document.getElementById('fPlazo').value = '';
+  document.getElementById('fTutor').value = '';
+  document.getElementById('fActas').value = '';
+  document.getElementById('searchFiltros').value = '';
+  renderFiltros();
+  toast('Filtros limpios', 'info');
+}
+
+function exportarFiltrosCSV() {
+  const fSem = document.getElementById('fSem').value;
+  const fEst = document.getElementById('fEst').value;
+  const fPlazo = document.getElementById('fPlazo').value;
+  const fTutor = document.getElementById('fTutor').value;
+  const fActas = document.getElementById('fActas').value;
+  const q = (document.getElementById('searchFiltros').value || '').toLowerCase();
+
+  let filtered = radicaciones.filter(r => {
+    const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s||0)).filter(n => n > 0);
+    if (fSem && !semestres.includes(parseInt(fSem))) return false;
+    if (fEst && r.estado !== fEst) return false;
+    if (fPlazo) {
+      const dias = r.diasRestantes || 0;
+      if (fPlazo === 'vencido' && dias >= 0) return false;
+      if (fPlazo === '0-30' && (dias < 0 || dias > 30)) return false;
+      if (fPlazo === '30-60' && (dias < 30 || dias > 60)) return false;
+      if (fPlazo === '60+' && dias < 60) return false;
+    }
+    if (fTutor) {
+      const tieneTutor = !!(r.tutor1Nombre || r.tutor2Nombre);
+      if (fTutor === 'con' && !tieneTutor) return false;
+      if (fTutor === 'sin' && tieneTutor) return false;
+    }
+    if (fActas) {
+      const actasEste = actas.filter(a => a.numero === r.numero);
+      if (fActas === 'nocargadas' && actasEste.length > 0) return false;
+      if (fActas === 'cargadas' && actasEste.length === 0) return false;
+      if (fActas === 'aprobadas' && !actasEste.some(a => a.estado === 'Aprobada')) return false;
+      if (fActas === 'rechazadas' && !actasEste.some(a => a.estado === 'Rechazada')) return false;
+    }
+    if (q) {
+      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3].join(' ').toLowerCase();
+      if (!txt.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) { toast('Sin datos para exportar', 'info'); return; }
+  const h = ['N° Radicación','Est. 1','Est. 2','Est. 3','Sem','Estado','Tutor 1','Tutor 2','Días T.','Días R.','Actas','Riesgo'];
+  const rows = filtered.map(r => {
+    const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s||0)).filter(n => n > 0);
+    const semMax = semestres.length ? Math.max(...semestres) : '';
+    const dias = r.diasRestantes || 0;
+    let riesgo = 'BAJO';
+    if (dias < 0 || dias < 30) riesgo = 'CRÍTICO';
+    else if (dias < 60) riesgo = 'MEDIO';
+    const actasEste = actas.filter(a => a.numero === r.numero).length;
+    return [r.numero, r.nombre1||'', r.nombre2||'', r.nombre3||'', semMax, r.estado||'', r.tutor1Nombre||'', r.tutor2Nombre||'', r.diasTranscurridos||0, dias, actasEste, riesgo];
+  });
+  const csv = [h, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'filtros_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  toast('CSV exportado ✓', 'ok');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fase 3 Sustentación — Coordinadora CTTG</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Outfit',sans-serif;background:#0a0f1a;color:#e2e8f0;min-height:100vh}
+  header{background:linear-gradient(135deg,#064e3b,#059669 80%,#1a3a5c);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+  .hdr-l{display:flex;align-items:center;gap:10px}
+  .logo{width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:18px;color:#fff}
+  .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
+  .hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .user-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
+  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  main{padding:24px 28px;max-width:1300px;margin:0 auto}
+  .back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
+  .back:hover{color:#fff}
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:4px;width:fit-content}
+  .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+  .tab.on{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.4)}
+  .panel{display:none}.panel.on{display:block}
+  .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+  .sec-hdr h2{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
+  .sec-hdr p{font-size:12px;color:rgba(255,255,255,.4)}
+  .btn-ref{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);font-family:'Outfit',sans-serif;font-size:12px;padding:7px 13px;cursor:pointer}
+  .tbl-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto}
+  table{width:100%;border-collapse:collapse;min-width:700px}
+  thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
+  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;white-space:nowrap}
+  td{padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  .num-rad{font-family:'DM Mono',monospace;font-size:12px;color:#34d399;font-weight:600}
+  .alert-s12{display:inline-block;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);color:#fca5a5;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;margin-left:6px}
+  .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
+  .btn:hover{background:rgba(255,255,255,.07);color:#fff}
+  .btn.gr{color:#34d399;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
+  .btn.bl{color:#60a5fa;border-color:rgba(96,165,250,.3)}.btn.bl:hover{background:rgba(96,165,250,.1)}
+  .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
+  .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  /* MODAL */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-bg.open{display:flex}
+  .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
+  @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
+  .mfg{margin-bottom:14px}
+  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);margin-bottom:5px}
+  .mfg input,.mfg select,.mfg textarea{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
+  .mfg select option{background:#111827}
+  .mfg textarea{min-height:70px;resize:vertical}
+  .msec{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;margin:14px 0 8px;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:4px}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+  .btn-action:hover{transform:translateY(-1px)}
+  .btn-action:disabled{opacity:.6;transform:none;cursor:not-allowed}
+  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
+  @media(max-width:680px){main{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-l">
+    <div class="logo">👩‍💼</div>
+    <div><h1>CTTG Medicina · Coordinación</h1><p>Gestión Fase 3 — Sustentación</p></div>
+  </div>
+  <div class="hdr-r">
+    <div class="user-chip" id="userChip">—</div>
+    <button class="btn-out" onclick="salir()">Salir</button>
+  </div>
+</header>
+
+<main>
+  <a href="coordinadora_dashboard.html" class="back">← Volver al panel</a>
+
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab('asignar',this)">📅 Pendiente Asignación</button>
+    <button class="tab" onclick="switchTab('resultado',this)">🎓 Pendiente Resultado</button>
+  </div>
+
+  <!-- VISTA 1: ASIGNAR JURADOS -->
+  <div class="panel on" id="pan-asignar">
+    <div class="sec-hdr">
+      <div><h2>Pendiente de Asignación</h2><p>Estudiantes que solicitaron sustentación sin fecha asignada.</p></div>
+      <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th>
+          <th>Estudiante</th>
+          <th>Semestre</th>
+          <th>% Turnitin</th>
+          <th>F. Solicitud</th>
+          <th>Jurados Sugeridos</th>
+          <th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyAsignar">
+          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VISTA 2: REGISTRAR RESULTADO -->
+  <div class="panel" id="pan-resultado">
+    <div class="sec-hdr">
+      <div><h2>Pendiente de Resultado</h2><p>Sustentaciones programadas sin nota registrada.</p></div>
+      <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th>
+          <th>Estudiante</th>
+          <th>Fecha Sustentación</th>
+          <th>Hora</th>
+          <th>Jurado 1</th>
+          <th>Jurado 2</th>
+          <th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyResultado">
+          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL ASIGNAR JURADOS -->
+<div class="modal-bg" id="modalAsignar">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>📅 Asignar Fecha y Jurados</h3>
+      <button class="btn" onclick="closeModal('modalAsignar')">✕</button>
+    </div>
+    <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
+
+    <div class="msec">Fecha y hora</div>
+<div class="mgrid" style="margin-bottom:14px">
+  <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
+  <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
+</div>
+<div class="mfg" style="margin-bottom:14px"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
+   
+    <div class="msec">Jurado 1</div>
+    <div class="mgrid" style="margin-bottom:4px">
+      <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
+      <div class="mfg"><label>Cédula</label><input id="mJ1Cedula" placeholder="Número ID"></div>
+    </div>
+    <div class="mfg"><label>Email *</label><input type="email" id="mJ1Email" placeholder="jurado@usc.edu.co"></div>
+
+    <div class="msec">Jurado 2</div>
+    <div class="mgrid" style="margin-bottom:4px">
+      <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
+      <div class="mfg"><label>Cédula</label><input id="mJ2Cedula" placeholder="Número ID"></div>
+    </div>
+    <div class="mfg"><label>Email *</label><input type="email" id="mJ2Email" placeholder="jurado@usc.edu.co"></div>
+
+    <input type="hidden" id="mAsignarRow">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
+      <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">📅 Asignar y notificar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESULTADO -->
+<div class="modal-bg" id="modalResultado">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>🎓 Registrar Resultado</h3>
+      <button class="btn" onclick="closeModal('modalResultado')">✕</button>
+    </div>
+    <p id="mResultadoInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
+
+    <div class="mgrid">
+      <div class="mfg"><label>Nota Final * (0 - 5)</label><input type="number" id="mNota" min="0" max="5" step="0.1" placeholder="Ej: 4.5"></div>
+      <div class="mfg"><label>Número de Acta *</label><input id="mActa" placeholder="ACTA-2025-001"></div>
+    </div>
+
+    <div class="mfg">
+      <label>¿Generó producto?</label>
+      <select id="mProducto" onchange="toggleDesc()">
+        <option value="NO">No</option>
+        <option value="SÍ">Sí</option>
+      </select>
+    </div>
+
+    <div class="mfg" id="descDiv" style="display:none">
+      <label>Descripción del producto</label>
+      <textarea id="mDesc" placeholder="Artículo publicado en revista X / Capítulo de libro..."></textarea>
+    </div>
+
+    <input type="hidden" id="mResultadoRow">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalResultado')">Cancelar</button>
+      <button class="btn-action" id="btnResultado" onclick="guardarResultado()">✅ Guardar y cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+function coordToken() { return localStorage.getItem('cttg_token') || ''; }
+let admin = null;
+let fase3 = [];
+
+(function(){
+  admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
+  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  document.getElementById('userChip').textContent = admin.nombre || admin.email;
+  cargar();
+})();
+
+function salir() { localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token'); window.location.href = 'index.html'; }
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  document.getElementById('pan-' + name).classList.add('on');
+  btn.classList.add('on');
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function fmtFecha(s) {
+  if (!s || s === '') return '—';
+  const p = String(s).split('T')[0].split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toggleDesc() {
+  document.getElementById('descDiv').style.display = document.getElementById('mProducto').value === 'SÍ' ? 'block' : 'none';
+}
+
+async function cargar() {
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken() }) });
+    const d = await res.json();
+    if (d.success) { fase3 = d.fase3 || []; renderTablas(); }
+    else throw new Error(d.error);
+  } catch(e) {
+    document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+    document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function renderTablas() {
+  // Pendiente asignación: sin fecha de sustentación
+  const sinFecha = fase3.filter(r => !r.fechaSustentacion || r.fechaSustentacion === '');
+  const tbA = document.getElementById('tbodyAsignar');
+  if (!sinFecha.length) {
+    tbA.innerHTML = '<tr><td colspan="7" class="empty">Sin solicitudes pendientes de asignación.</td></tr>';
+  } else {
+    tbA.innerHTML = sinFecha.map(r => `<tr>
+      <td><div class="num-rad">${esc(r.numero)}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      <td style="font-size:13px">${r.semestre}${r.alertaS12==='SÍ'?'<span class="alert-s12">⚠️ S12</span>':''}</td>
+      <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(([r.jurado1Nombre,r.jurado2Nombre].filter(Boolean).join(', ')||'—'))}</td>
+     <td><button class="btn gr" onclick="abrirAsignar(${r.rowIndex})">📅 Asignar</button></td>
+     </tr>`).join('');
+  }
+
+  // Pendiente resultado: con fecha pero sin nota
+  const conFecha = fase3.filter(r => r.fechaSustentacion && r.fechaSustentacion !== '' && (!r.nota || r.nota === ''));
+  const tbR = document.getElementById('tbodyResultado');
+  if (!conFecha.length) {
+    tbR.innerHTML = '<tr><td colspan="7" class="empty">Sin sustentaciones pendientes de resultado.</td></tr>';
+  } else {
+    tbR.innerHTML = conFecha.map(r => `<tr>
+      <td><div class="num-rad">${esc(r.numero)}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:#fcd34d">${fmtFecha(r.fechaSustentacion)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5)">${r.horaSustentacion||'—'}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado1Nombre||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado2Nombre||'—')}</td>
+      <td><button class="btn bl" onclick="abrirResultado(${r.rowIndex},'${esc(r.numero)}')">🎓 Registrar</button></td>
+    </tr>`).join('');
+  }
+}
+
+function abrirAsignar(rowIndex) {
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  document.getElementById('mAsignarRow').value = rowIndex;
+  document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero;
+  document.getElementById('mFecha').value = '';
+  document.getElementById('mHora').value = '';
+ document.getElementById('mLugar').value = '';
+  document.getElementById('mJ1Nombre').value = r.jurado1Nombre || '';
+  document.getElementById('mJ1Cedula').value = r.jurado1Cedula || '';
+  document.getElementById('mJ1Email').value = r.jurado1Email || '';
+  document.getElementById('mJ2Nombre').value = r.jurado2Nombre || '';
+  document.getElementById('mJ2Cedula').value = r.jurado2Cedula || '';
+  document.getElementById('mJ2Email').value = r.jurado2Email || '';
+  document.getElementById('modalAsignar').classList.add('open');
+}
+
+function abrirResultado(rowIndex, numero) {
+  document.getElementById('mResultadoRow').value = rowIndex;
+  document.getElementById('mResultadoInfo').textContent = 'Radicación: ' + numero;
+  document.getElementById('mNota').value = '';
+  document.getElementById('mActa').value = '';
+  document.getElementById('mProducto').value = 'NO';
+  document.getElementById('mDesc').value = '';
+  document.getElementById('descDiv').style.display = 'none';
+  document.getElementById('modalResultado').classList.add('open');
+}
+
+async function asignarJurados() {
+  const rowIndex = parseInt(document.getElementById('mAsignarRow').value);
+  const fecha    = document.getElementById('mFecha').value;
+  const hora     = document.getElementById('mHora').value;
+ const lugar = document.getElementById('mLugar').value.trim(); 
+ const j1n      = document.getElementById('mJ1Nombre').value.trim();
+  const j1e      = document.getElementById('mJ1Email').value.trim();
+  const j2n      = document.getElementById('mJ2Nombre').value.trim();
+  const j2e      = document.getElementById('mJ2Email').value.trim();
+
+  if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
+  if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
+ if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
+  if (!j1n || !j1e) { toast('Completa los datos del Jurado 1', 'warn'); return; }
+  if (!j2n || !j2e) { toast('Completa los datos del Jurado 2', 'warn'); return; }
+
+  const btn = document.getElementById('btnAsignar');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Asignando...';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'updateFase3Asignacion',
+      rowIndex,
+      fechaSustentacion: fecha,
+      horaSustentacion: hora,
+     lugar: lugar,
+      jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e },
+      jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e },
+      emailCoord: admin.email,
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalAsignar');
+      await cargar();
+      toast('Jurados asignados. Notificaciones enviadas ✓', 'ok');
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '📅 Asignar y notificar'; }
+}
+
+async function guardarResultado() {
+  const rowIndex = parseInt(document.getElementById('mResultadoRow').value);
+  const nota     = parseFloat(document.getElementById('mNota').value);
+  const acta     = document.getElementById('mActa').value.trim();
+  const producto = document.getElementById('mProducto').value;
+  const desc     = document.getElementById('mDesc').value.trim();
+
+  if (isNaN(nota) || nota < 0 || nota > 5) { toast('La nota debe estar entre 0 y 5', 'warn'); return; }
+  if (!acta) { toast('Ingresa el número de acta', 'warn'); return; }
+  if (producto === 'SÍ' && !desc) { toast('Describe el producto generado', 'warn'); return; }
+
+  const btn = document.getElementById('btnResultado');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'completarFase3',
+      rowIndex,
+      nota,
+      numeroActa: acta,
+      producto,
+      descripcion: desc,
+      emailCoord: admin.email,
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalResultado');
+      await cargar();
+      toast('Resultado registrado. Estudiante notificado ✓', 'ok');
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '✅ Guardar y cerrar'; }
+}
+
+['modalAsignar','modalResultado'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => { if (e.target === document.getElementById(id)) closeModal(id); });
+});
+</script>
+</body>
+</html>

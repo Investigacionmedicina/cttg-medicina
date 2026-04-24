@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Estudiante — CTTG</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Outfit',sans-serif;background:#0f0f1a;color:#e2e8f0;min-height:100vh}
+  header{background:linear-gradient(135deg,#1a0533,#2d1b69);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+  .hdr-l{display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
+  .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
+  .hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .user-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
+  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  main{padding:24px 28px;max-width:900px;margin:0 auto}
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:4px;width:fit-content}
+  .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+  .tab.on{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 2px 10px rgba(102,126,234,.4)}
+  .panel{display:none}.panel.on{display:block}
+  .rad-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:20px;margin-bottom:14px}
+  .rad-card .num{font-size:12px;color:#a78bfa;font-weight:600;margin-bottom:4px;font-family:'DM Serif Display',serif}
+  .rad-card .titulo{font-size:15px;font-weight:600;margin-bottom:10px}
+  .rad-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+  .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700}
+  .b-radicado{background:rgba(102,126,234,.2);color:#a5b4fc}
+  .b-revision{background:rgba(245,158,11,.2);color:#fcd34d}
+  .b-tutores{background:rgba(52,211,153,.2);color:#6ee7b7}
+  .b-comite{background:rgba(167,139,250,.2);color:#c4b5fd}
+  .b-aprobado{background:rgba(16,185,129,.2);color:#6ee7b7}
+  .b-devuelto{background:rgba(239,68,68,.2);color:#fca5a5}
+  .date-info{font-size:12px;color:rgba(255,255,255,.4)}
+  .notas-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#fcd34d;margin-top:10px}
+  .time-box{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:8px;padding:10px 13px;font-size:12px;color:#bfdbfe;margin-top:10px}
+  .time-box strong{color:#dbeafe}
+  .block-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);border-radius:10px;padding:12px 14px;font-size:12px;color:#fecaca;margin-bottom:14px;display:none}
+  .alert-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:14px}
+  .alert-card{background:rgba(30,64,175,.15);border:1px solid rgba(96,165,250,.35);border-radius:12px;padding:14px}
+  .alert-card h4{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:#93c5fd;margin-bottom:6px}
+  .alert-card p{font-size:13px;color:#e0ecff;line-height:1.45}
+  .readonly-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.32);border-radius:10px;padding:12px 14px;font-size:12px;color:#bbf7d0;margin-bottom:12px;display:none}
+  .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
+  .btn-det{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);color:#a5b4fc;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:10px}
+  .btn-det:hover{background:rgba(102,126,234,.25)}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-bg.open{display:flex}
+  .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+  .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
+  .btn-close{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:4px 10px;border-radius:7px;cursor:pointer;font-size:13px}
+  .det-row{display:flex;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;gap:8px}
+  .det-label{min-width:130px;font-size:11px;color:rgba(255,255,255,.4);flex-shrink:0}
+  .det-val{color:#e2e8f0;flex:1;word-break:break-word}
+  .det-sec{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:14px 0 6px}
+  .form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:24px;margin-bottom:18px}
+  .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .form-card h3 .dot{width:7px;height:7px;background:#a78bfa;border-radius:50%}
+  .form-card p{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px}
+  .num-est{display:flex;gap:8px;margin-bottom:18px}
+  .ne{padding:8px 18px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+  .ne.on{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+  .fg{display:flex;flex-direction:column;gap:5px}
+  .fg.full{grid-column:1/-1}
+  .sec-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);font-weight:600;padding:10px 0 6px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:4px;grid-column:1/-1}
+  label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45)}
+  input,select,textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
+  input::placeholder,textarea::placeholder{color:rgba(255,255,255,.25)}
+  input:focus,select:focus,textarea:focus{border-color:rgba(102,126,234,.6);background:rgba(255,255,255,.1)}
+  select option{background:#1a1a2e}
+  textarea{min-height:65px;resize:vertical}
+  .btn-rad{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:all .2s}
+  .btn-rad:hover{transform:translateY(-1px)}
+  .btn-rad:disabled{opacity:.6;transform:none;cursor:not-allowed}
+  .btn-sec{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:12px 20px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .success-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:24px;text-align:center;display:none;margin-top:16px}
+  .success-box .num-rad{font-size:28px;font-weight:700;color:#6ee7b7;font-family:'DM Serif Display',serif;margin:8px 0}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
+  @media(max-width:600px){main{padding:16px}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-l">
+    <div class="logo">🎓</div>
+    <div><h1>CTTG Medicina</h1><p>Portal Estudiante</p></div>
+  </div>
+  <div class="hdr-r">
+    <div class="user-chip" id="userChip">—</div>
+    <button class="btn-out" onclick="salirSession()">Salir</button>
+  </div>
+</header>
+
+<main>
+ <div style="background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);border-radius:12px;padding:20px;margin-bottom:20px">
+  <h3 style="color:#fff;margin-bottom:16px">📋 Mi Radicación</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Número de Radicación</div>
+      <div style="font-size:18px;font-weight:600;color:#a5b4fc" id="d_numeroRadicacion">—</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Estado</div>
+      <div style="font-size:18px;font-weight:600;color:#6ee7b7" id="d_estado">—</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Título</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_titulo">—</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Modalidad</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_modalidad">—</div>
+    </div>
+   <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Área</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_area">—</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Tutor 1</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_tutor1">—</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Tutor 2</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_tutor2">—</div>
+    </div> 
+   
+   <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Fecha Radicación</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_fechaRadicacion">—</div>
+    </div>
+
+   <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Fecha Aprobación</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_fechaAprobacion">—</div>
+    </div>
+    <div style="grid-column:1/-1">
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">Notas</div>
+      <div style="font-size:14px;color:#e2e8f0" id="d_notas">—</div>
+    </div>
+  </div>
+</div>
+  <!-- CONTADOR GENERAL DE PLAZO — CTTG MEDICINA -->
+  <div style="background:linear-gradient(135deg,rgba(102,126,234,.2),rgba(167,139,250,.2));border:1px solid rgba(102,126,234,.3);border-radius:12px;padding:20px;margin-bottom:24px;text-align:center">
+    <div style="font-size:12px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px">⏳ Plazo Total del Grado</div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div>
+        <div style="font-size:28px;font-weight:700;color:#a5b4fc" id="diasTotalRestantes">—</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4)">Días hábiles restantes</div>
+      </div>
+      <div>
+        <div style="font-size:28px;font-weight:700;color:#fcd34d" id="porcentajeAvance">—</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4)">% Avance</div>
+      </div>
+    </div>
+    
+    <!-- Barra de progreso -->
+    <div style="width:100%;height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden">
+      <div style="height:100%;background:linear-gradient(90deg,#a5b4fc,#a78bfa);width:0%;transition:width .3s" id="barraProgreso"></div>
+    </div>
+    
+    <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:12px" id="alertaPlazo"></div>
+  </div>
+
+  <div id="alertasTiempo" class="alert-wrap" style="display:none"></div>
+   <div class="tabs">
+    <button class="tab on" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
+    <button class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;margin-bottom:20px">
+    <a id="btnActas" href="actas_asesoria.html" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:12px;text-decoration:none;color:#fff">
+      <span style="font-size:20px">📋</span>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:14px">Actas de Asesoría</div>
+        <div id="btnActasSub" style="font-size:12px;color:rgba(255,255,255,.5)">Cargar actas firmadas por tu tutor</div>
+      </div>
+      <span>→</span>
+    </a>
+  <a id="btnFase2" href="protocolo_fase2.html" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:12px;text-decoration:none;color:#fff;opacity:0.4;pointer-events:none">
+      <span style="font-size:20px">📄</span>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:14px">Fase 2: Protocolo</div>
+        <div id="btnFase2Sub" style="font-size:12px;color:rgba(255,255,255,.5)">Pendiente: aprobación de actas</div>
+      </div>
+      <span>→</span>
+    </a>
+   <a id="btnFase3" href="fase3_sustentacion.html" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:12px;text-decoration:none;color:#fff;opacity:0.4;pointer-events:none">
+  <span style="font-size:20px">📝</span>
+  <div style="flex:1">
+    <div style="font-weight:600;font-size:14px">Fase 3: Solicitar Sustentación</div>
+    <div id="btnFase3Sub" style="font-size:12px;color:rgba(255,255,255,.5)">Pendiente: aprobación de protocolo</div>
+  </div>
+  <span>→</span>
+</a>
+
+<!-- PANEL ESTADO FASE 3 -->
+<div id="panelFase3Estado" style="display:none;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:16px;margin-top:12px">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+    <span style="font-size:20px">🎓</span>
+    <div style="flex:1">
+      <div style="font-weight:600;color:#fff">Solicitud de Sustentación</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4)">Resultado de tu solicitud</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px">Estado</div>
+      <div style="font-size:14px;font-weight:600;color:#93c5fd" id="f3Estado">—</div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px">% Turnitin</div>
+      <div style="font-size:14px;font-weight:600" id="f3Turnitin">—</div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px">Fecha Sustentación</div>
+      <div style="font-size:14px;font-weight:600" id="f3Fecha">—</div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px">Hora</div>
+      <div style="font-size:14px;font-weight:600" id="f3Hora">—</div>
+    </div>
+  </div>
+  <div id="f3Jurados" style="background:rgba(255,255,255,.03);border-radius:8px;padding:10px;display:none">
+    <div style="font-size:11px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:8px">👨‍🏫 Jurados Asignados</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
+      <div>
+        <div style="color:rgba(255,255,255,.5);margin-bottom:2px">Jurado 1</div>
+        <div style="color:#93c5fd;font-weight:600" id="f3J1">—</div>
+        <div style="color:rgba(255,255,255,.3);font-size:10px" id="f3J1Email">—</div>
+      </div>
+      <div>
+        <div style="color:rgba(255,255,255,.5);margin-bottom:2px">Jurado 2</div>
+        <div style="color:#93c5fd;font-weight:600" id="f3J2">—</div>
+        <div style="color:rgba(255,255,255,.3);font-size:10px" id="f3J2Email">—</div>
+      </div>
+    </div>
+  </div>
+  <div id="f3Resultado" style="background:rgba(255,255,255,.03);border-radius:8px;padding:10px;display:none;margin-top:10px">
+    <div style="font-size:11px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px">📊 Resultado</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
+      <div>
+        <div style="color:rgba(255,255,255,.5)">Nota Final</div>
+        <div style="font-size:18px;font-weight:700;color:#6ee7b7" id="f3Nota">—</div>
+      </div>
+      <div>
+        <div style="color:rgba(255,255,255,.5)">Acta</div>
+        <div style="font-size:14px;font-weight:600;color:#a78bfa" id="f3Acta">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+  <div class="panel on" id="pan-mis-rad">
+    <div id="misRadWrap"><div class="empty">Cargando...</div></div>
+  </div>
+
+  <div class="panel" id="pan-nueva">
+    <div id="readonlyRad" class="readonly-box"></div>
+    <div id="bloqueoRad" class="block-box"></div>
+    <div class="form-card">
+      <h3><span class="dot"></span>Formulario de Radicación</h3>
+      <p>Completa todos los campos marcados con *. El número de radicación se genera automáticamente.</p>
+      <div style="margin-bottom:16px">
+        <label style="display:block;margin-bottom:8px">Número de estudiantes *</label>
+        <div class="num-est">
+          <button class="ne on" onclick="setEst(1,this)">1 Estudiante</button>
+          <button class="ne" onclick="setEst(2,this)">2 Estudiantes</button>
+          <button class="ne" onclick="setEst(3,this)">3 Estudiantes</button>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="sec-label">👤 Estudiante 1</div>
+        <div class="fg"><label>Cédula *</label><input id="cedula1" placeholder="Número de identificación"></div>
+        <div class="fg"><label>Nombre completo *</label><input id="nombre1" placeholder="Juan Pérez García"></div>
+        <div class="fg"><label>Email *</label><input type="email" id="email1" placeholder="juan@usc.edu.co"></div>
+        <div class="fg"><label>Teléfono *</label><input id="telefono1" placeholder="300 000 0000"></div>
+        <div class="fg"><label>Semestre *</label>
+          <select id="semestre1"><option value="">Seleccionar...</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select>
+        </div>
+        <div class="fg"><label>Semillero / Grupo (Opcional)</label><input id="semillero1" placeholder="Nombre del semillero"></div>
+        <div class="sec-label est2" style="display:none">👤 Estudiante 2</div>
+        <div class="fg est2" style="display:none"><label>Cédula</label><input id="cedula2"></div>
+        <div class="fg est2" style="display:none"><label>Nombre completo</label><input id="nombre2"></div>
+        <div class="fg est2" style="display:none"><label>Email</label><input type="email" id="email2"></div>
+        <div class="fg est2" style="display:none"><label>Teléfono</label><input id="telefono2"></div>
+        <div class="fg est2" style="display:none"><label>Semestre</label><select id="semestre2"><option value="">Seleccionar...</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+        <div class="fg est2" style="display:none"><label>Semillero (Opcional)</label><input id="semillero2"></div>
+        <div class="sec-label est3" style="display:none">👤 Estudiante 3</div>
+        <div class="fg est3" style="display:none"><label>Cédula</label><input id="cedula3"></div>
+        <div class="fg est3" style="display:none"><label>Nombre completo</label><input id="nombre3"></div>
+        <div class="fg est3" style="display:none"><label>Email</label><input type="email" id="email3"></div>
+        <div class="fg est3" style="display:none"><label>Teléfono</label><input id="telefono3"></div>
+        <div class="fg est3" style="display:none"><label>Semestre</label><select id="semestre3"><option value="">Seleccionar...</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+        <div class="fg est3" style="display:none"><label>Semillero (Opcional)</label><input id="semillero3"></div>
+        <div class="sec-label">📄 Proyecto</div>
+        <div class="fg full"><label>Título del proyecto * (o escribe "Ninguno")</label><input id="titulo" placeholder="Título del trabajo de grado o Ninguno"></div>
+        <div class="fg"><label>Modalidad *</label>
+          <select id="modalidad"><option value="">Seleccionar...</option><option>Trabajo de investigación</option><option>Monografia Revision sistematica</option><option>Monografia Reporte de caso</option><option>Monografia serie de casos</option><option>Monografia Metaanalisis</option><option>Monografia revision de alcance</option></select>
+        </div>
+        <div class="fg"><label>Área / Especialidad *</label>
+          <select id="area"><option value="">Seleccionar...</option><option>Medicina Interna</option><option>Cirugía General</option><option>Pediatría</option><option>Ginecología y Obstetricia</option><option>Psiquiatría</option><option>Neurología</option><option>Cardiología</option><option>Oncología</option><option>Urgencias y Emergencias</option><option>Salud Pública</option><option>Epidemiología</option><option>Otra</option></select>
+        </div>
+        <div class="sec-label">👨‍🏫 Tutor 1</div>
+        <div class="fg"><label>Nombre *</label><input id="tutor1Nombre" placeholder="Dr./Dra."></div>
+        <div class="fg"><label>Email *</label><input type="email" id="tutor1Email" placeholder="tutor@usc.edu.co"></div>
+        <div class="fg"><label>Teléfono</label><input id="tutor1Telefono" placeholder="300 000 0000"></div>
+        <div class="fg"><label>Rol</label>
+          <select id="tutor1Relacion"><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
+        </div>
+        <div class="sec-label">👨‍🏫 Tutor 2 (Opcional)</div>
+        <div class="fg"><label>Nombre</label><input id="tutor2Nombre" placeholder="(opcional)"></div>
+        <div class="fg"><label>Email</label><input type="email" id="tutor2Email" placeholder="(opcional)"></div>
+        <div class="fg"><label>Teléfono</label><input id="tutor2Telefono" placeholder="(opcional)"></div>
+        <div class="fg"><label>Rol</label>
+          <select id="tutor2Relacion"><option value="">— Sin tutor 2 —</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
+        </div>
+        <div class="sec-label">📝 Observaciones (Opcional)</div>
+        <div class="fg full"><label>Observaciones adicionales</label>
+          <textarea id="observaciones" placeholder="Agrega cualquier observación adicional..." style="min-height:80px;resize:vertical"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <button class="btn-rad" id="btnRad" onclick="radicar()">📋 Radicar proyecto</button>
+        <button class="btn-sec" onclick="limpiar()">Limpiar</button>
+      </div>
+      <div class="success-box" id="successBox">
+        <div style="font-size:28px;margin-bottom:8px">🎉</div>
+        <div style="font-size:15px;font-weight:600;color:#fff">¡Radicación exitosa!</div>
+        <div class="num-rad" id="numRadResult">—</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">Guarda tu número. Recibirás un correo de confirmación.</div>
+        <button class="btn-rad" style="margin-top:14px" onclick="switchTab('mis-rad',document.querySelectorAll('.tab')[0])">Ver mis radicaciones</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalDet">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Detalle de Radicación</h3>
+      <button class="btn-close" onclick="document.getElementById('modalDet').classList.remove('open')">✕ Cerrar</button>
+    </div>
+    <div id="modalDetBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+const TOKEN = localStorage.getItem('cttg_token') || '';
+let numEst = 1;
+let user = null;
+let bloquearNuevaRad = false;
+let misRadicaciones = [];
+
+(function(){
+  user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
+  if (!user || user.rol !== 'estudiante' || !TOKEN) { window.location.href = 'estudiante_login.html'; return; }
+  document.getElementById('userChip').textContent = user.nombre || user.email;
+  cargarMisRad();
+})();
+
+async function salirSession() {
+  const t = localStorage.getItem('cttg_token');
+  localStorage.removeItem('cttg_user');
+  localStorage.removeItem('cttg_token');
+  if (t) {
+    try {
+      await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'logout', token: t }) });
+    } catch (e) {}
+  }
+  window.location.href = 'index.html';
+}
+
+function switchTab(name, btn) {
+  if (name === 'nueva' && bloquearNuevaRad) { toast('Aún tienes una radicación sin respuesta. No puedes crear otra.', 'warn'); return; }
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  document.getElementById('pan-' + name).classList.add('on');
+  btn.classList.add('on');
+  if (name === 'mis-rad') cargarMisRad();
+}
+ 
+function setEst(n, btn) {
+  numEst = n;
+  document.querySelectorAll('.ne').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.est2').forEach(el => el.style.display = n >= 2 ? '' : 'none');
+  document.querySelectorAll('.est3').forEach(el => el.style.display = n >= 3 ? '' : 'none');
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function redirigirSiSesionInvalida(resp) {
+  if (resp && resp.success) return false;
+  const msg = String((resp && resp.error) || '');
+  if (/sesión|sesion|inválid|invalid|expirad|expired|autorizad|no autorizado|token/i.test(msg)) {
+    localStorage.removeItem('cttg_user');
+    localStorage.removeItem('cttg_token');
+    window.location.href = 'estudiante_login.html';
+    return true;
+  }
+  return false;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function badgeEst(est) {
+  const map = {
+    'Radicado':                'b-radicado',
+    'Revisión':                'b-revision',
+    'Tutores Avalados':        'b-tutores',
+    'Fase 2 Desbloqueada':     'b-comite',
+    'Pendiente Comité Técnico':'b-comite',
+    'Aprobado':                'b-aprobado',
+    'Devuelto':                'b-devuelto',
+    'Sustentado':              'b-aprobado',
+    'Reprobado':               'b-devuelto'
+  };
+  return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
+}
+
+function fmtFecha(s) {
+  if (!s || s === '') return '—';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return String(s);
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+}
+
+function parseFecha(s) {
+  if (!s) return null;
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function addBusinessDays(fecha, days) {
+  const d = new Date(fecha.getTime());
+  let added = 0;
+  while (added < days) {
+    d.setDate(d.getDate() + 1);
+    const wd = d.getDay();
+    if (wd !== 0 && wd !== 6) added++;
+  }
+  return d;
+}
+
+function addMonths(fecha, months) {
+  const d = new Date(fecha.getTime());
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+function diffDias(fechaObjetivo) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const fin = new Date(fechaObjetivo.getTime()); fin.setHours(0,0,0,0);
+  return Math.ceil((fin - hoy) / 86400000);
+}
+
+function semestreMayor(r) {
+  const vals = [r.semestre1, r.semestre2, r.semestre3].map(v => parseInt(v,10)).filter(n => !isNaN(n));
+  return vals.length ? Math.max(...vals) : 1;
+}
+
+function limpiarNotas(notas) {
+  if (!notas) return '';
+  return notas.split('|').map(s => s.trim())
+    .filter(s => !s.startsWith('Evaluador:') && !s.startsWith('Fecha Comité'))
+    .join(' | ').trim();
+}
+
+function construirCajaTiempos(r) {
+  const fechaRad = parseFecha(r.fechaRadicacion);
+  if (!fechaRad) return '';
+  const limiteTutor = addBusinessDays(fechaRad, 15);
+  const diasTutor   = diffDias(limiteTutor);
+  const semMax      = semestreMayor(r);
+  const mesesActas  = semMax >= 12 ? 3 : (semMax >= 11 ? 6 : 12);
+  const baseActas   = parseFecha(r.fechaAprobacion) || fechaRad;
+  const limiteActas = addMonths(baseActas, mesesActas);
+  const diasActas   = diffDias(limiteActas);
+  return `<div class="time-box">
+    ⏱ Respuesta tutor (15 días hábiles): hasta <strong>${fmtFecha(limiteTutor)}</strong> · ${diasTutor >= 0 ? `faltan ${diasTutor} días` : 'plazo vencido'}.<br>
+    📄 Carga de actas (${mesesActas} meses · sem. ${semMax}): hasta <strong>${fmtFecha(limiteActas)}</strong> · ${diasActas >= 0 ? `faltan ${diasActas} días` : 'plazo vencido'}.
+  </div>`;
+}
+
+function setFormularioSoloLectura(flag) {
+  document.getElementById('pan-nueva').querySelectorAll('input,select,textarea,button').forEach(el => {
+    if (el.id === 'tabNueva' || el.classList.contains('btn-out')) return;
+    el.disabled = !!flag;
+  });
+}
+
+function renderAlertasSuperiores(radicaciones) {
+  const wrap = document.getElementById('alertasTiempo');
+  const sinRespuesta = radicaciones.filter(r => !['Aprobado','Devuelto'].includes(String(r.estado||'')));
+  if (!sinRespuesta.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  const r = sinRespuesta[0];
+  const fechaRad = parseFecha(r.fechaRadicacion);
+  if (!fechaRad) { wrap.style.display = 'none'; return; }
+  const limiteTutor = addBusinessDays(fechaRad, 15);
+  const diasTutor   = diffDias(limiteTutor);
+  const semMax      = semestreMayor(r);
+  const mesesActas  = semMax >= 12 ? 3 : (semMax >= 11 ? 6 : 12);
+  const limiteActas = addMonths(parseFecha(r.fechaAprobacion) || fechaRad, mesesActas);
+  const diasActas   = diffDias(limiteActas);
+  wrap.style.display = 'grid';
+  wrap.innerHTML = `
+    <div class="alert-card">
+      <h4>⏱ Respuesta tutor (15 días hábiles)</h4>
+      <p>Radicación <strong>${esc(r.numero)}</strong>. Límite: <strong>${fmtFecha(limiteTutor)}</strong>. ${diasTutor >= 0 ? `Faltan ${diasTutor} días.` : 'Plazo vencido.'}</p>
+    </div>
+    <div class="alert-card">
+      <h4>📄 Plazo para actas</h4>
+      <p>Semestre ${semMax} (${mesesActas} meses). Límite: <strong>${fmtFecha(limiteActas)}</strong>. ${diasActas >= 0 ? `Faltan ${diasActas} días.` : 'Plazo vencido.'}</p>
+    </div>`;
+}
+
+function verDetalle(rowIndex) {
+  const r = misRadicaciones.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val">${esc(val)}</span></div>` : '';
+  const notas = limpiarNotas(r.notas);
+  document.getElementById('modalDetBody').innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="font-size:13px;color:#a78bfa;font-weight:600;margin-bottom:4px">${esc(r.numero)}</div>
+      <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:8px">${esc(r.titulo||'Sin título')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${badgeEst(r.estado)}</div>
+    </div>
+    <div class="det-sec">Proyecto</div>
+    ${fila('Modalidad', r.modalidad)}
+    ${fila('Área', r.area)}
+    ${fila('F. Radicación', fmtFecha(r.fechaRadicacion))}
+    ${fila('F. Aprobación', fmtFecha(r.fechaAprobacion))}
+    <div class="det-sec">Estudiantes</div>
+    ${fila('Estudiante 1', r.nombre1 ? r.nombre1+' · Ced: '+r.cedula1+' · Sem. '+r.semestre1 : '')}
+    ${fila('Email 1', r.email1)}
+    ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
+    ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
+    <div class="det-sec">Tutores</div>
+    ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
+    ${fila('Email T1', r.tutor1Email)}
+    ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
+    ${notas ? `<div class="notas-box" style="margin-top:14px">📝 ${esc(notas)}</div>` : ''}
+  `;
+  document.getElementById('modalDet').classList.add('open');
+}
+
+async function cargarMisRad() {
+  const wrap = document.getElementById('misRadWrap');
+  wrap.innerHTML = '<div class="empty">Cargando...</div>';
+  try {
+    const res  = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN }) });
+    const data = await res.json();
+    if (!data.success) {
+      const err = String(data.error || '');
+      if (/sesión|inválid|expirad|autorizad/i.test(err)) {
+        localStorage.removeItem('cttg_user');
+        localStorage.removeItem('cttg_token');
+        window.location.href = 'estudiante_login.html';
+        return;
+      }
+    }
+    if (data.success && data.radicaciones.length > 0) {
+      misRadicaciones = data.radicaciones;
+     const r = misRadicaciones[0];
+
+document.getElementById('d_numeroRadicacion').textContent = r.numero || '—';
+document.getElementById('d_estado').textContent = r.estado || '—';
+document.getElementById('d_titulo').textContent = r.titulo || '—';
+document.getElementById('d_modalidad').textContent = r.modalidad || '—';
+document.getElementById('d_area').textContent = r.area || '—';
+document.getElementById('d_tutor1').textContent = r.tutor1Nombre || '—';
+document.getElementById('d_tutor2').textContent = r.tutor2Nombre || '—';
+document.getElementById('d_fechaRadicacion').textContent = fmtFecha(r.fechaRadicacion);
+document.getElementById('d_fechaAprobacion').textContent = fmtFecha(r.fechaAprobacion);
+document.getElementById('d_notas').textContent = limpiarNotas(r.notas) || '—';
+      
+      // Actualizar contador general
+      actualizarContadorGeneral(misRadicaciones[0]);
+      
+      renderAlertasSuperiores(misRadicaciones);
+      bloquearNuevaRad = misRadicaciones.some(r => !['Aprobado','Devuelto'].includes(String(r.estado||'')));
+      const bloqueo  = document.getElementById('bloqueoRad');
+      const readonly = document.getElementById('readonlyRad');
+      const tabNueva = document.getElementById('tabNueva');
+      if (bloquearNuevaRad) {
+        bloqueo.style.display  = 'block';
+        bloqueo.innerHTML      = '🚫 Ya tienes una radicación sin respuesta. Debes esperar respuesta del comité para crear una nueva.';
+        readonly.style.display = 'block';
+        readonly.innerHTML     = '👁 Tu radicación está en trámite y no puede modificarse.';
+        tabNueva.style.opacity = '.55';
+        setFormularioSoloLectura(true);
+      } else {
+        bloqueo.style.display  = 'none';
+        readonly.style.display = 'none';
+        tabNueva.style.opacity = '1';
+        setFormularioSoloLectura(false);
+      }
+      wrap.innerHTML = misRadicaciones.map(r => {
+        const notasLimpias = limpiarNotas(r.notas);
+        return `<div class="rad-card">
+          <div class="num">📋 ${esc(r.numero)}</div>
+          <div class="titulo">${esc(r.titulo||'Sin título')}</div>
+          <div class="rad-meta">
+            ${badgeEst(r.estado)}
+            <span class="date-info">📅 ${fmtFecha(r.fechaRadicacion)}</span>
+            ${r.modalidad ? `<span class="date-info">· ${esc(r.modalidad)}</span>` : ''}
+            ${r.fechaAprobacion ? `<span class="date-info">✅ ${fmtFecha(r.fechaAprobacion)}</span>` : ''}
+          </div>
+          ${construirCajaTiempos(r)}
+          ${notasLimpias ? `<div class="notas-box">📝 ${esc(notasLimpias)}</div>` : ''}
+          <button class="btn-det" onclick="verDetalle(${r.rowIndex})">👁 Ver detalle</button>
+        </div>`;
+      }).join('');
+    } else {
+      misRadicaciones = [];
+      bloquearNuevaRad = false;
+      renderAlertasSuperiores([]);
+      document.getElementById('bloqueoRad').style.display  = 'none';
+      document.getElementById('readonlyRad').style.display = 'none';
+      document.getElementById('tabNueva').style.opacity    = '1';
+      setFormularioSoloLectura(false);
+      wrap.innerHTML = `<div class="empty">
+        <div style="font-size:32px;margin-bottom:12px">📭</div>
+        <div>No tienes radicaciones registradas aún.</div>
+        <button class="btn-rad" style="margin-top:14px" onclick="switchTab('nueva',document.querySelectorAll('.tab')[1])">➕ Radicar ahora</button>
+      </div>`;
+    }
+    await actualizarBotonesFases(misRadicaciones);
+  } catch(e) { wrap.innerHTML = '<div class="empty">Error al cargar. Intenta de nuevo.</div>'; }
+}
+
+async function actualizarBotonesFases(radicaciones) {
+  const btnActas    = document.getElementById('btnActas');
+  const btnFase2    = document.getElementById('btnFase2');
+    const btnActasSub = document.getElementById('btnActasSub');
+  const btnFase2Sub = document.getElementById('btnFase2Sub');
+ const btnFase3 = document.getElementById('btnFase3');
+ 
+  if (!radicaciones.length) {
+    [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'none'; });
+    return;
+  }
+  [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'flex'; });
+  const estadoActual = radicaciones[0].estado || '';
+  const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Aprobado','Sustentado'];
+
+  if (btnActas) {
+    btnActas.style.display = 'flex';
+    if (estadosConAcceso.includes(estadoActual)) {
+      btnActas.style.opacity       = '1';
+      btnActas.style.pointerEvents = 'auto';
+      if (btnActasSub) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
+    } else {
+      btnActas.style.opacity       = '0.4';
+      btnActas.style.pointerEvents = 'none';
+      if (btnActasSub) btnActasSub.textContent = 'Pendiente: aval de tutores';
+    }
+  }
+let actasAprobadas = false;
+  let fase2Aprobada = false;
+
+  try {
+    const [dActas, dF2, dFase3] = await Promise.all([
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: TOKEN }) }).then(r => r.json()),
+fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: TOKEN }) }).then(r => r.json()),
+fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: TOKEN }) }).then(r => r.json())
+    ]);
+
+    if (redirigirSiSesionInvalida(dActas) || redirigirSiSesionInvalida(dF2) || redirigirSiSesionInvalida(dFase3)) return;
+
+    if (dActas.success) {
+      const misActas = (dActas.actas || []).filter(a => a.emailEstudiante.toLowerCase() === user.email.toLowerCase());
+      actasAprobadas = misActas.some(a => a.estado === 'Aprobada');
+      const pendientes = misActas.filter(a => a.estado === 'Pendiente revisión').length;
+      if (btnActasSub) {
+        if (actasAprobadas) btnActasSub.textContent = '✅ Actas aprobadas';
+        else if (pendientes > 0) btnActasSub.textContent = `⏳ ${pendientes} acta(s) en revisión`;
+        else if (estadosConAcceso.includes(estadoActual)) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
+      }
+    }
+
+    if (dF2.success) {
+      fase2Aprobada = (dF2.protocolos || []).some(p =>
+        p.emailEstudiante.toLowerCase() === user.email.toLowerCase() && (p.estado === 'Aprobado' || p.estado === 'Aprobado Directo')
+      );
+    }
+
+    if (dFase3.success) {
+      const miSolicitud = (dFase3.fase3 || []).find(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
+      if (miSolicitud) {
+        document.getElementById('panelFase3Estado').style.display = 'block';
+        document.getElementById('f3Estado').textContent = miSolicitud.nota ? '✅ Sustentado' : (miSolicitud.fechaSustentacion ? '📅 Programado' : '⏳ En revisión');
+        document.getElementById('f3Turnitin').textContent = (miSolicitud.pctTurnitin || '—') + '%';
+        document.getElementById('f3Fecha').textContent = miSolicitud.fechaSustentacion ? fmtFecha(miSolicitud.fechaSustentacion) : '—';
+        document.getElementById('f3Hora').textContent = miSolicitud.horaSustentacion || '—';
+        if (miSolicitud.fechaSustentacion) {
+          document.getElementById('f3Jurados').style.display = 'block';
+          document.getElementById('f3J1').textContent = miSolicitud.jurado1Nombre || '—';
+          document.getElementById('f3J1Email').textContent = miSolicitud.jurado1Email || '—';
+          document.getElementById('f3J2').textContent = miSolicitud.jurado2Nombre || '—';
+          document.getElementById('f3J2Email').textContent = miSolicitud.jurado2Email || '—';
+        }
+        if (miSolicitud.nota) {
+          document.getElementById('f3Resultado').style.display = 'block';
+          document.getElementById('f3Nota').textContent = miSolicitud.nota;
+          document.getElementById('f3Acta').textContent = miSolicitud.numeroActa || '—';
+        }
+      }
+    }
+  } catch(e) { console.log('Error cargando fases:', e); }
+
+  if (btnFase2) {
+    btnFase2.style.display = 'flex';
+    if (actasAprobadas) {
+      btnFase2.style.opacity = '1';
+      btnFase2.style.pointerEvents = 'auto';
+      if (btnFase2Sub) btnFase2Sub.textContent = 'Subir documento de protocolo';
+    } else {
+      btnFase2.style.opacity = '0.4';
+      btnFase2.style.pointerEvents = 'none';
+      if (btnFase2Sub) btnFase2Sub.textContent = 'Pendiente: aprobación de actas';
+    }
+  }
+
+ if (btnFase3) {
+    btnFase3.style.display = 'flex';
+    if (fase2Aprobada) {
+      btnFase3.style.opacity = '1';
+      btnFase3.style.pointerEvents = 'auto';
+      if (btnFase3Sub) btnFase3Sub.textContent = 'Solicitar fecha de sustentación';
+    } else {
+      btnFase3.style.opacity = '0.4';
+      btnFase3.style.pointerEvents = 'none';
+      if (btnFase3Sub) btnFase3Sub.textContent = 'Pendiente: aprobación de protocolo';
+    }
+  }
+}
+
+function limpiar() {
+ ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['semestre1','semestre2','semestre3','modalidad','area','tutor1Relacion','tutor2Relacion'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('successBox').style.display = 'none';
+  setEst(1, document.querySelector('.ne'));
+}
+
+async function radicar() {
+  if (bloquearNuevaRad) { toast('No puedes radicar hasta recibir respuesta de tu radicación actual.', 'warn'); return; }
+  const reqs = [['cedula1','Cédula estudiante 1'],['nombre1','Nombre estudiante 1'],['email1','Email estudiante 1'],['telefono1','Teléfono estudiante 1'],['semestre1','Semestre estudiante 1'],['titulo','Título del proyecto'],['modalidad','Modalidad'],['area','Área'],['tutor1Nombre','Nombre del tutor 1'],['tutor1Email','Email del tutor 1']];
+  for (const [id, label] of reqs) {
+    const el = document.getElementById(id);
+    if (!el || !el.value.trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
+  }
+  if (numEst >= 2) {
+    const e2 = [['cedula2','Cédula estudiante 2'],['nombre2','Nombre estudiante 2'],['email2','Email estudiante 2'],['telefono2','Teléfono estudiante 2'],['semestre2','Semestre estudiante 2']];
+    for (const [id, label] of e2) {
+      const el = document.getElementById(id);
+      if (!el || !String(el.value).trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
+    }
+  }
+  if (numEst >= 3) {
+    const e3 = [['cedula3','Cédula estudiante 3'],['nombre3','Nombre estudiante 3'],['email3','Email estudiante 3'],['telefono3','Teléfono estudiante 3'],['semestre3','Semestre estudiante 3']];
+    for (const [id, label] of e3) {
+      const el = document.getElementById(id);
+      if (!el || !String(el.value).trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
+    }
+  }
+  const t2n = (document.getElementById('tutor2Nombre')?.value || '').trim();
+  const t2e = (document.getElementById('tutor2Email')?.value || '').trim();
+  if ((t2n && !t2e) || (!t2n && t2e)) { toast('Si indicas tutor 2, completa nombre y email.', 'warn'); return; }
+  const btn = document.getElementById('btnRad');
+   const datos = {
+    cedula1: document.getElementById('cedula1').value.trim(),
+    nombre1: document.getElementById('nombre1').value.trim(),
+    email1: document.getElementById('email1').value.trim(),
+    telefono1: document.getElementById('telefono1').value.trim(),
+    semestre1: document.getElementById('semestre1').value,
+    semillero1: document.getElementById('semillero1').value.trim(),
+    cedula2: numEst >= 2 ? document.getElementById('cedula2').value.trim() : '',
+    nombre2: numEst >= 2 ? document.getElementById('nombre2').value.trim() : '',
+    email2: numEst >= 2 ? document.getElementById('email2').value.trim() : '',
+    telefono2: numEst >= 2 ? document.getElementById('telefono2').value.trim() : '',
+    semestre2: numEst >= 2 ? document.getElementById('semestre2').value : '',
+    semillero2: numEst >= 2 ? document.getElementById('semillero2').value.trim() : '',
+    cedula3: numEst >= 3 ? document.getElementById('cedula3').value.trim() : '',
+    nombre3: numEst >= 3 ? document.getElementById('nombre3').value.trim() : '',
+    email3: numEst >= 3 ? document.getElementById('email3').value.trim() : '',
+    telefono3: numEst >= 3 ? document.getElementById('telefono3').value.trim() : '',
+    semestre3: numEst >= 3 ? document.getElementById('semestre3').value : '',
+    semillero3: numEst >= 3 ? document.getElementById('semillero3').value.trim() : '',
+    titulo: document.getElementById('titulo').value.trim(),
+    modalidad: document.getElementById('modalidad').value,
+    area: document.getElementById('area').value,
+    tutor1Nombre: (document.getElementById('tutor1Nombre')?.value || '').trim(),
+    tutor1Email: (document.getElementById('tutor1Email')?.value || '').trim(),
+    tutor1Telefono: (document.getElementById('tutor1Telefono')?.value || '').trim(),
+    tutor1Relacion: document.getElementById('tutor1Relacion')?.value || '',
+    tutor2Nombre: (document.getElementById('tutor2Nombre')?.value || '').trim(),
+    tutor2Email: (document.getElementById('tutor2Email')?.value || '').trim(),
+    tutor2Telefono: (document.getElementById('tutor2Telefono')?.value || '').trim(),
+    tutor2Relacion: document.getElementById('tutor2Relacion')?.value || '',
+    observaciones: document.getElementById('observaciones')?.value || ''
+  };
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Radicando...';
+  try {
+   const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'createRadicacion', datos, emailEstudiante: user.email, token: TOKEN }) });
+    const d = await res.json();
+    if (d.success) {
+      document.getElementById('numRadResult').textContent = d.numero;
+      document.getElementById('successBox').style.display = 'block';
+      document.getElementById('successBox').scrollIntoView({ behavior: 'smooth' });
+      btn.style.display = 'none';
+    } else if (redirigirSiSesionInvalida(d)) { return; }
+    else { toast('Error: ' + (d.error||'Intenta de nuevo'), 'err'); }
+  } catch(e) { toast('Error de conexión', 'err'); }
+  finally { btn.disabled = false; if (btn.style.display !== 'none') btn.innerHTML = '📋 Radicar proyecto'; }
+}
+
+// Función para actualizar contador general
+function actualizarContadorGeneral(radicacion) {
+  if (radicacion) {
+    document.getElementById('diasTotalRestantes').textContent = radicacion.diasRestantesTotales != null ? radicacion.diasRestantesTotales : 'N/A';
+    const pct = Number(radicacion.porcentajePlazo || 0);
+    document.getElementById('porcentajeAvance').textContent = pct + '%';
+    document.getElementById('barraProgreso').style.width = Math.min(100, Math.max(0, pct)) + '%';
+
+    const diasRest = Number(radicacion.diasRestantesTotales);
+    if (radicacion.vencidoTotal || diasRest <= 0) {
+      document.getElementById('alertaPlazo').innerHTML = '🚨 <strong>PLAZO VENCIDO</strong> — El director de programa ha sido notificado.';
+      document.getElementById('alertaPlazo').style.color = '#fca5a5';
+    } else if (diasRest < 30) {
+      document.getElementById('alertaPlazo').innerHTML = '⚠️ <strong>PLAZO CRÍTICO</strong> — Menos de 30 días hábiles.';
+      document.getElementById('alertaPlazo').style.color = '#fcd34d';
+    } else {
+      document.getElementById('alertaPlazo').innerHTML = '';
+    }
+  }
+}
+
+
+document.getElementById('modalDet').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalDet')) document.getElementById('modalDet').classList.remove('open');
+});
+</script>
+</body>
+</html>

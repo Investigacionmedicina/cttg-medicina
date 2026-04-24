@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validar Tutores — CTTG</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Outfit',sans-serif;background:#0a0f1a;color:#e2e8f0;min-height:100vh}
+  header{background:linear-gradient(135deg,#064e3b,#059669 80%,#1a3a5c);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+  .hdr-l{display:flex;align-items:center;gap:10px}
+  .logo{width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:18px;color:#fff}
+  .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
+  .hdr-r{display:flex;align-items:center;gap:10px}
+  .user-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
+  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  main{padding:24px 28px;max-width:760px;margin:0 auto}
+  .back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
+  .back:hover{color:#fff}
+  .info-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-bottom:18px}
+  .info-card .num{font-family:'DM Mono',monospace;font-size:12px;color:#34d399;font-weight:600;margin-bottom:4px}
+  .info-card .titulo{font-size:15px;font-weight:600;color:#fff;margin-bottom:6px}
+  .info-card .meta{font-size:12px;color:rgba(255,255,255,.4)}
+  .form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:24px;margin-bottom:18px}
+  .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .form-card h3 .dot{width:7px;height:7px;background:#34d399;border-radius:50%}
+  .form-card p{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+  .fg{display:flex;flex-direction:column;gap:5px}
+  .fg.full{grid-column:1/-1}
+  label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45)}
+  input,select,textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
+  input::placeholder{color:rgba(255,255,255,.25)}
+  input:focus,select:focus,textarea:focus{border-color:rgba(52,211,153,.6);background:rgba(255,255,255,.1)}
+  select option{background:#0a0f1a}
+  textarea{min-height:65px;resize:vertical}
+  .info-box{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#6ee7b7;margin-top:8px}
+  .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(16,185,129,.4);transition:all .2s}
+  .btn-action:hover{transform:translateY(-1px)}
+  .btn-action:disabled{opacity:.6;transform:none;cursor:not-allowed}
+  .btn-sec{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:12px 20px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
+  .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
+  @media(max-width:600px){main{padding:16px}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-l">
+    <div class="logo">👩‍💼</div>
+    <div><h1>CTTG Medicina · Coordinación</h1><p>Validar Tutores</p></div>
+  </div>
+  <div class="hdr-r">
+    <div class="user-chip" id="userChip">—</div>
+    <button class="btn-out" onclick="salir()">Salir</button>
+  </div>
+</header>
+
+<main>
+  <a href="coordinadora_dashboard.html" class="back">← Volver al panel</a>
+
+  <div id="loadWrap" class="empty">Cargando radicación...</div>
+
+  <div id="contenido" style="display:none">
+    <div class="info-card">
+      <div class="num" id="infoNumero">—</div>
+      <div class="titulo" id="infoTitulo">—</div>
+      <div class="meta" id="infoEst">—</div>
+    </div>
+
+    <!-- TUTOR 1 -->
+    <div class="form-card">
+      <h3><span class="dot"></span>Tutor 1</h3>
+      <p>Valida o edita los datos del tutor principal.</p>
+      <div class="form-grid">
+        <div class="fg full">
+          <label>Seleccionar desde catálogo</label>
+          <select id="t1Catalogo" onchange="aplicarTutorCatalogo(1)">
+            <option value="">— Seleccionar tutor guardado —</option>
+          </select>
+        </div>
+        <div class="fg"><label>Nombre *</label><input id="t1Nombre" placeholder="Dr./Dra."></div>
+        <div class="fg"><label>Email *</label><input type="email" id="t1Email" placeholder="tutor@usc.edu.co"></div>
+        <div class="fg"><label>Teléfono</label><input id="t1Telefono" placeholder="300 000 0000"></div>
+        <div class="fg"><label>Vínculo contractual USC</label>
+          <select id="t1Relacion">
+            <option value="Si">Si</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- TUTOR 2 -->
+    <div class="form-card">
+      <h3><span class="dot"></span>Tutor 2 (Opcional)</h3>
+      <p>Si aplica, registra o edita el segundo tutor.</p>
+      <div class="form-grid">
+        <div class="fg full">
+          <label>Seleccionar desde catálogo</label>
+          <select id="t2Catalogo" onchange="aplicarTutorCatalogo(2)">
+            <option value="">— Seleccionar tutor guardado —</option>
+          </select>
+        </div>
+        <div class="fg"><label>Nombre</label><input id="t2Nombre" placeholder="(opcional)"></div>
+        <div class="fg"><label>Email</label><input type="email" id="t2Email" placeholder="(opcional)"></div>
+        <div class="fg"><label>Teléfono</label><input id="t2Telefono" placeholder="(opcional)"></div>
+        <div class="fg"><label>Vínculo contractual USC</label>
+          <select id="t2Relacion">
+            <option value="">— Sin tutor 2 —</option>
+            <option value="Si">Si</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- OBSERVACIONES -->
+    <div class="form-card">
+      <h3><span class="dot"></span>Observaciones</h3>
+      <p>Notas internas del comité (no se envían al estudiante).</p>
+      <textarea id="observaciones" placeholder="Observaciones del comité sobre los tutores..."></textarea>
+    </div>
+
+    <!-- DECISIÓN — FIX: eliminados fecha de comité y evaluador -->
+    <div class="form-card">
+      <h3><span class="dot"></span>Decisión sobre tutores</h3>
+      <p>Avala los tutores para que el estudiante pueda continuar con las actas de asesoría, o devuelve la propuesta.</p>
+      <div class="form-grid">
+        <div class="fg full">
+          <label>Decisión *</label>
+          <select id="decisionTutores">
+            <option value="">Seleccionar decisión...</option>
+            <option value="revision">✅ Avalar tutores</option>
+            <option value="devolver">↩️ Devolver propuesta</option>
+          </select>
+        </div>
+      </div>
+      <div class="info-box">
+        📌 La fecha del comité técnico se asigna cuando el estudiante suba el protocolo (Fase 2).
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-action" id="btnGuardar" onclick="guardar()">✅ Avalar tutores y notificar</button>
+      <button class="btn-sec" onclick="window.location.href='coordinadora_dashboard.html'">Cancelar</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+let admin = null;
+let rowIndex = null;
+let radicacion = null;
+let catalogoTutores = [];
+
+(function(){
+  admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
+  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  document.getElementById('userChip').textContent = admin.nombre || admin.email;
+  const params = new URLSearchParams(window.location.search);
+  const rowParam = params.get('row');
+  if (!rowParam || !/^\d+$/.test(rowParam)) {
+    document.getElementById('loadWrap').textContent = 'Parámetro de fila inválido.';
+    return;
+  }
+  rowIndex = Number(rowParam);
+  cargarDatos();
+  cargarCatalogoTutores();
+})();
+
+function salir() { localStorage.removeItem('cttg_admin'); window.location.href = 'index.html'; }
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function cargarCatalogoTutores() {
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getTutores', token: localStorage.getItem('cttg_token') || '' }) });
+    const d = await res.json();
+    if (!d.success || !Array.isArray(d.tutores)) return;
+    catalogoTutores = d.tutores.map((t, i) => ({
+      id: String(t.id || i + 1),
+      nombre: String(t.nombre || '').trim(),
+      email: String(t.email || '').trim(),
+      telefono: String(t.telefono || '').trim()
+    })).filter(t => t.nombre || t.email);
+    poblarSelectCatalogo('t1Catalogo');
+    poblarSelectCatalogo('t2Catalogo');
+  } catch(e) {}
+}
+
+function poblarSelectCatalogo(id) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  sel.innerHTML = ['<option value="">— Seleccionar tutor guardado —</option>']
+    .concat(catalogoTutores.map(t => `<option value="${t.id}">${t.nombre} · ${t.email}</option>`))
+    .join('');
+}
+
+function aplicarTutorCatalogo(num) {
+  const sel = document.getElementById(num === 1 ? 't1Catalogo' : 't2Catalogo');
+  const t = catalogoTutores.find(x => x.id === sel.value);
+  if (!t) return;
+  document.getElementById(num === 1 ? 't1Nombre' : 't2Nombre').value    = t.nombre   || '';
+  document.getElementById(num === 1 ? 't1Email'  : 't2Email').value     = t.email    || '';
+  document.getElementById(num === 1 ? 't1Telefono': 't2Telefono').value = t.telefono || '';
+}
+
+async function cargarDatos() {
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1', token: localStorage.getItem('cttg_token') || '' }) });
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error);
+    radicacion = d.radicaciones.find(r => Number(r.rowIndex) === rowIndex);
+    if (!radicacion) { document.getElementById('loadWrap').textContent = 'Radicación no encontrada.'; return; }
+    poblarFormulario();
+  } catch(e) {
+    document.getElementById('loadWrap').textContent = 'Error al cargar: ' + e.message;
+  }
+}
+
+function poblarFormulario() {
+  const r = radicacion;
+  document.getElementById('infoNumero').textContent = '📋 ' + r.numero;
+  document.getElementById('infoTitulo').textContent = r.titulo || 'Sin título';
+  const est = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(' · ');
+  document.getElementById('infoEst').textContent = '👤 ' + est;
+
+  document.getElementById('t1Nombre').value   = r.tutor1Nombre    || '';
+  document.getElementById('t1Email').value    = r.tutor1Email     || '';
+  document.getElementById('t1Telefono').value = r.tutor1Telefono  || '';
+  document.getElementById('t1Relacion').value = (r.tutor1Relacion === 'Si' || r.tutor1Relacion === 'No') ? r.tutor1Relacion : 'No';
+  document.getElementById('t2Nombre').value   = r.tutor2Nombre    || '';
+  document.getElementById('t2Email').value    = r.tutor2Email     || '';
+  document.getElementById('t2Telefono').value = r.tutor2Telefono  || '';
+  document.getElementById('t2Relacion').value = (r.tutor2Relacion === 'Si' || r.tutor2Relacion === 'No') ? r.tutor2Relacion : '';
+  document.getElementById('observaciones').value = r.notas || '';
+
+  document.getElementById('loadWrap').style.display  = 'none';
+  document.getElementById('contenido').style.display = 'block';
+}
+
+async function guardar() {
+  const t1Nombre  = document.getElementById('t1Nombre').value.trim();
+  const t1Email   = document.getElementById('t1Email').value.trim();
+  const t1Vinculo = document.getElementById('t1Relacion').value;
+  const decision  = document.getElementById('decisionTutores').value;
+  const obsBase   = document.getElementById('observaciones').value.trim();
+
+  if (!t1Nombre || !t1Email) { toast('Nombre y email del Tutor 1 son obligatorios', 'warn'); return; }
+  if (!t1Vinculo)            { toast('Selecciona vínculo contractual USC para Tutor 1', 'warn'); return; }
+  if (!decision)             { toast('Selecciona la decisión sobre los tutores', 'warn'); return; }
+
+  const tutor1 = {
+    nombre:   t1Nombre,
+    email:    t1Email,
+    telefono: document.getElementById('t1Telefono').value.trim(),
+    vinculo:  t1Vinculo,
+    relacion: t1Vinculo
+  };
+
+  const t2Nombre  = document.getElementById('t2Nombre').value.trim();
+  const t2Vinculo = document.getElementById('t2Relacion').value || '';
+  const tutor2    = t2Nombre ? {
+    nombre:   t2Nombre,
+    email:    document.getElementById('t2Email').value.trim(),
+    telefono: document.getElementById('t2Telefono').value.trim(),
+    vinculo:  t2Vinculo,
+    relacion: t2Vinculo
+  } : null;
+
+  const btn = document.getElementById('btnGuardar');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+
+  try {
+    const estudiantes = [
+      {
+        nombre: String(radicacion.nombre1 || '').trim(),
+        cedula: String(radicacion.cedula1 || '').trim(),
+        telefono: String(radicacion.telefono1 || '').trim(),
+        email: String(radicacion.email1 || '').trim()
+      },
+      {
+        nombre: String(radicacion.nombre2 || '').trim(),
+        cedula: String(radicacion.cedula2 || '').trim(),
+        telefono: String(radicacion.telefono2 || '').trim(),
+        email: String(radicacion.email2 || '').trim()
+      },
+      {
+        nombre: String(radicacion.nombre3 || '').trim(),
+        cedula: String(radicacion.cedula3 || '').trim(),
+        telefono: String(radicacion.telefono3 || '').trim(),
+        email: String(radicacion.email3 || '').trim()
+      }
+    ].filter(e => e.nombre || e.email || e.telefono || e.cedula);
+
+    const estudiantesTxt = estudiantes.map((e, i) =>
+      `Estudiante ${i + 1}: ${e.nombre || 'Sin nombre'} · Cédula: ${e.cedula || 'N/D'} · Tel: ${e.telefono || 'N/D'} · Email: ${e.email || 'N/D'}`
+    ).join('\n');
+
+    const notificacionTutores = {
+      asunto: decision === 'revision'
+        ? `CTTG Medicina | Aval tutor(es) radicación ${radicacion.numero || rowIndex}`
+        : `CTTG Medicina | Ajustes en propuesta de tutor(es) ${radicacion.numero || rowIndex}`,
+      mensaje:
+`Estimado(a) docente tutor(a),
+
+La Coordinación del CTTG Medicina registró la siguiente gestión de tutores:
+- Radicación: ${radicacion.numero || 'N/D'}
+- Proyecto: ${radicacion.titulo || 'Sin título'}
+- Decisión: ${decision === 'revision' ? 'Pasar a revisión' : 'Devolver propuesta'}
+
+
+Datos de contacto de estudiante(s):
+${estudiantesTxt}
+
+Este mensaje fue generado automáticamente por el sistema CTTG.`,
+      estudiantes
+    };
+
+    // 1. Guardar tutores
+    const resTutores = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'validarTutores',
+      rowIndex, tutor1, tutor2,
+     notificacionTutores,
+      observaciones: obsBase,
+      emailCoord: admin.email,
+      token: localStorage.getItem('cttg_token') || ''
+    })});
+    const dTutores = await resTutores.json();
+    if (!dTutores.success) throw new Error(dTutores.error);
+
+    // 2. Actualizar estado
+    const estado = decision === 'revision' ? 'Tutores Avalados' : 'Devuelto';
+    const resEstado = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'updateEstado',
+      rowIndex,
+      estado,
+      notas: obsBase || '',
+      emailCoord: admin.email,
+      token: localStorage.getItem('cttg_token') || ''
+    })});
+    const dEstado = await resEstado.json();
+    if (!dEstado.success) throw new Error(dEstado.error);
+
+    toast(decision === 'revision' ? 'Tutores avalados ✓ El estudiante puede cargar sus actas de asesoría' : 'Propuesta devuelta ✓', 'ok');
+    setTimeout(() => window.location.href = 'coordinadora_dashboard.html', 2000);
+  } catch(e) {
+    toast('Error: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✅ Avalar tutores y notificar';
+  }
+}
+</script>
+</body>
+</html>

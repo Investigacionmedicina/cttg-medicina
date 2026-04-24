@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sustentación Fase 3 — CTTG</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Outfit',sans-serif;background:#0f0f1a;color:#e2e8f0;min-height:100vh}
+  header{background:linear-gradient(135deg,#1a0533,#2d1b69);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+  .hdr-l{display:flex;align-items:center;gap:10px}
+  .logo{width:38px;height:38px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
+  .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
+  .hdr-r{display:flex;align-items:center;gap:10px}
+  .user-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
+  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  main{padding:24px 28px;max-width:900px;margin:0 auto}
+  .back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
+  .back:hover{color:#fff}
+  .form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:24px;margin-bottom:18px}
+  .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .form-card h3 .dot{width:7px;height:7px;background:#a78bfa;border-radius:50%}
+  .form-card p{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px}
+  .pasos{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+  .paso{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px}
+  .paso-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+  .paso-txt strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
+  .paso-txt span{font-size:12px;color:rgba(255,255,255,.4)}
+  .paso.done .paso-num{background:linear-gradient(135deg,#059669,#10b981)}
+  .btn-forms{display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;width:100%;justify-content:center;margin-bottom:14px;transition:all .2s}
+  .btn-forms:hover{transform:translateY(-1px)}
+  .btn-rad{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:all .2s;width:100%}
+  .btn-rad:hover{transform:translateY(-1px)}
+  .btn-rad:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .sep{display:flex;align-items:center;gap:10px;margin:16px 0;color:rgba(255,255,255,.2);font-size:12px}
+  .sep::before,.sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
+  .success-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:20px;text-align:center;display:none;margin-top:16px}
+  .error-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:20px;text-align:center;display:none;margin-top:16px}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.err{background:rgba(239,68,68,.9);color:#fff}
+  .fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+  .fg.full{grid-column:1/-1}
+  .sec-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);font-weight:600;padding:10px 0 6px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:4px;grid-column:1/-1}
+  label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45)}
+  input,textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
+  input::placeholder,textarea::placeholder{color:rgba(255,255,255,.25)}
+  input:focus,textarea:focus{border-color:rgba(102,126,234,.6);background:rgba(255,255,255,.1)}
+  textarea{min-height:65px;resize:vertical}
+  .checkbox-group{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px}
+  .checkbox-item{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .checkbox-item:last-child{margin-bottom:0}
+  .checkbox-item input{width:auto}
+  .checkbox-item label{margin-bottom:0}
+  
+  /* TABS */
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:4px;width:fit-content}
+  .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+  .tab.on{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 2px 10px rgba(102,126,234,.4)}
+  .panel{display:none}.panel.on{display:block}
+  
+  /* RESUMEN CARDS */
+  .resumen{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);border-radius:12px;padding:20px;margin-bottom:16px}
+  .resumen h3{color:#fff;margin-bottom:14px;font-family:'DM Serif Display',serif;font-size:16px}
+  .resumen-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .res-card{background:rgba(255,255,255,.05);border-radius:10px;padding:14px;text-align:center}
+  .res-num{font-size:24px;font-weight:700;margin-bottom:4px}
+  .res-label{font-size:11px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+  
+  /* TABLA */
+  .tbl-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto}
+  table{width:100%;border-collapse:collapse;min-width:700px}
+  thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
+  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;white-space:nowrap}
+  td{padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  
+  .num-rad{font-family:'DM Mono',monospace;font-size:12px;color:#a78bfa;font-weight:600}
+  .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700}
+  .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
+  .b-comite{background:rgba(167,139,250,.2);color:#c4b5fd}
+  .b-aprobado{background:rgba(16,185,129,.2);color:#6ee7b7}
+  
+  .btn-det{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);color:#a5b4fc;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
+  .btn-det:hover{background:rgba(102,126,234,.25)}
+  
+  .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-l">
+    <div class="logo">🎓</div>
+    <div><h1>CTTG Medicina</h1><p>Sustentación Fase 3</p></div>
+  </div>
+  <div class="hdr-r">
+    <div class="user-chip" id="userChip">—</div>
+    <button class="btn-out" onclick="salir()">Salir</button>
+  </div>
+</header>
+
+<main>
+  <a href="estudiante_dashboard.html" class="back">← Volver al dashboard</a>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab('mis-sust',this)">📋 Mis Solicitudes</button>
+    <button class="tab" onclick="switchTab('nueva',this)">➕ Nueva Sustentación</button>
+  </div>
+
+  <!-- PANEL MIS SOLICITUDES -->
+  <div class="panel on" id="pan-mis-sust">
+    <div class="resumen">
+      <h3>📊 Resumen de mis solicitudes</h3>
+      <div class="resumen-cards">
+        <div class="res-card">
+          <div class="res-num" style="color:#a78bfa" id="countTotal">—</div>
+          <div class="res-label">Total</div>
+        </div>
+        <div class="res-card">
+          <div class="res-num" style="color:#6ee7b7" id="countAprobadas">—</div>
+          <div class="res-label">Sustentadas</div>
+        </div>
+        <div class="res-card">
+          <div class="res-num" style="color:#fcd34d" id="countPendientes">—</div>
+          <div class="res-label">Pendientes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Fecha Solicitud</th>
+          <th>N° Radicación</th>
+          <th>% Turnitin</th>
+          <th>Estado</th>
+          <th>Acción</th>
+        </tr></thead>
+        <tbody id="tbodySust">
+          <tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando solicitudes...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL NUEVA SOLICITUD -->
+  <div class="panel" id="pan-nueva">
+
+  <div class="form-card">
+    <h3><span class="dot"></span>Solicitar Sustentación</h3>
+    <p>Carga todos los documentos requeridos en el formulario y completa los datos de tu sustentación.</p>
+
+    <div class="pasos">
+      <div class="paso" id="paso1">
+        <div class="paso-num">1</div>
+        <div class="paso-txt">
+          <strong>Abre el formulario de carga</strong>
+          <span>Se abrirá en una nueva pestaña. Carga todos los documentos y datos requeridos.</span>
+        </div>
+      </div>
+      <div class="paso" id="paso2">
+        <div class="paso-num">2</div>
+        <div class="paso-txt">
+          <strong>Adjunta los documentos obligatorios</strong>
+          <span>Anexo A7, Artículo, Guía Autores, Aval CCEB, Turnitin. Máximo 100MB cada uno.</span>
+        </div>
+      </div>
+      <div class="paso" id="paso3">
+        <div class="paso-num">3</div>
+        <div class="paso-txt">
+          <strong>Vuelve aquí y confirma el envío</strong>
+          <span>Completa los datos faltantes y haz clic en "Solicitar Sustentación".</span>
+        </div>
+      </div>
+    </div>
+
+    <a href="https://forms.cloud.microsoft/r/AHxLxkDDqw?origin=lprLink" target="_blank" class="btn-forms" onclick="marcarPasos()">
+      📝 Abrir formulario de carga ↗
+    </a>
+
+    <div class="sep">una vez enviado el formulario</div>
+
+    <div class="form-card" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);padding:20px;margin-bottom:0">
+      <h3><span class="dot"></span>Confirma tu solicitud</h3>
+
+      <div style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:16px;line-height:1.6">
+        <strong style="color:#a5b4fc">📋 Documentación requerida:</strong><br>
+        ✓ Anexo A7 (PDF)<br>
+        ✓ Artículo (PDF)<br>
+        ✓ Guía Autores (PDF)<br>
+        ✓ Aval CCEB (PDF)<br>
+        ✓ Turnitin (PDF)<br>
+        <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Máximo 100MB cada archivo</span>
+      </div>
+
+      <div class="checkbox-group">
+        <label style="margin-bottom:12px;color:rgba(255,255,255,.6)">🔍 Confirma qué cargaste en el formulario *</label>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check1">
+          <label for="check1">Cargué Anexo A7</label>
+        </div>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check2">
+          <label for="check2">Cargué Artículo</label>
+        </div>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check3">
+          <label for="check3">Cargué Guía Autores</label>
+        </div>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check4">
+          <label for="check4">Cargué Aval CCEB</label>
+        </div>
+        
+        <div class="checkbox-item">
+          <input type="checkbox" id="check5">
+          <label for="check5">Cargué Turnitin</label>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="sec-label">📊 Turnitin</div>
+        <div class="fg">
+          <label>% Turnitin *</label>
+          <input type="number" id="porcentajeTurnitin" placeholder="Ej: 15" min="0" max="100">
+        </div>
+
+        <div class="sec-label">👨‍🏫 Jurado 1 Temático (Opcional)</div>
+        <div class="fg"><label>Nombre</label><input id="jurado1Nombre" placeholder="Dr./Dra. (opcional)"></div>
+        <div class="fg"><label>Email</label><input type="email" id="jurado1Email" placeholder="jurado@usc.edu.co (opcional)"></div>
+        <div class="fg"><label>Teléfono</label><input id="jurado1Telefono" placeholder="300 000 0000 (opcional)"></div>
+
+        <div class="sec-label">👨‍🏫 Jurado 2 Metodológico (Opcional)</div>
+        <div class="fg"><label>Nombre</label><input id="jurado2Nombre" placeholder="Dr./Dra. (opcional)"></div>
+        <div class="fg"><label>Email</label><input type="email" id="jurado2Email" placeholder="jurado@usc.edu.co (opcional)"></div>
+        <div class="fg"><label>Teléfono</label><input id="jurado2Telefono" placeholder="300 000 0000 (opcional)"></div>
+      </div>
+
+      <button class="btn-rad" id="btnSolicitar" onclick="solicitarSustentacion()">🎓 Solicitar Sustentación</button>
+
+      <div class="success-box" id="successBox">
+        <div style="font-size:28px;margin-bottom:8px">🎉</div>
+        <div style="font-size:15px;font-weight:600;color:#fff">¡Solicitud enviada exitosamente!</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará tu solicitud y te notificará cuando asigne los jurados y la fecha de sustentación.</div>
+        <button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver al dashboard</button>
+      </div>
+
+      <div class="error-box" id="errorBox">
+        <div style="font-size:28px;margin-bottom:8px">❌</div>
+        <div style="font-size:15px;font-weight:600;color:#fca5a5" id="errorMsg">Error en la solicitud</div>
+        <div style="font-size:12px;color:rgba(252,165,165,.8);margin-top:6px" id="errorDetail">Verifica los documentos cargados y vuelve a intentar.</div>
+        <button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px;background:rgba(239,68,68,.8)" onclick="reintentar()">Reintentar</button>
+      </div>
+   </div>
+  </div>
+  </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+const TOKEN = localStorage.getItem('cttg_token') || '';
+let user = null;
+
+let numeroRadicacionGlobal = '';
+
+(function init() {
+  user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
+  if (!user || user.rol !== 'estudiante' || !TOKEN) { window.location.href = 'estudiante_login.html'; return; }
+  document.getElementById('userChip').textContent = user.nombre || user.email;
+  cargarMisSolicitudes();
+  fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN }) })
+    .then(r => r.json())
+    .then(d => {
+      if (redirigirSiSesionInvalida(d)) return;
+      if (d.success && d.radicaciones.length > 0) numeroRadicacionGlobal = d.radicaciones[0].numero || '';
+    });
+})();
+
+async function salir() {
+  const t = localStorage.getItem('cttg_token');
+  localStorage.removeItem('cttg_user');
+  localStorage.removeItem('cttg_token');
+  if (t) {
+    try { await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'logout', token: t }) }); } catch (e) {}
+  }
+  window.location.href = 'index.html';
+}
+function toast(msg, type) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(() => t.classList.remove('show'), 2800); }
+
+function redirigirSiSesionInvalida(resp) {
+  if (resp && resp.success) return false;
+  const msg = String((resp && resp.error) || '');
+  if (/sesión|sesion|inválid|invalid|expirad|expired|autorizad|no autorizado|token/i.test(msg)) {
+    localStorage.removeItem('cttg_user');
+    localStorage.removeItem('cttg_token');
+    window.location.href = 'estudiante_login.html';
+    return true;
+  }
+  return false;
+}
+
+function marcarPasos() { setTimeout(() => { document.getElementById('paso1').classList.add('done'); document.getElementById('paso2').classList.add('done'); }, 500); }
+
+async function solicitarSustentacion() {
+  const check1 = document.getElementById('check1').checked;
+  const check2 = document.getElementById('check2').checked;
+  const check3 = document.getElementById('check3').checked;
+  const check4 = document.getElementById('check4').checked;
+  const check5 = document.getElementById('check5').checked;
+  const turnitin = document.getElementById('porcentajeTurnitin').value.trim();
+
+  if (!check1 || !check2 || !check3 || !check4 || !check5) {
+    document.getElementById('errorBox').style.display = 'block';
+    document.getElementById('errorMsg').textContent = '❌ Faltan documentos';
+    document.getElementById('errorDetail').textContent = 'Debes confirmar que cargaste TODOS los 5 documentos.';
+    return;
+  }
+
+  if (!turnitin || isNaN(parseFloat(turnitin))) {
+    toast('Ingresa un porcentaje válido de Turnitin', 'warn');
+    return;
+  }
+
+  const numeroRadicacion = numeroRadicacionGlobal;
+  if (!numeroRadicacion) { toast('No se encontró tu número de radicación', 'err'); return; }
+ 
+  const btn = document.getElementById('btnSolicitar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
+
+  try {
+    const res = await fetch(URL_APP, { 
+      method: 'POST', 
+      body: JSON.stringify({
+        action: 'crearFase3',
+        numeroRadicacion: numeroRadicacion,
+        emailEstudiante: user.email,
+        porcentajeTurnitin: parseFloat(turnitin),
+       anexoA7: document.getElementById('check1').checked ? 'SÍ' : 'NO',
+        articulo: document.getElementById('check2').checked ? 'SÍ' : 'NO',
+        guiaAutores: document.getElementById('check3').checked ? 'SÍ' : 'NO',
+        avalCCEB: document.getElementById('check4').checked ? 'SÍ' : 'NO',
+        turnitinDoc: document.getElementById('check5').checked ? 'SÍ' : 'NO',
+        jurado1Nombre: document.getElementById('jurado1Nombre').value.trim(),
+        jurado1Email: document.getElementById('jurado1Email').value.trim(),
+        jurado1Telefono: document.getElementById('jurado1Telefono').value.trim(),
+        jurado2Nombre: document.getElementById('jurado2Nombre').value.trim(),
+        jurado2Email: document.getElementById('jurado2Email').value.trim(),
+        jurado2Telefono: document.getElementById('jurado2Telefono').value.trim(),
+        token: TOKEN
+      })
+    });
+    const d = await res.json();
+    if (d.success) {
+      document.getElementById('successBox').style.display = 'block';
+      document.getElementById('errorBox').style.display = 'none';
+      btn.style.display = 'none';
+      document.getElementById('paso3').classList.add('done');
+    } else if (redirigirSiSesionInvalida(d)) {
+      return;
+    } else {
+      document.getElementById('errorBox').style.display = 'block';
+      document.getElementById('errorMsg').textContent = '❌ ' + (d.error || 'Error');
+      btn.disabled = false;
+      btn.innerHTML = '🎓 Solicitar Sustentación';
+    }
+  } catch(e) {
+    document.getElementById('errorBox').style.display = 'block';
+    document.getElementById('errorMsg').textContent = '❌ Error: ' + e.message;
+    btn.disabled = false;
+    btn.innerHTML = '🎓 Solicitar Sustentación';
+  }
+}
+
+function reintentar() {
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('successBox').style.display = 'none';
+  const btn = document.getElementById('btnSolicitar');
+  btn.style.display = 'block';
+  btn.disabled = false;
+  btn.innerHTML = '🎓 Solicitar Sustentación';
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  document.getElementById('pan-' + name).classList.add('on');
+  btn.classList.add('on');
+  if (name === 'mis-sust') cargarMisSolicitudes();
+}
+
+async function cargarMisSolicitudes() {
+  const tbody = document.getElementById('tbodySust');
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: TOKEN }) });
+    const d = await res.json();
+    if (redirigirSiSesionInvalida(d)) return;
+    if (!d.success) { tbody.innerHTML = '<tr><td colspan="5" class="empty">Error cargando datos.</td></tr>'; return; }
+    
+    const email = user.email.toLowerCase();
+    const misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante && s.emailEstudiante.toLowerCase() === email);
+    
+    if (!misSolicitudes.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin solicitudes registradas aún.</td></tr>';
+      document.getElementById('countTotal').textContent = '0';
+      document.getElementById('countAprobadas').textContent = '0';
+      document.getElementById('countPendientes').textContent = '0';
+      return;
+    }
+    
+    document.getElementById('countTotal').textContent = misSolicitudes.length;
+    document.getElementById('countAprobadas').textContent = misSolicitudes.filter(s => s.nota).length;
+    document.getElementById('countPendientes').textContent = misSolicitudes.filter(s => !s.nota).length;
+    
+    window._solicitudes = misSolicitudes;
+    tbody.innerHTML = misSolicitudes.map((s, idx) => {
+      const estado = s.nota ? 'Sustentado' : (s.fechaSustentacion ? 'Programado' : 'En revisión');
+      const badge = s.nota ? 'b-aprobado' : (s.fechaSustentacion ? 'b-comite' : 'b-pend');
+      const ico = s.nota ? '✅' : (s.fechaSustentacion ? '📅' : '⏳');
+      return `<tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td><td><div class="num-rad">${s.numero}</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td><td><span class="badge ${badge}">${ico} ${estado}</span></td><td><button class="btn-det" onclick="verDetalle(window._solicitudes[${idx}])">👁 Ver</button></td></tr>`;
+    }).join('');
+    
+    const sustentada = misSolicitudes.find(s => s.nota);
+     if (sustentada) {
+      document.querySelector('.form-card').style.display = 'none';
+      document.getElementById('successBox').innerHTML = `<div style="font-size:28px;margin-bottom:8px">🎓</div><div style="font-size:15px;font-weight:600;color:#fff">Sustentación Completada</div><div style="font-size:24px;font-weight:700;color:#6ee7b7;margin:12px 0">Nota: ${sustentada.nota}</div><div style="font-size:12px;color:rgba(255,255,255,.5)">¡Felicitaciones!</div><button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver</button>`;
+      document.getElementById('successBox').style.display = 'block';
+    }
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Error al cargar.</td></tr>';
+  }
+}
+
+function verDetalle(s) {
+  const estado = s.nota ? (parseFloat(s.nota) >= 3 ? 'Sustentación Aprobada' : 'Sustentación Reprobada') : (s.fechaSustentacion && s.fechaSustentacion !== '—' ? 'Sustentación Programada' : 'Sustentación Radicada');
+  const html = `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.remove()">
+      <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;max-width:420px;width:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3 style="font-family:'DM Serif Display',serif;color:#fff;font-size:16px">📋 ${s.numero}</h3>
+          <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer">✕</button>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;font-size:13px">
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Estado</span><span style="color:#a78bfa;font-weight:600">${estado}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Fecha</span><span style="color:#fff">${formatearFecha(s.fechaSustentacion) || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Hora</span><span style="color:#fff">${s.horaSustentacion || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Lugar</span><span style="color:#fff">${s.observaciones || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Jurado 1</span><span style="color:#fff">${s.jurado1Nombre || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Jurado 2</span><span style="color:#fff">${s.jurado2Nombre || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">% Turnitin</span><span style="color:#fff">${s.pctTurnitin || '—'}%</span></div>
+          ${s.nota ? `<div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Nota</span><span style="color:#6ee7b7;font-weight:700">${s.nota}</span></div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+function volver() { window.location.href = 'estudiante_dashboard.html'; }
+
+function formatearFecha(s) {
+  if (!s) return '—';
+  const p = String(s).split('T')[0].split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
+}
+</script>
+</body>
+</html>
