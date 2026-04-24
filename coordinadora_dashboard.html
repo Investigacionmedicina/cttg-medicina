@@ -132,6 +132,7 @@
     <button class="main-tab" id="tabTutores" onclick="switchPanel('tutores', this)">👨‍🏫 Tutores</button>
     <button class="main-tab" id="tabAlertas" onclick="switchPanel('alertas', this)">🚨 Alertas <span class="badge-count" style="display:none"></span></button>
     <button class="main-tab" id="tabProtocolo" onclick="switchPanel('protocolo', this)">📖 Protocolo</button>
+    <button class="main-tab" id="tabFase3" onclick="switchPanel('fase3', this)">🎓 Sustentación</button>
   <button class="main-tab" id="tabComite" onclick="switchPanel('comite', this)">📅 Comité Técnico</button>
   <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
     <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
@@ -372,25 +373,26 @@
   <!-- PANEL SEGUIMIENTO -->
   <div class="panel" id="pan-seguimiento">
     <div class="filters">
-      <input id="searchSeguimiento" placeholder="🔍 Buscar número radicación..." oninput="renderSeguimiento()">
+      <input id="searchSeguimiento" placeholder="🔍 Buscar número radicación (ej: CTTG-2026-0034)..." oninput="cargarSeguimiento()">
       <select id="fFaseSeg" onchange="renderSeguimiento()">
-        <option value="">Todas las fases</option>
-        <option value="Radicado">Radicado</option>
-        <option value="Tutores Avalados">Tutores Avalados</option>
-        <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
-        <option value="Pendiente Comité">Pendiente Comité</option>
-        <option value="Aprobado">Aprobado</option>
-        <option value="Sustentado">Sustentado</option>
+        <option value="">Todos los módulos</option>
+        <option value="AUTH">AUTH</option>
+        <option value="FASE1">FASE1</option>
+        <option value="ACTAS">ACTAS</option>
+        <option value="FASE2">FASE2</option>
+        <option value="SUSTENTACION">SUSTENTACIÓN</option>
+        <option value="SISTEMA">SISTEMA</option>
+        <option value="GENERAL">GENERAL</option>
       </select>
       <button class="btn" onclick="cargarSeguimiento()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Fase Actual</th><th>% Avance</th><th>Días Transcurridos</th><th>Días Restantes</th><th>Acciones</th>
+          <th>Fecha/Hora</th><th>Módulo</th><th>Acción</th><th>N° Radicación</th><th>Actor</th><th>Detalle</th>
         </tr></thead>
         <tbody id="tbodySeguimiento">
-          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando seguimiento...</td></tr>
+          <tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>
         </tbody>
       </table>
     </div>
@@ -399,6 +401,12 @@
   <div class="panel" id="pan-comite">
     <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
     <iframe src="comite_tecnico.html" style="width:100%;height:800px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
+  </div>
+
+  <!-- PANEL SUSTENTACIÓN -->
+  <div class="panel" id="pan-fase3">
+    <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">🎓 Sustentación</h2>
+    <iframe src="coordinadora_fase3.html" style="width:100%;height:900px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
   </div>
 
   <!-- PANEL FILTROS DINÁMICOS -->
@@ -1353,45 +1361,50 @@ async function guardarAvaloProtocolo() {
 // ════════════════════════════════════════════════════════════
 let seguimientos = [];
 async function cargarSeguimiento() {
-  seguimientos = radicaciones.map(r => ({
-    numero: r.numero,
-    estudiantes: [r.nombre1, r.nombre2, r.nombre3].filter(Boolean),
-    estado: r.estado,
-    fechaRad: r.fechaRadicacion,
-    fechaAprob: r.fechaAprobacion,
-    rowIndex: r.rowIndex,
-    diasTranscurridos: r.diasTranscurridos || 0,
-    diasRestantes: r.diasRestantes || 0,
-    porcentajeAvance: r.porcentajeAvance || 0
-  }));
-  renderSeguimiento();
+  const q = (document.getElementById('searchSeguimiento').value || '').trim().toUpperCase();
+  const tbody = document.getElementById('tbodySeguimiento');
+  tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>';
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
+      action: 'getTrazabilidad',
+      numeroRadicacion: q || '',
+      limit: 300,
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error || 'No fue posible cargar trazabilidad');
+    seguimientos = d.registros || [];
+    renderSeguimiento();
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Error cargando trazabilidad.</td></tr>';
+    toast('Error cargando trazabilidad: ' + e.message, 'err');
+  }
 }
 
 function renderSeguimiento() {
   const q  = (document.getElementById('searchSeguimiento').value || '').toLowerCase();
   const fF = document.getElementById('fFaseSeg').value;
   const filtered = seguimientos.filter(s => {
-    const txt = (s.numero || '').toLowerCase();
-    return (!q || txt.includes(q)) && (!fF || s.estado === fF);
+    const txt = [s.numeroRadicacion, s.accion, s.email, s.detalle, s.modulo].join(' ').toLowerCase();
+    return (!q || txt.includes(q)) && (!fF || String(s.modulo || '').toUpperCase() === fF);
   });
   const tbody = document.getElementById('tbodySeguimiento');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin registros de seguimiento.</td></tr>'; return; }
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin registros de trazabilidad.</td></tr>'; return; }
   tbody.innerHTML = filtered.map(s => {
-    const porcentaje = s.porcentajeAvance || 0;
-    const color = porcentaje > 60 ? '#fca5a5' : porcentaje > 30 ? '#fcd34d' : '#34d399';
+    const modulo = String(s.modulo || 'GENERAL');
+    const moduloClass = modulo === 'FASE1' ? 'b-radicado' :
+                        modulo === 'FASE2' ? 'b-comite' :
+                        modulo === 'ACTAS' ? 'b-revision' :
+                        modulo === 'SUSTENTACION' ? 'b-aprobado' :
+                        modulo === 'AUTH' ? 'b-tutores' :
+                        modulo === 'SISTEMA' ? 'b-devuelto' : 'b-pend';
     return `<tr>
-      <td><div class="num-rad">${esc(s.numero||'')}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${(s.estudiantes||[]).slice(0,2).map(e => esc(e)).join(', ')}</td>
-      <td><span class="badge b-aprobado">${esc(s.estado||'—')}</span></td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div class="progress-bar" style="width:100px"><div class="progress-fill" style="width:${porcentaje}%;background:${color}"></div></div>
-          <span style="font-size:11px;color:rgba(255,255,255,.5)">${porcentaje.toFixed(0)}%</span>
-        </div>
-      </td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5)">${s.diasTranscurridos||0} días</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5)">${s.diasRestantes||0} días</td>
-      <td><button class="btn bl" onclick="verDetalle(${s.rowIndex})">📊 Ver timeline</button></td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5)">${esc(s.timestamp||'—')}</td>
+      <td><span class="badge ${moduloClass}">${esc(modulo)}</span></td>
+      <td style="font-size:12px;color:#e2e8f0">${esc(s.accion||'—')}</td>
+      <td><div class="num-rad">${esc(s.numeroRadicacion||'—')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(s.email||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6);max-width:380px">${esc(s.detalle||'')}</td>
     </tr>`;
   }).join('');
 }
