@@ -188,9 +188,14 @@ function toast(msg, type) {
 
 async function cargarCatalogoTutores() {
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getTutores', token: localStorage.getItem('cttg_token') || '' }) });
+    const token = localStorage.getItem('cttg_token') || localStorage.getItem('cttg_admin_token') || (JSON.parse(localStorage.getItem('cttg_admin')||'{}').token) || '';
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getTutores', token: token }) });
     const d = await res.json();
-    if (!d.success || !Array.isArray(d.tutores)) return;
+    console.log('Catálogo tutores respuesta:', d);
+    if (!d.success || !Array.isArray(d.tutores)) {
+      console.warn('No se cargaron tutores:', d);
+      return;
+    }
     catalogoTutores = d.tutores.map((t, i) => ({
       id: String(t.id || i + 1),
       nombre: String(t.nombre || '').trim(),
