@@ -96,6 +96,16 @@
   .alert-gestion{background:rgba(59,130,246,.3);color:#93c5fd}
   .progress-bar{width:100%;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
   .progress-fill{height:100%;background:linear-gradient(90deg,#059669,#10b981);border-radius:3px}
+  .timeline-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;margin-bottom:12px}
+  .timeline-title{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:10px}
+  .timeline-steps{display:flex;flex-direction:column;gap:8px}
+  .timeline-step{display:flex;align-items:flex-start;gap:10px}
+  .timeline-dot{width:14px;height:14px;border-radius:50%;margin-top:2px;flex-shrink:0;border:2px solid transparent}
+  .timeline-dot.done{background:#10b981;border-color:#34d399}
+  .timeline-dot.current{background:#f59e0b;border-color:#fcd34d}
+  .timeline-dot.pending{background:transparent;border-color:rgba(255,255,255,.25)}
+  .timeline-step .label{font-size:13px;color:#e2e8f0}
+  .timeline-step .meta{font-size:11px;color:rgba(255,255,255,.5)}
  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
@@ -386,13 +396,14 @@
       </select>
       <button class="btn" onclick="cargarSeguimiento()">↻ Actualizar</button>
     </div>
+    <div class="timeline-box" id="timelineResumen" style="display:none"></div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>Fecha/Hora</th><th>Módulo</th><th>Acción</th><th>N° Radicación</th><th>Actor</th><th>Detalle</th>
+          <th>Fecha/Hora</th><th>N° Radicación</th><th>Hito de Proceso</th><th>Responsable</th><th>Detalle</th>
         </tr></thead>
         <tbody id="tbodySeguimiento">
-          <tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>
+          <tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>
         </tbody>
       </table>
     </div>
@@ -725,9 +736,20 @@ function renderTabla() {
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
         <button class="btn gr" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">✅ Tutores</button>
+        <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
       </div></td>
     </tr>`;
   }).join('');
+}
+
+function abrirSeguimientoRad(numero) {
+  const n = String(numero || '').trim();
+  if (!n) return;
+  const inputSeg = document.getElementById('searchSeguimiento');
+  if (inputSeg) inputSeg.value = n;
+  const tabSeg = document.getElementById('tabSeguimiento');
+  if (tabSeg) switchPanel('seguimiento', tabSeg);
+  cargarSeguimiento();
 }
 
 function abrirModalEst(ri, numero, estadoActual) {
@@ -778,6 +800,7 @@ function verDetalle(ri) {
     ${r.notas ? `<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#fcd34d">📝 </span>${esc(r.notas)}</div>` : ''}
     <div style="margin-top:14px">
       <button class="btn am" onclick="closeModal('modalDet');abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Cambiar estado</button>
+      <button class="btn bl" onclick="closeModal('modalDet');abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Ver trazabilidad</button>
     </div>`;
   document.getElementById('modalDet').classList.add('open');
 }
@@ -1389,24 +1412,96 @@ function renderSeguimiento() {
     return (!q || txt.includes(q)) && (!fF || String(s.modulo || '').toUpperCase() === fF);
   });
   const tbody = document.getElementById('tbodySeguimiento');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin registros de trazabilidad.</td></tr>'; return; }
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin registros de trazabilidad.</td></tr>'; return; }
+  renderResumenTimeline(filtered);
   tbody.innerHTML = filtered.map(s => {
-    const modulo = String(s.modulo || 'GENERAL');
-    const moduloClass = modulo === 'FASE1' ? 'b-radicado' :
-                        modulo === 'FASE2' ? 'b-comite' :
-                        modulo === 'ACTAS' ? 'b-revision' :
-                        modulo === 'SUSTENTACION' ? 'b-aprobado' :
-                        modulo === 'AUTH' ? 'b-tutores' :
-                        modulo === 'SISTEMA' ? 'b-devuelto' : 'b-pend';
+    const hito = describirHitoSeguimiento(s);
+    const hitoClass = hito.clase || 'b-pend';
     return `<tr>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5)">${esc(s.timestamp||'—')}</td>
-      <td><span class="badge ${moduloClass}">${esc(modulo)}</span></td>
-      <td style="font-size:12px;color:#e2e8f0">${esc(s.accion||'—')}</td>
       <td><div class="num-rad">${esc(s.numeroRadicacion||'—')}</div></td>
+      <td><span class="badge ${hitoClass}">${esc(hito.texto)}</span></td>
       <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(s.email||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6);max-width:380px">${esc(s.detalle||'')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6);max-width:420px">${esc(s.detalle||'')}</td>
     </tr>`;
   }).join('');
+}
+
+function renderResumenTimeline(registros) {
+  const box = document.getElementById('timelineResumen');
+  const numero = (document.getElementById('searchSeguimiento').value || '').trim().toUpperCase();
+  if (!numero) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const acciones = registros.map(r => String(r.accion || '').toUpperCase());
+  const orden = [
+    { key:'CREAR_RADICACION', label:'Radicación registrada' },
+    { key:'VALIDAR_TUTORES', label:'Tutores autorizados' },
+    { key:'CREAR_ACTA', label:'Actas cargadas' },
+    { key:'APROBAR_ACTA', label:'Actas aprobadas por coordinadora' },
+    { key:'CREAR_PROTOCOLO', label:'Protocolo radicado' },
+    { key:'REGISTRAR_DECISION_COMITE', label:'Decisión de comité técnico' },
+    { key:'CREAR_FASE3', label:'Solicitud de sustentación' },
+    { key:'ASIGNAR_JURADOS', label:'Fecha y jurados asignados' },
+    { key:'COMPLETAR_FASE3', label:'Sustentación cerrada' }
+  ];
+  const totalEtapas = orden.length;
+  const completadas = orden.filter(function(step){ return acciones.indexOf(step.key) !== -1; }).length;
+  const porcentaje = totalEtapas > 0 ? Math.round((completadas / totalEtapas) * 100) : 0;
+  var colorBarra = '#ef4444';
+  var etiquetaEstado = 'CRÍTICO';
+  if (porcentaje >= 80) colorBarra = '#10b981';
+  else if (porcentaje >= 40) colorBarra = '#f59e0b';
+  if (porcentaje >= 80) etiquetaEstado = 'CASI COMPLETO';
+  else if (porcentaje >= 40) etiquetaEstado = 'EN PROCESO';
+  let idxActual = -1;
+  for (var i = 0; i < orden.length; i++) {
+    if (acciones.indexOf(orden[i].key) !== -1) idxActual = i;
+  }
+  const rows = orden.map(function(step, i){
+    const done = acciones.indexOf(step.key) !== -1;
+    const current = !done && i === idxActual + 1;
+    const statusClass = done ? 'done' : (current ? 'current' : 'pending');
+    const reg = done ? registros.find(r => String(r.accion || '').toUpperCase() === step.key) : null;
+    const meta = done && reg ? ((reg.timestamp || '—') + ' · ' + (reg.email || '—')) : (current ? 'Siguiente etapa' : 'Pendiente');
+    return `<div class="timeline-step">
+      <span class="timeline-dot ${statusClass}"></span>
+      <div>
+        <div class="label">${esc(step.label)}</div>
+        <div class="meta">${esc(meta)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div class="timeline-title">Timeline del proceso · ${esc(numero)}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div class="progress-bar" style="max-width:260px;min-width:180px">
+        <div class="progress-fill" style="width:${porcentaje}%;background:${colorBarra}"></div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7)">${completadas}/${totalEtapas} etapas · <strong style="color:${colorBarra}">${porcentaje}%</strong></div>
+      <span class="badge" style="background:${colorBarra}22;color:${colorBarra};border:1px solid ${colorBarra}55">${etiquetaEstado}</span>
+    </div>
+    <div class="timeline-steps">${rows}</div>`;
+}
+
+function describirHitoSeguimiento(s) {
+  const accion = String(s.accion || '').toUpperCase();
+  const modulo = String(s.modulo || '').toUpperCase();
+  if (accion === 'CREAR_RADICACION') return { texto: 'Radicado por estudiante', clase: 'b-radicado' };
+  if (accion === 'VALIDAR_TUTORES') return { texto: 'Tutores autorizados por coordinadora', clase: 'b-tutores' };
+  if (accion === 'CREAR_ACTA') return { texto: 'Acta cargada por estudiante', clase: 'b-revision' };
+  if (accion === 'APROBAR_ACTA') return { texto: 'Acta aprobada por coordinadora', clase: 'b-aprobado' };
+  if (accion === 'RECHAZAR_ACTA') return { texto: 'Acta rechazada por coordinadora', clase: 'b-devuelto' };
+  if (accion === 'CREAR_PROTOCOLO') return { texto: 'Protocolo radicado', clase: 'b-comite' };
+  if (accion === 'ACTUALIZAR_PROTOCOLO' || accion === 'AVALAR_PROTOCOLO_FASE2') return { texto: 'Decisión de protocolo', clase: 'b-comite' };
+  if (accion === 'REGISTRAR_DECISION_COMITE') return { texto: 'Decisión del comité técnico', clase: 'b-comite' };
+  if (accion === 'CREAR_FASE3') return { texto: 'Solicitud de sustentación creada', clase: 'b-solicitud' };
+  if (accion === 'ASIGNAR_JURADOS') return { texto: 'Sustentación asignada por coordinadora', clase: 'b-aprobado' };
+  if (accion === 'COMPLETAR_FASE3') return { texto: 'Sustentación cerrada (resultado final)', clase: 'b-aprobado' };
+  if (accion === 'ACTUALIZAR_ESTADO') return { texto: 'Cambio de estado de radicación', clase: 'b-revision' };
+  if (accion === 'LOGIN') return { texto: 'Ingreso al sistema', clase: 'b-pend' };
+  if (accion === 'LOGIN_FAIL') return { texto: 'Intento de ingreso fallido', clase: 'b-devuelto' };
+  if (modulo === 'SISTEMA' || accion === 'ERROR') return { texto: 'Evento de sistema / error', clase: 'b-devuelto' };
+  return { texto: (s.accion || 'Evento') , clase: 'b-pend' };
 }
 
 // ════════════════════════════════════════════════════════════
