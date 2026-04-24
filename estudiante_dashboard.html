@@ -575,7 +575,7 @@ async function cargarMisRad() {
         return;
       }
     }
-    if (data.success && data.radicaciones.length > 0) {
+    if (data.success && data.radicaciones?.length > 0) {
       misRadicaciones = data.radicaciones;
      const r = misRadicaciones[0];
 
