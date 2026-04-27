@@ -1336,23 +1336,78 @@ async function cargarAlertas() {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getAlertasCriticas', token: coordToken() }) });
     const d = await res.json();
     if (d.success) {
-      alertas = d.alertas || [];
-      const countCritico = alertas.filter(a => a.tipo === 'critico').length;
-      const countS12 = alertas.filter(a => a.tipo === 's12').length;
-      const countGestion = alertas.filter(a => a.tipo === 'gestion').length;
-      document.getElementById('countCritico').textContent = countCritico;
-      document.getElementById('countS12').textContent = countS12;
-      document.getElementById('countGestion').textContent = countGestion;
-      const badge = document.getElementById('tabAlertas').querySelector('.badge-count');
-      if (countCritico + countS12 + countGestion > 0) {
-        badge.textContent = countCritico + countS12 + countGestion;
-        badge.style.display = 'block';
-      } else {
-        badge.style.display = 'none';
-      }
-      renderAlertas();
+      aplicarAlertas(d.alertas || []);
     } else throw new Error(d.error);
-  } catch(e) { toast('Error cargando alertas: ' + e.message, 'err'); }
+  } catch(e) {
+    aplicarAlertas(construirAlertasLocales());
+    toast('Alertas calculadas localmente: ' + e.message, 'warn');
+  }
+}
+
+function aplicarAlertas(lista) {
+  alertas = lista || [];
+  const countCritico = alertas.filter(a => a.tipo === 'critico').length;
+  const countS12 = alertas.filter(a => a.tipo === 's12').length;
+  const countGestion = alertas.filter(a => a.tipo === 'gestion').length;
+  document.getElementById('countCritico').textContent = countCritico;
+  document.getElementById('countS12').textContent = countS12;
+  document.getElementById('countGestion').textContent = countGestion;
+  const badge = document.getElementById('tabAlertas').querySelector('.badge-count');
+  if (countCritico + countS12 + countGestion > 0) {
+    badge.textContent = countCritico + countS12 + countGestion;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+  contarVencimientos();
+  renderAlertas();
+}
+
+function construirAlertasLocales() {
+  const terminales = ['Aprobado','Devuelto','Sustentado','Reprobado'];
+  const locales = [];
+  radicaciones.forEach(r => {
+    const estado = r.estado || 'Radicado';
+    if (terminales.includes(estado)) return;
+    const estudiantes = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || r.email1 || '—';
+    const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s || 0)).filter(n => n > 0);
+    const pctPlazo = Number(r.porcentajeAvance ?? r.porcentajePlazo ?? 0);
+    const diasRad = calcularDiasHabilesDesdeHoy(r.fechaRadicacion);
+    if (pctPlazo > 60) {
+      locales.push({
+        tipo: 'critico',
+        numero: r.numero,
+        estudiante: estudiantes,
+        estado,
+        plazo: `${pctPlazo.toFixed(0)}% del plazo`,
+        detalles: 'Trabajo con más del 60% del plazo transcurrido.',
+        rowIndex: r.rowIndex
+      });
+    }
+    if (semestres.includes(12)) {
+      locales.push({
+        tipo: 's12',
+        numero: r.numero,
+        estudiante: estudiantes,
+        estado,
+        plazo: 'Semestre 12',
+        detalles: 'Hay estudiante de semestre 12 en esta radicación.',
+        rowIndex: r.rowIndex
+      });
+    }
+    if (estado === 'Radicado' && r.fechaRadicacion && diasRad > 15) {
+      locales.push({
+        tipo: 'gestion',
+        numero: r.numero,
+        estudiante: estudiantes,
+        estado,
+        plazo: `${diasRad} días hábiles`,
+        detalles: 'Pendiente validar tutores. Supera 15 días hábiles desde radicación.',
+        rowIndex: r.rowIndex
+      });
+    }
+  });
+  return locales;
 }
 
 function switchToFilterAlertas(tipo) {
