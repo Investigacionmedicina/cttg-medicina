@@ -1263,12 +1263,18 @@ function distanciaLevenshtein(a, b) {
 function similitudNombres(a, b) {
   const na = normalizarNombreTutor(a), nb = normalizarNombreTutor(b);
   if (!na || !nb || na === nb) return na === nb ? 1 : 0;
-  const tokensA = new Set(na.split(' ').filter(x => x.length > 2));
-  const tokensB = new Set(nb.split(' ').filter(x => x.length > 2));
-  const comunes = [...tokensA].filter(x => tokensB.has(x)).length;
-  const tokenScore = comunes / Math.max(tokensA.size, tokensB.size, 1);
+  const tokensA = [...new Set(na.split(' ').filter(x => x.length > 2))];
+  const tokensB = [...new Set(nb.split(' ').filter(x => x.length > 2))];
+  const setB = new Set(tokensB);
+  const comunes = tokensA.filter(x => setB.has(x)).length;
+  const tokenScore = comunes / Math.max(tokensA.length, tokensB.length, 1);
+  const subsetScore = comunes / Math.max(Math.min(tokensA.length, tokensB.length), 1);
   const dist = distanciaLevenshtein(na, nb);
   const editScore = 1 - (dist / Math.max(na.length, nb.length));
+  const primerNombreIgual = tokensA[0] && tokensA[0] === tokensB[0];
+  const apellidoCompartido = tokensA.slice(1).some(x => setB.has(x));
+  if (primerNombreIgual && apellidoCompartido) return Math.max(0.82, subsetScore, tokenScore, editScore);
+  if (comunes >= 2) return Math.max(0.76, subsetScore, tokenScore, editScore);
   return Math.max(tokenScore, editScore);
 }
 
