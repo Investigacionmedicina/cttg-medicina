@@ -210,6 +210,8 @@
         <option value="Activo">Activo</option>
         <option value="Inactivo">Inactivo</option>
       </select>
+      <button class="btn bl" onclick="revisarTutoresParecidos()">🔎 Revisar parecidos</button>
+      <button class="btn" onclick="restablecerUnionesTutores()">↺ Deshacer uniones</button>
       <button class="btn" onclick="cargarTutores()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
@@ -1018,6 +1020,27 @@ function exportCSV() {
 // TAB 3: DASHBOARD TUTORES
 // ════════════════════════════════════════════════════════════
 let tutores = [];
+let tutoresAgrupados = [];
+let tutorUniones = JSON.parse(localStorage.getItem('cttg_tutor_uniones') || '{}');
+
+function normalizarNombreTutor(nombre) {
+  return String(nombre || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function nombreCanonicoTutor(nombre) {
+  const key = normalizarNombreTutor(nombre);
+  return tutorUniones[key] || String(nombre || '').trim();
+}
+
+function guardarUnionesTutores() {
+  localStorage.setItem('cttg_tutor_uniones', JSON.stringify(tutorUniones));
+}
+
 async function cargarTutores() {
   try {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getEstadisticasTutores', token: coordToken() }) });
@@ -1029,17 +1052,121 @@ async function cargarTutores() {
   } catch(e) { toast('Error cargando tutores: ' + e.message, 'err'); }
 }
 
+function faseTrabajoTutor(r) {
+  const estado = String(r.estado || 'Radicado');
+  if (['Sustentado','Reprobado'].includes(estado)) return 'Fase 3 · Sustentación';
+  if (['Aprobado','Aprobado Comité','Aprobado Comité Técnico'].includes(estado)) return 'Comité técnico / aprobado';
+  if (['Pendiente Comité','Pendiente Comité Técnico'].includes(estado)) return 'Pendiente comité técnico';
+  if (['Fase 2 Desbloqueada','Protocolo radicado','Protocolo en revisión'].includes(estado)) return 'Fase 2 · Protocolo';
+  if (['Tutores Avalados','Tutores avalados','Revisión'].includes(estado)) return 'Tutores avalados / actas';
+  if (estado === 'Devuelto') return 'Devuelto';
+  return 'Radicación inicial';
+}
+
+function trabajosDesdeRadicaciones(nombresOriginales) {
+  const keys = new Set(nombresOriginales.map(normalizarNombreTutor).filter(Boolean));
+  return radicaciones.filter(r => {
+    const t1 = normalizarNombreTutor(r.tutor1Nombre);
+    const t2 = normalizarNombreTutor(r.tutor2Nombre);
+    return keys.has(t1) || keys.has(t2);
+  }).map(r => ({
+    numero: r.numero || '',
+    titulo: r.titulo || 'Sin título',
+    estudiante: [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—',
+    estado: r.estado || 'Radicado',
+    fase: faseTrabajoTutor(r),
+    avance: Number(r.porcentajeAvance ?? r.porcentajePlazo ?? 0)
+  }));
+}
+
+function trabajosTutor(t, nombresOriginales) {
+  const propios = Array.isArray(t.trabajos) ? t.trabajos : (Array.isArray(t.detalles) ? t.detalles : []);
+  const desdeBackend = propios.map(x => ({
+    numero: x.numero || x.numeroRadicacion || '',
+    titulo: x.titulo || x.nombreTrabajo || 'Sin título',
+    estudiante: x.estudiante || x.estudiantes || x.emailEstudiante || '—',
+    estado: x.estado || 'Radicado',
+    fase: x.fase || faseTrabajoTutor(x),
+    avance: Number(x.avance ?? x.porcentajeAvance ?? x.porcentajePlazo ?? 0)
+  }));
+  const trabajos = desdeBackend.length ? desdeBackend : trabajosDesdeRadicaciones(nombresOriginales);
+  const vistos = new Set();
+  return trabajos.filter(tr => {
+    const key = [tr.numero, tr.titulo, tr.estado].join('|').toLowerCase();
+    if (vistos.has(key)) return false;
+    vistos.add(key);
+    return true;
+  });
+}
+
+function obtenerTutoresAgrupados() {
+  const grupos = new Map();
+  tutores.forEach(t => {
+    const nombreOriginal = String(t.nombre || '').trim();
+    if (!nombreOriginal) return;
+    const canonico = nombreCanonicoTutor(nombreOriginal);
+    const key = normalizarNombreTutor(canonico);
+    if (!grupos.has(key)) {
+      grupos.set(key, {
+        ...t,
+        nombre: canonico,
+        nombresOriginales: [],
+        totalTrabajos: 0,
+        promAvanceAcumulado: 0,
+        enRadicacion: 0,
+        enFase2: 0,
+        aprobados: 0,
+        pendientes: 0,
+        trabajos: []
+      });
+    }
+    const g = grupos.get(key);
+    g.nombresOriginales.push(nombreOriginal);
+    const total = Number(t.totalTrabajos || 0);
+    g.totalTrabajos += total;
+    g.promAvanceAcumulado += Number(t.promAvance || 0) * total;
+    g.enRadicacion += Number(t.enRadicacion || 0);
+    g.enFase2 += Number(t.enFase2 || 0);
+    g.aprobados += Number(t.aprobados || 0);
+    g.pendientes += Number(t.pendientes || 0);
+  });
+
+  tutores.forEach(t => {
+    const key = normalizarNombreTutor(nombreCanonicoTutor(t.nombre));
+    const g = grupos.get(key);
+    if (!g) return;
+    g.trabajos.push(...trabajosTutor(t, g.nombresOriginales));
+  });
+
+  return [...grupos.values()].map(g => {
+    const vistos = new Set();
+    g.trabajos = g.trabajos.filter(tr => {
+      const key = [tr.numero, tr.titulo, tr.estado].join('|').toLowerCase();
+      if (vistos.has(key)) return false;
+      vistos.add(key);
+      return true;
+    });
+    if (!g.totalTrabajos && g.trabajos.length) g.totalTrabajos = g.trabajos.length;
+    g.promAvance = g.totalTrabajos ? g.promAvanceAcumulado / g.totalTrabajos : 0;
+    return g;
+  }).sort((a, b) => (b.totalTrabajos || 0) - (a.totalTrabajos || 0) || a.nombre.localeCompare(b.nombre));
+}
+
 function renderTutores() {
   const q  = (document.getElementById('searchTutores').value || '').toLowerCase();
   const fE = document.getElementById('fEstadoTutor').value;
-  const filtered = tutores.filter(t => {
-    const txt = (t.nombre || '').toLowerCase();
+  tutoresAgrupados = obtenerTutoresAgrupados();
+  const filtered = tutoresAgrupados.filter(t => {
+    const txt = [t.nombre, ...(t.nombresOriginales || [])].join(' ').toLowerCase();
     return (!q || txt.includes(q)) && (!fE || t.estado === fE);
   });
   const tbody = document.getElementById('tbodyTutores');
   if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin tutores.</td></tr>'; return; }
   tbody.innerHTML = filtered.map(t => `<tr>
-    <td style="font-weight:600">${esc(t.nombre||'—')}</td>
+    <td style="font-weight:600">
+      ${esc(t.nombre||'—')}
+      ${(t.nombresOriginales || []).length > 1 ? `<div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:400;margin-top:3px">Unido: ${t.nombresOriginales.map(esc).join(' · ')}</div>` : ''}
+    </td>
     <td><span style="font-size:16px;font-weight:700;color:#a78bfa">${t.totalTrabajos||0}</span></td>
     <td>
       <div style="display:flex;align-items:center;gap:6px">
@@ -1051,13 +1178,31 @@ function renderTutores() {
     <td><span class="badge b-revision">${t.enFase2||0}</span></td>
     <td><span class="badge b-aprobado">${t.aprobados||0}</span></td>
     <td><span class="badge b-pend">${t.pendientes||0}</span></td>
-    <td><button class="btn bl" onclick="abrirDetallesTutor('${esc(t.nombre||'')}')">👁 Ver</button></td>
+    <td><button class="btn bl" onclick="abrirDetallesTutor('${encodeURIComponent(t.nombre||'')}')">👁 Ver</button></td>
   </tr>`).join('');
 }
 
 function abrirDetallesTutor(nombre) {
-  const t = tutores.find(x => x.nombre === nombre);
+  nombre = decodeURIComponent(nombre || '');
+  const t = tutoresAgrupados.find(x => x.nombre === nombre) || obtenerTutoresAgrupados().find(x => x.nombre === nombre);
   if (!t) return;
+  const trabajos = (t.trabajos || []).sort((a, b) => String(a.fase || '').localeCompare(String(b.fase || '')));
+  const trabajosHtml = trabajos.length ? trabajos.map(tr => `
+    <div style="border:1px solid rgba(255,255,255,.08);border-radius:9px;padding:10px;background:rgba(255,255,255,.03)">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap">
+        <div>
+          <div class="num-rad">${esc(tr.numero || 'Sin radicación')}</div>
+          <div style="font-size:12px;color:#fff;font-weight:600;margin-top:3px">${esc(tr.titulo || 'Sin título')}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:3px">${esc(tr.estudiante || '—')}</div>
+        </div>
+        ${badgeEst(tr.estado || 'Radicado')}
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:11px;color:rgba(255,255,255,.55)">
+        <span>Fase: <strong style="color:#fcd34d">${esc(tr.fase || faseTrabajoTutor(tr))}</strong></span>
+        <span>${Number(tr.avance || 0).toFixed(0)}%</span>
+      </div>
+    </div>
+  `).join('') : '<div class="empty" style="padding:20px">No hay detalle de trabajos para este tutor.</div>';
   document.getElementById('modalDetBody').innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
       <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
@@ -1089,8 +1234,89 @@ function abrirDetallesTutor(nombre) {
           <span style="color:#34d399;font-weight:600">${t.aprobados||0}</span>
         </div>
       </div>
+    </div>
+    ${(t.nombresOriginales || []).length > 1 ? `<div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:9px;padding:10px;font-size:12px;color:#93c5fd;margin-top:14px">Nombres unidos: ${(t.nombresOriginales || []).map(esc).join(' · ')}</div>` : ''}
+    <div style="margin-top:14px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:8px">Trabajos y fase actual</div>
+      <div style="display:flex;flex-direction:column;gap:8px">${trabajosHtml}</div>
     </div>`;
   document.getElementById('modalDet').classList.add('open');
+}
+
+function distanciaLevenshtein(a, b) {
+  const m = a.length, n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+  const dp = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const tmp = dp[j];
+      dp[j] = Math.min(dp[j] + 1, dp[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+
+function similitudNombres(a, b) {
+  const na = normalizarNombreTutor(a), nb = normalizarNombreTutor(b);
+  if (!na || !nb || na === nb) return na === nb ? 1 : 0;
+  const tokensA = new Set(na.split(' ').filter(x => x.length > 2));
+  const tokensB = new Set(nb.split(' ').filter(x => x.length > 2));
+  const comunes = [...tokensA].filter(x => tokensB.has(x)).length;
+  const tokenScore = comunes / Math.max(tokensA.size, tokensB.size, 1);
+  const dist = distanciaLevenshtein(na, nb);
+  const editScore = 1 - (dist / Math.max(na.length, nb.length));
+  return Math.max(tokenScore, editScore);
+}
+
+function revisarTutoresParecidos() {
+  if (!tutores.length) { toast('Primero carga los tutores.', 'info'); return; }
+  let revisados = 0, unidos = 0;
+  const lista = tutores
+    .filter(t => t.nombre)
+    .sort((a, b) => String(a.nombre).localeCompare(String(b.nombre)));
+
+  for (let i = 0; i < lista.length; i++) {
+    for (let j = i + 1; j < lista.length; j++) {
+      const a = lista[i], b = lista[j];
+      const keyA = normalizarNombreTutor(a.nombre), keyB = normalizarNombreTutor(b.nombre);
+      const canonA = nombreCanonicoTutor(a.nombre), canonB = nombreCanonicoTutor(b.nombre);
+      if (!keyA || !keyB || normalizarNombreTutor(canonA) === normalizarNombreTutor(canonB)) continue;
+      const score = similitudNombres(a.nombre, b.nombre);
+      if (score < 0.72) continue;
+      revisados++;
+      const totalA = Number(a.totalTrabajos || 0), totalB = Number(b.totalTrabajos || 0);
+      const canonico = totalA >= totalB ? canonA : canonB;
+      const alias = totalA >= totalB ? canonB : canonA;
+      const unir = confirm(`¿Estos nombres son la misma persona?\n\n1. ${a.nombre}\n2. ${b.nombre}\n\nAceptar = unirlos como "${canonico}"\nCancelar = dejarlos separados`);
+      if (unir) {
+        Object.keys(tutorUniones).forEach(k => {
+          if (normalizarNombreTutor(tutorUniones[k]) === normalizarNombreTutor(alias)) tutorUniones[k] = canonico;
+        });
+        tutorUniones[keyA] = canonico;
+        tutorUniones[keyB] = canonico;
+        tutorUniones[normalizarNombreTutor(alias)] = canonico;
+        tutorUniones[normalizarNombreTutor(canonico)] = canonico;
+        unidos++;
+      }
+    }
+  }
+
+  guardarUnionesTutores();
+  renderTutores();
+  toast(revisados ? `Revisión terminada: ${unidos} unión(es) aplicada(s).` : 'No encontré nombres parecidos para revisar.', revisados ? 'ok' : 'info');
+}
+
+function restablecerUnionesTutores() {
+  if (!Object.keys(tutorUniones).length) { toast('No hay uniones guardadas.', 'info'); return; }
+  if (!confirm('¿Deseas deshacer todas las uniones manuales de tutores?')) return;
+  tutorUniones = {};
+  guardarUnionesTutores();
+  renderTutores();
+  toast('Uniones de tutores deshechas.', 'ok');
 }
 
 // ════════════════════════════════════════════════════════════
