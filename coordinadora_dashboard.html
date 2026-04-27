@@ -146,6 +146,7 @@
   <button class="main-tab" id="tabComite" onclick="switchPanel('comite', this)">📅 Comité Técnico</button>
   <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
     <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
+    <button class="main-tab" id="tabInformes" onclick="switchPanel('informes', this)">📈 Informes</button>
     </div>
 
   <!-- PANEL RADICACIONES -->
@@ -499,6 +500,93 @@
     </div>
   </div>
 
+  <!-- PANEL INFORMES -->
+  <div class="panel" id="pan-informes">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">🎓 Semestre</label>
+        <select id="infSemestre" onchange="renderInformes()">
+          <option value="">— Todos —</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📌 Fase</label>
+        <select id="infFase" onchange="renderInformes()">
+          <option value="">— Todas —</option>
+          <option value="1">Fase 1</option>
+          <option value="2">Fase 2</option>
+          <option value="3">Fase 3</option>
+          <option value="terminado">Terminado</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">👨‍🏫 Tutor</label>
+        <select id="infTutor" onchange="renderInformes()">
+          <option value="">— Todos —</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📋 Estado</label>
+        <select id="infEstado" onchange="renderInformes()">
+          <option value="">— Todos —</option>
+          <option value="Radicado">Radicado</option>
+          <option value="Revisión">Revisión</option>
+          <option value="Tutores avalados">Tutores avalados</option>
+          <option value="Tutores Avalados">Tutores Avalados</option>
+          <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
+          <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
+          <option value="Aprobado">Aprobado</option>
+          <option value="Devuelto">Devuelto</option>
+          <option value="Sustentado">Sustentado</option>
+          <option value="Reprobado">Reprobado</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn bl" onclick="poblarFiltroTutoresInforme();renderInformes()">🔄 Actualizar</button>
+      <button class="btn gr" onclick="exportarInformeCSV()">⬇ Exportar CSV</button>
+    </div>
+
+    <div class="metrics" style="margin-bottom:18px">
+      <div class="mc c1"><div class="ml">Total Filtrado</div><div class="mv" id="infTotal">0</div></div>
+      <div class="mc c2"><div class="ml">Fase 1</div><div class="mv" id="infFase1">0</div></div>
+      <div class="mc c3"><div class="ml">Fase 2</div><div class="mv" id="infFase2">0</div></div>
+      <div class="mc c5"><div class="ml">Fase 3</div><div class="mv" id="infFase3">0</div></div>
+      <div class="mc c2"><div class="ml">Aprob./Sust.</div><div class="mv" id="infTerminados">0</div></div>
+      <div class="mc c4"><div class="ml">Devueltos</div><div class="mv" id="infDevueltos">0</div></div>
+    </div>
+
+    <h3 style="font-size:15px;font-weight:600;color:#fff;margin:16px 0 10px">Carga por tutor</h3>
+    <div class="tbl-wrap" style="margin-bottom:18px">
+      <table>
+        <thead><tr>
+          <th>Tutor</th><th>Total Trabajos</th><th>Fase 1</th><th>Fase 2</th><th>Fase 3</th><th>Terminados</th><th>Devueltos</th>
+        </tr></thead>
+        <tbody id="tbodyInformeTutores">
+          <tr><td colspan="7" class="empty">Sin datos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:15px;font-weight:600;color:#fff;margin:16px 0 10px">Estudiantes</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Sem. Máx.</th><th>Fase Actual</th><th>Estado</th><th>Tutor Principal</th><th>Co-tutor</th><th>Días Hábiles</th><th>Riesgo</th>
+        </tr></thead>
+        <tbody id="tbodyInformeEstudiantes">
+          <tr><td colspan="9" class="empty">Sin datos.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
  </main>
 
 <!-- MODAL ESTADO RADICACIÓN -->
@@ -611,6 +699,11 @@ function switchPanel(name, btn) {
   else if (name === 'alertas') cargarAlertas();
   else if (name === 'protocolo') cargarProtocolo();
   else if (name === 'seguimiento') cargarSeguimiento();
+  else if (name === 'informes') {
+    poblarFiltroTutoresInforme();
+    poblarFiltroEstadosInforme();
+    renderInformes();
+  }
   else if (name === 'filtros') {
     (async () => {
       try { if (!actas.length) await cargarActas(); } catch (e) {}
@@ -653,6 +746,7 @@ function fmtFecha(s) {
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return esc(s).replace(/"/g,'&quot;'); }
 
 // ── RADICACIONES ─────────────────────────────────────────────
 async function cargar() {
@@ -672,6 +766,7 @@ async function cargar() {
       contarVencimientos();
       poblarFiltroMod();
       renderTabla();
+      if (document.getElementById('pan-informes')?.classList.contains('on')) renderInformes();
       setSyncState('ok');
      } else throw new Error(d.error);
   } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
@@ -1843,6 +1938,170 @@ function calcularDiasHabilesDesdeHoy(fecha) {
     actual.setDate(actual.getDate() + 1);
   }
   return dias;
+}
+
+function infSemestreMaximo(r) {
+  const semestres = infSemestresRadicacion(r);
+  return semestres.length ? Math.max(...semestres) : '';
+}
+
+function infSemestresRadicacion(r) {
+  return [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s || 0)).filter(n => n > 0);
+}
+
+function infFaseActual(estado) {
+  const e = String(estado || '').toLowerCase();
+  if (e.includes('sustentación') || e.includes('sustentacion') || e.includes('fase 3')) return '3';
+  if (e.includes('protocolo') || e.includes('comité') || e.includes('comite') || e.includes('fase 2') || e.includes('solicitud')) return '2';
+  if (e === 'sustentado' || e === 'aprobado') return 'terminado';
+  return '1';
+}
+
+function infFaseTexto(fase) {
+  if (fase === '1') return 'Fase 1';
+  if (fase === '2') return 'Fase 2';
+  if (fase === '3') return 'Fase 3';
+  if (fase === 'terminado') return 'Terminado';
+  return 'Fase 1';
+}
+
+function infRiesgo(r) {
+  let diasRestantes = Number(r.diasRestantes);
+  const diasHabiles = r.fechaRadicacion ? calcularDiasHabilesDesdeHoy(r.fechaRadicacion) : Number(r.diasTranscurridos || 0);
+  if (!Number.isFinite(diasRestantes)) diasRestantes = 120 - diasHabiles;
+  if (diasRestantes < 0) return { texto: '🔴 VENCIDO', nivel: 'VENCIDO', estilo: 'color:#fca5a5;font-weight:700' };
+  if (diasRestantes < 30) return { texto: '🔴 CRÍTICO', nivel: 'CRITICO', estilo: 'color:#fca5a5;font-weight:700' };
+  if (diasRestantes < 60) return { texto: '🟡 MEDIO', nivel: 'MEDIO', estilo: 'color:#fcd34d;font-weight:700' };
+  return { texto: '🟢 BAJO', nivel: 'BAJO', estilo: 'color:#6ee7b7;font-weight:700' };
+}
+
+function infTutoresDeRadicacion(r) {
+  return [r.tutor1Nombre, r.tutor2Nombre].map(t => String(t || '').trim()).filter(Boolean);
+}
+
+function poblarFiltroTutoresInforme() {
+  const sel = document.getElementById('infTutor');
+  if (!sel) return;
+  const actual = sel.value;
+  const tutoresUnicos = [...new Set(radicaciones.flatMap(infTutoresDeRadicacion))].sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '<option value="">— Todos —</option>' + tutoresUnicos.map(t => `<option value="${escAttr(t)}">${esc(t)}</option>`).join('');
+  if (tutoresUnicos.includes(actual)) sel.value = actual;
+}
+
+function poblarFiltroEstadosInforme() {
+  const sel = document.getElementById('infEstado');
+  if (!sel) return;
+  const actual = sel.value;
+  const estados = [...new Set(radicaciones.map(r => r.estado || 'Radicado').filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '<option value="">— Todos —</option>' + estados.map(e => `<option value="${escAttr(e)}">${esc(e)}</option>`).join('');
+  if (estados.includes(actual)) sel.value = actual;
+}
+
+function filtrarRadicacionesInforme() {
+  const fSem = document.getElementById('infSemestre').value;
+  const fFase = document.getElementById('infFase').value;
+  const fTutor = document.getElementById('infTutor').value;
+  const fEstado = document.getElementById('infEstado').value;
+  return radicaciones.filter(r => {
+    const semestres = infSemestresRadicacion(r);
+    const fase = infFaseActual(r.estado);
+    const tutoresRad = infTutoresDeRadicacion(r);
+    if (fSem && !semestres.includes(parseInt(fSem))) return false;
+    if (fFase && fase !== fFase) return false;
+    if (fTutor && !tutoresRad.includes(fTutor)) return false;
+    if (fEstado && String(r.estado || 'Radicado') !== fEstado) return false;
+    return true;
+  });
+}
+
+function renderInformes() {
+  poblarFiltroTutoresInforme();
+  poblarFiltroEstadosInforme();
+  const filtered = filtrarRadicacionesInforme();
+  const metricas = { total: filtered.length, f1:0, f2:0, f3:0, terminados:0, devueltos:0 };
+  const mapaTutores = new Map();
+
+  filtered.forEach(r => {
+    const estado = r.estado || 'Radicado';
+    const fase = infFaseActual(estado);
+    if (fase === '1') metricas.f1++;
+    else if (fase === '2') metricas.f2++;
+    else if (fase === '3') metricas.f3++;
+    else if (fase === 'terminado') metricas.terminados++;
+    if (String(estado).toLowerCase().includes('devuelto') || String(estado).toLowerCase().includes('rechazado') || String(estado).toLowerCase().includes('reprobado')) metricas.devueltos++;
+
+    infTutoresDeRadicacion(r).forEach(nombre => {
+      if (!mapaTutores.has(nombre)) mapaTutores.set(nombre, { nombre, total:0, f1:0, f2:0, f3:0, terminados:0, devueltos:0 });
+      const t = mapaTutores.get(nombre);
+      t.total++;
+      if (fase === '1') t.f1++;
+      else if (fase === '2') t.f2++;
+      else if (fase === '3') t.f3++;
+      else if (fase === 'terminado') t.terminados++;
+      if (String(estado).toLowerCase().includes('devuelto') || String(estado).toLowerCase().includes('rechazado') || String(estado).toLowerCase().includes('reprobado')) t.devueltos++;
+    });
+  });
+
+  document.getElementById('infTotal').textContent = metricas.total;
+  document.getElementById('infFase1').textContent = metricas.f1;
+  document.getElementById('infFase2').textContent = metricas.f2;
+  document.getElementById('infFase3').textContent = metricas.f3;
+  document.getElementById('infTerminados').textContent = metricas.terminados;
+  document.getElementById('infDevueltos').textContent = metricas.devueltos;
+
+  const tbodyTut = document.getElementById('tbodyInformeTutores');
+  const tutoresOrdenados = [...mapaTutores.values()].sort((a, b) => b.total - a.total || a.nombre.localeCompare(b.nombre));
+  tbodyTut.innerHTML = tutoresOrdenados.length ? tutoresOrdenados.map(t => `<tr>
+    <td style="font-weight:600">${esc(t.nombre)}</td>
+    <td><span style="font-size:16px;font-weight:700;color:#a78bfa">${t.total}</span></td>
+    <td><span class="badge b-radicado">${t.f1}</span></td>
+    <td><span class="badge b-revision">${t.f2}</span></td>
+    <td><span class="badge b-comite">${t.f3}</span></td>
+    <td><span class="badge b-aprobado">${t.terminados}</span></td>
+    <td><span class="badge b-devuelto">${t.devueltos}</span></td>
+  </tr>`).join('') : '<tr><td colspan="7" class="empty">Sin carga por tutor para el filtro activo.</td></tr>';
+
+  const tbodyEst = document.getElementById('tbodyInformeEstudiantes');
+  tbodyEst.innerHTML = filtered.length ? filtered.map(r => {
+    const estudiantes = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—';
+    const semMax = infSemestreMaximo(r) || '—';
+    const estado = r.estado || 'Radicado';
+    const fase = infFaseActual(estado);
+    const diasHabiles = r.fechaRadicacion ? calcularDiasHabilesDesdeHoy(r.fechaRadicacion) : Number(r.diasTranscurridos || 0);
+    const riesgo = infRiesgo(r);
+    return `<tr>
+      <td><div class="num-rad">${esc(r.numero || '')}</div></td>
+      <td style="font-size:12px;max-width:240px">${esc(estudiantes)}</td>
+      <td style="text-align:center;font-weight:700;color:#a78bfa">${esc(semMax)}</td>
+      <td><span class="badge ${fase === 'terminado' ? 'b-aprobado' : fase === '2' ? 'b-revision' : fase === '3' ? 'b-comite' : 'b-radicado'}">${infFaseTexto(fase)}</span></td>
+      <td>${badgeEst(estado)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(r.tutor1Nombre || '—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(r.tutor2Nombre || '—')}</td>
+      <td style="text-align:center;color:rgba(255,255,255,.55)">${diasHabiles || 0}</td>
+      <td style="${riesgo.estilo}">${riesgo.texto}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="9" class="empty">Sin estudiantes para el filtro activo.</td></tr>';
+}
+
+function exportarInformeCSV() {
+  const filtered = filtrarRadicacionesInforme();
+  if (!filtered.length) { toast('Sin datos para exportar', 'info'); return; }
+  const h = ['N° Radicación','Estudiantes','Semestre Máximo','Fase Actual','Estado','Tutor Principal','Co-tutor','Días Hábiles','Días Restantes','Riesgo','Título','Modalidad'];
+  const rows = filtered.map(r => {
+    const estudiantes = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ');
+    const fase = infFaseTexto(infFaseActual(r.estado));
+    const diasHabiles = r.fechaRadicacion ? calcularDiasHabilesDesdeHoy(r.fechaRadicacion) : Number(r.diasTranscurridos || 0);
+    let diasRestantes = Number(r.diasRestantes);
+    if (!Number.isFinite(diasRestantes)) diasRestantes = 120 - diasHabiles;
+    const riesgo = infRiesgo(r).nivel;
+    return [r.numero || '', estudiantes, infSemestreMaximo(r) || '', fase, r.estado || 'Radicado', r.tutor1Nombre || '', r.tutor2Nombre || '', diasHabiles || 0, diasRestantes, riesgo, r.titulo || '', r.modalidad || ''];
+  });
+  const csv = [h, ...rows].map(row => row.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type:'text/csv' }));
+  a.download = 'informe_cttg_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  toast('Informe CSV exportado ✓', 'ok');
 }
 
 function renderFiltros() {
