@@ -84,8 +84,10 @@
   .num-rad{font-family:'DM Mono',monospace;font-size:12px;color:#a78bfa;font-weight:600}
   .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700}
   .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
+  .b-revisado{background:rgba(59,130,246,.2);color:#93c5fd}
   .b-comite{background:rgba(167,139,250,.2);color:#c4b5fd}
   .b-aprobado{background:rgba(16,185,129,.2);color:#6ee7b7}
+  .b-devuelto{background:rgba(239,68,68,.2);color:#fca5a5}
   
   .btn-det{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);color:#a5b4fc;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
   .btn-det:hover{background:rgba(102,126,234,.25)}
@@ -403,6 +405,19 @@ function switchTab(name, btn) {
   if (name === 'mis-sust') cargarMisSolicitudes();
 }
 
+function estadoVisualSolicitud(s) {
+  const estadoGuardado = s.estadoSolicitud || s.estado || '';
+  if (s.nota) return { texto: 'Sustentado', badge: 'b-aprobado', icono: '✅' };
+  if (s.fechaSustentacion) return { texto: 'Programado', badge: 'b-comite', icono: '📅' };
+  if (['Solicitud sustentación devuelta','Devuelta'].includes(estadoGuardado)) {
+    return { texto: 'Solicitud devuelta', badge: 'b-devuelto', icono: '↩' };
+  }
+  if (estadoGuardado === 'Solicitud sustentación revisada') {
+    return { texto: 'Solicitud revisada', badge: 'b-revisado', icono: '✓' };
+  }
+  return { texto: 'En revisión', badge: 'b-pend', icono: '⏳' };
+}
+
 async function cargarMisSolicitudes() {
   const tbody = document.getElementById('tbodySust');
   try {
@@ -428,10 +443,8 @@ async function cargarMisSolicitudes() {
     
     window._solicitudes = misSolicitudes;
     tbody.innerHTML = misSolicitudes.map((s, idx) => {
-      const estado = s.nota ? 'Sustentado' : (s.fechaSustentacion ? 'Programado' : 'En revisión');
-      const badge = s.nota ? 'b-aprobado' : (s.fechaSustentacion ? 'b-comite' : 'b-pend');
-      const ico = s.nota ? '✅' : (s.fechaSustentacion ? '📅' : '⏳');
-      return `<tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td><td><div class="num-rad">${s.numero}</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td><td><span class="badge ${badge}">${ico} ${estado}</span></td><td><button class="btn-det" onclick="verDetalle(window._solicitudes[${idx}])">👁 Ver</button></td></tr>`;
+      const estado = estadoVisualSolicitud(s);
+      return `<tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td><td><div class="num-rad">${s.numero}</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td><td><span class="badge ${estado.badge}">${estado.icono} ${estado.texto}</span></td><td><button class="btn-det" onclick="verDetalle(window._solicitudes[${idx}])">👁 Ver</button></td></tr>`;
     }).join('');
     
     const sustentada = misSolicitudes.find(s => s.nota);
@@ -446,7 +459,10 @@ async function cargarMisSolicitudes() {
 }
 
 function verDetalle(s) {
-  const estado = s.nota ? (parseFloat(s.nota) >= 3 ? 'Sustentación Aprobada' : 'Sustentación Reprobada') : (s.fechaSustentacion && s.fechaSustentacion !== '—' ? 'Sustentación Programada' : 'Sustentación Radicada');
+  const estadoBase = estadoVisualSolicitud(s);
+  const estado = s.nota ? (parseFloat(s.nota) >= 3 ? 'Sustentación Aprobada' : 'Sustentación Reprobada') : estadoBase.texto;
+  const observacionSolicitud = s.motivoDevolucion || s.observacionEstado || s.observacionesEstado || (!s.fechaSustentacion ? s.observaciones : '');
+  const lugar = s.lugar || (s.fechaSustentacion ? s.observaciones : '');
   const html = `
     <div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.remove()">
       <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;max-width:420px;width:100%">
@@ -458,11 +474,12 @@ function verDetalle(s) {
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Estado</span><span style="color:#a78bfa;font-weight:600">${estado}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Fecha</span><span style="color:#fff">${formatearFecha(s.fechaSustentacion) || '—'}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Hora</span><span style="color:#fff">${s.horaSustentacion || '—'}</span></div>
-          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Lugar</span><span style="color:#fff">${s.observaciones || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Lugar</span><span style="color:#fff">${lugar || '—'}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Jurado 1</span><span style="color:#fff">${s.jurado1Nombre || '—'}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Jurado 2</span><span style="color:#fff">${s.jurado2Nombre || '—'}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">% Turnitin</span><span style="color:#fff">${s.pctTurnitin || '—'}%</span></div>
           ${s.nota ? `<div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Nota</span><span style="color:#6ee7b7;font-weight:700">${s.nota}</span></div>` : ''}
+          ${observacionSolicitud ? `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px;color:#fecaca"><strong>Observaciones:</strong><br>${esc(observacionSolicitud)}</div>` : ''}
         </div>
       </div>
     </div>`;
