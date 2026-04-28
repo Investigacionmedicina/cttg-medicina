@@ -164,11 +164,16 @@
     </div>
 
     <div class="mfg">
+      <label>Evaluador que realizó la evaluación *</label>
+      <input id="evaluadorReal" placeholder="Nombre del evaluador">
+    </div>
+
+    <div class="mfg">
       <label>Decisión del Comité *</label>
       <select id="decisionSelect">
         <option value="">— Selecciona —</option>
         <option value="Aprobado">✅ Aprobado</option>
-        <option value="Devuelto">↩️ Devuelto</option>
+        <option value="Devuelto">↩️ Devuelto para nueva valoración</option>
       </select>
     </div>
 
@@ -346,13 +351,14 @@ function mostrarDetalleReunion(fecha) {
       ).join('');
 
       const tbody = document.getElementById('detProtocolos');
+      window._protocolosComite = protocolos;
       tbody.innerHTML = protocolos.map(p => `
         <tr>
           <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(p.numero||'—')}</td>
           <td style="font-size:12px;color:rgba(255,255,255,.8)">${esc(p.emailEstudiante||'—')}</td>
           <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
           <td><span class="badge b-pend">⏱ Pendiente</span></td>
-          <td><button class="btn gr" onclick="abrirModalDecision(${p.rowIndex},'${esc(p.numero||'')}','${esc(p.emailEstudiante||'')}')">✅ Decisión</button></td>
+          <td><button class="btn gr" onclick="abrirModalDecision(${p.rowIndex})">✅ Decisión</button></td>
         </tr>
       `).join('');
 
@@ -371,7 +377,7 @@ async function cargarDecisiones() {
     if (!d.success) throw new Error('Error al cargar');
 
     const protocolos = (d.protocolos || []).filter(p => 
-      p.estado === 'Aprobado' || p.estado === 'Devuelto' || p.estado === 'Aprobado Directo'
+      p.estado === 'Aprobado' || p.estado === 'Devuelto' || p.estado === 'Devuelto por Comité Técnico' || p.estado === 'Aprobado Directo'
     );
 
     if (!protocolos.length) {
@@ -402,10 +408,17 @@ let protocoloActual = null;
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-function abrirModalDecision(rowIndex, numero, email) {
-  const p = protocoloActual = { rowIndex, numero, email };
-  document.getElementById('decNum').textContent = numero;
-  document.getElementById('decEst').textContent = email;
+function abrirModalDecision(rowIndex) {
+  const protocolo = (window._protocolosComite || []).find(p => p.rowIndex === rowIndex) || {};
+  protocoloActual = {
+    rowIndex,
+    numero: protocolo.numero || '',
+    email: protocolo.emailEstudiante || '',
+    evaluador: protocolo.evaluador || ''
+  };
+  document.getElementById('decNum').textContent = protocoloActual.numero || '—';
+  document.getElementById('decEst').textContent = protocoloActual.email || '—';
+  document.getElementById('evaluadorReal').value = protocoloActual.evaluador || '';
   document.getElementById('decisionSelect').value = '';
   document.getElementById('motivoDiv').style.display = 'none';
   document.getElementById('motivoText').value = '';
@@ -435,12 +448,18 @@ async function guardarDecision() {
   const numActa = document.getElementById('actaNum').value.trim();
   const aval = document.getElementById('avalSelect').value;
   const obs = document.getElementById('obsText').value.trim();
+  const evaluadorReal = document.getElementById('evaluadorReal').value.trim();
   const errEl = document.getElementById('errDecision');
   
   errEl.style.display = 'none';
   
   if (!decision) { 
     errEl.textContent = 'Selecciona una decisión';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!evaluadorReal) {
+    errEl.textContent = 'Indica qué evaluador realizó la evaluación';
     errEl.style.display = 'block';
     return;
   }
@@ -474,8 +493,8 @@ async function guardarDecision() {
         estado: decision,
         motivoDevoluccion: decision === 'Devuelto' ? motivo : '',
         observaciones: obs,
-        emailEvaluador: admin.email,
-        evaluador: admin.nombre || admin.email,
+        emailEvaluador: '',
+        evaluador: evaluadorReal,
         numeroActa: decision === 'Aprobado' ? numActa : '',
         avalCCEB: decision === 'Aprobado' ? aval : '',
         token: localStorage.getItem('cttg_token') || ''
