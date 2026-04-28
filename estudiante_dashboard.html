@@ -428,6 +428,7 @@ function badgeEst(est) {
     'Fase 2 Desbloqueada':     'b-comite',
     'Pendiente Comité Técnico':'b-comite',
     'Aprobado':                'b-aprobado',
+    'Devuelto por Comité Técnico':'b-devuelto',
     'Devuelto':                'b-devuelto',
     'Sustentado':              'b-aprobado',
     'Reprobado':               'b-devuelto'
@@ -668,7 +669,7 @@ async function actualizarBotonesFases(radicaciones) {
   }
   [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'flex'; });
   const estadoActual = radicaciones[0].estado || '';
-  const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Aprobado','Sustentado'];
+  const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Aprobado','Sustentado'];
 
   if (btnActas) {
     btnActas.style.display = 'flex';
@@ -749,7 +750,7 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
     if (actasAprobadas) {
       btnFase2.style.opacity = '1';
       btnFase2.style.pointerEvents = 'auto';
-      if (btnFase2Sub) btnFase2Sub.textContent = 'Subir documento de protocolo';
+      if (btnFase2Sub) btnFase2Sub.textContent = estadoActual === 'Devuelto por Comité Técnico' ? 'Solicitar nueva valoración del protocolo' : 'Subir documento de protocolo';
     } else {
       btnFase2.style.opacity = '0.4';
       btnFase2.style.pointerEvents = 'none';
