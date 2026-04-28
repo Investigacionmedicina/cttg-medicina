@@ -153,13 +153,12 @@
         </div>
       </div>
 
-      <!-- ESTADO: YA EVALUADO POR COMITÉ -->
-      <div id="estadoEvaluado" style="display:none;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:20px;text-align:center;margin-top:16px">
-        <div style="font-size:28px;margin-bottom:8px">✅</div>
-        <div style="font-size:15px;font-weight:600;color:#6ee7b7;margin-bottom:8px">Ya evaluado por el Comité Técnico</div>
-        <div style="font-size:12px;color:rgba(22,214,183,.8);line-height:1.6">
-          Tu protocolo fue presentado en la reunión del comité y se ha tomado una decisión.<br>
-          Revisa los detalles arriba para conocer la decisión final.
+      <!-- ESTADO: EVALUADO POR COMITÉ -->
+      <div id="estadoEvaluado" style="display:none;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:12px;padding:20px;text-align:center;margin-top:16px">
+        <div style="font-size:28px;margin-bottom:8px">📋</div>
+        <div style="font-size:15px;font-weight:600;color:#c4b5fd;margin-bottom:8px">Resultado del Comité Técnico</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.6">
+          Revisa la decisión y las observaciones. Si fue devuelto, carga la versión corregida para solicitar una nueva valoración.
         </div>
       </div>
     </div>
@@ -169,7 +168,7 @@
   <div class="panel" id="pan-cargar">
     <div class="form-card">
       <h3><span class="dot"></span>Cargar Protocolo</h3>
-      <p>Sigue los pasos para registrar tu protocolo correctamente.</p>
+      <p>Sigue los pasos para registrar tu protocolo correctamente. Si el Comité Técnico lo devolvió, carga la versión corregida para solicitar una nueva valoración.</p>
 
       <div class="pasos">
         <div class="paso" id="paso1">
@@ -337,7 +336,7 @@ function fmtFecha(s) {
 
 function badgeClass(estado) {
   if (estado === 'Aprobado') return 'b-aprobada';
-  if (estado === 'Devuelto') return 'b-rechazada';
+  if (estado === 'Devuelto' || estado === 'Devuelto por Comité Técnico') return 'b-rechazada';
   if (estado === 'Pendiente Comité') return 'b-comite';
   if (estado === 'Aprobado Directo') return 'b-aprobada';
   return 'b-pend';
@@ -406,6 +405,7 @@ function mostrarDetalle(rowIndex) {
 
       const yaEvaluado =
         protocolo.estado === 'Devuelto' ||
+        protocolo.estado === 'Devuelto por Comité Técnico' ||
         protocolo.estado === 'Aprobado' ||
         protocolo.estado === 'Aprobado Directo';
 
@@ -419,6 +419,8 @@ function mostrarDetalle(rowIndex) {
             ? '✅ Aprobado'
             : protocolo.estado === 'Aprobado Directo'
             ? '✅ Aprobado Directo'
+            : protocolo.estado === 'Devuelto por Comité Técnico'
+            ? '↩ Devuelto por Comité Técnico: solicita nueva valoración'
             : protocolo.estado === 'Devuelto'
             ? '❌ Devuelto para correcciones'
             : '⏳ Pendiente decisión del Comité';
@@ -426,7 +428,7 @@ function mostrarDetalle(rowIndex) {
         document.getElementById('detDecision').textContent = decisionTexto;
         document.getElementById('detObservaciones').textContent = protocolo.observaciones || '—';
 
-        if (protocolo.estado === 'Devuelto') {
+        if (protocolo.estado === 'Devuelto' || protocolo.estado === 'Devuelto por Comité Técnico') {
           document.getElementById('detMotivoDevolRow').style.display = 'flex';
           document.getElementById('detMotivo').textContent = protocolo.observaciones || '—';
         } else {
