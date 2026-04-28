@@ -40,6 +40,13 @@
   .btn:hover{background:rgba(255,255,255,.07);color:#fff}
   .btn.gr{color:#34d399;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
   .btn.bl{color:#60a5fa;border-color:rgba(96,165,250,.3)}.btn.bl:hover{background:rgba(96,165,250,.1)}
+  .btn.am{color:#fcd34d;border-color:rgba(252,211,77,.3)}.btn.am:hover{background:rgba(252,211,77,.1)}
+  .btn.rd{color:#fca5a5;border-color:rgba(239,68,68,.3)}.btn.rd:hover{background:rgba(239,68,68,.1)}
+  .badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap}
+  .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
+  .b-revisada{background:rgba(59,130,246,.2);color:#93c5fd}
+  .b-devuelta{background:rgba(239,68,68,.2);color:#fca5a5}
+  .act{display:flex;gap:4px;flex-wrap:wrap}
   .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
   .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -101,10 +108,11 @@
           <th>% Turnitin</th>
           <th>F. Solicitud</th>
           <th>Jurados Sugeridos</th>
+          <th>Estado</th>
           <th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyAsignar">
-          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -169,6 +177,26 @@
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
       <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
       <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">📅 Asignar y notificar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DEVOLVER SOLICITUD -->
+<div class="modal-bg" id="modalDevolver">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>↩ Devolver Solicitud</h3>
+      <button class="btn" onclick="closeModal('modalDevolver')">✕</button>
+    </div>
+    <p id="mDevolverInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
+    <div class="mfg">
+      <label>Motivo de devolución *</label>
+      <textarea id="mMotivoDevolucion" placeholder="Explica qué documentación debe corregir o completar el estudiante..."></textarea>
+    </div>
+    <input type="hidden" id="mDevolverRow">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalDevolver')">Cancelar</button>
+      <button class="btn rd" id="btnDevolver" onclick="devolverSolicitud()">Devolver y notificar</button>
     </div>
   </div>
 </div>
@@ -248,6 +276,22 @@ function fmtFecha(s) {
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+function estadoSolicitudFase3(r) {
+  if (r.nota) return parseFloat(r.nota) >= 3 ? 'Sustentado' : 'Reprobado';
+  if (r.fechaSustentacion) return 'Programado';
+  return r.estadoSolicitud || r.estado || 'Solicitud sustentación radicada';
+}
+
+function badgeSolicitudFase3(estado) {
+  const map = {
+    'Solicitud sustentación revisada': 'b-revisada',
+    'Solicitud sustentación devuelta': 'b-devuelta',
+    'Devuelta': 'b-devuelta',
+    'Programado': 'b-revisada'
+  };
+  return `<span class="badge ${map[estado] || 'b-pend'}">${esc(estado)}</span>`;
+}
+
 function toggleDesc() {
   document.getElementById('descDiv').style.display = document.getElementById('mProducto').value === 'SÍ' ? 'block' : 'none';
 }
@@ -259,7 +303,7 @@ async function cargar() {
     if (d.success) { fase3 = d.fase3 || []; renderTablas(); }
     else throw new Error(d.error);
   } catch(e) {
-    document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+    document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
     document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
   }
 }
@@ -269,17 +313,26 @@ function renderTablas() {
   const sinFecha = fase3.filter(r => !r.fechaSustentacion || r.fechaSustentacion === '');
   const tbA = document.getElementById('tbodyAsignar');
   if (!sinFecha.length) {
-    tbA.innerHTML = '<tr><td colspan="7" class="empty">Sin solicitudes pendientes de asignación.</td></tr>';
+    tbA.innerHTML = '<tr><td colspan="8" class="empty">Sin solicitudes pendientes de asignación.</td></tr>';
   } else {
-    tbA.innerHTML = sinFecha.map(r => `<tr>
+    tbA.innerHTML = sinFecha.map(r => {
+      const estado = estadoSolicitudFase3(r);
+      const estaDevuelta = ['Solicitud sustentación devuelta','Devuelta'].includes(estado);
+      return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
       <td style="font-size:13px">${r.semestre}${r.alertaS12==='SÍ'?'<span class="alert-s12">⚠️ S12</span>':''}</td>
       <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(([r.jurado1Nombre,r.jurado2Nombre].filter(Boolean).join(', ')||'—'))}</td>
-     <td><button class="btn gr" onclick="abrirAsignar(${r.rowIndex})">📅 Asignar</button></td>
-     </tr>`).join('');
+      <td>${badgeSolicitudFase3(estado)}</td>
+      <td><div class="act">
+        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisada</button>
+        <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
+        <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>📅 Asignar</button>
+      </div></td>
+     </tr>`;
+    }).join('');
   }
 
   // Pendiente resultado: con fecha pero sin nota
@@ -317,6 +370,15 @@ function abrirAsignar(rowIndex) {
   document.getElementById('modalAsignar').classList.add('open');
 }
 
+function abrirDevolver(rowIndex) {
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  document.getElementById('mDevolverRow').value = rowIndex;
+  document.getElementById('mDevolverInfo').textContent = 'Radicación: ' + r.numero;
+  document.getElementById('mMotivoDevolucion').value = r.motivoDevolucion || r.observaciones || '';
+  document.getElementById('modalDevolver').classList.add('open');
+}
+
 function abrirResultado(rowIndex, numero) {
   document.getElementById('mResultadoRow').value = rowIndex;
   document.getElementById('mResultadoInfo').textContent = 'Radicación: ' + numero;
@@ -326,6 +388,46 @@ function abrirResultado(rowIndex, numero) {
   document.getElementById('mDesc').value = '';
   document.getElementById('descDiv').style.display = 'none';
   document.getElementById('modalResultado').classList.add('open');
+}
+
+async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
+  const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+    action: 'updateFase3Estado',
+    rowIndex,
+    estado,
+    observaciones,
+    emailCoord: admin.email,
+    token: coordToken()
+  })});
+  const d = await res.json();
+  if (!d.success) throw new Error(d.error);
+}
+
+async function marcarRevisada(rowIndex) {
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  const mensaje = 'Su solicitud de sustentación fue revisada. La documentación radicada se encuentra conforme y en los próximos días se asignarán los jurados.';
+  try {
+    await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación revisada', mensaje);
+    await cargar();
+    toast('Solicitud marcada como revisada ✓', 'ok');
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+}
+
+async function devolverSolicitud() {
+  const rowIndex = parseInt(document.getElementById('mDevolverRow').value);
+  const motivo = document.getElementById('mMotivoDevolucion').value.trim();
+  if (!motivo) { toast('Ingresa el motivo de devolución', 'warn'); return; }
+
+  const btn = document.getElementById('btnDevolver');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Devolviendo...';
+  try {
+    await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación devuelta', motivo);
+    closeModal('modalDevolver');
+    await cargar();
+    toast('Solicitud devuelta. Estudiante notificado ✓', 'ok');
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = 'Devolver y notificar'; }
 }
 
 async function asignarJurados() {
@@ -402,7 +504,7 @@ async function guardarResultado() {
   finally { btn.disabled = false; btn.innerHTML = '✅ Guardar y cerrar'; }
 }
 
-['modalAsignar','modalResultado'].forEach(id => {
+['modalAsignar','modalDevolver','modalResultado'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => { if (e.target === document.getElementById(id)) closeModal(id); });
 });
 </script>
