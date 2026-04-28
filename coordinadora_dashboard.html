@@ -159,6 +159,7 @@
   <option value="Revisión">En Revisión</option>
   <option value="Tutores avalados">Tutores Avalados</option>
   <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
+  <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico</option>
   <option value="Aprobado">Aprobado</option>
   <option value="Devuelto">Devuelto</option>
 </select>
@@ -289,6 +290,7 @@
         <option value="En Solicitud">En Solicitud</option>
         <option value="Aprobado">Aprobado</option>
         <option value="Rechazado">Rechazado</option>
+        <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico</option>
         <option value="En Evaluación">En Evaluación</option>
         <option value="Aprobado Comité">Aprobado Comité</option>
       </select>
@@ -447,6 +449,7 @@
           <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
           <option value="Pendiente Comité Técnico">Pendiente Comité</option>
           <option value="Aprobado">Aprobado</option>
+          <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico</option>
           <option value="Devuelto">Devuelto</option>
         </select>
       </div>
@@ -542,6 +545,7 @@
           <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
           <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
           <option value="Aprobado">Aprobado</option>
+          <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico</option>
           <option value="Devuelto">Devuelto</option>
           <option value="Sustentado">Sustentado</option>
           <option value="Reprobado">Reprobado</option>
@@ -803,7 +807,7 @@ function poblarFiltroMod() {
 }
 
 function badgeEst(est) {
-  const map = { 'Radicado':'b-radicado','Tutores avalados':'b-tutores','Tutores Avalados':'b-tutores','Fase 2 Desbloqueada':'b-comite','Pendiente Comité Técnico':'b-comite','Aprobado':'b-aprobado','Devuelto':'b-devuelto','Sustentado':'b-aprobado','Reprobado':'b-devuelto' };
+  const map = { 'Radicado':'b-radicado','Tutores avalados':'b-tutores','Tutores Avalados':'b-tutores','Fase 2 Desbloqueada':'b-comite','Pendiente Comité Técnico':'b-comite','Devuelto por Comité Técnico':'b-devuelto','Aprobado':'b-aprobado','Devuelto':'b-devuelto','Sustentado':'b-aprobado','Reprobado':'b-devuelto' };
   return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
 }
 
@@ -1574,7 +1578,7 @@ function renderProtocolo() {
   tbody.innerHTML = filtered.map(p => {
     const estadoBadge = {
       'Cargado':'b-radicado','Enviado':'b-radicado','Revisado':'b-revisado','En Solicitud':'b-ensolicitud',
-      'Pendiente Comité':'b-comite','En Evaluación':'b-evaluacion','Aprobado':'b-aprobado','Rechazado':'b-devuelto',
+      'Pendiente Comité':'b-comite','En Evaluación':'b-evaluacion','Aprobado':'b-aprobado','Rechazado':'b-devuelto','Devuelto por Comité Técnico':'b-devuelto',
       'Aprobado Directo':'b-aprobado','Aprobado Comité':'b-aprobadocomite'
     }[p.estado] || 'b-radicado';
     
