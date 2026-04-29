@@ -106,6 +106,20 @@
   .timeline-dot.pending{background:transparent;border-color:rgba(255,255,255,.25)}
   .timeline-step .label{font-size:13px;color:#e2e8f0}
   .timeline-step .meta{font-size:11px;color:rgba(255,255,255,.5)}
+  .seg-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+  .seg-title{font-size:15px;font-weight:700;color:#fff}
+  .seg-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:3px}
+  .seg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:14px}
+  .seg-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px}
+  .seg-card .k{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);margin-bottom:5px}
+  .seg-card .v{font-size:13px;color:#e2e8f0;font-weight:600}
+  .seg-history{border-left:1px solid rgba(255,255,255,.12);margin:4px 0 14px 7px;padding-left:14px;display:flex;flex-direction:column;gap:10px}
+  .seg-event{position:relative;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px}
+  .seg-event::before{content:'';position:absolute;left:-22px;top:13px;width:12px;height:12px;border-radius:50%;background:#10b981;border:2px solid #0a0f1a}
+  .seg-event .date{font-family:'DM Mono',monospace;font-size:11px;color:#93c5fd;margin-bottom:4px}
+  .seg-event .what{font-size:13px;color:#fff;font-weight:600}
+  .seg-event .detail{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
+  .seg-help{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#bfdbfe;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px}
  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
@@ -387,8 +401,9 @@
   </div>
   <!-- PANEL SEGUIMIENTO -->
   <div class="panel" id="pan-seguimiento">
+    <div class="seg-help">Usa este panel para responder “¿cómo va este trabajo?”: busca por número de radicación, título, estudiante o correo y verás el estado actual, qué pasó en cada fecha y cuál es el siguiente paso.</div>
     <div class="filters">
-      <input id="searchSeguimiento" placeholder="🔍 Buscar número radicación (ej: CTTG-2026-0034)..." oninput="cargarSeguimiento()">
+      <input id="searchSeguimiento" placeholder="🔍 Buscar trabajo: radicación, título, estudiante o correo..." oninput="cargarSeguimiento()">
       <select id="fFaseSeg" onchange="renderSeguimiento()">
         <option value="">Todos los módulos</option>
         <option value="AUTH">AUTH</option>
@@ -1770,13 +1785,16 @@ async function guardarAvaloProtocolo() {
 // ════════════════════════════════════════════════════════════
 let seguimientos = [];
 async function cargarSeguimiento() {
-  const q = (document.getElementById('searchSeguimiento').value || '').trim().toUpperCase();
+  const qRaw = (document.getElementById('searchSeguimiento').value || '').trim();
+  const q = qRaw.toUpperCase();
+  const radMatch = buscarRadicacionSeguimiento(qRaw);
+  const numeroConsulta = radMatch && !/^CTTG/i.test(q) ? (radMatch.numero || '') : q;
   const tbody = document.getElementById('tbodySeguimiento');
-  tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>';
   try {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
       action: 'getTrazabilidad',
-      numeroRadicacion: q || '',
+      numeroRadicacion: numeroConsulta || '',
       limit: 300,
       token: coordToken()
     })});
@@ -1785,7 +1803,7 @@ async function cargarSeguimiento() {
     seguimientos = d.registros || [];
     renderSeguimiento();
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Error cargando trazabilidad.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Error cargando trazabilidad.</td></tr>';
     toast('Error cargando trazabilidad: ' + e.message, 'err');
   }
 }
@@ -1794,17 +1812,23 @@ function renderSeguimiento() {
   const q  = (document.getElementById('searchSeguimiento').value || '').toLowerCase();
   const fF = document.getElementById('fFaseSeg').value;
   const filtered = seguimientos.filter(s => {
-    const txt = [s.numeroRadicacion, s.accion, s.email, s.detalle, s.modulo].join(' ').toLowerCase();
+    const rad = obtenerRadicacionSeguimiento(s.numeroRadicacion);
+    const txt = [s.numeroRadicacion, s.accion, s.email, s.detalle, s.modulo, rad && rad.numero, rad && rad.titulo, rad && rad.nombre1, rad && rad.nombre2, rad && rad.nombre3, rad && rad.emailEstudiante, rad && rad.email1].join(' ').toLowerCase();
     return (!q || txt.includes(q)) && (!fF || String(s.modulo || '').toUpperCase() === fF);
   });
   const tbody = document.getElementById('tbodySeguimiento');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin registros de trazabilidad.</td></tr>'; return; }
+  if (!filtered.length) {
+    document.getElementById('timelineResumen').style.display = 'none';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin registros de trazabilidad para esa búsqueda.</td></tr>';
+    return;
+  }
   renderResumenTimeline(filtered);
-  tbody.innerHTML = filtered.map(s => {
+  const ordenadosTabla = [...filtered].sort((a, b) => fechaSeguimientoVal(b) - fechaSeguimientoVal(a));
+  tbody.innerHTML = ordenadosTabla.map(s => {
     const hito = describirHitoSeguimiento(s);
     const hitoClass = hito.clase || 'b-pend';
     return `<tr>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5)">${esc(s.timestamp||'—')}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5)">${esc(fmtFechaHoraSeguimiento(s.timestamp))}</td>
       <td><div class="num-rad">${esc(s.numeroRadicacion||'—')}</div></td>
       <td><span class="badge ${hitoClass}">${esc(hito.texto)}</span></td>
       <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(s.email||'—')}</td>
@@ -1815,22 +1839,27 @@ function renderSeguimiento() {
 
 function renderResumenTimeline(registros) {
   const box = document.getElementById('timelineResumen');
-  const numero = (document.getElementById('searchSeguimiento').value || '').trim().toUpperCase();
-  if (!numero) { box.style.display = 'none'; box.innerHTML = ''; return; }
-  const acciones = registros.map(r => String(r.accion || '').toUpperCase());
+  const numeroBuscado = (document.getElementById('searchSeguimiento').value || '').trim().toUpperCase();
+  if (!numeroBuscado) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const numero = String((registros[0] && registros[0].numeroRadicacion) || numeroBuscado || '').trim().toUpperCase();
+  const esConsultaTrabajo = numero || numeroBuscado;
+  if (!esConsultaTrabajo) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const registrosOrdenados = [...registros].sort((a, b) => fechaSeguimientoVal(a) - fechaSeguimientoVal(b));
+  const acciones = registrosOrdenados.map(r => String(r.accion || '').toUpperCase());
+  const rad = obtenerRadicacionSeguimiento(numero) || buscarRadicacionSeguimiento(numeroBuscado);
   const orden = [
-    { key:'CREAR_RADICACION', label:'Radicación registrada' },
-    { key:'VALIDAR_TUTORES', label:'Tutores autorizados' },
-    { key:'CREAR_ACTA', label:'Actas cargadas' },
-    { key:'APROBAR_ACTA', label:'Actas aprobadas por coordinadora' },
-    { key:'CREAR_PROTOCOLO', label:'Protocolo radicado' },
-    { key:'REGISTRAR_DECISION_COMITE', label:'Decisión de comité técnico' },
-    { key:'CREAR_FASE3', label:'Solicitud de sustentación' },
-    { key:'ASIGNAR_JURADOS', label:'Fecha y jurados asignados' },
-    { key:'COMPLETAR_FASE3', label:'Sustentación cerrada' }
+    { keys:['CREAR_RADICACION'], label:'Radicación registrada' },
+    { keys:['VALIDAR_TUTORES'], label:'Tutores autorizados' },
+    { keys:['CREAR_ACTA'], label:'Actas cargadas' },
+    { keys:['APROBAR_ACTA'], label:'Actas aprobadas por coordinadora' },
+    { keys:['CREAR_PROTOCOLO'], label:'Protocolo radicado' },
+    { keys:['REGISTRAR_DECISION_COMITE','ACTUALIZAR_PROTOCOLO','AVALAR_PROTOCOLO_FASE2'], label:'Decisión de comité técnico' },
+    { keys:['CREAR_FASE3'], label:'Solicitud de sustentación' },
+    { keys:['ASIGNAR_JURADOS'], label:'Fecha y jurados asignados' },
+    { keys:['COMPLETAR_FASE3'], label:'Sustentación cerrada' }
   ];
   const totalEtapas = orden.length;
-  const completadas = orden.filter(function(step){ return acciones.indexOf(step.key) !== -1; }).length;
+  const completadas = orden.filter(function(step){ return step.keys.some(k => acciones.indexOf(k) !== -1); }).length;
   const porcentaje = totalEtapas > 0 ? Math.round((completadas / totalEtapas) * 100) : 0;
   var colorBarra = '#ef4444';
   var etiquetaEstado = 'CRÍTICO';
@@ -1840,14 +1869,29 @@ function renderResumenTimeline(registros) {
   else if (porcentaje >= 40) etiquetaEstado = 'EN PROCESO';
   let idxActual = -1;
   for (var i = 0; i < orden.length; i++) {
-    if (acciones.indexOf(orden[i].key) !== -1) idxActual = i;
+    if (orden[i].keys.some(k => acciones.indexOf(k) !== -1)) idxActual = i;
   }
+  const ultimo = registrosOrdenados[registrosOrdenados.length - 1] || null;
+  const hitoUltimo = ultimo ? describirHitoSeguimiento(ultimo) : null;
+  const siguiente = orden[idxActual + 1] ? orden[idxActual + 1].label : 'Proceso completo o pendiente de cierre administrativo';
+  const estadoActual = rad ? (rad.estado || 'Radicado') : (hitoUltimo ? hitoUltimo.texto : 'Sin estado disponible');
+  const estudiantes = rad ? [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ') : '';
+  const titulo = rad && rad.titulo ? rad.titulo : 'Trabajo consultado';
+  const historia = registrosOrdenados.map(function(r){
+    const hito = describirHitoSeguimiento(r);
+    return `<div class="seg-event">
+      <div class="date">${esc(fmtFechaHoraSeguimiento(r.timestamp))}</div>
+      <div class="what">Pasó: ${esc(hito.texto)}</div>
+      <div class="detail">${esc(r.detalle || 'Sin detalle adicional.')}</div>
+      <div class="detail">Responsable: ${esc(r.email || '—')}</div>
+    </div>`;
+  }).join('');
   const rows = orden.map(function(step, i){
-    const done = acciones.indexOf(step.key) !== -1;
+    const done = step.keys.some(k => acciones.indexOf(k) !== -1);
     const current = !done && i === idxActual + 1;
     const statusClass = done ? 'done' : (current ? 'current' : 'pending');
-    const reg = done ? registros.find(r => String(r.accion || '').toUpperCase() === step.key) : null;
-    const meta = done && reg ? ((reg.timestamp || '—') + ' · ' + (reg.email || '—')) : (current ? 'Siguiente etapa' : 'Pendiente');
+    const reg = done ? registrosOrdenados.find(r => step.keys.indexOf(String(r.accion || '').toUpperCase()) !== -1) : null;
+    const meta = done && reg ? ((fmtFechaHoraSeguimiento(reg.timestamp) || '—') + ' · ' + (reg.email || '—')) : (current ? 'Siguiente etapa' : 'Pendiente');
     return `<div class="timeline-step">
       <span class="timeline-dot ${statusClass}"></span>
       <div>
@@ -1858,15 +1902,55 @@ function renderResumenTimeline(registros) {
   }).join('');
   box.style.display = 'block';
   box.innerHTML = `
-    <div class="timeline-title">Timeline del proceso · ${esc(numero)}</div>
+    <div class="seg-head">
+      <div>
+        <div class="seg-title">Seguimiento del trabajo · ${esc(numero || 'consulta general')}</div>
+        <div class="seg-sub">${esc(titulo)}${estudiantes ? ' · ' + esc(estudiantes) : ''}</div>
+      </div>
+      <span class="badge" style="background:${colorBarra}22;color:${colorBarra};border:1px solid ${colorBarra}55">${etiquetaEstado}</span>
+    </div>
+    <div class="seg-grid">
+      <div class="seg-card"><div class="k">Vamos en</div><div class="v">${esc(estadoActual)}</div></div>
+      <div class="seg-card"><div class="k">Último movimiento</div><div class="v">${esc(hitoUltimo ? hitoUltimo.texto : 'Sin movimientos')}</div><div class="seg-sub">${esc(ultimo ? fmtFechaHoraSeguimiento(ultimo.timestamp) : '—')}</div></div>
+      <div class="seg-card"><div class="k">Responsable último</div><div class="v">${esc(ultimo ? (ultimo.email || '—') : '—')}</div></div>
+      <div class="seg-card"><div class="k">Siguiente paso</div><div class="v">${esc(siguiente)}</div></div>
+    </div>
+    <div class="timeline-title">Historia por fechas</div>
+    <div class="seg-history">${historia}</div>
+    <div class="timeline-title">Ruta general del proceso</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <div class="progress-bar" style="max-width:260px;min-width:180px">
         <div class="progress-fill" style="width:${porcentaje}%;background:${colorBarra}"></div>
       </div>
       <div style="font-size:12px;color:rgba(255,255,255,.7)">${completadas}/${totalEtapas} etapas · <strong style="color:${colorBarra}">${porcentaje}%</strong></div>
-      <span class="badge" style="background:${colorBarra}22;color:${colorBarra};border:1px solid ${colorBarra}55">${etiquetaEstado}</span>
     </div>
     <div class="timeline-steps">${rows}</div>`;
+}
+
+function obtenerRadicacionSeguimiento(numero) {
+  const n = String(numero || '').trim().toLowerCase();
+  if (!n) return null;
+  return radicaciones.find(r => String(r.numero || '').trim().toLowerCase() === n) || null;
+}
+
+function buscarRadicacionSeguimiento(q) {
+  const needle = String(q || '').trim().toLowerCase();
+  if (!needle) return null;
+  return radicaciones.find(r => String(r.numero || '').trim().toLowerCase() === needle)
+    || radicaciones.find(r => [r.numero, r.titulo, r.nombre1, r.nombre2, r.nombre3, r.emailEstudiante, r.email1, r.tutor1Nombre, r.tutor2Nombre].join(' ').toLowerCase().includes(needle))
+    || null;
+}
+
+function fechaSeguimientoVal(r) {
+  const d = new Date(r && r.timestamp ? r.timestamp : '');
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+function fmtFechaHoraSeguimiento(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return String(s);
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
 
 function describirHitoSeguimiento(s) {
