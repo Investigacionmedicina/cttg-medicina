@@ -1847,6 +1847,8 @@ function renderResumenTimeline(registros) {
   const registrosOrdenados = [...registros].sort((a, b) => fechaSeguimientoVal(a) - fechaSeguimientoVal(b));
   const acciones = registrosOrdenados.map(r => String(r.accion || '').toUpperCase());
   const rad = obtenerRadicacionSeguimiento(numero) || buscarRadicacionSeguimiento(numeroBuscado);
+  const estadoActual = rad ? (rad.estado || 'Radicado') : '';
+  const inferido = inferirEtapaSeguimientoPorEstado(estadoActual);
   const orden = [
     { keys:['CREAR_RADICACION'], label:'Radicación registrada' },
     { keys:['VALIDAR_TUTORES'], label:'Tutores autorizados' },
@@ -1859,7 +1861,7 @@ function renderResumenTimeline(registros) {
     { keys:['COMPLETAR_FASE3'], label:'Sustentación cerrada' }
   ];
   const totalEtapas = orden.length;
-  const completadas = orden.filter(function(step){ return step.keys.some(k => acciones.indexOf(k) !== -1); }).length;
+  const completadas = orden.filter(function(step, i){ return i <= inferido.indice || step.keys.some(k => acciones.indexOf(k) !== -1); }).length;
   const porcentaje = totalEtapas > 0 ? Math.round((completadas / totalEtapas) * 100) : 0;
   var colorBarra = '#ef4444';
   var etiquetaEstado = 'CRÍTICO';
@@ -1871,10 +1873,11 @@ function renderResumenTimeline(registros) {
   for (var i = 0; i < orden.length; i++) {
     if (orden[i].keys.some(k => acciones.indexOf(k) !== -1)) idxActual = i;
   }
+  idxActual = Math.max(idxActual, inferido.indice);
   const ultimo = registrosOrdenados[registrosOrdenados.length - 1] || null;
   const hitoUltimo = ultimo ? describirHitoSeguimiento(ultimo) : null;
-  const siguiente = orden[idxActual + 1] ? orden[idxActual + 1].label : 'Proceso completo o pendiente de cierre administrativo';
-  const estadoActual = rad ? (rad.estado || 'Radicado') : (hitoUltimo ? hitoUltimo.texto : 'Sin estado disponible');
+  const siguiente = inferido.siguiente || (orden[idxActual + 1] ? orden[idxActual + 1].label : 'Proceso completo o pendiente de cierre administrativo');
+  const estadoVisible = estadoActual || (hitoUltimo ? hitoUltimo.texto : 'Sin estado disponible');
   const estudiantes = rad ? [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ') : '';
   const titulo = rad && rad.titulo ? rad.titulo : 'Trabajo consultado';
   const historia = registrosOrdenados.map(function(r){
@@ -1887,11 +1890,12 @@ function renderResumenTimeline(registros) {
     </div>`;
   }).join('');
   const rows = orden.map(function(step, i){
-    const done = step.keys.some(k => acciones.indexOf(k) !== -1);
+    const donePorRegistro = step.keys.some(k => acciones.indexOf(k) !== -1);
+    const done = donePorRegistro || i <= inferido.indice;
     const current = !done && i === idxActual + 1;
     const statusClass = done ? 'done' : (current ? 'current' : 'pending');
-    const reg = done ? registrosOrdenados.find(r => step.keys.indexOf(String(r.accion || '').toUpperCase()) !== -1) : null;
-    const meta = done && reg ? ((fmtFechaHoraSeguimiento(reg.timestamp) || '—') + ' · ' + (reg.email || '—')) : (current ? 'Siguiente etapa' : 'Pendiente');
+    const reg = donePorRegistro ? registrosOrdenados.find(r => step.keys.indexOf(String(r.accion || '').toUpperCase()) !== -1) : null;
+    const meta = done && reg ? ((fmtFechaHoraSeguimiento(reg.timestamp) || '—') + ' · ' + (reg.email || '—')) : (done ? 'Cumplido según estado actual · fecha no registrada' : (current ? 'Siguiente etapa' : 'Pendiente'));
     return `<div class="timeline-step">
       <span class="timeline-dot ${statusClass}"></span>
       <div>
@@ -1910,7 +1914,7 @@ function renderResumenTimeline(registros) {
       <span class="badge" style="background:${colorBarra}22;color:${colorBarra};border:1px solid ${colorBarra}55">${etiquetaEstado}</span>
     </div>
     <div class="seg-grid">
-      <div class="seg-card"><div class="k">Vamos en</div><div class="v">${esc(estadoActual)}</div></div>
+      <div class="seg-card"><div class="k">Vamos en</div><div class="v">${esc(estadoVisible)}</div></div>
       <div class="seg-card"><div class="k">Último movimiento</div><div class="v">${esc(hitoUltimo ? hitoUltimo.texto : 'Sin movimientos')}</div><div class="seg-sub">${esc(ultimo ? fmtFechaHoraSeguimiento(ultimo.timestamp) : '—')}</div></div>
       <div class="seg-card"><div class="k">Responsable último</div><div class="v">${esc(ultimo ? (ultimo.email || '—') : '—')}</div></div>
       <div class="seg-card"><div class="k">Siguiente paso</div><div class="v">${esc(siguiente)}</div></div>
@@ -1939,6 +1943,22 @@ function buscarRadicacionSeguimiento(q) {
   return radicaciones.find(r => String(r.numero || '').trim().toLowerCase() === needle)
     || radicaciones.find(r => [r.numero, r.titulo, r.nombre1, r.nombre2, r.nombre3, r.emailEstudiante, r.email1, r.tutor1Nombre, r.tutor2Nombre].join(' ').toLowerCase().includes(needle))
     || null;
+}
+
+function inferirEtapaSeguimientoPorEstado(estado) {
+  const e = String(estado || '').toLowerCase();
+  if (!e) return { indice: -1, siguiente: '' };
+  if (e.includes('sustentado') || e.includes('reprobado') || e.includes('cerrad')) return { indice: 8, siguiente: 'Proceso cerrado' };
+  if (e.includes('jurado') || e.includes('fecha') || e.includes('sustentación asignada') || e.includes('sustentacion asignada')) return { indice: 7, siguiente: 'Realizar y cerrar sustentación' };
+  if (e.includes('fase 3') || e.includes('sustentación') || e.includes('sustentacion')) return { indice: 6, siguiente: 'Asignar fecha y jurados de sustentación' };
+  if (e.includes('devuelto por comité') || e.includes('devuelto por comite')) return { indice: 5, siguiente: 'Atender devolución del comité técnico' };
+  if (e.includes('aprobado comité') || e.includes('aprobado comite') || e.includes('aprobado directo') || e === 'aprobado') return { indice: 5, siguiente: 'Continuar con solicitud de sustentación' };
+  if (e.includes('pendiente comité') || e.includes('pendiente comite') || e.includes('evaluación') || e.includes('evaluacion')) return { indice: 4, siguiente: 'Registrar decisión del comité técnico' };
+  if (e.includes('protocolo') || e.includes('fase 2') || e.includes('solicitud fase 2')) return { indice: 4, siguiente: 'Registrar decisión del comité técnico' };
+  if (e.includes('acta') || e.includes('tutores avalados') || e.includes('tutores autorizados') || e.includes('revisión') || e.includes('revision')) return { indice: 1, siguiente: 'Cargar y aprobar actas' };
+  if (e.includes('devuelto')) return { indice: 0, siguiente: 'Atender devolución registrada' };
+  if (e.includes('radicado')) return { indice: 0, siguiente: 'Validar tutores' };
+  return { indice: -1, siguiente: '' };
 }
 
 function fechaSeguimientoVal(r) {
