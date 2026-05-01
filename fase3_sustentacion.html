@@ -407,7 +407,9 @@ function switchTab(name, btn) {
 
 function estadoVisualSolicitud(s) {
   const estadoGuardado = s.estadoSolicitud || s.estado || '';
-  if (s.nota) return { texto: 'Sustentado', badge: 'b-aprobado', icono: '✅' };
+  if (s.nota) return parseFloat(s.nota) >= 3
+    ? { texto: 'Sustentado', badge: 'b-aprobado', icono: '✅' }
+    : { texto: 'Reprobado', badge: 'b-devuelto', icono: '❌' };
   if (s.fechaSustentacion) return { texto: 'Programado', badge: 'b-comite', icono: '📅' };
   if (['Solicitud sustentación devuelta','Devuelta'].includes(estadoGuardado)) {
     return { texto: 'Solicitud devuelta', badge: 'b-devuelto', icono: '↩' };

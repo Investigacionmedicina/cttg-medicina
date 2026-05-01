@@ -279,7 +279,7 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 function estadoSolicitudFase3(r) {
   if (r.nota) return parseFloat(r.nota) >= 3 ? 'Sustentado' : 'Reprobado';
   if (r.fechaSustentacion) return 'Programado';
-  return r.estadoSolicitud || r.estado || 'Solicitud sustentación radicada';
+  return r.estadoSolicitud || r.estado || 'En revisión';
 }
 
 function badgeSolicitudFase3(estado) {
@@ -287,7 +287,9 @@ function badgeSolicitudFase3(estado) {
     'Solicitud sustentación revisada': 'b-revisada',
     'Solicitud sustentación devuelta': 'b-devuelta',
     'Devuelta': 'b-devuelta',
-    'Programado': 'b-revisada'
+    'Programado': 'b-comite',
+    'Sustentado': 'b-aprobado',
+    'Reprobado': 'b-devuelto'
   };
   return `<span class="badge ${map[estado] || 'b-pend'}">${esc(estado)}</span>`;
 }

@@ -171,11 +171,14 @@
   <option value="">Todos los estados</option>
   <option value="Radicado">Radicado</option>
   <option value="Revisión">En Revisión</option>
-  <option value="Tutores avalados">Tutores Avalados</option>
+  <option value="Tutores Avalados">Tutores Avalados</option>
+  <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
   <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
   <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico</option>
   <option value="Aprobado">Aprobado</option>
   <option value="Devuelto">Devuelto</option>
+  <option value="Sustentado">Sustentado</option>
+  <option value="Reprobado">Reprobado</option>
 </select>
       <select id="fMod" onchange="renderTabla()"><option value="">Todas las modalidades</option></select>
       <button class="btn" onclick="cargar()">↻ Actualizar</button>
@@ -621,9 +624,14 @@
       <select id="mEstado">
         <option value="Radicado">Radicado</option>
         <option value="Revisión">En Revisión</option>
-        <option value="Pendiente Comité">Pendiente Comité</option>
+        <option value="Tutores Avalados">Tutores Avalados</option>
+        <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
+        <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
         <option value="Aprobado">Aprobado ✅</option>
         <option value="Devuelto">Devuelto ↩</option>
+        <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico ↩</option>
+        <option value="Sustentado">Sustentado 🎓</option>
+        <option value="Reprobado">Reprobado ❌</option>
       </select>
     </div>
     <div class="mfg">
@@ -822,7 +830,7 @@ function poblarFiltroMod() {
 }
 
 function badgeEst(est) {
-  const map = { 'Radicado':'b-radicado','Tutores avalados':'b-tutores','Tutores Avalados':'b-tutores','Fase 2 Desbloqueada':'b-comite','Pendiente Comité Técnico':'b-comite','Devuelto por Comité Técnico':'b-devuelto','Aprobado':'b-aprobado','Devuelto':'b-devuelto','Sustentado':'b-aprobado','Reprobado':'b-devuelto' };
+  const map = { 'Radicado':'b-radicado','Revisión':'b-revision','Tutores avalados':'b-tutores','Tutores Avalados':'b-tutores','Fase 2 Desbloqueada':'b-comite','Pendiente Comité Técnico':'b-comite','Devuelto por Comité Técnico':'b-devuelto','Aprobado':'b-aprobado','Devuelto':'b-devuelto','Sustentado':'b-aprobado','Reprobado':'b-devuelto' };
   return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
 }
 
@@ -832,7 +840,9 @@ function renderTabla() {
   const fM = document.getElementById('fMod').value;
   const filtered = radicaciones.filter(r => {
     const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre].join(' ').toLowerCase();
-    return (!q || txt.includes(q)) && (!fE || r.estado === fE) && (!fM || r.modalidad === fM);
+    const estadoR = String(r.estado || '');
+    const estadoMatch = !fE || estadoR === fE || (fE === 'Tutores Avalados' && estadoR === 'Tutores avalados');
+    return (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
   });
   const body = document.getElementById('tbody');
   if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }

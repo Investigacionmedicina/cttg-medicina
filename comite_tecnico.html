@@ -490,8 +490,8 @@ async function guardarDecision() {
       body: JSON.stringify({
         action: 'registrarDecisionComite',
         rowIndex: protocoloActual.rowIndex,
-        estado: decision,
-        motivoDevoluccion: decision === 'Devuelto' ? motivo : '',
+        estado: decision === 'Devuelto' ? 'Devuelto por Comité Técnico' : decision,
+        motivoDevolucion: decision === 'Devuelto' ? motivo : '',
         observaciones: obs,
         emailEvaluador: '',
         evaluador: evaluadorReal,
