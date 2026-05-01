@@ -445,7 +445,7 @@ function fmtFecha(s) {
 
 function estadoVisualFase3(s) {
   const estadoGuardado = s.estadoSolicitud || s.estado || '';
-  if (s.nota) return '✅ Sustentado';
+  if (s.nota) return parseFloat(s.nota) >= 3 ? '✅ Sustentado' : '❌ Reprobado';
   if (s.fechaSustentacion) return '📅 Programado';
   if (['Solicitud sustentación devuelta','Devuelta'].includes(estadoGuardado)) return '↩ Solicitud devuelta';
   if (estadoGuardado === 'Solicitud sustentación revisada') return '✓ Solicitud revisada';
@@ -605,7 +605,7 @@ document.getElementById('d_notas').textContent = limpiarNotas(r.notas) || '—';
       actualizarContadorGeneral(misRadicaciones[0]);
       
       renderAlertasSuperiores(misRadicaciones);
-      bloquearNuevaRad = misRadicaciones.some(r => !['Aprobado','Devuelto'].includes(String(r.estado||'')));
+      bloquearNuevaRad = misRadicaciones.some(r => !['Aprobado','Devuelto','Sustentado','Reprobado'].includes(String(r.estado||'')));
       const bloqueo  = document.getElementById('bloqueoRad');
       const readonly = document.getElementById('readonlyRad');
       const tabNueva = document.getElementById('tabNueva');
@@ -669,7 +669,7 @@ async function actualizarBotonesFases(radicaciones) {
   }
   [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'flex'; });
   const estadoActual = radicaciones[0].estado || '';
-  const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Aprobado','Sustentado'];
+  const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Aprobado','Sustentado','Reprobado'];
 
   if (btnActas) {
     btnActas.style.display = 'flex';
