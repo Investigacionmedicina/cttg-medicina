@@ -336,7 +336,6 @@ function renderTablas() {
       const estado = estadoSolicitudFase3(r);
       const estaDevuelta = ['Solicitud sustentación devuelta','Devuelta'].includes(estado);
       const puedeProgramar = juradosAprobados(r) && !estaDevuelta;
-      const puedeAprobar = tieneDosJurados(r) && !estaDevuelta && !puedeProgramar;
       return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
@@ -346,9 +345,9 @@ function renderTablas() {
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(([r.jurado1Nombre,r.jurado2Nombre].filter(Boolean).join(', ')||'—'))}</td>
       <td>${badgeSolicitudFase3(estado)}</td>
       <td><div class="act">
-        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${puedeAprobar ? '' : 'disabled'}>✓ Aprobar jurados</button>
+        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Aprobar jurados</button>
         <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
-        <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${puedeProgramar ? '' : 'disabled'}>📅 Programar</button>
+        <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>📅 Programar</button>
       </div></td>
      </tr>`;
     }).join('');
@@ -429,13 +428,17 @@ async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
 async function marcarRevisada(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
+  if (juradosAprobados(r)) {
+    toast('Los jurados ya están aprobados. Ahora puedes programar fecha y hora.', 'ok');
+    return;
+  }
   if (!tieneDosJurados(r)) {
     toast('La solicitud debe tener dos jurados con nombre y correo', 'warn');
     return;
   }
   const mensaje = 'Los dos jurados propuestos para la sustentación fueron aprobados. Por favor coordine con ellos la disponibilidad e informe a coordinación la fecha y hora acordadas para programar formalmente la sustentación.';
   try {
-    await actualizarEstadoSolicitud(rowIndex, 'Jurados aprobados para coordinación', mensaje);
+    await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación revisada', mensaje);
     await cargar();
     toast('Jurados aprobados. Estudiante notificado ✓', 'ok');
   } catch(e) { toast('Error: ' + e.message, 'err'); }
