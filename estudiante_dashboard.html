@@ -448,6 +448,7 @@ function estadoVisualFase3(s) {
   if (s.nota) return parseFloat(s.nota) >= 3 ? '✅ Sustentado' : '❌ Reprobado';
   if (s.fechaSustentacion) return '📅 Programado';
   if (['Solicitud sustentación devuelta','Devuelta'].includes(estadoGuardado)) return '↩ Solicitud devuelta';
+  if (estadoGuardado === 'Jurados aprobados para coordinación') return '✓ Jurados aprobados: coordina fecha y hora';
   if (estadoGuardado === 'Solicitud sustentación revisada') return '✓ Solicitud revisada';
   return '⏳ En revisión';
 }
@@ -729,7 +730,7 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
           obsBox.style.display = 'none';
           obsBox.innerHTML = '';
         }
-        if (miSolicitud.fechaSustentacion) {
+        if (miSolicitud.fechaSustentacion || miSolicitud.jurado1Nombre || miSolicitud.jurado2Nombre) {
           document.getElementById('f3Jurados').style.display = 'block';
           document.getElementById('f3J1').textContent = miSolicitud.jurado1Nombre || '—';
           document.getElementById('f3J1Email').textContent = miSolicitud.jurado1Email || '—';
