@@ -199,6 +199,7 @@
         ✓ Guía Autores (PDF)<br>
         ✓ Aval CCEB (PDF)<br>
         ✓ Turnitin (PDF)<br>
+        ✓ Dos jurados propuestos con nombre y correo institucional<br>
         <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Máximo 100MB cada archivo</span>
       </div>
 
@@ -238,14 +239,14 @@
           <input type="number" id="porcentajeTurnitin" placeholder="Ej: 15" min="0" max="100">
         </div>
 
-        <div class="sec-label">👨‍🏫 Jurado 1 Temático (Opcional)</div>
-        <div class="fg"><label>Nombre</label><input id="jurado1Nombre" placeholder="Dr./Dra. (opcional)"></div>
-        <div class="fg"><label>Email</label><input type="email" id="jurado1Email" placeholder="jurado@usc.edu.co (opcional)"></div>
+        <div class="sec-label">👨‍🏫 Jurado 1 Temático *</div>
+        <div class="fg"><label>Nombre *</label><input id="jurado1Nombre" placeholder="Dr./Dra."></div>
+        <div class="fg"><label>Email *</label><input type="email" id="jurado1Email" placeholder="jurado@usc.edu.co"></div>
         <div class="fg"><label>Teléfono</label><input id="jurado1Telefono" placeholder="300 000 0000 (opcional)"></div>
 
-        <div class="sec-label">👨‍🏫 Jurado 2 Metodológico (Opcional)</div>
-        <div class="fg"><label>Nombre</label><input id="jurado2Nombre" placeholder="Dr./Dra. (opcional)"></div>
-        <div class="fg"><label>Email</label><input type="email" id="jurado2Email" placeholder="jurado@usc.edu.co (opcional)"></div>
+        <div class="sec-label">👨‍🏫 Jurado 2 Metodológico *</div>
+        <div class="fg"><label>Nombre *</label><input id="jurado2Nombre" placeholder="Dr./Dra."></div>
+        <div class="fg"><label>Email *</label><input type="email" id="jurado2Email" placeholder="jurado@usc.edu.co"></div>
         <div class="fg"><label>Teléfono</label><input id="jurado2Telefono" placeholder="300 000 0000 (opcional)"></div>
       </div>
 
@@ -254,7 +255,7 @@
       <div class="success-box" id="successBox">
         <div style="font-size:28px;margin-bottom:8px">🎉</div>
         <div style="font-size:15px;font-weight:600;color:#fff">¡Solicitud enviada exitosamente!</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará tu solicitud y te notificará cuando asigne los jurados y la fecha de sustentación.</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará los jurados propuestos. Cuando sean aprobados, podrás coordinar con ellos y se registrará la fecha y hora de sustentación.</div>
         <button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver al dashboard</button>
       </div>
 
@@ -303,6 +304,12 @@ async function salir() {
 }
 function toast(msg, type) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(() => t.classList.remove('show'), 2800); }
 
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function emailValido(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+}
+
 function redirigirSiSesionInvalida(resp) {
   if (resp && resp.success) return false;
   const msg = String((resp && resp.error) || '');
@@ -324,6 +331,10 @@ async function solicitarSustentacion() {
   const check4 = document.getElementById('check4').checked;
   const check5 = document.getElementById('check5').checked;
   const turnitin = document.getElementById('porcentajeTurnitin').value.trim();
+  const jurado1Nombre = document.getElementById('jurado1Nombre').value.trim();
+  const jurado1Email = document.getElementById('jurado1Email').value.trim();
+  const jurado2Nombre = document.getElementById('jurado2Nombre').value.trim();
+  const jurado2Email = document.getElementById('jurado2Email').value.trim();
 
   if (!check1 || !check2 || !check3 || !check4 || !check5) {
     document.getElementById('errorBox').style.display = 'block';
@@ -334,6 +345,21 @@ async function solicitarSustentacion() {
 
   if (!turnitin || isNaN(parseFloat(turnitin))) {
     toast('Ingresa un porcentaje válido de Turnitin', 'warn');
+    return;
+  }
+
+  if (!jurado1Nombre || !jurado1Email || !jurado2Nombre || !jurado2Email) {
+    toast('Debes registrar los dos jurados con nombre y correo', 'warn');
+    return;
+  }
+
+  if (!emailValido(jurado1Email) || !emailValido(jurado2Email)) {
+    toast('Verifica el correo de ambos jurados', 'warn');
+    return;
+  }
+
+  if (jurado1Email.toLowerCase() === jurado2Email.toLowerCase()) {
+    toast('Los dos jurados deben ser personas diferentes', 'warn');
     return;
   }
 
@@ -357,11 +383,11 @@ async function solicitarSustentacion() {
         guiaAutores: document.getElementById('check3').checked ? 'SÍ' : 'NO',
         avalCCEB: document.getElementById('check4').checked ? 'SÍ' : 'NO',
         turnitinDoc: document.getElementById('check5').checked ? 'SÍ' : 'NO',
-        jurado1Nombre: document.getElementById('jurado1Nombre').value.trim(),
-        jurado1Email: document.getElementById('jurado1Email').value.trim(),
+        jurado1Nombre: jurado1Nombre,
+        jurado1Email: jurado1Email,
         jurado1Telefono: document.getElementById('jurado1Telefono').value.trim(),
-        jurado2Nombre: document.getElementById('jurado2Nombre').value.trim(),
-        jurado2Email: document.getElementById('jurado2Email').value.trim(),
+        jurado2Nombre: jurado2Nombre,
+        jurado2Email: jurado2Email,
         jurado2Telefono: document.getElementById('jurado2Telefono').value.trim(),
         token: TOKEN
       })
@@ -413,6 +439,9 @@ function estadoVisualSolicitud(s) {
   if (s.fechaSustentacion) return { texto: 'Programado', badge: 'b-comite', icono: '📅' };
   if (['Solicitud sustentación devuelta','Devuelta'].includes(estadoGuardado)) {
     return { texto: 'Solicitud devuelta', badge: 'b-devuelto', icono: '↩' };
+  }
+  if (estadoGuardado === 'Jurados aprobados para coordinación') {
+    return { texto: 'Jurados aprobados', badge: 'b-aprobado', icono: '✓' };
   }
   if (estadoGuardado === 'Solicitud sustentación revisada') {
     return { texto: 'Solicitud revisada', badge: 'b-revisado', icono: '✓' };
