@@ -45,6 +45,8 @@
   .badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap}
   .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
   .b-revisada{background:rgba(59,130,246,.2);color:#93c5fd}
+  .b-aprobada{background:rgba(16,185,129,.18);color:#6ee7b7}
+  .b-programado{background:rgba(167,139,250,.2);color:#c4b5fd}
   .b-devuelta{background:rgba(239,68,68,.2);color:#fca5a5}
   .act{display:flex;gap:4px;flex-wrap:wrap}
   .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
@@ -96,7 +98,7 @@
   <!-- VISTA 1: ASIGNAR JURADOS -->
   <div class="panel on" id="pan-asignar">
     <div class="sec-hdr">
-      <div><h2>Pendiente de Asignación</h2><p>Estudiantes que solicitaron sustentación sin fecha asignada.</p></div>
+      <div><h2>Pendiente de aprobación y programación</h2><p>Solicitudes con dos jurados propuestos; primero se aprueban y luego se registra fecha y hora.</p></div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
@@ -153,6 +155,9 @@
     <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
 
     <div class="msec">Fecha y hora</div>
+<div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.22);border-radius:10px;padding:10px 12px;color:#bfdbfe;font-size:12px;line-height:1.5;margin-bottom:14px">
+  Al programar la sustentación se solicitará el envío de un correo formal a los dos jurados designados.
+</div>
 <div class="mgrid" style="margin-bottom:14px">
   <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
   <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
@@ -176,7 +181,7 @@
     <input type="hidden" id="mAsignarRow">
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
       <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
-      <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">📅 Asignar y notificar</button>
+      <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">📅 Programar y notificar jurados</button>
     </div>
   </div>
 </div>
@@ -285,13 +290,23 @@ function estadoSolicitudFase3(r) {
 function badgeSolicitudFase3(estado) {
   const map = {
     'Solicitud sustentación revisada': 'b-revisada',
+    'Jurados aprobados para coordinación': 'b-aprobada',
     'Solicitud sustentación devuelta': 'b-devuelta',
     'Devuelta': 'b-devuelta',
-    'Programado': 'b-comite',
-    'Sustentado': 'b-aprobado',
-    'Reprobado': 'b-devuelto'
+    'Programado': 'b-programado',
+    'Sustentado': 'b-aprobada',
+    'Reprobado': 'b-devuelta'
   };
   return `<span class="badge ${map[estado] || 'b-pend'}">${esc(estado)}</span>`;
+}
+
+function tieneDosJurados(r) {
+  return !!(r.jurado1Nombre && r.jurado1Email && r.jurado2Nombre && r.jurado2Email);
+}
+
+function juradosAprobados(r) {
+  const estado = r.estadoSolicitud || r.estado || '';
+  return ['Jurados aprobados para coordinación', 'Solicitud sustentación revisada'].includes(estado);
 }
 
 function toggleDesc() {
@@ -320,6 +335,8 @@ function renderTablas() {
     tbA.innerHTML = sinFecha.map(r => {
       const estado = estadoSolicitudFase3(r);
       const estaDevuelta = ['Solicitud sustentación devuelta','Devuelta'].includes(estado);
+      const puedeProgramar = juradosAprobados(r) && !estaDevuelta;
+      const puedeAprobar = tieneDosJurados(r) && !estaDevuelta && !puedeProgramar;
       return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
@@ -329,9 +346,9 @@ function renderTablas() {
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(([r.jurado1Nombre,r.jurado2Nombre].filter(Boolean).join(', ')||'—'))}</td>
       <td>${badgeSolicitudFase3(estado)}</td>
       <td><div class="act">
-        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisada</button>
+        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${puedeAprobar ? '' : 'disabled'}>✓ Aprobar jurados</button>
         <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
-        <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>📅 Asignar</button>
+        <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${puedeProgramar ? '' : 'disabled'}>📅 Programar</button>
       </div></td>
      </tr>`;
     }).join('');
@@ -358,8 +375,12 @@ function renderTablas() {
 function abrirAsignar(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
+  if (!juradosAprobados(r)) {
+    toast('Primero aprueba los dos jurados propuestos', 'warn');
+    return;
+  }
   document.getElementById('mAsignarRow').value = rowIndex;
-  document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero;
+  document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero + ' · Jurados aprobados para coordinación';
   document.getElementById('mFecha').value = '';
   document.getElementById('mHora').value = '';
  document.getElementById('mLugar').value = '';
@@ -408,11 +429,15 @@ async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
 async function marcarRevisada(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
-  const mensaje = 'Su solicitud de sustentación fue revisada. La documentación radicada se encuentra conforme y en los próximos días se asignarán los jurados.';
+  if (!tieneDosJurados(r)) {
+    toast('La solicitud debe tener dos jurados con nombre y correo', 'warn');
+    return;
+  }
+  const mensaje = 'Los dos jurados propuestos para la sustentación fueron aprobados. Por favor coordine con ellos la disponibilidad e informe a coordinación la fecha y hora acordadas para programar formalmente la sustentación.';
   try {
-    await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación revisada', mensaje);
+    await actualizarEstadoSolicitud(rowIndex, 'Jurados aprobados para coordinación', mensaje);
     await cargar();
-    toast('Solicitud marcada como revisada ✓', 'ok');
+    toast('Jurados aprobados. Estudiante notificado ✓', 'ok');
   } catch(e) { toast('Error: ' + e.message, 'err'); }
 }
 
@@ -432,8 +457,50 @@ async function devolverSolicitud() {
   finally { btn.disabled = false; btn.innerHTML = 'Devolver y notificar'; }
 }
 
+function construirCorreoJurados(r, fecha, hora, lugar, jurado1, jurado2) {
+  const asunto = `Designación como jurado de trabajo de grado - ${r.numero || 'CTTG Medicina'}`;
+  const estudiante = r.nombreEstudiante || r.emailEstudiante || 'estudiante del programa';
+  const titulo = r.titulo || r.tituloProyecto || 'Trabajo de grado';
+  const jurados = [jurado1, jurado2].map(j => j.nombre).filter(Boolean).join(' y ');
+  const texto = `Apreciado(a) profesor(a),
+
+Reciba un cordial saludo.
+
+El Comité Técnico de Trabajos de Grado del Programa de Medicina se permite informarle que ha sido designado(a) como jurado del trabajo de grado "${titulo}", presentado por ${estudiante}, radicación ${r.numero || ''}.
+
+La sustentación ha sido programada para el día ${fmtFecha(fecha)}, a las ${hora}, en ${lugar}. Los jurados designados son ${jurados}.
+
+Agradecemos su valiosa participación académica y su acompañamiento en este proceso formativo.
+
+Cordialmente,
+Coordinación CTTG Medicina`;
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#1f2937;line-height:1.6;max-width:680px;margin:auto">
+      <div style="border-bottom:3px solid #059669;padding-bottom:12px;margin-bottom:18px">
+        <h2 style="margin:0;color:#064e3b">Designación como jurado de trabajo de grado</h2>
+        <p style="margin:4px 0 0;color:#6b7280">Comité Técnico de Trabajos de Grado · Programa de Medicina</p>
+      </div>
+      <p>Apreciado(a) profesor(a),</p>
+      <p>Reciba un cordial saludo.</p>
+      <p>El Comité Técnico de Trabajos de Grado del Programa de Medicina se permite informarle que ha sido designado(a) como jurado del trabajo de grado <strong>"${esc(titulo)}"</strong>, presentado por <strong>${esc(estudiante)}</strong>.</p>
+      <table style="width:100%;border-collapse:collapse;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin:18px 0">
+        <tr><td style="padding:10px 12px;color:#6b7280">Radicación</td><td style="padding:10px 12px;font-weight:700">${esc(r.numero || '—')}</td></tr>
+        <tr><td style="padding:10px 12px;color:#6b7280">Fecha</td><td style="padding:10px 12px;font-weight:700">${esc(fmtFecha(fecha))}</td></tr>
+        <tr><td style="padding:10px 12px;color:#6b7280">Hora</td><td style="padding:10px 12px;font-weight:700">${esc(hora)}</td></tr>
+        <tr><td style="padding:10px 12px;color:#6b7280">Lugar</td><td style="padding:10px 12px;font-weight:700">${esc(lugar)}</td></tr>
+        <tr><td style="padding:10px 12px;color:#6b7280">Jurados</td><td style="padding:10px 12px;font-weight:700">${esc(jurados || '—')}</td></tr>
+      </table>
+      <p>Agradecemos su valiosa participación académica y su acompañamiento en este proceso formativo.</p>
+      <p style="margin-top:24px">Cordialmente,<br><strong>Coordinación CTTG Medicina</strong></p>
+    </div>`;
+
+  return { asunto, texto, html };
+}
+
 async function asignarJurados() {
   const rowIndex = parseInt(document.getElementById('mAsignarRow').value);
+  const registro = fase3.find(x => x.rowIndex === rowIndex) || {};
   const fecha    = document.getElementById('mFecha').value;
   const hora     = document.getElementById('mHora').value;
  const lugar = document.getElementById('mLugar').value.trim(); 
@@ -447,18 +514,24 @@ async function asignarJurados() {
  if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
   if (!j1n || !j1e) { toast('Completa los datos del Jurado 1', 'warn'); return; }
   if (!j2n || !j2e) { toast('Completa los datos del Jurado 2', 'warn'); return; }
+  if (!juradosAprobados(registro)) { toast('Primero aprueba los jurados antes de programar', 'warn'); return; }
 
   const btn = document.getElementById('btnAsignar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Asignando...';
   try {
+    const jurado1 = { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e };
+    const jurado2 = { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e };
+    const correoJurados = construirCorreoJurados(registro, fecha, hora, lugar, jurado1, jurado2);
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'updateFase3Asignacion',
       rowIndex,
       fechaSustentacion: fecha,
       horaSustentacion: hora,
      lugar: lugar,
-      jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e },
-      jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e },
+      jurado1,
+      jurado2,
+      notificarJurados: true,
+      correoJurados,
       emailCoord: admin.email,
       token: coordToken()
     })});
@@ -466,10 +539,10 @@ async function asignarJurados() {
     if (d.success) {
       closeModal('modalAsignar');
       await cargar();
-      toast('Jurados asignados. Notificaciones enviadas ✓', 'ok');
+      toast('Sustentación programada. Notificación formal enviada/solicitada ✓', 'ok');
     } else throw new Error(d.error);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
-  finally { btn.disabled = false; btn.innerHTML = '📅 Asignar y notificar'; }
+  finally { btn.disabled = false; btn.innerHTML = '📅 Programar y notificar jurados'; }
 }
 
 async function guardarResultado() {
