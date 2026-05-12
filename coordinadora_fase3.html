@@ -145,11 +145,45 @@
   </div>
 </main>
 
+<!-- MODAL REVISAR / APROBAR JURADOS -->
+<div class="modal-bg" id="modalJurados">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>👨‍🏫 Revisar jurados solicitados</h3>
+      <button class="btn" onclick="closeModal('modalJurados')">✕</button>
+    </div>
+    <p id="mJuradosInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
+    <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.22);border-radius:10px;padding:10px 12px;color:#bfdbfe;font-size:12px;line-height:1.5;margin-bottom:14px">
+      Revisa los jurados propuestos por el estudiante. Puedes aprobarlos tal como llegaron o cambiarlos antes de guardar. Después de esto el estudiante coordina disponibilidad con los profesores y tú registras fecha y hora en "Programar".
+    </div>
+
+    <div class="msec">Jurado 1</div>
+    <div class="mgrid" style="margin-bottom:4px">
+      <div class="mfg"><label>Nombre *</label><input id="jJ1Nombre" placeholder="Dr./Dra."></div>
+      <div class="mfg"><label>Cédula</label><input id="jJ1Cedula" placeholder="Número ID"></div>
+    </div>
+    <div class="mfg"><label>Email *</label><input type="email" id="jJ1Email" placeholder="jurado@usc.edu.co"></div>
+
+    <div class="msec">Jurado 2</div>
+    <div class="mgrid" style="margin-bottom:4px">
+      <div class="mfg"><label>Nombre *</label><input id="jJ2Nombre" placeholder="Dr./Dra."></div>
+      <div class="mfg"><label>Cédula</label><input id="jJ2Cedula" placeholder="Número ID"></div>
+    </div>
+    <div class="mfg"><label>Email *</label><input type="email" id="jJ2Email" placeholder="jurado@usc.edu.co"></div>
+
+    <input type="hidden" id="mJuradosRow">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalJurados')">Cancelar</button>
+      <button class="btn-action" id="btnJurados" onclick="guardarJurados()">✓ Guardar jurados aprobados</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL ASIGNAR JURADOS -->
 <div class="modal-bg" id="modalAsignar">
   <div class="modal">
     <div class="modal-hdr">
-      <h3>📅 Asignar Fecha y Jurados</h3>
+      <h3>📅 Programar sustentación</h3>
       <button class="btn" onclick="closeModal('modalAsignar')">✕</button>
     </div>
     <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
@@ -164,19 +198,17 @@
 </div>
 <div class="mfg" style="margin-bottom:14px"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
    
-    <div class="msec">Jurado 1</div>
+    <div class="msec">Jurados aprobados</div>
     <div class="mgrid" style="margin-bottom:4px">
-      <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Cédula</label><input id="mJ1Cedula" placeholder="Número ID"></div>
+      <div class="mfg"><label>Jurado 1</label><input id="mJ1Nombre" readonly></div>
+      <div class="mfg"><label>Jurado 2</label><input id="mJ2Nombre" readonly></div>
     </div>
-    <div class="mfg"><label>Email *</label><input type="email" id="mJ1Email" placeholder="jurado@usc.edu.co"></div>
-
-    <div class="msec">Jurado 2</div>
     <div class="mgrid" style="margin-bottom:4px">
-      <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Cédula</label><input id="mJ2Cedula" placeholder="Número ID"></div>
+      <div class="mfg"><label>Email jurado 1</label><input type="email" id="mJ1Email" readonly></div>
+      <div class="mfg"><label>Email jurado 2</label><input type="email" id="mJ2Email" readonly></div>
     </div>
-    <div class="mfg"><label>Email *</label><input type="email" id="mJ2Email" placeholder="jurado@usc.edu.co"></div>
+    <input type="hidden" id="mJ1Cedula">
+    <input type="hidden" id="mJ2Cedula">
 
     <input type="hidden" id="mAsignarRow">
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
@@ -345,7 +377,7 @@ function renderTablas() {
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(([r.jurado1Nombre,r.jurado2Nombre].filter(Boolean).join(', ')||'—'))}</td>
       <td>${badgeSolicitudFase3(estado)}</td>
       <td><div class="act">
-        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Aprobar jurados</button>
+        <button class="btn bl" onclick="abrirRevisarJurados(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>👨‍🏫 Revisar jurados</button>
         <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
         <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>📅 Programar</button>
       </div></td>
@@ -392,6 +424,20 @@ function abrirAsignar(rowIndex) {
   document.getElementById('modalAsignar').classList.add('open');
 }
 
+function abrirRevisarJurados(rowIndex) {
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  document.getElementById('mJuradosRow').value = rowIndex;
+  document.getElementById('mJuradosInfo').textContent = 'Radicación: ' + r.numero + ' · Estudiante: ' + (r.nombreEstudiante || r.emailEstudiante || '—');
+  document.getElementById('jJ1Nombre').value = r.jurado1Nombre || '';
+  document.getElementById('jJ1Cedula').value = r.jurado1Cedula || '';
+  document.getElementById('jJ1Email').value = r.jurado1Email || '';
+  document.getElementById('jJ2Nombre').value = r.jurado2Nombre || '';
+  document.getElementById('jJ2Cedula').value = r.jurado2Cedula || '';
+  document.getElementById('jJ2Email').value = r.jurado2Email || '';
+  document.getElementById('modalJurados').classList.add('open');
+}
+
 function abrirDevolver(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
@@ -425,23 +471,61 @@ async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
   if (!d.success) throw new Error(d.error);
 }
 
-async function marcarRevisada(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
-  if (!r) return;
-  if (juradosAprobados(r)) {
-    toast('Los jurados ya están aprobados. Ahora puedes programar fecha y hora.', 'ok');
+function emailValido(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+}
+
+async function guardarJurados() {
+  const rowIndex = parseInt(document.getElementById('mJuradosRow').value, 10);
+  const j1 = {
+    nombre: document.getElementById('jJ1Nombre').value.trim(),
+    cedula: document.getElementById('jJ1Cedula').value.trim(),
+    email: document.getElementById('jJ1Email').value.trim()
+  };
+  const j2 = {
+    nombre: document.getElementById('jJ2Nombre').value.trim(),
+    cedula: document.getElementById('jJ2Cedula').value.trim(),
+    email: document.getElementById('jJ2Email').value.trim()
+  };
+
+  if (!j1.nombre || !j1.email || !j2.nombre || !j2.email) {
+    toast('Completa nombre y correo de los dos jurados', 'warn');
     return;
   }
-  if (!tieneDosJurados(r)) {
-    toast('La solicitud debe tener dos jurados con nombre y correo', 'warn');
+  if (!emailValido(j1.email) || !emailValido(j2.email)) {
+    toast('Verifica el correo de ambos jurados', 'warn');
     return;
   }
+  if (j1.email.toLowerCase() === j2.email.toLowerCase()) {
+    toast('Los dos jurados deben ser diferentes', 'warn');
+    return;
+  }
+
   const mensaje = 'Los dos jurados propuestos para la sustentación fueron aprobados. Por favor coordine con ellos la disponibilidad e informe a coordinación la fecha y hora acordadas para programar formalmente la sustentación.';
+  const btn = document.getElementById('btnJurados');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Guardando...';
   try {
-    await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación revisada', mensaje);
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'updateFase3Jurados',
+      rowIndex,
+      jurado1: j1,
+      jurado2: j2,
+      estado: 'Solicitud sustentación revisada',
+      observaciones: mensaje,
+      emailCoord: admin.email,
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error || 'No fue posible guardar jurados');
+    closeModal('modalJurados');
     await cargar();
     toast('Jurados aprobados. Estudiante notificado ✓', 'ok');
   } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally {
+    btn.disabled = false;
+    btn.innerHTML = '✓ Guardar jurados aprobados';
+  }
 }
 
 async function devolverSolicitud() {
@@ -582,7 +666,7 @@ async function guardarResultado() {
   finally { btn.disabled = false; btn.innerHTML = '✅ Guardar y cerrar'; }
 }
 
-['modalAsignar','modalDevolver','modalResultado'].forEach(id => {
+['modalJurados','modalAsignar','modalDevolver','modalResultado'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => { if (e.target === document.getElementById(id)) closeModal(id); });
 });
 </script>
