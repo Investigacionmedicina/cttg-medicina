@@ -158,17 +158,11 @@
     </div>
 
     <div class="msec">Jurado 1</div>
-    <div class="mgrid" style="margin-bottom:4px">
-      <div class="mfg"><label>Nombre *</label><input id="jJ1Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Cédula</label><input id="jJ1Cedula" placeholder="Número ID"></div>
-    </div>
+    <div class="mfg"><label>Nombre *</label><input id="jJ1Nombre" placeholder="Dr./Dra."></div>
     <div class="mfg"><label>Email *</label><input type="email" id="jJ1Email" placeholder="jurado@usc.edu.co"></div>
 
     <div class="msec">Jurado 2</div>
-    <div class="mgrid" style="margin-bottom:4px">
-      <div class="mfg"><label>Nombre *</label><input id="jJ2Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Cédula</label><input id="jJ2Cedula" placeholder="Número ID"></div>
-    </div>
+    <div class="mfg"><label>Nombre *</label><input id="jJ2Nombre" placeholder="Dr./Dra."></div>
     <div class="mfg"><label>Email *</label><input type="email" id="jJ2Email" placeholder="jurado@usc.edu.co"></div>
 
     <input type="hidden" id="mJuradosRow">
@@ -430,10 +424,8 @@ function abrirRevisarJurados(rowIndex) {
   document.getElementById('mJuradosRow').value = rowIndex;
   document.getElementById('mJuradosInfo').textContent = 'Radicación: ' + r.numero + ' · Estudiante: ' + (r.nombreEstudiante || r.emailEstudiante || '—');
   document.getElementById('jJ1Nombre').value = r.jurado1Nombre || '';
-  document.getElementById('jJ1Cedula').value = r.jurado1Cedula || '';
   document.getElementById('jJ1Email').value = r.jurado1Email || '';
   document.getElementById('jJ2Nombre').value = r.jurado2Nombre || '';
-  document.getElementById('jJ2Cedula').value = r.jurado2Cedula || '';
   document.getElementById('jJ2Email').value = r.jurado2Email || '';
   document.getElementById('modalJurados').classList.add('open');
 }
@@ -479,12 +471,12 @@ async function guardarJurados() {
   const rowIndex = parseInt(document.getElementById('mJuradosRow').value, 10);
   const j1 = {
     nombre: document.getElementById('jJ1Nombre').value.trim(),
-    cedula: document.getElementById('jJ1Cedula').value.trim(),
+    cedula: '',
     email: document.getElementById('jJ1Email').value.trim()
   };
   const j2 = {
     nombre: document.getElementById('jJ2Nombre').value.trim(),
-    cedula: document.getElementById('jJ2Cedula').value.trim(),
+    cedula: '',
     email: document.getElementById('jJ2Email').value.trim()
   };
 
