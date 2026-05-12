@@ -131,14 +131,14 @@
   </div>
 </div>
  <script>
-const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 let protocoloActual = null;
 
 document.addEventListener('DOMContentLoaded', function() {
   const user = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
-  if (!user.id || user.rol !== 'coordinadora') {
+  if (!user || user.rol !== 'coordinadora' || !coordToken()) {
     window.location.href = 'coordinadora_login.html';
     return;
   }
@@ -169,14 +169,15 @@ function cargarProtocolos() {
           'En Evaluación': '<span class="badge badge-evaluacion">📝 Evaluando</span>',
           'Aprobado': '<span class="badge badge-aprobado">✅ Aprobado</span>',
           'Devuelto': '<span class="badge badge-devuelto">↩️ Devuelto</span>'
-        }[p.estado] || p.estado;
+        }[p.estado] || esc(p.estado || '—');
 
         // Solo mostrar botones si está "Cargado" o "Enviado"
         const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
+        const numeroArg = encodeURIComponent(p.numero || '');
         const botonesAccion = esPendiente 
-          ? `<button class="btn-small btn-edit" style="background:rgba(34,197,94,.4);border:1px solid rgba(34,197,94,.6)" onclick="abrirModal('${p.numero}', ${p.rowIndex}, 'aprobar')">✅ Aprobar</button>
-             <button class="btn-small btn-view" style="background:rgba(239,68,68,.4);border:1px solid rgba(239,68,68,.6)" onclick="abrirModal('${p.numero}', ${p.rowIndex}, 'rechazar')">✕ Rechazar</button>`
-          : `<button class="btn-small btn-view" onclick="abrirModal('${p.numero}', ${p.rowIndex}, 'ver')">👁 Ver</button>`;
+          ? `<button class="btn-small btn-edit" style="background:rgba(34,197,94,.4);border:1px solid rgba(34,197,94,.6)" onclick="abrirModal('${numeroArg}', ${p.rowIndex}, 'aprobar')">✅ Aprobar</button>
+             <button class="btn-small btn-view" style="background:rgba(239,68,68,.4);border:1px solid rgba(239,68,68,.6)" onclick="abrirModal('${numeroArg}', ${p.rowIndex}, 'rechazar')">✕ Rechazar</button>`
+          : `<button class="btn-small btn-view" onclick="abrirModal('${numeroArg}', ${p.rowIndex}, 'ver')">👁 Ver</button>`;
 
         tr.innerHTML = `
           <td><strong>${esc(p.numero)}</strong></td>
@@ -206,6 +207,7 @@ function cargarProtocolos() {
 }
 
 function abrirModal(numero, rowIndex, accion) {
+  numero = decodeURIComponent(numero || '');
   protocoloActual = { numero, rowIndex, accion };
   document.getElementById('modalNumero').value          = numero;
   document.getElementById('modalEvaluador').value       = '';
@@ -305,7 +307,8 @@ function guardarEvaluacion() {
 }
 function logout() {
   localStorage.removeItem('cttg_admin');
-  window.location.href = 'index.html';                // FIX: igual que todas las demás páginas
+  localStorage.removeItem('cttg_token');
+  window.location.href = 'index.html';
 }
 
 </script>
