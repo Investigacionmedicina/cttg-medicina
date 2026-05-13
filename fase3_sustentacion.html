@@ -155,6 +155,15 @@
   <!-- PANEL NUEVA SOLICITUD -->
   <div class="panel" id="pan-nueva">
 
+  <div id="f3BloqueoComite" class="form-card" style="display:none;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.38);margin-bottom:16px">
+    <h3><span class="dot"></span>Fase 3 no disponible hasta nueva aprobación</h3>
+    <p style="font-size:13px;line-height:1.55;color:rgba(255,255,255,.75)">
+      Solo puedes enviar (o reenviar) la solicitud de sustentación cuando la radicación esté en estado <strong>«Aprobado»</strong> en Fase 1, es decir después de que el comité técnico <strong>apruebe tu último protocolo</strong> cargado en Fase 2.
+      Si el comité <strong>devolvió</strong> el trabajo, continúa primero en <strong>Protocolo / Fase 2</strong> y espera de nuevo «Aprobado».
+    </p>
+    <p id="f3BloqueoEstado" style="margin-top:10px;font-size:12px;color:#fcd34d;font-weight:600"></p>
+  </div>
+
   <div class="form-card">
     <h3><span class="dot"></span>Solicitar Sustentación</h3>
     <p>Carga todos los documentos requeridos en el formulario y completa los datos de tu sustentación.</p>
@@ -301,6 +310,7 @@ const TOKEN = localStorage.getItem('cttg_token') || '';
 let user = null;
 
 let numeroRadicacionGlobal = '';
+window.fase3NuevaPermitida = true;
 /** Catálogo hoja Jurados (misma estructura que Tutores). */
 let catalogoJuradosEst = [];
 
@@ -314,7 +324,20 @@ let catalogoJuradosEst = [];
     .then(r => r.json())
     .then(d => {
       if (redirigirSiSesionInvalida(d)) return;
-      if (d.success && d.radicaciones.length > 0) numeroRadicacionGlobal = d.radicaciones[0].numero || '';
+      if (d.success && d.radicaciones.length > 0) {
+        const rad = d.radicaciones[0];
+        numeroRadicacionGlobal = rad.numero || '';
+        const st = String(rad.estado || '').trim();
+        if (st !== 'Aprobado') {
+          window.fase3NuevaPermitida = false;
+          const box = document.getElementById('f3BloqueoComite');
+          const est = document.getElementById('f3BloqueoEstado');
+          if (box) box.style.display = 'block';
+          if (est) est.textContent = 'Estado actual de tu radicación: «' + (st || '—') + '»';
+          const btnSol = document.getElementById('btnSolicitar');
+          if (btnSol) { btnSol.disabled = true; btnSol.style.opacity = '0.55'; btnSol.style.cursor = 'not-allowed'; }
+        }
+      }
     });
 })();
 
@@ -449,6 +472,10 @@ function redirigirSiSesionInvalida(resp) {
 function marcarPasos() { setTimeout(() => { document.getElementById('paso1').classList.add('done'); document.getElementById('paso2').classList.add('done'); }, 500); }
 
 async function solicitarSustentacion() {
+  if (window.fase3NuevaPermitida === false) {
+    toast('Tu radicación debe estar «Aprobado» en Fase 1. Si el comité devolvió el protocolo, corrige en Protocolo/Fase 2 y espera nueva aprobación.', 'warn');
+    return;
+  }
   const check1 = document.getElementById('check1').checked;
   const check2 = document.getElementById('check2').checked;
   const check3 = document.getElementById('check3').checked;
@@ -534,14 +561,26 @@ async function solicitarSustentacion() {
     } else {
       document.getElementById('errorBox').style.display = 'block';
       document.getElementById('errorMsg').textContent = '❌ ' + (d.error || 'Error');
-      btn.disabled = false;
-      btn.innerHTML = '🎓 Solicitar Sustentación';
+      restaurarBotonSolicitarFase3(btn);
     }
   } catch(e) {
     document.getElementById('errorBox').style.display = 'block';
     document.getElementById('errorMsg').textContent = '❌ Error: ' + e.message;
+    restaurarBotonSolicitarFase3(btn);
+  }
+}
+
+function restaurarBotonSolicitarFase3(btn) {
+  if (!btn) return;
+  btn.innerHTML = '🎓 Solicitar Sustentación';
+  if (window.fase3NuevaPermitida === false) {
+    btn.disabled = true;
+    btn.style.opacity = '0.55';
+    btn.style.cursor = 'not-allowed';
+  } else {
     btn.disabled = false;
-    btn.innerHTML = '🎓 Solicitar Sustentación';
+    btn.style.opacity = '';
+    btn.style.cursor = '';
   }
 }
 
@@ -550,8 +589,7 @@ function reintentar() {
   document.getElementById('successBox').style.display = 'none';
   const btn = document.getElementById('btnSolicitar');
   btn.style.display = 'block';
-  btn.disabled = false;
-  btn.innerHTML = '🎓 Solicitar Sustentación';
+  restaurarBotonSolicitarFase3(btn);
 }
 
 function switchTab(name, btn) {
