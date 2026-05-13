@@ -98,7 +98,7 @@
   <!-- VISTA 1: ASIGNAR JURADOS -->
   <div class="panel on" id="pan-asignar">
     <div class="sec-hdr">
-      <div><h2>Pendiente de aprobación y programación</h2><p>Solicitudes con dos jurados propuestos; primero se aprueban y luego se registra fecha y hora.</p></div>
+      <div><h2>Pendiente de aprobación y programación</h2><p>Solicitudes de sustentación sin fecha registrada; el estudiante pudo omitir jurados propuestos. Debes cargar dos jurados (temático y metodológico), aprobación y teléfonos antes de «Programar».</p></div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
@@ -109,7 +109,7 @@
           <th>Semestre</th>
           <th>% Turnitin</th>
           <th>F. Solicitud</th>
-          <th>Jurados Sugeridos</th>
+          <th>Jurados propuestos</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr></thead>
@@ -154,24 +154,26 @@
     </div>
     <p id="mJuradosInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
     <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.22);border-radius:10px;padding:10px 12px;color:#bfdbfe;font-size:12px;line-height:1.5;margin-bottom:14px">
-      Revisa los jurados propuestos por el estudiante. Puedes aprobarlos tal como llegaron o cambiarlos antes de guardar. Después de esto el estudiante coordina disponibilidad con los profesores y tú registras fecha y hora en "Programar".
+      Revisa o define los jurados definitivos de la sustentación: <strong>jurado 1 · temático</strong> y <strong>jurado 2 · metodológico</strong>. Si el estudiante no sugirió nombres, regístralos aquí. Luego el estudiante coordina disponibilidad y tú registras fecha en «Programar».
     </div>
 
-    <div class="msec">Jurado 1</div>
+    <div class="msec">Jurado 1 · Temático</div>
     <div class="mfg"><label>Elegir de la hoja «Jurados» (opcional)</label>
       <select id="catJModal1" onchange="aplicarJuradoModal(1)"><option value="">— Escribir manualmente o cargar desde listado —</option></select>
     </div>
     <div class="mfg"><label>Nombre *</label><input id="jJ1Nombre" placeholder="Dr./Dra."></div>
     <div class="mfg"><label>Email *</label><input type="email" id="jJ1Email" placeholder="jurado@usc.edu.co"></div>
     <div class="mfg"><label>Teléfono *</label><input type="tel" id="jJ1Telefono" placeholder="Mínimo 7 dígitos"></div>
+    <div class="mfg"><label>Especialidad (opcional)</label><input id="jJ1Especialidad" placeholder="Área del jurado temático"></div>
 
-    <div class="msec">Jurado 2</div>
+    <div class="msec">Jurado 2 · Metodológico</div>
     <div class="mfg"><label>Elegir de la hoja «Jurados» (opcional)</label>
       <select id="catJModal2" onchange="aplicarJuradoModal(2)"><option value="">— Escribir manualmente o cargar desde listado —</option></select>
     </div>
     <div class="mfg"><label>Nombre *</label><input id="jJ2Nombre" placeholder="Dr./Dra."></div>
     <div class="mfg"><label>Email *</label><input type="email" id="jJ2Email" placeholder="jurado@usc.edu.co"></div>
     <div class="mfg"><label>Teléfono *</label><input type="tel" id="jJ2Telefono" placeholder="Mínimo 7 dígitos"></div>
+    <div class="mfg"><label>Especialidad (opcional)</label><input id="jJ2Especialidad" placeholder="Área del jurado metodológico"></div>
 
     <input type="hidden" id="mJuradosRow">
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
@@ -202,8 +204,8 @@
    
     <div class="msec">Jurados aprobados</div>
     <div class="mgrid" style="margin-bottom:4px">
-      <div class="mfg"><label>Jurado 1</label><input id="mJ1Nombre" readonly></div>
-      <div class="mfg"><label>Jurado 2</label><input id="mJ2Nombre" readonly></div>
+      <div class="mfg"><label>Jurado 1 · Temático</label><input id="mJ1Nombre" readonly></div>
+      <div class="mfg"><label>Jurado 2 · Metodológico</label><input id="mJ2Nombre" readonly></div>
     </div>
     <div class="mgrid" style="margin-bottom:4px">
       <div class="mfg"><label>Email jurado 1</label><input type="email" id="mJ1Email" readonly></div>
@@ -297,17 +299,48 @@ let catalogoJuradosCoord = [];
 
 async function cargarCatalogoJuradosCoord() {
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getJurados', token: coordToken() }) });
-    const d = await res.json();
-    if (!d.success || !Array.isArray(d.jurados)) return;
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getJurados', token: coordToken() })
+    });
+    const raw = await res.text();
+    let d;
+    try { d = JSON.parse(raw); } catch (pe) {
+      toast('Lista jurados: respuesta inválida. ¿Apps Script actualizado?', 'err');
+      console.error('getJurados:', raw.slice(0, 500));
+      poblarSelectJuradosModal();
+      return;
+    }
+    if (!d.success) {
+      toast(String(d.error || 'No se pudo cargar jurados. Si falta deploy del script con getJurados, actualízalo.'), 'err');
+      poblarSelectJuradosModal();
+      return;
+    }
+    if (!Array.isArray(d.jurados)) {
+      toast('Respuesta incompleta al cargar jurados.', 'err');
+      poblarSelectJuradosModal();
+      return;
+    }
     catalogoJuradosCoord = d.jurados.map((j, i) => ({
       id: String(j.id || i + 1),
       nombre: String(j.nombre || '').trim(),
       email: String(j.email || '').trim(),
-      telefono: String(j.telefono || '').trim()
+      telefono: String(j.telefono || '').trim(),
+      especialidad: String(j.especialidad || '').trim()
     })).filter(j => j.nombre || j.email);
     poblarSelectJuradosModal();
-  } catch (e) {}
+    if (catalogoJuradosCoord.length === 0) {
+      if (d.listaNota === 'no_hoja') {
+        toast('No hay pestaña «Jurados» en el libro (revisa nombre). Igual puede escribir manual.', 'warn');
+      } else if (d.listaNota === 'sin_filas') {
+        toast('La hoja Jurados no tiene registros válidos.', 'warn');
+      }
+    }
+  } catch (e) {
+    toast('Error al cargar lista de jurados: ' + e.message, 'err');
+    poblarSelectJuradosModal();
+  }
 }
 
 function poblarSelectJuradosModal() {
@@ -332,6 +365,8 @@ function aplicarJuradoModal(num) {
   document.getElementById(num === 1 ? 'jJ1Nombre' : 'jJ2Nombre').value = j.nombre || '';
   document.getElementById(num === 1 ? 'jJ1Email' : 'jJ2Email').value = j.email || '';
   document.getElementById(num === 1 ? 'jJ1Telefono' : 'jJ2Telefono').value = j.telefono || '';
+  const esp = document.getElementById(num === 1 ? 'jJ1Especialidad' : 'jJ2Especialidad');
+  if (esp) esp.value = j.especialidad || '';
 }
 
 function salir() { localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token'); window.location.href = 'index.html'; }
@@ -384,13 +419,17 @@ function telFuenteRad(r, num) {
 }
 
 function celdaJuradoresTabla(r) {
-  const jt = (n, tel) => {
+  const jt = (rol, esp, n, tel) => {
     const nome = String(n || '').trim();
     const telS = String(tel || '').trim();
-    if (!nome) return '';
-    return `<div style="margin-bottom:2px">${esc(nome)}${telS ? `<span style="opacity:.65;font-size:10px;display:block">📞 ${esc(telS)}</span>` : ''}</div>`;
+    const e = String(esp || '').trim();
+    if (!nome && !e) return '';
+    return `<div style="margin-bottom:4px"><span style="opacity:.55;font-size:10px;display:block">${esc(rol)}</span>${nome ? esc(nome) : '—'}${e ? `<span style="opacity:.65;font-size:10px;display:block">${esc(e)}</span>` : ''}${telS ? `<span style="opacity:.55;font-size:10px;display:block">📞 ${esc(telS)}</span>` : ''}</div>`;
   };
-  const h = [jt(r.jurado1Nombre, telFuenteRad(r, 1)), jt(r.jurado2Nombre, telFuenteRad(r, 2))].join('');
+  const h = [
+    jt('Temático', r.jurado1Especialidad, r.jurado1Nombre, telFuenteRad(r, 1)),
+    jt('Metodológico', r.jurado2Especialidad, r.jurado2Nombre, telFuenteRad(r, 2))
+  ].join('');
   return h || '—';
 }
 
@@ -484,8 +523,8 @@ function renderTablas() {
       <td style="font-size:12px;color:rgba(255,255,255,.75);vertical-align:top">${celdaEstudianteCoord(r)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:12px;color:#fcd34d">${fmtFecha(r.fechaSustentacion)}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${r.horaSustentacion||'—'}</td>
-      <td style="font-size:11px;color:rgba(255,255,255,.6);vertical-align:top">${esc(r.jurado1Nombre||'—')}<span style="display:block;opacity:.55;font-size:10px">${esc(telFuenteRad(r,1)||'')}</span></td>
-      <td style="font-size:11px;color:rgba(255,255,255,.6);vertical-align:top">${esc(r.jurado2Nombre||'—')}<span style="display:block;opacity:.55;font-size:10px">${esc(telFuenteRad(r,2)||'')}</span></td>
+      <td style="font-size:11px;color:rgba(255,255,255,.6);vertical-align:top">${esc(r.jurado1Nombre||'—')}<span style="display:block;opacity:.55;font-size:10px">${esc(String(r.jurado1Especialidad||'').trim())}</span><span style="display:block;opacity:.55;font-size:10px">${esc(telFuenteRad(r,1)||'')}</span></td>
+      <td style="font-size:11px;color:rgba(255,255,255,.6);vertical-align:top">${esc(r.jurado2Nombre||'—')}<span style="display:block;opacity:.55;font-size:10px">${esc(String(r.jurado2Especialidad||'').trim())}</span><span style="display:block;opacity:.55;font-size:10px">${esc(telFuenteRad(r,2)||'')}</span></td>
       <td><button class="btn bl" onclick="abrirResultado(${r.rowIndex},'${esc(r.numero)}')">🎓 Registrar</button></td>
     </tr>`).join('');
   }
@@ -495,7 +534,7 @@ function abrirAsignar(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
   if (!juradosAprobados(r)) {
-    toast('Primero aprueba los dos jurados propuestos', 'warn');
+    toast('Primero aprueba los dos jurados (usa «Revisar jurados»).', 'warn');
     return;
   }
   if (!juradosTieneTelefonosOk(r)) {
@@ -516,10 +555,10 @@ function abrirAsignar(rowIndex) {
   document.getElementById('modalAsignar').classList.add('open');
 }
 
-function abrirRevisarJurados(rowIndex) {
+async function abrirRevisarJurados(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
-  poblarSelectJuradosModal();
+  await cargarCatalogoJuradosCoord();
   document.getElementById('catJModal1').value = '';
   document.getElementById('catJModal2').value = '';
   document.getElementById('mJuradosRow').value = rowIndex;
@@ -527,9 +566,11 @@ function abrirRevisarJurados(rowIndex) {
   document.getElementById('jJ1Nombre').value = r.jurado1Nombre || '';
   document.getElementById('jJ1Email').value = r.jurado1Email || '';
   document.getElementById('jJ1Telefono').value = telFuenteRad(r, 1) || '';
+  document.getElementById('jJ1Especialidad').value = String(r.jurado1Especialidad || '').trim();
   document.getElementById('jJ2Nombre').value = r.jurado2Nombre || '';
   document.getElementById('jJ2Email').value = r.jurado2Email || '';
   document.getElementById('jJ2Telefono').value = telFuenteRad(r, 2) || '';
+  document.getElementById('jJ2Especialidad').value = String(r.jurado2Especialidad || '').trim();
   document.getElementById('modalJurados').classList.add('open');
 }
 
@@ -580,12 +621,14 @@ async function guardarJurados() {
   const j1 = {
     nombre: document.getElementById('jJ1Nombre').value.trim(),
     email: document.getElementById('jJ1Email').value.trim(),
-    telefono: document.getElementById('jJ1Telefono').value.trim()
+    telefono: document.getElementById('jJ1Telefono').value.trim(),
+    especialidad: document.getElementById('jJ1Especialidad').value.trim()
   };
   const j2 = {
     nombre: document.getElementById('jJ2Nombre').value.trim(),
     email: document.getElementById('jJ2Email').value.trim(),
-    telefono: document.getElementById('jJ2Telefono').value.trim()
+    telefono: document.getElementById('jJ2Telefono').value.trim(),
+    especialidad: document.getElementById('jJ2Especialidad').value.trim()
   };
 
   if (!j1.nombre || !j1.email || !j2.nombre || !j2.email) {
