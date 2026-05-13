@@ -63,6 +63,8 @@
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.err{background:rgba(239,68,68,.9);color:#fff}
+  .dip-banner{display:none;font-size:12px;line-height:1.45;color:rgba(255,255,255,.65);margin:-6px 0 18px;padding:12px 14px;background:rgba(102,126,234,.12);border:1px solid rgba(102,126,234,.28);border-radius:12px}
+  .dip-banner strong{color:#c4b5fd}
   .resumen-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:20px;margin-bottom:16px}
   .resumen-card h4{font-size:14px;font-weight:600;color:#fff;margin-bottom:14px}
   .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
@@ -92,6 +94,7 @@
 
 <main>
   <a href="estudiante_dashboard.html" class="back">← Volver al dashboard</a>
+  <p id="bannerDiplomado" class="dip-banner">Modalidad <strong>Diplomado</strong>: aquí cargas el <strong>producto</strong> para valoración del comité técnico (mismo flujo que el protocolo). No aplica sustentación en Fase 3.</p>
   <div class="tabs">
     <button class="tab on" onclick="switchTab('mis-protocolos',this)">📖 Mis Protocolos</button>
     <button class="tab" onclick="switchTab('cargar',this)">➕ Cargar Protocolo</button>
@@ -269,8 +272,17 @@ async function cargarRadicacion() {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN }) });
     const d = await res.json();
     if (redirigirSiSesionInvalida(d)) return;
+    const ban = document.getElementById('bannerDiplomado');
     if (d.success && (d.radicaciones || []).length > 0) {
-      window.numeroRadicacion = d.radicaciones[0].numero || '';
+      const rad = d.radicaciones[0];
+      window.numeroRadicacion = rad.numero || '';
+      window.radModalidad = rad.modalidad || '';
+      if (ban) {
+        const dip = String(rad.modalidad || '').trim().toLowerCase() === 'diplomado';
+        ban.style.display = dip ? 'block' : 'none';
+      }
+    } else if (ban) {
+      ban.style.display = 'none';
     }
   } catch(e) { console.error(e); }
 }
