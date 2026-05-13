@@ -54,7 +54,7 @@
 <header>
   <div class="hdr-l">
     <div class="logo">👩‍💼</div>
-    <div><h1>CTTG Medicina · Coordinación</h1><p>Validar Tutores</p></div>
+    <div><h1>CTTG Medicina · Coordinación</h1><p id="coordSubtitulo">Aval tutoría o diplomado</p></div>
   </div>
   <div class="hdr-r">
     <div class="user-chip" id="userChip">—</div>
@@ -74,6 +74,12 @@
       <div class="meta" id="infoEst">—</div>
     </div>
 
+    <div id="bloqueDiplomadoCoord" class="info-card" style="display:none">
+      <div class="titulo">🎓 Modalidad Diplomado</div>
+      <div class="meta" id="dipDetalleCoord">—</div>
+    </div>
+
+    <div id="bloqueTutoresCoord">
     <!-- TUTOR 1 -->
     <div class="form-card">
       <h3><span class="dot"></span>Tutor 1</h3>
@@ -120,6 +126,7 @@
         </div>
       </div>
     </div>
+    </div>
 
     <!-- OBSERVACIONES -->
     <div class="form-card">
@@ -130,19 +137,15 @@
 
     <!-- DECISIÓN — FIX: eliminados fecha de comité y evaluador -->
     <div class="form-card">
-      <h3><span class="dot"></span>Decisión sobre tutores</h3>
-      <p>Avala los tutores para que el estudiante pueda continuar con las actas de asesoría, o devuelve la propuesta.</p>
+      <h3><span class="dot"></span><span id="tituloDecisionCoord">Decisión sobre tutores</span></h3>
+      <p id="txtDecisionAyudaCoord">Avala los tutores para que el estudiante pueda continuar con las actas de asesoría, o devuelve la propuesta.</p>
       <div class="form-grid">
         <div class="fg full">
           <label>Decisión *</label>
-          <select id="decisionTutores">
-            <option value="">Seleccionar decisión...</option>
-            <option value="revision">✅ Avalar tutores</option>
-            <option value="devolver">↩️ Devolver propuesta</option>
-          </select>
+          <select id="decisionTutores"></select>
         </div>
       </div>
-      <div class="info-box">
+      <div class="info-box" id="decisionHintCoord">
         📌 La fecha del comité técnico se asigna cuando el estudiante suba el protocolo (Fase 2).
       </div>
     </div>
@@ -179,6 +182,30 @@ let catalogoTutores = [];
 })();
 
 function salir() { localStorage.removeItem('cttg_admin'); window.location.href = 'index.html'; }
+
+function esModalidadDiplomadoCoord(m) {
+  return String(m || '').trim().toLowerCase() === 'diplomado';
+}
+
+function fmtFechaCoord(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+  const p = String(s).split('T')[0].split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : String(s);
+}
+
+function opcionesDecisionCoord(esDipl) {
+  const sel = document.getElementById('decisionTutores');
+  if (!sel) return;
+  sel.innerHTML = [
+    '<option value="">Seleccionar decisión...</option>',
+    esDipl
+      ? '<option value="revision">✅ Avalar diplomado y desbloquear Fase 2</option>'
+      : '<option value="revision">✅ Avalar tutores</option>',
+    '<option value="devolver">↩️ Devolver propuesta</option>'
+  ].join('');
+}
 
 function toast(msg, type) {
   const t = document.getElementById('toast');
@@ -239,10 +266,35 @@ async function cargarDatos() {
 
 function poblarFormulario() {
   const r = radicacion;
+  const esDipl = esModalidadDiplomadoCoord(r.modalidad);
   document.getElementById('infoNumero').textContent = '📋 ' + r.numero;
   document.getElementById('infoTitulo').textContent = r.titulo || 'Sin título';
   const est = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(' · ');
   document.getElementById('infoEst').textContent = '👤 ' + est;
+
+  const bloqueT = document.getElementById('bloqueTutoresCoord');
+  const bloqueD = document.getElementById('bloqueDiplomadoCoord');
+  if (bloqueT) bloqueT.style.display = esDipl ? 'none' : 'block';
+  if (bloqueD) {
+    bloqueD.style.display = esDipl ? 'block' : 'none';
+    const di = r.diplomadoFechaInicio || '';
+    const df = r.diplomadoFechaFin || '';
+    document.getElementById('dipDetalleCoord').textContent =
+      'Sin actas de asesoría: al aprobar, el estudiante pasa a Fase 2. · Inicio: ' + fmtFechaCoord(di) + ' · Fin: ' + fmtFechaCoord(df);
+  }
+
+  document.getElementById('tituloDecisionCoord').textContent = esDipl ? 'Decisión sobre el diplomado' : 'Decisión sobre tutores';
+  document.getElementById('txtDecisionAyudaCoord').textContent = esDipl
+    ? 'Avala los datos del diplomado para desbloquear Fase 2 (producto para comité técnico), o devuelve la propuesta.'
+    : 'Avala los tutores para que el estudiante pueda continuar con las actas de asesoría, o devuelve la propuesta.';
+  document.getElementById('decisionHintCoord').innerHTML = esDipl
+    ? '📌 Modalidad <strong>Diplomado</strong>: no hay actas; el comité técnico valora el producto en Fase 2 y el trámite puede cerrar ahí (sin sustentación).'
+    : '📌 La fecha del comité técnico se asigna cuando el estudiante suba el protocolo (Fase 2).';
+  opcionesDecisionCoord(esDipl);
+  document.getElementById('observaciones').placeholder = esDipl
+    ? 'Observaciones internas sobre la radicación del diplomado...'
+    : 'Observaciones del comité sobre los tutores...';
+  document.getElementById('btnGuardar').textContent = esDipl ? '✅ Avalar diplomado y desbloquear Fase 2' : '✅ Avalar tutores y notificar';
 
   document.getElementById('t1Nombre').value   = r.tutor1Nombre    || '';
   document.getElementById('t1Email').value    = r.tutor1Email     || '';
@@ -259,17 +311,22 @@ function poblarFormulario() {
 }
 
 async function guardar() {
+  const esDipl = radicacion && esModalidadDiplomadoCoord(radicacion.modalidad);
+  const labelBtnFin = esDipl ? '✅ Avalar diplomado y desbloquear Fase 2' : '✅ Avalar tutores y notificar';
+
   const t1Nombre  = document.getElementById('t1Nombre').value.trim();
   const t1Email   = document.getElementById('t1Email').value.trim();
   const t1Vinculo = document.getElementById('t1Relacion').value;
   const decision  = document.getElementById('decisionTutores').value;
   const obsBase   = document.getElementById('observaciones').value.trim();
 
-  if (!t1Nombre || !t1Email) { toast('Nombre y email del Tutor 1 son obligatorios', 'warn'); return; }
-  if (!t1Vinculo)            { toast('Selecciona vínculo contractual USC para Tutor 1', 'warn'); return; }
-  if (!decision)             { toast('Selecciona la decisión sobre los tutores', 'warn'); return; }
+  if (!esDipl) {
+    if (!t1Nombre || !t1Email) { toast('Nombre y email del Tutor 1 son obligatorios', 'warn'); return; }
+    if (!t1Vinculo)            { toast('Selecciona vínculo contractual USC para Tutor 1', 'warn'); return; }
+  }
+  if (!decision)             { toast('Selecciona la decisión correspondiente', 'warn'); return; }
 
-  const tutor1 = {
+  const tutor1 = esDipl ? null : {
     nombre:   t1Nombre,
     email:    t1Email,
     telefono: document.getElementById('t1Telefono').value.trim(),
@@ -279,13 +336,13 @@ async function guardar() {
 
   const t2Nombre  = document.getElementById('t2Nombre').value.trim();
   const t2Vinculo = document.getElementById('t2Relacion').value || '';
-  const tutor2    = t2Nombre ? {
+  const tutor2    = esDipl ? null : (t2Nombre ? {
     nombre:   t2Nombre,
     email:    document.getElementById('t2Email').value.trim(),
     telefono: document.getElementById('t2Telefono').value.trim(),
     vinculo:  t2Vinculo,
     relacion: t2Vinculo
-  } : null;
+  } : null);
 
   const btn = document.getElementById('btnGuardar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
@@ -318,15 +375,18 @@ async function guardar() {
 
     const notificacionTutores = {
       asunto: decision === 'revision'
-        ? `CTTG Medicina | Aval tutor(es) radicación ${radicacion.numero || rowIndex}`
-        : `CTTG Medicina | Ajustes en propuesta de tutor(es) ${radicacion.numero || rowIndex}`,
+        ? (esDipl
+          ? `CTTG Medicina | Aval diplomado / Fase 2 radicación ${radicacion.numero || rowIndex}`
+          : `CTTG Medicina | Aval tutor(es) radicación ${radicacion.numero || rowIndex}`)
+        : `CTTG Medicina | Ajustes en propuesta ${radicacion.numero || rowIndex}`,
       mensaje:
 `Estimado(a) docente tutor(a),
 
-La Coordinación del CTTG Medicina registró la siguiente gestión de tutores:
+La Coordinación del CTTG Medicina registró la siguiente gestión:
 - Radicación: ${radicacion.numero || 'N/D'}
 - Proyecto: ${radicacion.titulo || 'Sin título'}
-- Decisión: ${decision === 'revision' ? 'Pasar a revisión' : 'Devolver propuesta'}
+- Modalidad: ${radicacion.modalidad || 'N/D'}
+- Decisión: ${decision === 'revision' ? (esDipl ? 'Desbloquear Fase 2 (diplomado)' : 'Avalar tutores / pasar a actas') : 'Devolver propuesta'}
 
 
 Datos de contacto de estudiante(s):
@@ -349,7 +409,7 @@ Este mensaje fue generado automáticamente por el sistema CTTG.`,
     if (!dTutores.success) throw new Error(dTutores.error);
 
     // 2. Actualizar estado
-    const estado = decision === 'revision' ? 'Tutores Avalados' : 'Devuelto';
+    const estado = decision === 'revision' ? (esDipl ? 'Fase 2 Desbloqueada' : 'Tutores Avalados') : 'Devuelto';
     const resEstado = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'updateEstado',
       rowIndex,
@@ -361,13 +421,15 @@ Este mensaje fue generado automáticamente por el sistema CTTG.`,
     const dEstado = await resEstado.json();
     if (!dEstado.success) throw new Error(dEstado.error);
 
-    toast(decision === 'revision' ? 'Tutores avalados ✓ El estudiante puede cargar sus actas de asesoría' : 'Propuesta devuelta ✓', 'ok');
+    toast(decision === 'revision'
+      ? (esDipl ? 'Diplomado avalado. El estudiante puede continuar en Fase 2 (sin actas).' : 'Tutores avalados ✓ El estudiante puede cargar sus actas de asesoría')
+      : 'Propuesta devuelta ✓', 'ok');
     setTimeout(() => window.location.href = 'coordinadora_dashboard.html', 2000);
   } catch(e) {
     toast('Error: ' + e.message, 'err');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '✅ Avalar tutores y notificar';
+    btn.textContent = labelBtnFin;
   }
 }
 </script>
