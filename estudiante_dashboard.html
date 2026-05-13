@@ -389,8 +389,22 @@ async function salirSession() {
   window.location.href = 'index.html';
 }
 
+function esDevueltoPorComiteTecnico(est) {
+  const e = String(est || '').toLowerCase();
+  return e.includes('devuelto por comité') || e.includes('devuelto por comite');
+}
+
 function switchTab(name, btn) {
-  if (name === 'nueva' && bloquearNuevaRad) { toast('Aún tienes una radicación sin respuesta. No puedes crear otra.', 'warn'); return; }
+  if (name === 'nueva' && bloquearNuevaRad) {
+    const st = misRadicaciones[0] && misRadicaciones[0].estado;
+    toast(
+      esDevueltoPorComiteTecnico(st)
+        ? 'El comité ya respondió con una devolución: corrige el protocolo desde Fase 2. No puedes abrir otra radicación mientras atiendes este trámite.'
+        : 'Aún tienes una radicación en trámite. No puedes crear otra hasta cerrar esta etapa.',
+      'warn'
+    );
+    return;
+  }
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
   document.getElementById('pan-' + name).classList.add('on');
@@ -616,11 +630,16 @@ document.getElementById('d_notas').textContent = limpiarNotas(r.notas) || '—';
       const bloqueo  = document.getElementById('bloqueoRad');
       const readonly = document.getElementById('readonlyRad');
       const tabNueva = document.getElementById('tabNueva');
+      const algunDevComite = misRadicaciones.some(r => esDevueltoPorComiteTecnico(r.estado));
       if (bloquearNuevaRad) {
         bloqueo.style.display  = 'block';
-        bloqueo.innerHTML      = '🚫 Ya tienes una radicación sin respuesta. Debes esperar respuesta del comité para crear una nueva.';
+        bloqueo.innerHTML      = algunDevComite
+          ? '🚫 No puedes abrir otra <strong>radicación</strong> mientras atiendes la devolución del comité técnico. Ve a <strong>Fase 2 — Protocolo</strong>, carga la versión corregida y solicita <strong>nueva valoración</strong>.'
+          : '🚫 Ya tienes una radicación en curso. Cuando el trámite cierre (aprobado, devuelto u otro estado final) podrás radicar de nuevo si aplica.';
         readonly.style.display = 'block';
-        readonly.innerHTML     = '👁 Tu radicación está en trámite y no puede modificarse.';
+        readonly.innerHTML     = algunDevComite
+          ? '👁 El comité devolvió el protocolo: revisa el motivo y vuelve a enviar desde Fase 2 (la misma radicación sigue activa).'
+          : '👁 Tu radicación está en trámite; el formulario de nueva radicación permanece deshabilitado.';
         tabNueva.style.opacity = '.55';
         setFormularioSoloLectura(true);
       } else {
@@ -808,7 +827,16 @@ function limpiar() {
 }
 
 async function radicar() {
-  if (bloquearNuevaRad) { toast('No puedes radicar hasta recibir respuesta de tu radicación actual.', 'warn'); return; }
+  if (bloquearNuevaRad) {
+    const st = misRadicaciones[0] && misRadicaciones[0].estado;
+    toast(
+      esDevueltoPorComiteTecnico(st)
+        ? 'Mientras atiendes la devolución del comité debes corregir el protocolo en Fase 2; no puedes crear otra radicación.'
+        : 'No puedes radicar de nuevo mientras tu radicación actual sigue en trámite.',
+      'warn'
+    );
+    return;
+  }
   const reqs = [['cedula1','Cédula estudiante 1'],['nombre1','Nombre estudiante 1'],['email1','Email estudiante 1'],['telefono1','Teléfono estudiante 1'],['semestre1','Semestre estudiante 1'],['titulo','Título del proyecto'],['modalidad','Modalidad'],['area','Área'],['tutor1Nombre','Nombre del tutor 1'],['tutor1Email','Email del tutor 1']];
   for (const [id, label] of reqs) {
     const el = document.getElementById(id);
