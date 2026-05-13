@@ -55,6 +55,8 @@
   .b-tutores{background:rgba(52,211,153,.2);color:#6ee7b7}
   .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
   .b-solicitud{background:rgba(59,130,246,.2);color:#93c5fd}
+  .pill-diplomado{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(167,139,250,.22);color:#c4b5fd;border:1px solid rgba(167,139,250,.35);line-height:1.35;max-width:160px}
+  .btn.dip-acc{color:#c4b5fd;border-color:rgba(167,139,250,.45)}.btn.dip-acc:hover{background:rgba(167,139,250,.12)}
   .act{display:flex;gap:4px;flex-wrap:wrap}
   .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
   .btn:hover{background:rgba(255,255,255,.07);color:#fff}
@@ -119,7 +121,14 @@
   .seg-event .date{font-family:'DM Mono',monospace;font-size:11px;color:#93c5fd;margin-bottom:4px}
   .seg-event .what{font-size:13px;color:#fff;font-weight:600}
   .seg-event .detail{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
+  .seg-event .state{font-size:11px;color:#bbf7d0;margin-top:6px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:7px;padding:6px 8px}
   .seg-help{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#bfdbfe;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px}
+  .seg-search-info{display:none;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:12px}
+  .seg-search-info.show{display:block}
+  .seg-choice{display:flex;justify-content:space-between;gap:10px;align-items:center;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 10px;margin-top:8px}
+  .seg-choice .main{font-size:13px;color:#fff;font-weight:600}
+  .seg-choice .sub{font-size:11px;color:rgba(255,255,255,.48);margin-top:2px}
+  .seg-pill{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;background:rgba(96,165,250,.14);color:#93c5fd;border:1px solid rgba(96,165,250,.28);border-radius:99px;padding:3px 8px;margin-bottom:6px}
  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
@@ -187,7 +196,7 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor(es)</th><th>F. Radicación</th><th>Estado</th><th>Acciones</th>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor / Diplomado</th><th>F. Radicación</th><th>Estado</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbody">
           <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando registros...</td></tr>
@@ -406,7 +415,7 @@
   <div class="panel" id="pan-seguimiento">
     <div class="seg-help">Usa este panel para responder “¿cómo va este trabajo?”: busca por número de radicación, título, estudiante o correo y verás el estado actual, qué pasó en cada fecha y cuál es el siguiente paso.</div>
     <div class="filters">
-      <input id="searchSeguimiento" placeholder="🔍 Buscar trabajo: radicación, título, estudiante o correo..." oninput="cargarSeguimiento()">
+      <input id="searchSeguimiento" placeholder="🔍 Buscar trabajo: radicación, título, estudiante o correo..." oninput="prepararBusquedaSeguimiento()" onkeydown="if(event.key==='Enter') cargarSeguimiento()">
       <select id="fFaseSeg" onchange="renderSeguimiento()">
         <option value="">Todos los módulos</option>
         <option value="AUTH">AUTH</option>
@@ -417,8 +426,10 @@
         <option value="SISTEMA">SISTEMA</option>
         <option value="GENERAL">GENERAL</option>
       </select>
+      <button class="btn bl" onclick="cargarSeguimiento()">🔎 Buscar seguimiento</button>
       <button class="btn" onclick="cargarSeguimiento()">↻ Actualizar</button>
     </div>
+    <div class="seg-search-info" id="segSearchInfo"></div>
     <div class="timeline-box" id="timelineResumen" style="display:none"></div>
     <div class="tbl-wrap">
       <table>
@@ -775,6 +786,24 @@ function fmtFecha(s) {
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s) { return esc(s).replace(/"/g,'&quot;'); }
 
+function esModalidadDiplomadoDash(r) {
+  return String((r && r.modalidad) || '').trim().toLowerCase() === 'diplomado';
+}
+function textoCeldaTutorDashboard(r) {
+  if (!r) return '—';
+  if (esModalidadDiplomadoDash(r)) {
+    return '<span class="pill-diplomado" title="Modalidad Diplomado: sin tutores; pendiente aval de coordinación o en Fase 2">🎓 Sin tutores · Diplomado</span>';
+  }
+  const t = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).join('<br>');
+  return t || '—';
+}
+function clasesBtnAvalDashboard(r) {
+  return esModalidadDiplomadoDash(r) ? 'btn dip-acc' : 'btn gr';
+}
+function textoBtnAvalDashboard(r) {
+  return esModalidadDiplomadoDash(r) ? '🎓 Aval diplomado' : '✅ Tutores';
+}
+
 // ── RADICACIONES ─────────────────────────────────────────────
 async function cargar() {
   setSyncState('loading');
@@ -839,7 +868,7 @@ function renderTabla() {
   const fE = document.getElementById('fEstRad').value;
   const fM = document.getElementById('fMod').value;
   const filtered = radicaciones.filter(r => {
-    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre].join(' ').toLowerCase();
+    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.modalidad].join(' ').toLowerCase();
     const estadoR = String(r.estado || '');
     const estadoMatch = !fE || estadoR === fE || (fE === 'Tutores Avalados' && estadoR === 'Tutores avalados');
     return (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
@@ -848,20 +877,22 @@ function renderTabla() {
   if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
   body.innerHTML = filtered.map(r => {
     const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join('<br>') || '—';
-    const tutores = [r.tutor1Nombre,r.tutor2Nombre].filter(Boolean).join('<br>') || '—';
     const estado  = r.estado || 'Radicado';
+    const celdaTutor = textoCeldaTutorDashboard(r);
+    const btnAvalCls = clasesBtnAvalDashboard(r);
+    const btnAvalTxt = textoBtnAvalDashboard(r);
     return `<tr>
       <td><div class="num-rad">${esc(r.numero||'')}</div></td>
       <td style="font-size:12px;max-width:160px">${nombres}</td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:140px">${tutores}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:180px">${celdaTutor}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
       <td>${badgeEst(estado)}</td>
       <td><div class="act">
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
-        <button class="btn gr" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">✅ Tutores</button>
+        <button class="${btnAvalCls}" title="${esModalidadDiplomadoDash(r) ? 'Abrir aval de Diplomado (sin tutores/actas)' : 'Validar tutores'}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${btnAvalTxt}</button>
         <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
       </div></td>
     </tr>`;
@@ -905,6 +936,17 @@ function verDetalle(ri) {
   const r = radicaciones.find(x => x.rowIndex === ri);
   if (!r) return;
   const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val">${esc(val)}</span></div>` : '';
+  const esDip = esModalidadDiplomadoDash(r);
+  const tutorBlock = esDip
+    ? `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Diplomado</div>
+       ${fila('Nombre diplomado', r.titulo)}
+       ${fila('Inicio', fmtFecha(r.diplomadoFechaInicio))}${fila('Fin', fmtFecha(r.diplomadoFechaFin))}`
+    : `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
+       ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
+       ${fila('Email T1',r.tutor1Email)}
+       ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}`;
+  const avalCls = esDip ? 'btn dip-acc' : 'btn gr';
+  const avalLbl = esDip ? '🎓 Avalar diplomado' : '✅ Validar tutores';
   document.getElementById('modalDetBody').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div><div style="font-family:'DM Mono',monospace;font-size:13px;color:#a78bfa;margin-bottom:4px">${esc(r.numero)}</div>
@@ -919,13 +961,11 @@ function verDetalle(ri) {
     ${fila('Email 1',r.email1)}${fila('Teléfono 1',r.telefono1)}
     ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
     ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
-    ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
-    ${fila('Email T1',r.tutor1Email)}
-    ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
+    ${tutorBlock}
     ${r.notas ? `<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#fcd34d">📝 </span>${esc(r.notas)}</div>` : ''}
     <div style="margin-top:14px">
       <button class="btn am" onclick="closeModal('modalDet');abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Cambiar estado</button>
+      <button class="${avalCls}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${avalLbl}</button>
       <button class="btn bl" onclick="closeModal('modalDet');abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Ver trazabilidad</button>
     </div>`;
   document.getElementById('modalDet').classList.add('open');
@@ -1526,7 +1566,9 @@ function construirAlertasLocales() {
         estudiante: estudiantes,
         estado,
         plazo: `${diasRad} días hábiles`,
-        detalles: 'Pendiente validar tutores. Supera 15 días hábiles desde radicación.',
+        detalles: esModalidadDiplomadoDash(r)
+          ? 'Pendiente aval del diplomado por coordinación. Supera 15 días hábiles desde radicación.'
+          : 'Pendiente validar tutores. Supera 15 días hábiles desde radicación.',
         rowIndex: r.rowIndex
       });
     }
@@ -1794,12 +1836,50 @@ async function guardarAvaloProtocolo() {
 // TAB 6: SEGUIMIENTO INDIVIDUAL
 // ════════════════════════════════════════════════════════════
 let seguimientos = [];
+let seguimientoRadActual = null;
+let seguimientoTimer = null;
+
+function prepararBusquedaSeguimiento() {
+  clearTimeout(seguimientoTimer);
+  const q = (document.getElementById('searchSeguimiento').value || '').trim();
+  renderSugerenciasSeguimiento(q);
+  if (q.length >= 4 || /^CTTG/i.test(q)) {
+    seguimientoTimer = setTimeout(cargarSeguimiento, 500);
+  } else {
+    seguimientoRadActual = null;
+    seguimientos = [];
+    document.getElementById('timelineResumen').style.display = 'none';
+    document.getElementById('tbodySeguimiento').innerHTML = '<tr><td colspan="5" class="empty">Busca un trabajo por radicación, título, estudiante o correo.</td></tr>';
+  }
+}
+
 async function cargarSeguimiento() {
   const qRaw = (document.getElementById('searchSeguimiento').value || '').trim();
   const q = qRaw.toUpperCase();
-  const radMatch = buscarRadicacionSeguimiento(qRaw);
-  const numeroConsulta = radMatch && !/^CTTG/i.test(q) ? (radMatch.numero || '') : q;
+  const matches = buscarRadicacionesSeguimiento(qRaw);
+  const exacta = matches.find(r => String(r.numero || '').trim().toUpperCase() === q);
+  const radMatch = exacta || (matches.length === 1 ? matches[0] : null);
   const tbody = document.getElementById('tbodySeguimiento');
+  seguimientoRadActual = radMatch || null;
+  if (!qRaw) {
+    document.getElementById('timelineResumen').style.display = 'none';
+    document.getElementById('segSearchInfo').classList.remove('show');
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Busca un trabajo por radicación, título, estudiante o correo.</td></tr>';
+    return;
+  }
+  if (!radMatch && matches.length > 1) {
+    renderSugerenciasSeguimiento(qRaw, true);
+    document.getElementById('timelineResumen').style.display = 'none';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Hay varios trabajos que coinciden. Selecciona uno para ver su seguimiento.</td></tr>';
+    return;
+  }
+  if (!radMatch && !/^CTTG/i.test(q)) {
+    document.getElementById('timelineResumen').style.display = 'none';
+    renderSugerenciasSeguimiento(qRaw, true);
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No encontré un trabajo con esa búsqueda. Prueba con el número de radicación.</td></tr>';
+    return;
+  }
+  const numeroConsulta = radMatch ? (radMatch.numero || '') : q;
   tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>';
   try {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
@@ -1811,6 +1891,7 @@ async function cargarSeguimiento() {
     const d = await res.json();
     if (!d.success) throw new Error(d.error || 'No fue posible cargar trazabilidad');
     seguimientos = d.registros || [];
+    renderSugerenciasSeguimiento(qRaw);
     renderSeguimiento();
   } catch(e) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">Error cargando trazabilidad.</td></tr>';
@@ -1824,11 +1905,13 @@ function renderSeguimiento() {
   const filtered = seguimientos.filter(s => {
     const rad = obtenerRadicacionSeguimiento(s.numeroRadicacion);
     const txt = [s.numeroRadicacion, s.accion, s.email, s.detalle, s.modulo, rad && rad.numero, rad && rad.titulo, rad && rad.nombre1, rad && rad.nombre2, rad && rad.nombre3, rad && rad.emailEstudiante, rad && rad.email1].join(' ').toLowerCase();
-    return (!q || txt.includes(q)) && (!fF || String(s.modulo || '').toUpperCase() === fF);
+    const coincideBusqueda = seguimientoRadActual ? true : (!q || txt.includes(q));
+    return coincideBusqueda && (!fF || String(s.modulo || '').toUpperCase() === fF);
   });
   const tbody = document.getElementById('tbodySeguimiento');
   if (!filtered.length) {
-    document.getElementById('timelineResumen').style.display = 'none';
+    if (seguimientoRadActual) renderResumenTimeline([]);
+    else document.getElementById('timelineResumen').style.display = 'none';
     tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin registros de trazabilidad para esa búsqueda.</td></tr>';
     return;
   }
@@ -1850,18 +1933,19 @@ function renderSeguimiento() {
 function renderResumenTimeline(registros) {
   const box = document.getElementById('timelineResumen');
   const numeroBuscado = (document.getElementById('searchSeguimiento').value || '').trim().toUpperCase();
-  if (!numeroBuscado) { box.style.display = 'none'; box.innerHTML = ''; return; }
-  const numero = String((registros[0] && registros[0].numeroRadicacion) || numeroBuscado || '').trim().toUpperCase();
-  const esConsultaTrabajo = numero || numeroBuscado;
+  const radSeleccionada = seguimientoRadActual || buscarRadicacionSeguimiento(numeroBuscado);
+  if (!numeroBuscado && !radSeleccionada) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const numero = String((radSeleccionada && radSeleccionada.numero) || (registros[0] && registros[0].numeroRadicacion) || numeroBuscado || '').trim().toUpperCase();
+  const esConsultaTrabajo = numero || radSeleccionada;
   if (!esConsultaTrabajo) { box.style.display = 'none'; box.innerHTML = ''; return; }
   const registrosOrdenados = [...registros].sort((a, b) => fechaSeguimientoVal(a) - fechaSeguimientoVal(b));
   const acciones = registrosOrdenados.map(r => String(r.accion || '').toUpperCase());
-  const rad = obtenerRadicacionSeguimiento(numero) || buscarRadicacionSeguimiento(numeroBuscado);
+  const rad = radSeleccionada || obtenerRadicacionSeguimiento(numero) || buscarRadicacionSeguimiento(numeroBuscado);
   const estadoActual = rad ? (rad.estado || 'Radicado') : '';
-  const inferido = inferirEtapaSeguimientoPorEstado(estadoActual);
+  const inferido = inferirEtapaSeguimientoPorEstado(estadoActual, rad && rad.modalidad);
   const orden = [
     { keys:['CREAR_RADICACION'], label:'Radicación registrada' },
-    { keys:['VALIDAR_TUTORES'], label:'Tutores autorizados' },
+    { keys:['VALIDAR_TUTORES','VALIDAR_OPCION_DIPLOMADO'], label:'Tutores avalados / aval Diplomado' },
     { keys:['CREAR_ACTA'], label:'Actas cargadas' },
     { keys:['APROBAR_ACTA'], label:'Actas aprobadas por coordinadora' },
     { keys:['CREAR_PROTOCOLO'], label:'Protocolo radicado' },
@@ -1890,15 +1974,21 @@ function renderResumenTimeline(registros) {
   const estadoVisible = estadoActual || (hitoUltimo ? hitoUltimo.texto : 'Sin estado disponible');
   const estudiantes = rad ? [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ') : '';
   const titulo = rad && rad.titulo ? rad.titulo : 'Trabajo consultado';
-  const historia = registrosOrdenados.map(function(r){
+  const historia = registrosOrdenados.length ? registrosOrdenados.map(function(r){
     const hito = describirHitoSeguimiento(r);
     return `<div class="seg-event">
       <div class="date">${esc(fmtFechaHoraSeguimiento(r.timestamp))}</div>
       <div class="what">Pasó: ${esc(hito.texto)}</div>
       <div class="detail">${esc(r.detalle || 'Sin detalle adicional.')}</div>
       <div class="detail">Responsable: ${esc(r.email || '—')}</div>
+      <div class="state">Vamos en: ${esc(estadoVisible)}</div>
     </div>`;
-  }).join('');
+  }).join('') : `<div class="seg-event">
+      <div class="date">Sin fecha registrada</div>
+      <div class="what">Trabajo encontrado</div>
+      <div class="detail">No hay movimientos de trazabilidad guardados para esta radicación, pero el estado actual del trabajo está disponible.</div>
+      <div class="state">Vamos en: ${esc(estadoVisible)}</div>
+    </div>`;
   const rows = orden.map(function(step, i){
     const donePorRegistro = step.keys.some(k => acciones.indexOf(k) !== -1);
     const done = donePorRegistro || i <= inferido.indice;
@@ -1929,7 +2019,7 @@ function renderResumenTimeline(registros) {
       <div class="seg-card"><div class="k">Responsable último</div><div class="v">${esc(ultimo ? (ultimo.email || '—') : '—')}</div></div>
       <div class="seg-card"><div class="k">Siguiente paso</div><div class="v">${esc(siguiente)}</div></div>
     </div>
-    <div class="timeline-title">Historia por fechas</div>
+    <div class="timeline-title">Historia por fechas: qué pasó y cuándo</div>
     <div class="seg-history">${historia}</div>
     <div class="timeline-title">Ruta general del proceso</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -1955,19 +2045,73 @@ function buscarRadicacionSeguimiento(q) {
     || null;
 }
 
-function inferirEtapaSeguimientoPorEstado(estado) {
+function buscarRadicacionesSeguimiento(q) {
+  const needle = String(q || '').trim().toLowerCase();
+  if (!needle) return [];
+  const textoRad = r => [r.numero, r.titulo, r.nombre1, r.nombre2, r.nombre3, r.emailEstudiante, r.email1, r.email2, r.email3, r.tutor1Nombre, r.tutor2Nombre].join(' ').toLowerCase();
+  const exactas = radicaciones.filter(r => String(r.numero || '').trim().toLowerCase() === needle);
+  const parciales = radicaciones.filter(r => !exactas.includes(r) && textoRad(r).includes(needle));
+  return exactas.concat(parciales).slice(0, 8);
+}
+
+function seleccionarSeguimiento(numero) {
+  const input = document.getElementById('searchSeguimiento');
+  input.value = decodeURIComponent(numero || '');
+  cargarSeguimiento();
+}
+
+function renderSugerenciasSeguimiento(q, forzar) {
+  const box = document.getElementById('segSearchInfo');
+  if (!box) return;
+  const needle = String(q || '').trim();
+  if (!needle) {
+    box.classList.remove('show');
+    box.innerHTML = '';
+    return;
+  }
+  const matches = buscarRadicacionesSeguimiento(needle);
+  if (!matches.length) {
+    if (forzar) {
+      box.classList.add('show');
+      box.innerHTML = `<span class="seg-pill">Búsqueda</span><div style="font-size:13px;color:#fecaca">No encontré un trabajo con "${esc(needle)}". Intenta con número de radicación, nombre del estudiante o parte del título.</div>`;
+    } else {
+      box.classList.remove('show');
+      box.innerHTML = '';
+    }
+    return;
+  }
+  if (matches.length === 1 && !forzar) {
+    const r = matches[0];
+    box.classList.add('show');
+    box.innerHTML = `<span class="seg-pill">Trabajo encontrado</span><div class="seg-choice">
+      <div><div class="main">${esc(r.numero || '—')} · ${esc(r.titulo || 'Sin título')}</div><div class="sub">${esc([r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || r.emailEstudiante || 'Sin estudiante')} · Estado actual: ${esc(r.estado || 'Radicado')}</div></div>
+      <button class="btn bl" onclick="seleccionarSeguimiento('${encodeURIComponent(r.numero || '')}')">Ver seguimiento</button>
+    </div>`;
+    return;
+  }
+  box.classList.add('show');
+  box.innerHTML = `<span class="seg-pill">${matches.length === 1 ? 'Trabajo encontrado' : 'Coincidencias'}</span>
+    <div style="font-size:13px;color:rgba(255,255,255,.72);margin-bottom:4px">${matches.length === 1 ? 'Selecciona el trabajo para ver la historia completa.' : 'Hay varios trabajos posibles. Selecciona uno para ver su historia por fechas.'}</div>
+    ${matches.map(r => `<div class="seg-choice">
+      <div><div class="main">${esc(r.numero || '—')} · ${esc(r.titulo || 'Sin título')}</div><div class="sub">${esc([r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || r.emailEstudiante || 'Sin estudiante')} · Estado actual: ${esc(r.estado || 'Radicado')}</div></div>
+      <button class="btn bl" onclick="seleccionarSeguimiento('${encodeURIComponent(r.numero || '')}')">Ver seguimiento</button>
+    </div>`).join('')}`;
+}
+
+function inferirEtapaSeguimientoPorEstado(estado, modalidad) {
   const e = String(estado || '').toLowerCase();
+  const esDip = String(modalidad || '').trim().toLowerCase() === 'diplomado';
   if (!e) return { indice: -1, siguiente: '' };
   if (e.includes('sustentado') || e.includes('reprobado') || e.includes('cerrad')) return { indice: 8, siguiente: 'Proceso cerrado' };
   if (e.includes('jurado') || e.includes('fecha') || e.includes('sustentación asignada') || e.includes('sustentacion asignada')) return { indice: 7, siguiente: 'Realizar y cerrar sustentación' };
   if (e.includes('fase 3') || e.includes('sustentación') || e.includes('sustentacion')) return { indice: 6, siguiente: 'Asignar fecha y jurados de sustentación' };
   if (e.includes('devuelto por comité') || e.includes('devuelto por comite')) return { indice: 5, siguiente: 'Atender devolución del comité técnico' };
-  if (e.includes('aprobado comité') || e.includes('aprobado comite') || e.includes('aprobado directo') || e === 'aprobado') return { indice: 5, siguiente: 'Continuar con solicitud de sustentación' };
+  if (e.includes('aprobado comité') || e.includes('aprobado comite') || e.includes('aprobado directo') || e === 'aprobado') return { indice: 5, siguiente: esDip ? 'Trámite puede cerrar sin sustentación si aplica' : 'Continuar con solicitud de sustentación' };
   if (e.includes('pendiente comité') || e.includes('pendiente comite') || e.includes('evaluación') || e.includes('evaluacion')) return { indice: 4, siguiente: 'Registrar decisión del comité técnico' };
   if (e.includes('protocolo') || e.includes('fase 2') || e.includes('solicitud fase 2')) return { indice: 4, siguiente: 'Registrar decisión del comité técnico' };
   if (e.includes('acta') || e.includes('tutores avalados') || e.includes('tutores autorizados') || e.includes('revisión') || e.includes('revision')) return { indice: 1, siguiente: 'Cargar y aprobar actas' };
   if (e.includes('devuelto')) return { indice: 0, siguiente: 'Atender devolución registrada' };
-  if (e.includes('radicado')) return { indice: 0, siguiente: 'Validar tutores' };
+  if (e.includes('radicado')) return { indice: 0, siguiente: esDip ? 'Avalar opción Diplomado (coordinación)' : 'Validar tutores' };
   return { indice: -1, siguiente: '' };
 }
 
@@ -1988,6 +2132,7 @@ function describirHitoSeguimiento(s) {
   const modulo = String(s.modulo || '').toUpperCase();
   if (accion === 'CREAR_RADICACION') return { texto: 'Radicado por estudiante', clase: 'b-radicado' };
   if (accion === 'VALIDAR_TUTORES') return { texto: 'Tutores autorizados por coordinadora', clase: 'b-tutores' };
+  if (accion === 'VALIDAR_OPCION_DIPLOMADO') return { texto: 'Aval opción Diplomado (sin tutores)', clase: 'b-comite' };
   if (accion === 'CREAR_ACTA') return { texto: 'Acta cargada por estudiante', clase: 'b-revision' };
   if (accion === 'APROBAR_ACTA') return { texto: 'Acta aprobada por coordinadora', clase: 'b-aprobado' };
   if (accion === 'RECHAZAR_ACTA') return { texto: 'Acta rechazada por coordinadora', clase: 'b-devuelto' };
@@ -2015,7 +2160,7 @@ function describirHitoSeguimiento(s) {
   
   // Contar vencimiento de tutores (15 días desde radicación)
   radicaciones.forEach(r => {
-    if (r.estado === 'Radicado' && r.fechaRadicacion) {
+    if (r.estado === 'Radicado' && r.fechaRadicacion && !esModalidadDiplomadoDash(r)) {
       const dias = calcularDiasHabilesDesdeHoy(r.fechaRadicacion);
       if (dias > 15) vencTutores++;
     }
@@ -2193,8 +2338,8 @@ function renderInformes() {
       <td style="text-align:center;font-weight:700;color:#a78bfa">${esc(semMax)}</td>
       <td><span class="badge ${fase === 'terminado' ? 'b-aprobado' : fase === '2' ? 'b-revision' : fase === '3' ? 'b-comite' : 'b-radicado'}">${infFaseTexto(fase)}</span></td>
       <td>${badgeEst(estado)}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(r.tutor1Nombre || '—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(r.tutor2Nombre || '—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esModalidadDiplomadoDash(r) ? '<span class="pill-diplomado" style="max-width:none">🎓 Sin tutores</span>' : esc(r.tutor1Nombre || '—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esModalidadDiplomadoDash(r) ? '—' : esc(r.tutor2Nombre || '—')}</td>
       <td style="text-align:center;color:rgba(255,255,255,.55)">${diasHabiles || 0}</td>
       <td style="${riesgo.estilo}">${riesgo.texto}</td>
     </tr>`;
@@ -2254,7 +2399,7 @@ function renderFiltros() {
       if (fActas === 'rechazadas' && !actasEste.some(a => a.estado === 'Rechazada')) return false;
     }
     if (q) {
-      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.tutor1Nombre].join(' ').toLowerCase();
+      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.tutor1Nombre, r.modalidad].join(' ').toLowerCase();
       if (!txt.includes(q)) return false;
     }
     return true;
@@ -2279,7 +2424,8 @@ function renderFiltros() {
     const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ');
     const estado = r.estado || 'Radicado';
     const estadoClass = estado === 'Radicado' ? 'b-radicado' : estado === 'Tutores Avalados' ? 'b-tutores' : estado === 'Pendiente Comité Técnico' ? 'b-comite' : estado === 'Aprobado' ? 'b-aprobado' : 'b-devuelto';
-    return `<tr><td><div class="num-rad">${esc(r.numero||'')}</div></td><td style="font-size:12px">${esc(nombres)}</td><td style="text-align:center;font-weight:600;color:#a78bfa">${semMax}</td><td><span class="badge ${estadoClass}">${esc(estado)}</span></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.tutor1Nombre||'—')}</td><td style="font-size:11px">${actasTexto}</td><td style="text-align:center;color:rgba(255,255,255,.5)">${r.diasTranscurridos||0}</td><td style="text-align:center;font-weight:600;color:#fcd34d">${dias < 0 ? 'Vencido' : dias + ' d'}</td><td style="${riesgoColor};font-weight:600">${riesgoTexto}</td><td><button class="btn bl" style="padding:4px 8px;font-size:11px" onclick="verDetalle(${r.rowIndex})">👁 Ver</button></td></tr>`;
+    const celdaT1 = esModalidadDiplomadoDash(r) ? '<span class="pill-diplomado" style="max-width:none">🎓 Diplomado</span>' : esc(r.tutor1Nombre || '—');
+    return `<tr><td><div class="num-rad">${esc(r.numero||'')}</div></td><td style="font-size:12px">${esc(nombres)}</td><td style="text-align:center;font-weight:600;color:#a78bfa">${semMax}</td><td><span class="badge ${estadoClass}">${esc(estado)}</span></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${celdaT1}</td><td style="font-size:11px">${actasTexto}</td><td style="text-align:center;color:rgba(255,255,255,.5)">${r.diasTranscurridos||0}</td><td style="text-align:center;font-weight:600;color:#fcd34d">${dias < 0 ? 'Vencido' : dias + ' d'}</td><td style="${riesgoColor};font-weight:600">${riesgoTexto}</td><td><button class="btn bl" style="padding:4px 8px;font-size:11px" onclick="verDetalle(${r.rowIndex})">👁 Ver</button></td></tr>`;
   }).join('');
 }
 
@@ -2326,7 +2472,7 @@ function exportarFiltrosCSV() {
       if (fActas === 'rechazadas' && !actasEste.some(a => a.estado === 'Rechazada')) return false;
     }
     if (q) {
-      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3].join(' ').toLowerCase();
+      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.modalidad].join(' ').toLowerCase();
       if (!txt.includes(q)) return false;
     }
     return true;
