@@ -122,6 +122,13 @@
   .seg-event .what{font-size:13px;color:#fff;font-weight:600}
   .seg-event .detail{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
   .seg-event .state{font-size:11px;color:#bbf7d0;margin-top:6px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:7px;padding:6px 8px}
+  .seg-det-plain{font-size:12px;color:rgba(255,255,255,.72);line-height:1.45}
+  .seg-det-list{margin:8px 0 0 16px;padding:0;font-size:12px;color:rgba(255,255,255,.78);line-height:1.45}
+  .seg-det-list li{margin:4px 0}
+  .seg-det-empty{font-size:11px;color:rgba(255,255,255,.35);font-style:italic}
+  .seg-mod-tag{display:inline-block;font-size:9px;text-transform:uppercase;letter-spacing:.5px;background:rgba(167,139,250,.12);color:#c4b5fd;border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+  .seg-acc-tag{font-size:10px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace}
+  .seg-td-det{min-width:260px;max-width:400px;vertical-align:top!important}
   .seg-help{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#bfdbfe;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px}
   .seg-search-info{display:none;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:12px}
   .seg-search-info.show{display:block}
@@ -413,7 +420,7 @@
   </div>
   <!-- PANEL SEGUIMIENTO -->
   <div class="panel" id="pan-seguimiento">
-    <div class="seg-help">Usa este panel para responder “¿cómo va este trabajo?”: busca por número de radicación, título, estudiante o correo y verás el estado actual, qué pasó en cada fecha y cuál es el siguiente paso.</div>
+    <div class="seg-help">Busca un trabajo y revisa la línea de tiempo: en cada evento verás <strong>módulo</strong>, <strong>fecha</strong>, <strong>responsable</strong> y un <strong>detalle estructurado</strong> (decisión del comité, evaluador, fecha de sesión, motivos, etc.) cuando el sistema los haya registrado. Los nuevos movimientos guardan más datos; los antiguos pueden mostrar solo texto breve.</div>
     <div class="filters">
       <input id="searchSeguimiento" placeholder="🔍 Buscar trabajo: radicación, título, estudiante o correo..." oninput="prepararBusquedaSeguimiento()" onkeydown="if(event.key==='Enter') cargarSeguimiento()">
       <select id="fFaseSeg" onchange="renderSeguimiento()">
@@ -434,10 +441,10 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>Fecha/Hora</th><th>N° Radicación</th><th>Hito de Proceso</th><th>Responsable</th><th>Detalle</th>
+          <th>Fecha/Hora</th><th>N° Radicación</th><th>Módulo</th><th>Hito</th><th>Responsable</th><th>Detalle del movimiento</th>
         </tr></thead>
         <tbody id="tbodySeguimiento">
-          <tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>
+          <tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>
         </tbody>
       </table>
     </div>
@@ -1849,7 +1856,7 @@ function prepararBusquedaSeguimiento() {
     seguimientoRadActual = null;
     seguimientos = [];
     document.getElementById('timelineResumen').style.display = 'none';
-    document.getElementById('tbodySeguimiento').innerHTML = '<tr><td colspan="5" class="empty">Busca un trabajo por radicación, título, estudiante o correo.</td></tr>';
+    document.getElementById('tbodySeguimiento').innerHTML = '<tr><td colspan="6" class="empty">Busca un trabajo por radicación, título, estudiante o correo.</td></tr>';
   }
 }
 
@@ -1864,23 +1871,23 @@ async function cargarSeguimiento() {
   if (!qRaw) {
     document.getElementById('timelineResumen').style.display = 'none';
     document.getElementById('segSearchInfo').classList.remove('show');
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Busca un trabajo por radicación, título, estudiante o correo.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Busca un trabajo por radicación, título, estudiante o correo.</td></tr>';
     return;
   }
   if (!radMatch && matches.length > 1) {
     renderSugerenciasSeguimiento(qRaw, true);
     document.getElementById('timelineResumen').style.display = 'none';
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Hay varios trabajos que coinciden. Selecciona uno para ver su seguimiento.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Hay varios trabajos que coinciden. Selecciona uno para ver su seguimiento.</td></tr>';
     return;
   }
   if (!radMatch && !/^CTTG/i.test(q)) {
     document.getElementById('timelineResumen').style.display = 'none';
     renderSugerenciasSeguimiento(qRaw, true);
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">No encontré un trabajo con esa búsqueda. Prueba con el número de radicación.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No encontré un trabajo con esa búsqueda. Prueba con el número de radicación.</td></tr>';
     return;
   }
   const numeroConsulta = radMatch ? (radMatch.numero || '') : q;
-  tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>';
   try {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
       action: 'getTrazabilidad',
@@ -1894,7 +1901,7 @@ async function cargarSeguimiento() {
     renderSugerenciasSeguimiento(qRaw);
     renderSeguimiento();
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Error cargando trazabilidad.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Error cargando trazabilidad.</td></tr>';
     toast('Error cargando trazabilidad: ' + e.message, 'err');
   }
 }
@@ -1912,7 +1919,7 @@ function renderSeguimiento() {
   if (!filtered.length) {
     if (seguimientoRadActual) renderResumenTimeline([]);
     else document.getElementById('timelineResumen').style.display = 'none';
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin registros de trazabilidad para esa búsqueda.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin registros de trazabilidad para esa búsqueda.</td></tr>';
     return;
   }
   renderResumenTimeline(filtered);
@@ -1923,9 +1930,10 @@ function renderSeguimiento() {
     return `<tr>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5)">${esc(fmtFechaHoraSeguimiento(s.timestamp))}</td>
       <td><div class="num-rad">${esc(s.numeroRadicacion||'—')}</div></td>
-      <td><span class="badge ${hitoClass}">${esc(hito.texto)}</span></td>
+      <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(etiquetaModuloSeguimiento(s.modulo))}</td>
+      <td><span class="badge ${hitoClass}">${esc(hito.texto)}</span><span class="seg-mod-tag">${esc(String(s.accion||'').replace(/_/g,'·'))}</span></td>
       <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(s.email||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6);max-width:420px">${esc(s.detalle||'')}</td>
+      <td class="seg-td-det">${htmlDetalleSeguimientoCell(s)}</td>
     </tr>`;
   }).join('');
 }
@@ -1976,26 +1984,36 @@ function renderResumenTimeline(registros) {
   const titulo = rad && rad.titulo ? rad.titulo : 'Trabajo consultado';
   const historia = registrosOrdenados.length ? registrosOrdenados.map(function(r){
     const hito = describirHitoSeguimiento(r);
+    const cuerpoDet = htmlDetalleSeguimientoCell(r);
     return `<div class="seg-event">
-      <div class="date">${esc(fmtFechaHoraSeguimiento(r.timestamp))}</div>
-      <div class="what">Pasó: ${esc(hito.texto)}</div>
-      <div class="detail">${esc(r.detalle || 'Sin detalle adicional.')}</div>
-      <div class="detail">Responsable: ${esc(r.email || '—')}</div>
-      <div class="state">Vamos en: ${esc(estadoVisible)}</div>
+      <div class="date">${esc(fmtFechaHoraSeguimiento(r.timestamp))} · ${esc(etiquetaModuloSeguimiento(r.modulo))}<span class="seg-acc-tag"> · ${esc(String(r.accion||''))}</span></div>
+      <div class="what">${esc(hito.texto)}</div>
+      <div class="seg-event-body">${cuerpoDet}</div>
+      <div class="detail">Quién registró (cuenta): ${esc(r.email || '—')}</div>
+      <div class="state">Estado global del trabajo en Fase 1: ${esc(estadoVisible)}</div>
     </div>`;
   }).join('') : `<div class="seg-event">
       <div class="date">Sin fecha registrada</div>
       <div class="what">Trabajo encontrado</div>
       <div class="detail">No hay movimientos de trazabilidad guardados para esta radicación, pero el estado actual del trabajo está disponible.</div>
-      <div class="state">Vamos en: ${esc(estadoVisible)}</div>
+      <div class="state">Estado global del trabajo en Fase 1: ${esc(estadoVisible)}</div>
     </div>`;
   const rows = orden.map(function(step, i){
     const donePorRegistro = step.keys.some(k => acciones.indexOf(k) !== -1);
     const done = donePorRegistro || i <= inferido.indice;
     const current = !done && i === idxActual + 1;
     const statusClass = done ? 'done' : (current ? 'current' : 'pending');
-    const reg = donePorRegistro ? registrosOrdenados.find(r => step.keys.indexOf(String(r.accion || '').toUpperCase()) !== -1) : null;
-    const meta = done && reg ? ((fmtFechaHoraSeguimiento(reg.timestamp) || '—') + ' · ' + (reg.email || '—')) : (done ? 'Cumplido según estado actual · fecha no registrada' : (current ? 'Siguiente etapa' : 'Pendiente'));
+    const reg = donePorRegistro ? registrosOrdenados.find(function(r) { return step.keys.indexOf(String(r.accion || '').toUpperCase()) !== -1; }) : null;
+    var meta = '';
+    if (donePorRegistro && reg) {
+      meta = resumenDetalleParaTimeline(reg);
+      if (!meta) meta = (fmtFechaHoraSeguimiento(reg.timestamp) || '—') + ' · ' + (reg.email || '—');
+      else meta = (fmtFechaHoraSeguimiento(reg.timestamp) || '—') + ' · ' + meta;
+    } else if (done) {
+      meta = 'Marcado como hecho según el estado actual del trabajo (puede faltar registro detallado en trazabilidad).';
+    } else {
+      meta = current ? 'Siguiente etapa sugerida' : 'Pendiente';
+    }
     return `<div class="timeline-step">
       <span class="timeline-dot ${statusClass}"></span>
       <div>
@@ -2017,6 +2035,7 @@ function renderResumenTimeline(registros) {
       <div class="seg-card"><div class="k">Vamos en</div><div class="v">${esc(estadoVisible)}</div></div>
       <div class="seg-card"><div class="k">Último movimiento</div><div class="v">${esc(hitoUltimo ? hitoUltimo.texto : 'Sin movimientos')}</div><div class="seg-sub">${esc(ultimo ? fmtFechaHoraSeguimiento(ultimo.timestamp) : '—')}</div></div>
       <div class="seg-card"><div class="k">Responsable último</div><div class="v">${esc(ultimo ? (ultimo.email || '—') : '—')}</div></div>
+      <div class="seg-card"><div class="k">Extracto último detalle</div><div class="v" style="font-weight:500;font-size:12px;line-height:1.35">${esc(ultimo ? (resumenDetalleParaTimeline(ultimo) || partesDetalleSeguimiento(ultimo.detalle).slice(0,2).join(' · ') || '—') : '—')}</div></div>
       <div class="seg-card"><div class="k">Siguiente paso</div><div class="v">${esc(siguiente)}</div></div>
     </div>
     <div class="timeline-title">Historia por fechas: qué pasó y cuándo</div>
@@ -2127,22 +2146,55 @@ function fmtFechaHoraSeguimiento(s) {
   return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
 
+function partesDetalleSeguimiento(detalle) {
+  const d = String(detalle || '').trim();
+  if (!d) return [];
+  return d.split(/\s*\|\s*/).map(function(p) { return p.trim(); }).filter(Boolean);
+}
+
+function htmlDetalleSeguimientoCell(s) {
+  const parts = partesDetalleSeguimiento(s.detalle);
+  if (!parts.length) return '<span class="seg-det-empty">Sin texto de detalle en este registro.</span>';
+  if (parts.length === 1) return '<div class="seg-det-plain">' + esc(parts[0]) + '</div>';
+  return '<ul class="seg-det-list">' + parts.map(function(p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>';
+}
+
+function resumenDetalleParaTimeline(s) {
+  const parts = partesDetalleSeguimiento(s.detalle);
+  if (!parts.length) return '';
+  const pref = parts.filter(function(p) {
+    return /^(Resultado|Estado protocolo|Estado asignado|Nuevo estado|Tipo:|Documento|Evaluó|Evaluador|Email evaluador|Decisión|Motivo|N° acta|Aval CCEB|Fecha|Observación|protocolo|Archivo|Jurado)/i.test(p);
+  });
+  const use = pref.length ? pref : parts;
+  return use.slice(0, 5).join(' · ');
+}
+
+function etiquetaModuloSeguimiento(mod) {
+  const x = String(mod || '').toUpperCase();
+  const map = { FASE1:'Fase 1', FASE2:'Fase 2 / Comité', ACTAS:'Actas', SUSTENTACION:'Sustentación', AUTH:'Accesos', SISTEMA:'Sistema', GENERAL:'General' };
+  return map[x] || (mod || '—');
+}
+
 function describirHitoSeguimiento(s) {
   const accion = String(s.accion || '').toUpperCase();
   const modulo = String(s.modulo || '').toUpperCase();
+  if (accion.indexOf('NOTIFICACION_') === 0) return { texto: 'Correo automático · ' + accion.replace(/^NOTIFICACION_/, '').replace(/_/g, ' '), clase: 'b-pend' };
   if (accion === 'CREAR_RADICACION') return { texto: 'Radicado por estudiante', clase: 'b-radicado' };
   if (accion === 'VALIDAR_TUTORES') return { texto: 'Tutores autorizados por coordinadora', clase: 'b-tutores' };
   if (accion === 'VALIDAR_OPCION_DIPLOMADO') return { texto: 'Aval opción Diplomado (sin tutores)', clase: 'b-comite' };
   if (accion === 'CREAR_ACTA') return { texto: 'Acta cargada por estudiante', clase: 'b-revision' };
-  if (accion === 'APROBAR_ACTA') return { texto: 'Acta aprobada por coordinadora', clase: 'b-aprobado' };
-  if (accion === 'RECHAZAR_ACTA') return { texto: 'Acta rechazada por coordinadora', clase: 'b-devuelto' };
-  if (accion === 'CREAR_PROTOCOLO') return { texto: 'Protocolo radicado', clase: 'b-comite' };
-  if (accion === 'ACTUALIZAR_PROTOCOLO' || accion === 'AVALAR_PROTOCOLO_FASE2') return { texto: 'Decisión de protocolo', clase: 'b-comite' };
-  if (accion === 'REGISTRAR_DECISION_COMITE') return { texto: 'Decisión del comité técnico', clase: 'b-comite' };
+  if (accion === 'APROBAR_ACTA') return { texto: 'Coordinación: acta aprobada', clase: 'b-aprobado' };
+  if (accion === 'RECHAZAR_ACTA') return { texto: 'Coordinación: acta rechazada', clase: 'b-devuelto' };
+  if (accion === 'CREAR_PROTOCOLO') return { texto: 'Protocolo cargado (ingreso a valoración)', clase: 'b-comite' };
+  if (accion === 'AVALAR_PROTOCOLO_FASE2') return { texto: 'Coordinación: aval y envío / devolución antes del comité', clase: 'b-comite' };
+  if (accion === 'ACTUALIZAR_PROTOCOLO') return { texto: 'Coordinación: actualización de protocolo (evaluador, fecha, etc.)', clase: 'b-comite' };
+  if (accion === 'REGISTRAR_DECISION_COMITE') return { texto: 'Comité técnico: decisión registrada (aprobado / devolución)', clase: 'b-comite' };
   if (accion === 'CREAR_FASE3') return { texto: 'Solicitud de sustentación creada', clase: 'b-solicitud' };
-  if (accion === 'ASIGNAR_JURADOS') return { texto: 'Sustentación asignada por coordinadora', clase: 'b-aprobado' };
+  if (accion === 'APROBAR_JURADOS_FASE3') return { texto: 'Fase 3: solicitud con jurados aprobada', clase: 'b-aprobado' };
+  if (accion === 'UPDATE_FASE3_ESTADO') return { texto: 'Fase 3: actualización de estado de la solicitud', clase: 'b-comite' };
+  if (accion === 'ASIGNAR_JURADOS') return { texto: 'Sustentación: fecha, lugar y jurados asignados', clase: 'b-aprobado' };
   if (accion === 'COMPLETAR_FASE3') return { texto: 'Sustentación cerrada (resultado final)', clase: 'b-aprobado' };
-  if (accion === 'ACTUALIZAR_ESTADO') return { texto: 'Cambio de estado de radicación', clase: 'b-revision' };
+  if (accion === 'ACTUALIZAR_ESTADO') return { texto: 'Cambio de estado en Fase 1', clase: 'b-revision' };
   if (accion === 'LOGIN') return { texto: 'Ingreso al sistema', clase: 'b-pend' };
   if (accion === 'LOGIN_FAIL') return { texto: 'Intento de ingreso fallido', clase: 'b-devuelto' };
   if (modulo === 'SISTEMA' || accion === 'ERROR') return { texto: 'Evento de sistema / error', clase: 'b-devuelto' };
