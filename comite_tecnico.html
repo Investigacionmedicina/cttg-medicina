@@ -58,6 +58,9 @@
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}
+  .sec-sub{font-size:15px;font-weight:600;color:#fff;margin:24px 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .sec-sub span.hint{font-size:12px;font-weight:400;color:rgba(255,255,255,.45)}
+  .tag-segunda{background:rgba(245,158,11,.22);border:1px solid rgba(245,158,11,.4);color:#fcd34d;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap}
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
   .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
@@ -87,10 +90,37 @@
 
   <!-- REUNIONES DEL COMITÉ -->
   <div class="panel on" id="pan-reuniones">
-    <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">Próximas Reuniones</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <h2 style="font-size:18px;font-weight:600;color:#fff">Próximas reuniones y colas del comité</h2>
+      <button type="button" class="btn gr" onclick="cargarReuniones()">↻ Actualizar</button>
+    </div>
     
     <div id="reunionesContainer">
       <div class="spinner" style="display:block;margin:20px auto"></div>
+    </div>
+
+    <div id="bloqueSinFecha" style="display:none">
+      <h3 class="sec-sub">📌 Pendiente fecha de reunión del comité <span class="hint">(protocolos vigentes sin fecha — la coordinadora debe asignarla; incluye 2ª valoración)</span></h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>N° Radicación</th><th>Estudiante</th><th>Estado Fase 2</th><th>Evaluador actual</th><th>Eval. anterior (último comité)</th><th>Motivo última devolución</th>
+          </tr></thead>
+          <tbody id="tbodySinFecha"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="bloqueDevueltos" style="display:none">
+      <h3 class="sec-sub">↩ Devueltos por el comité (pendientes del estudiante) <span class="hint">Sin nueva versión radicada aún · evaluador de la última decisión indicado</span></h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>N° Radicación</th><th>Estudiante</th><th>Estado</th><th>Fila</th><th>Último evaluador que devolvió</th><th>Motivo registrado</th>
+          </tr></thead>
+          <tbody id="tbodyDevueltos"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- DETALLES DE REUNIÓN SELECCIONADA -->
@@ -120,10 +150,10 @@
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>N° Radicación</th><th>Estudiante</th><th>Evaluador</th><th>Estado</th><th>Acción</th>
+              <th>N° Radicación</th><th>Estudiante</th><th>Evaluador propuesto</th><th>Historial</th><th>Estado</th><th>Acción</th>
             </tr></thead>
             <tbody id="detProtocolos">
-              <tr><td colspan="5" class="empty">Cargando protocolos...</td></tr>
+              <tr><td colspan="6" class="empty">Cargando protocolos...</td></tr>
             </tbody>
           </table>
         </div>
@@ -161,6 +191,11 @@
         Radicación: <strong style="color:#a78bfa" id="decNum">—</strong>
         | Estudiante: <strong style="color:#a78bfa" id="decEst">—</strong>
       </div>
+    </div>
+    <div style="background:rgba(102,126,234,.08);border:1px solid rgba(102,126,234,.28);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;line-height:1.5;display:none;color:#cbd5fd" id="decHistorialBanner">
+      <strong>Segunda o posterior valoración:</strong>
+      El evaluador que participó en la devolución anterior fue <strong id="decEvAnt">—</strong>.
+      <span id="decMotivoAnt" style="display:block;margin-top:6px;opacity:.9"></span>
     </div>
 
     <div class="mfg">
@@ -251,65 +286,129 @@ function fmtFecha(s) {
   return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
 }
 
-async function cargarReuniones() {
-  try {
-   const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: localStorage.getItem('cttg_token') || '' }) });
-      const d = await res.json();
-    console.log('Respuesta getFase2:', d);
-    if (!d.success) {
-  console.log('getFase2 error:', d.error);
-  document.getElementById('reunionesContainer').innerHTML = '<div class="empty">Sin reuniones programadas</div>';
-  return;
+function fetchFase2Json() {
+  return fetch(URL_APP, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8', 'Accept': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ action: 'getFase2', token: localStorage.getItem('cttg_token') || '', _ts: Date.now() })
+  }).then(r => r.text()).then(raw => {
+    try { return JSON.parse(raw); } catch (e) { throw new Error('Respuesta inválida del servidor'); }
+  });
 }
 
-    const protocolos = d.protocolos || [];
-    console.log('Total protocolos:', protocolos.length);
-    console.log('Protocolos recibidos:', protocolos);
+function fechaComiteValor(p) {
+  return String((p && p.fechaComite) || '').trim();
+}
 
-    const reunionesMap = {};
+function esEstadoFinalAprobado(est) {
+  const e = String(est || '').toLowerCase().trim();
+  return e === 'aprobado' || e === 'aprobado directo';
+}
 
-    // Agrupar protocolos por fecha de comité
-    protocolos.forEach(p => {
-      console.log(`Protocolo ${p.numero}: estado="${p.estado}", fechaComite="${p.fechaComite}"`);
-      const estadoNorm = String(p.estado || '').toLowerCase().trim();
-      const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'cargado';
-      
-      if (p.fechaComite && esPendiente) {
-        console.log(`✅ Incluido en reunión: ${p.numero}`);
-        if (!reunionesMap[p.fechaComite]) {
-          reunionesMap[p.fechaComite] = {
-            fecha: p.fechaComite,
-            evaluadores: new Set(),
-            protocolos: []
-          };
-        }
-        if (p.evaluador) reunionesMap[p.fechaComite].evaluadores.add(p.evaluador);
-        reunionesMap[p.fechaComite].protocolos.push(p);
-      }
-    });
+function esEstadoDevueltoComite(est) {
+  return String(est || '').toLowerCase().indexOf('devuelto') !== -1;
+}
 
-    const reuniones = Object.values(reunionesMap).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-    console.log('Reuniones agrupadas:', reuniones);
+/** Radicación vigente necesita valoración en comité (excluye terminados y fila solo devuelta). */
+function esPendienteValoracionActiva(est) {
+  if (esEstadoFinalAprobado(est)) return false;
+  if (esEstadoDevueltoComite(est)) return false;
+  const e = String(est || '').toLowerCase().trim();
+  return e.includes('pendiente') || e === 'cargado' || e.includes('evaluaci') || e.includes('solicitud') ||
+    e === 'revisado' || e === 'enviado';
+}
 
-    const sinFecha = protocolos.filter(p => p.estado === 'Pendiente Comité' && !p.fechaComite).length;
-    const sinEvaluador = protocolos.filter(p => p.estado === 'Pendiente Comité' && !p.evaluador).length;
+function debeAparecerEnAgendaConFecha(p) {
+  return fechaComiteValor(p) && esPendienteValoracionActiva(p.estado);
+}
 
-    if (!reuniones.length) {
-      let msg = 'No hay reuniones programadas';
-      if (sinFecha > 0) msg += ` (${sinFecha} protocolo(s) sin fecha de comité)`;
-      if (sinEvaluador > 0) msg += ` (${sinEvaluador} protocolo(s) sin evaluador)`;
-      document.getElementById('reunionesContainer').innerHTML = `<div class="empty">${msg}</div>`;
+function truncTxt(s, max) {
+  const t = String(s || '').trim();
+  if (!t) return '—';
+  return t.length <= max ? t : t.slice(0, max) + '…';
+}
+
+function renderSinFecha(protocolos) {
+  const bloque = document.getElementById('bloqueSinFecha');
+  const tbody = document.getElementById('tbodySinFecha');
+  const rows = protocolos.filter(p => !fechaComiteValor(p) && esPendienteValoracionActiva(p.estado));
+  if (!rows.length) {
+    bloque.style.display = 'none';
+    return;
+  }
+  bloque.style.display = 'block';
+  tbody.innerHTML = rows.map(p => {
+    const segunda = p.esSegundaValoracion ? '<span class="tag-segunda">2ª valoración</span>' : '—';
+    return `<tr>
+      <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(p.numero || '—')}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.65)">${esc(p.emailEstudiante || '—')}</td>
+      <td>${esc(p.estado || '—')}${segunda !== '—' ? ' ' + segunda : ''}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(p.evaluador || '—')}</td>
+      <td style="font-size:11px;color:#fcd34d">${esc(p.evaluadorAnteriorComite || '—')}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.45);max-width:220px">${esc(truncTxt(p.motivoUltimaDevolucion || p.observaciones, 140))}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderDevueltos(protocolos) {
+  const bloque = document.getElementById('bloqueDevueltos');
+  const tbody = document.getElementById('tbodyDevueltos');
+  const rows = protocolos.filter(p => esEstadoDevueltoComite(p.estado));
+  if (!rows.length) {
+    bloque.style.display = 'none';
+    return;
+  }
+  bloque.style.display = 'block';
+  tbody.innerHTML = rows.map(p => `
+    <tr>
+      <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(p.numero || '—')}</td>
+      <td style="font-size:11px">${esc(p.emailEstudiante || '—')}</td>
+      <td>${esc(p.estado)}</td>
+      <td style="font-family:monospace;font-size:11px;color:rgba(255,255,255,.4)">${p.rowIndex}</td>
+      <td style="font-size:11px;color:#fcd34d">${esc(p.evaluador || '—')}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.55);max-width:280px">${esc(truncTxt(p.observaciones || p.motivoUltimaDevolucion, 160))}</td>
+    </tr>`).join('');
+}
+
+async function cargarReuniones() {
+  const contReu = document.getElementById('reunionesContainer');
+  try {
+    const d = await fetchFase2Json();
+    if (!d.success) {
+      contReu.innerHTML = `<div class="empty">No se pudieron cargar datos: ${esc(d.error || 'error')}</div>`;
+      document.getElementById('bloqueSinFecha').style.display = 'none';
+      document.getElementById('bloqueDevueltos').style.display = 'none';
       return;
     }
 
-    document.getElementById('reunionesContainer').innerHTML = reuniones.map(r => `
-      <div class="comite-card" onclick="mostrarDetalleReunion('${r.fecha}')">
+    const protocolos = d.protocolos || [];
+    window._cacheProtocolosF2 = protocolos;
+
+    const reunionesMap = {};
+    protocolos.forEach(p => {
+      if (!debeAparecerEnAgendaConFecha(p)) return;
+      const f = fechaComiteValor(p);
+      if (!reunionesMap[f]) {
+        reunionesMap[f] = { fecha: f, evaluadores: new Set(), protocolos: [] };
+      }
+      if (p.evaluador) reunionesMap[f].evaluadores.add(p.evaluador);
+      reunionesMap[f].protocolos.push(p);
+    });
+
+    const reuniones = Object.values(reunionesMap).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+    if (!reuniones.length) {
+      contReu.innerHTML = '<div class="empty">No hay reuniones con fecha asignada para protocolos pendientes de decisión.<br><span style="font-size:12px;opacity:.7">Los casos sin fecha aparecen abajo «Pendiente fecha de reunión».</span></div>';
+    } else {
+      contReu.innerHTML = reuniones.map(r => `
+      <div class="comite-card" onclick="mostrarDetalleReunion('${esc(r.fecha)}')">
         <div class="comite-header">
           <div>
             <div class="comite-fecha">📅 ${fmtFecha(r.fecha)}</div>
             <div class="comite-hora">10:00 AM - 12:00 PM</div>
           </div>
-          <span class="badge-estado badge-pendiente">Pendiente</span>
+          <span class="badge-estado badge-pendiente">Pendiente decisión</span>
         </div>
         <div style="margin:12px 0;font-size:12px;color:rgba(255,255,255,.6)">
           <strong>${r.protocolos.length}</strong> protocolo${r.protocolos.length !== 1 ? 's' : ''}
@@ -319,48 +418,53 @@ async function cargarReuniones() {
         </div>
       </div>
     `).join('');
-  } catch(e) {
-    console.error('Error en cargarReuniones:', e);
-    document.getElementById('reunionesContainer').innerHTML = `<div class="empty">Error: ${esc(e.message)}</div>`;
+    }
+
+    renderSinFecha(protocolos);
+    renderDevueltos(protocolos);
+  } catch (e) {
+    console.error('cargarReuniones', e);
+    contReu.innerHTML = `<div class="empty">Error: ${esc(e.message)}</div>`;
   }
 }
 
 function mostrarDetalleReunion(fecha) {
-  fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: localStorage.getItem('cttg_token') || '' }) })
-    .then(r => r.json())
+  const fechaEq = String(fecha || '').trim();
+  fetchFase2Json()
     .then(d => {
-      const protocolos = (d.protocolos || []).filter(p => {
-        const estadoNorm = String(p.estado || '').toLowerCase().trim();
-        const esPendiente = estadoNorm.includes('pendiente') || estadoNorm === 'cargado';
-        return p.fechaComite === fecha && esPendiente;
-      });
-      
+      if (!d.success || !Array.isArray(d.protocolos)) return;
+      const protocolos = d.protocolos.filter(p =>
+        String(fechaComiteValor(p)) === fechaEq && debeAparecerEnAgendaConFecha(p)
+      );
       if (!protocolos.length) return;
 
-      document.getElementById('detFecha').textContent = fmtFecha(fecha);
+      document.getElementById('detFecha').textContent = fmtFecha(fechaEq);
       document.getElementById('detHora').textContent = '10:00 AM - 12:00 PM';
       document.getElementById('detLugar').textContent = 'Sala de Juntas CTTG';
 
       const evaluadores = new Set();
-      protocolos.forEach(p => {
-        if (p.evaluador) evaluadores.add(p.evaluador);
-      });
+      protocolos.forEach(p => { if (p.evaluador) evaluadores.add(p.evaluador); });
 
-      document.getElementById('detEvaluadores').innerHTML = Array.from(evaluadores).map(e => 
+      document.getElementById('detEvaluadores').innerHTML = Array.from(evaluadores).map(e =>
         `<span class="evaluador-tag">${esc(e)}</span>`
       ).join('');
 
       const tbody = document.getElementById('detProtocolos');
       window._protocolosComite = protocolos;
-      tbody.innerHTML = protocolos.map(p => `
-        <tr>
-          <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(p.numero||'—')}</td>
-          <td style="font-size:12px;color:rgba(255,255,255,.8)">${esc(p.emailEstudiante||'—')}</td>
-          <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
-          <td><span class="badge b-pend">⏱ Pendiente</span></td>
+      tbody.innerHTML = protocolos.map(p => {
+        const hist = [];
+        if (p.esSegundaValoracion || p.evaluadorAnteriorComite) hist.push('<span class="tag-segunda">2ª valoración</span>');
+        if (p.evaluadorAnteriorComite) hist.push('<span style="font-size:10px;display:block;color:#fcd34d;margin-top:4px">Ant: ' + esc(p.evaluadorAnteriorComite) + '</span>');
+        const histHtml = hist.length ? hist.join(' ') : '<span style="opacity:.45">—</span>';
+        return `<tr>
+          <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(p.numero || '—')}</td>
+          <td style="font-size:12px;color:rgba(255,255,255,.8)">${esc(p.emailEstudiante || '—')}</td>
+          <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador || '—')}</td>
+          <td>${histHtml}</td>
+          <td><span class="badge b-pend">⏱ ${esc(p.estado)}</span></td>
           <td><button class="btn gr" onclick="abrirModalDecision(${p.rowIndex})">✅ Decisión</button></td>
-        </tr>
-      `).join('');
+        </tr>`;
+      }).join('');
 
       document.getElementById('detalleReunion').style.display = 'block';
       document.getElementById('detalleReunion').scrollIntoView({ behavior: 'smooth' });
@@ -372,13 +476,13 @@ async function cargarDecisiones() {
   tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando decisiones...</td></tr>';
   
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: localStorage.getItem('cttg_token') || '' }) });
-    const d = await res.json();
-    if (!d.success) throw new Error('Error al cargar');
+    const d = await fetchFase2Json();
+    if (!d.success) throw new Error(d.error || 'Error al cargar');
 
-    const protocolos = (d.protocolos || []).filter(p => 
-      p.estado === 'Aprobado' || p.estado === 'Devuelto' || p.estado === 'Devuelto por Comité Técnico' || p.estado === 'Aprobado Directo'
-    );
+    const protocolos = (d.protocolos || []).filter(p => {
+      const e = String(p.estado || '').toLowerCase();
+      return e.includes('aprobado') || e.includes('devuelto');
+    });
 
     if (!protocolos.length) {
       tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin decisiones registradas aún</td></tr>';
@@ -386,8 +490,9 @@ async function cargarDecisiones() {
     }
 
     tbody.innerHTML = protocolos.map(p => {
-      const estadoBadge = p.estado === 'Aprobado' || p.estado === 'Aprobado Directo' ? 'b-aprobada' : 'b-rechazada';
-      const estadoTexto = p.estado === 'Aprobado Directo' ? 'Aprobado Directo' : p.estado;
+      const eLower = String(p.estado || '').toLowerCase();
+      const estadoBadge = eLower.includes('aprobado') ? 'b-aprobada' : 'b-rechazada';
+      const estadoTexto = p.estado;
       return `
         <tr>
           <td style="font-size:12px;color:rgba(255,255,255,.5)">${fmtFecha(p.fechaComite)}</td>
@@ -409,13 +514,31 @@ let protocoloActual = null;
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 function abrirModalDecision(rowIndex) {
-  const protocolo = (window._protocolosComite || []).find(p => p.rowIndex === rowIndex) || {};
+  const idx = parseInt(rowIndex, 10);
+  const lista = window._protocolosComite || window._cacheProtocolosF2 || [];
+  const protocolo = lista.find(p => Number(p.rowIndex) === idx) || {};
   protocoloActual = {
-    rowIndex,
+    rowIndex: idx,
     numero: protocolo.numero || '',
     email: protocolo.emailEstudiante || '',
     evaluador: protocolo.evaluador || ''
   };
+
+  const histBanner = document.getElementById('decHistorialBanner');
+  const showHist =
+    !!(protocolo.esSegundaValoracion || protocolo.tieneDevolucionPreviaComite || protocolo.evaluadorAnteriorComite);
+  histBanner.style.display = showHist ? 'block' : 'none';
+  document.getElementById('decEvAnt').textContent = protocolo.evaluadorAnteriorComite || '—';
+  const motAnt = String(protocolo.motivoUltimaDevolucion || '').trim();
+  const motEl = document.getElementById('decMotivoAnt');
+  if (motAnt) {
+    motEl.textContent = 'Último motivo de devolución: ' + motAnt;
+    motEl.style.display = 'block';
+  } else {
+    motEl.textContent = '';
+    motEl.style.display = 'none';
+  }
+
   document.getElementById('decNum').textContent = protocoloActual.numero || '—';
   document.getElementById('decEst').textContent = protocoloActual.email || '—';
   document.getElementById('evaluadorReal').value = protocoloActual.evaluador || '';
@@ -484,9 +607,9 @@ async function guardarDecision() {
   btn.innerHTML = '<span class="spinner"></span>Guardando...';
 
   try {
-    const admin = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
     const res = await fetch(URL_APP, {
       method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8', 'Accept': 'application/json' },
       body: JSON.stringify({
         action: 'registrarDecisionComite',
         rowIndex: protocoloActual.rowIndex,
@@ -497,11 +620,13 @@ async function guardarDecision() {
         evaluador: evaluadorReal,
         numeroActa: decision === 'Aprobado' ? numActa : '',
         avalCCEB: decision === 'Aprobado' ? aval : '',
-        token: localStorage.getItem('cttg_token') || ''
+        token: localStorage.getItem('cttg_token') || '',
+        _ts: Date.now()
       })
     });
-    
-    const d = await res.json();
+    const raw = await res.text();
+    let d;
+    try { d = JSON.parse(raw); } catch (e) { throw new Error('Respuesta inválida del servidor'); }
     if (d.success) {
       closeModal('modalDecision');
       toast('Decisión registrada ✓', 'ok');
