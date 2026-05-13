@@ -100,9 +100,9 @@
       Filtrar por texto exacto de <strong style="color:#e2e8f0;font-weight:600">Estado solicitud</strong> (columna AC del Excel). «Observaciones estado» se muestra en las tablas (columna AD); los valores posibles salen de lo que haya en la hoja más los estándar del sistema.
     </label>
     <select id="filtroEstadoF3" onchange="renderTablas()" style="min-width:300px;max-width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
-    <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(255,255,255,.72);cursor:pointer;max-width:320px;line-height:1.35">
-      <input type="checkbox" id="chkFase3SinDedupe" onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;margin-top:2px;flex-shrink:0" />
-      <span>Todas las filas de la hoja <strong style="color:#e2e8f0;font-weight:600">sin agrupar</strong> radicaciones repetidas (útil si en Excel hay varias filas por mismo número).</span>
+    <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(255,255,255,.72);cursor:pointer;max-width:340px;line-height:1.35">
+      <input type="checkbox" id="chkFase3SinDedupe" checked onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;margin-top:2px;flex-shrink:0" />
+      <span><strong style="color:#e2e8f0;font-weight:600">Sin agrupar</strong> por radicación (recomendado: lista cada fila del Excel). Desmárquelo si solo quiere la fila más reciente por número.</span>
     </label>
   </div>
 
@@ -513,19 +513,31 @@ function fechaOrdValF3(r) {
   return isNaN(d.getTime()) ? 0 : d.getTime();
 }
 
-function fechaStrTieneValor(v) {
-  return v != null && String(v).trim() !== '';
+/** Celda API ya normalizada (yyyy-mm-dd) o equivalente reconocible — evita texto basura tratado como «con fecha». */
+function fechaProgramacionValida(v) {
+  if (v == null) return false;
+  const s = String(v).trim().split('T')[0];
+  if (!s || s === '-' || s === '—') return false;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const y = parseInt(s.slice(0, 4), 10);
+    return y >= 1990 && y <= 2100;
+  }
+  if (/^\d{5,7}(\.\d+)?$/.test(s)) return true;
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return false;
+  const y = d.getFullYear();
+  return y >= 1990 && y <= 2100;
 }
 
-/** Hay fecha en columna programación (D) y/o fecha asignada (U) en la hoja. */
+/** Hay fecha real en columna programación (D) y/o fecha asignada (U). */
 function tieneFechaProgramada(r) {
-  return fechaStrTieneValor(r.fechaSustentacion) || fechaStrTieneValor(r.fechaAsignada);
+  return fechaProgramacionValida(r.fechaSustentacion) || fechaProgramacionValida(r.fechaAsignada);
 }
 
 /** Para tablas: prioriza fecha de sustentación (D). */
 function fechaProgramacionPrimaria(r) {
-  if (fechaStrTieneValor(r.fechaSustentacion)) return r.fechaSustentacion;
-  if (fechaStrTieneValor(r.fechaAsignada)) return r.fechaAsignada;
+  if (fechaProgramacionValida(r.fechaSustentacion)) return r.fechaSustentacion;
+  if (fechaProgramacionValida(r.fechaAsignada)) return r.fechaAsignada;
   return '';
 }
 
