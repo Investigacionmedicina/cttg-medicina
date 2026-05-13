@@ -373,38 +373,44 @@ async function guardar() {
       `Estudiante ${i + 1}: ${e.nombre || 'Sin nombre'} · Cédula: ${e.cedula || 'N/D'} · Tel: ${e.telefono || 'N/D'} · Email: ${e.email || 'N/D'}`
     ).join('\n');
 
-    const notificacionTutores = {
-      asunto: decision === 'revision'
-        ? (esDipl
-          ? `CTTG Medicina | Aval diplomado / Fase 2 radicación ${radicacion.numero || rowIndex}`
-          : `CTTG Medicina | Aval tutor(es) radicación ${radicacion.numero || rowIndex}`)
-        : `CTTG Medicina | Ajustes en propuesta ${radicacion.numero || rowIndex}`,
-      mensaje:
+    const payloadValidar = {
+      action: 'validarTutores',
+      rowIndex,
+      tutor1,
+      tutor2,
+      observaciones: obsBase,
+      emailCoord: admin.email,
+      token: localStorage.getItem('cttg_token') || ''
+    };
+
+    if (!esDipl) {
+      payloadValidar.notificacionTutores = {
+        asunto: decision === 'revision'
+          ? `CTTG Medicina | Aval tutor(es) radicación ${radicacion.numero || rowIndex}`
+          : `CTTG Medicina | Ajustes en propuesta ${radicacion.numero || rowIndex}`,
+        mensaje:
 `Estimado(a) docente tutor(a),
 
 La Coordinación del CTTG Medicina registró la siguiente gestión:
 - Radicación: ${radicacion.numero || 'N/D'}
 - Proyecto: ${radicacion.titulo || 'Sin título'}
 - Modalidad: ${radicacion.modalidad || 'N/D'}
-- Decisión: ${decision === 'revision' ? (esDipl ? 'Desbloquear Fase 2 (diplomado)' : 'Avalar tutores / pasar a actas') : 'Devolver propuesta'}
+- Decisión: ${decision === 'revision' ? 'Avalar tutores / pasar a actas' : 'Devolver propuesta'}
 
 
 Datos de contacto de estudiante(s):
 ${estudiantesTxt}
 
 Este mensaje fue generado automáticamente por el sistema CTTG.`,
-      estudiantes
-    };
+        estudiantes
+      };
+    }
 
-    // 1. Guardar tutores
-    const resTutores = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-      action: 'validarTutores',
-      rowIndex, tutor1, tutor2,
-     notificacionTutores,
-      observaciones: obsBase,
-      emailCoord: admin.email,
-      token: localStorage.getItem('cttg_token') || ''
-    })});
+    // 1. Guardar tutores / aval (sin correo a tutores en modalidad Diplomado)
+    const resTutores = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify(payloadValidar)
+    });
     const dTutores = await resTutores.json();
     if (!dTutores.success) throw new Error(dTutores.error);
 
