@@ -285,9 +285,9 @@
    <!-- ALERTAS DE VENCIMIENTO POR FASE -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px">
           <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:12px">
-            <div style="font-size:10px;text-transform:uppercase;color:rgba(167,139,250,.5);margin-bottom:6px">⏱️ Tutores (15 días)</div>
+            <div style="font-size:10px;text-transform:uppercase;color:rgba(167,139,250,.5);margin-bottom:6px">⏱️ Coordinación (&gt;15 d. hábiles)</div>
             <div style="font-size:20px;font-weight:700;color:#c4b5fd" id="countVencTutores">0</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">validación tutores o aval diplomado</div>
           </div>
           <div style="background:rgba(252,211,77,.08);border:1px solid rgba(252,211,77,.2);border-radius:10px;padding:12px">
             <div style="font-size:10px;text-transform:uppercase;color:rgba(252,211,77,.5);margin-bottom:6px">📄 Actas (8 días)</div>
@@ -944,10 +944,12 @@ function verDetalle(ri) {
   if (!r) return;
   const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val">${esc(val)}</span></div>` : '';
   const esDip = esModalidadDiplomadoDash(r);
+  const periodoDipStr = esDip
+    ? [fmtFecha(r.diplomadoFechaInicio), fmtFecha(r.diplomadoFechaFin)].filter(x => x && x !== '—').join(' → ') || '—'
+    : '';
   const tutorBlock = esDip
     ? `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Diplomado</div>
-       ${fila('Nombre diplomado', r.titulo)}
-       ${fila('Inicio', fmtFecha(r.diplomadoFechaInicio))}${fila('Fin', fmtFecha(r.diplomadoFechaFin))}`
+       <div class="det-row"><span class="det-label">Tutores</span><span class="det-val">No aplica · modalidad Diplomado</span></div>`
     : `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
        ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
        ${fila('Email T1',r.tutor1Email)}
@@ -961,7 +963,7 @@ function verDetalle(ri) {
       ${badgeEst(r.estado)}
     </div>
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:6px">Proyecto</div>
-    ${fila('Modalidad',r.modalidad)}${fila('Área',r.area)}
+    ${fila('Modalidad',r.modalidad)}${esDip ? fila('Periodo del diplomado', periodoDipStr) : fila('Área',r.area)}
     ${fila('F. Radicación',fmtFecha(r.fechaRadicacion))}${fila('F. Aprobación',fmtFecha(r.fechaAprobacion))}
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Estudiantes</div>
     ${fila('Estudiante 1', r.nombre1 ? r.nombre1+' · Ced: '+r.cedula1+' · Sem. '+r.semestre1 : '')}
@@ -2210,9 +2212,9 @@ function describirHitoSeguimiento(s) {
  function contarVencimientos() {
   let vencTutores = 0, vencActas = 0, vencProtocolo = 0;
   
-  // Contar vencimiento de tutores (15 días desde radicación)
+  // Radicado sin aval de coordinación: tutores (no diplomado) o aval diplomado — misma regla de 15 días hábiles
   radicaciones.forEach(r => {
-    if (r.estado === 'Radicado' && r.fechaRadicacion && !esModalidadDiplomadoDash(r)) {
+    if (r.estado === 'Radicado' && r.fechaRadicacion) {
       const dias = calcularDiasHabilesDesdeHoy(r.fechaRadicacion);
       if (dias > 15) vencTutores++;
     }
