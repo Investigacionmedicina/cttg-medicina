@@ -309,13 +309,20 @@
         <div class="fg est3" style="display:none"><label>Semestre</label><select id="semestre3"><option value="">Seleccionar...</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
         <div class="fg est3" style="display:none"><label>Semillero (Opcional)</label><input id="semillero3"></div>
         <div class="sec-label">📄 Proyecto</div>
-        <div class="fg full"><label>Título del proyecto * (o escribe "Ninguno")</label><input id="titulo" placeholder="Título del trabajo de grado o Ninguno"></div>
+        <div class="fg full"><label id="lblTitulo">Título del proyecto * (o escribe "Ninguno")</label><input id="titulo" placeholder="Título del trabajo de grado o Ninguno"></div>
         <div class="fg"><label>Modalidad *</label>
-          <select id="modalidad"><option value="">Seleccionar...</option><option>Trabajo de investigación</option><option>Monografia Revision sistematica</option><option>Monografia Reporte de caso</option><option>Monografia serie de casos</option><option>Monografia Metaanalisis</option><option>Monografia revision de alcance</option></select>
+          <select id="modalidad" onchange="actualizarFormModalidad()"><option value="">Seleccionar...</option><option>Diplomado</option><option>Trabajo de investigación</option><option>Monografia Revision sistematica</option><option>Monografia Reporte de caso</option><option>Monografia serie de casos</option><option>Monografia Metaanalisis</option><option>Monografia revision de alcance</option></select>
         </div>
-        <div class="fg"><label>Área / Especialidad *</label>
+        <div id="bloqueDiplomado" style="display:none">
+          <div class="sec-label" style="grid-column:1/-1">🎓 Datos del diplomado</div>
+          <div class="fg"><label>Fecha de inicio *</label><input type="date" id="diplomadoFechaIni"></div>
+          <div class="fg"><label>Fecha de fin *</label><input type="date" id="diplomadoFechaFin"></div>
+          <div class="fg full"><p style="font-size:12px;color:rgba(255,255,255,.45);margin:0">No requiere tutores ni actas. La coordinadora avalará esta opción; luego cargarás el <strong>producto</strong> (mismo proceso que el protocolo) y pasará por el comité técnico. <strong>No hay sustentación.</strong></p></div>
+        </div>
+        <div class="fg" id="fgArea"><label>Área / Especialidad *</label>
           <select id="area"><option value="">Seleccionar...</option><option>Medicina Interna</option><option>Cirugía General</option><option>Pediatría</option><option>Ginecología y Obstetricia</option><option>Psiquiatría</option><option>Neurología</option><option>Cardiología</option><option>Oncología</option><option>Urgencias y Emergencias</option><option>Salud Pública</option><option>Epidemiología</option><option>Otra</option></select>
         </div>
+        <div id="bloqueTutores" style="display:contents">
         <div class="sec-label">👨‍🏫 Tutor 1</div>
         <div class="fg"><label>Nombre *</label><input id="tutor1Nombre" placeholder="Dr./Dra."></div>
         <div class="fg"><label>Email *</label><input type="email" id="tutor1Email" placeholder="tutor@usc.edu.co"></div>
@@ -329,6 +336,7 @@
         <div class="fg"><label>Teléfono</label><input id="tutor2Telefono" placeholder="(opcional)"></div>
         <div class="fg"><label>Rol</label>
           <select id="tutor2Relacion"><option value="">— Sin tutor 2 —</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
+        </div>
         </div>
         <div class="sec-label">📝 Observaciones (Opcional)</div>
         <div class="fg full"><label>Observaciones adicionales</label>
@@ -375,6 +383,7 @@ let misRadicaciones = [];
   if (!user || user.rol !== 'estudiante' || !TOKEN) { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
   cargarMisRad();
+  actualizarFormModalidad();
 })();
 
 async function salirSession() {
@@ -392,6 +401,31 @@ async function salirSession() {
 function esDevueltoPorComiteTecnico(est) {
   const e = String(est || '').toLowerCase();
   return e.includes('devuelto por comité') || e.includes('devuelto por comite');
+}
+
+function esModalidadDiplomadoUI(m) {
+  return String(m || '').trim().toLowerCase() === 'diplomado';
+}
+
+function actualizarFormModalidad() {
+  const dip = esModalidadDiplomadoUI(document.getElementById('modalidad')?.value);
+  const bt = document.getElementById('bloqueTutores');
+  const bd = document.getElementById('bloqueDiplomado');
+  const lbl = document.getElementById('lblTitulo');
+  const fgArea = document.getElementById('fgArea');
+  if (lbl) lbl.textContent = dip ? 'Nombre del diplomado *' : 'Título del proyecto * (o escribe "Ninguno")';
+  if (bt) bt.style.display = dip ? 'none' : 'contents';
+  if (bd) bd.style.display = dip ? 'contents' : 'none';
+  const ar = document.getElementById('area');
+  if (fgArea) fgArea.style.display = dip ? 'none' : '';
+  if (ar) {
+    ar.required = !dip;
+    if (dip) { ar.value = ''; }
+  }
+  if (!dip && document.getElementById('diplomadoFechaIni')) {
+    document.getElementById('diplomadoFechaIni').value = '';
+    document.getElementById('diplomadoFechaFin').value = '';
+  }
 }
 
 function switchTab(name, btn) {
@@ -515,6 +549,12 @@ function limpiarNotas(notas) {
 }
 
 function construirCajaTiempos(r) {
+  if (esModalidadDiplomadoUI(r.modalidad)) {
+    const di = r.diplomadoFechaInicio || '';
+    const df = r.diplomadoFechaFin || '';
+    if (!di && !df) return '';
+    return `<div class="time-box">🎓 Diplomado: inicio <strong>${esc(fmtFecha(di))}</strong> · fin <strong>${esc(fmtFecha(df))}</strong></div>`;
+  }
   const fechaRad = parseFecha(r.fechaRadicacion);
   if (!fechaRad) return '';
   const limiteTutor = addBusinessDays(fechaRad, 15);
@@ -539,6 +579,11 @@ function setFormularioSoloLectura(flag) {
 
 function renderAlertasSuperiores(radicaciones) {
   const wrap = document.getElementById('alertasTiempo');
+  if (radicaciones.length && esModalidadDiplomadoUI(radicaciones[0].modalidad)) {
+    wrap.style.display = 'none';
+    wrap.innerHTML = '';
+    return;
+  }
   const sinRespuesta = radicaciones.filter(r => !['Aprobado','Devuelto'].includes(String(r.estado||'')));
   if (!sinRespuesta.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
   const r = sinRespuesta[0];
@@ -575,7 +620,8 @@ function verDetalle(rowIndex) {
     </div>
     <div class="det-sec">Proyecto</div>
     ${fila('Modalidad', r.modalidad)}
-    ${fila('Área', r.area)}
+    ${esModalidadDiplomadoUI(r.modalidad) ? fila('Fechas del diplomado', (r.diplomadoFechaInicio || r.diplomadoFechaFin) ? ('Inicio: ' + fmtFecha(r.diplomadoFechaInicio) + ' · Fin: ' + fmtFecha(r.diplomadoFechaFin)) : '—') : ''}
+    ${!esModalidadDiplomadoUI(r.modalidad) ? fila('Área', r.area) : ''}
     ${fila('F. Radicación', fmtFecha(r.fechaRadicacion))}
     ${fila('F. Aprobación', fmtFecha(r.fechaAprobacion))}
     <div class="det-sec">Estudiantes</div>
@@ -583,10 +629,10 @@ function verDetalle(rowIndex) {
     ${fila('Email 1', r.email1)}
     ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
     ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
-    <div class="det-sec">Tutores</div>
+    ${esModalidadDiplomadoUI(r.modalidad) ? '<div class="det-sec">Tutores</div><div class="det-row"><span class="det-label">Nota</span><span class="det-val">La modalidad Diplomado no requiere tutores.</span></div>' : `<div class="det-sec">Tutores</div>
     ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
     ${fila('Email T1', r.tutor1Email)}
-    ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
+    ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}`}
     ${notas ? `<div class="notas-box" style="margin-top:14px">📝 ${esc(notas)}</div>` : ''}
   `;
   document.getElementById('modalDet').classList.add('open');
@@ -693,13 +739,22 @@ async function actualizarBotonesFases(radicaciones) {
     [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'none'; });
     return;
   }
-  [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'flex'; });
   const estadoActual = radicaciones[0].estado || '';
+  const esDipl = esModalidadDiplomadoUI(radicaciones[0].modalidad);
+  if (esDipl && document.getElementById('panelFase3Estado')) {
+    document.getElementById('panelFase3Estado').style.display = 'none';
+  }
+  [btnActas, btnFase2].forEach(b => { if (b) b.style.display = 'flex'; });
+  if (btnFase3) btnFase3.style.display = esDipl ? 'none' : 'flex';
   const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Aprobado','Sustentado','Reprobado'];
 
   if (btnActas) {
     btnActas.style.display = 'flex';
-    if (estadosConAcceso.includes(estadoActual)) {
+    if (esDipl) {
+      btnActas.style.opacity = '0.45';
+      btnActas.style.pointerEvents = 'none';
+      if (btnActasSub) btnActasSub.textContent = 'No aplica (modalidad Diplomado)';
+    } else if (estadosConAcceso.includes(estadoActual)) {
       btnActas.style.opacity       = '1';
       btnActas.style.pointerEvents = 'auto';
       if (btnActasSub) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
@@ -726,7 +781,8 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
       actasAprobadas = misActas.some(a => a.estado === 'Aprobada');
       const pendientes = misActas.filter(a => a.estado === 'Pendiente revisión').length;
       if (btnActasSub) {
-        if (actasAprobadas) btnActasSub.textContent = '✅ Actas aprobadas';
+        if (esDipl) btnActasSub.textContent = 'No aplica (modalidad Diplomado)';
+        else if (actasAprobadas) btnActasSub.textContent = '✅ Actas aprobadas';
         else if (pendientes > 0) btnActasSub.textContent = `⏳ ${pendientes} acta(s) en revisión`;
         else if (estadosConAcceso.includes(estadoActual)) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
       }
@@ -738,7 +794,7 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
       );
     }
 
-    if (dFase3.success) {
+    if (dFase3.success && !esDipl) {
       const miSolicitud = (dFase3.fase3 || []).find(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
       if (miSolicitud) {
         document.getElementById('panelFase3Estado').style.display = 'block';
@@ -788,20 +844,30 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
     }
   } catch(e) { console.log('Error cargando fases:', e); }
 
+  const actasOk = actasAprobadas || (esDipl && estadoActual !== 'Radicado' && estadoActual !== 'Devuelto');
+
   if (btnFase2) {
     btnFase2.style.display = 'flex';
-    if (actasAprobadas) {
+    if (actasOk) {
       btnFase2.style.opacity = '1';
       btnFase2.style.pointerEvents = 'auto';
-      if (btnFase2Sub) btnFase2Sub.textContent = estadoActual === 'Devuelto por Comité Técnico' ? 'Solicitar nueva valoración del protocolo' : 'Subir documento de protocolo';
+      if (btnFase2Sub) {
+        if (estadoActual === 'Devuelto por Comité Técnico') btnFase2Sub.textContent = esDipl ? 'Solicitar nueva valoración del producto' : 'Solicitar nueva valoración del protocolo';
+        else btnFase2Sub.textContent = esDipl ? 'Subir producto para comité (mismo flujo que protocolo)' : 'Subir documento de protocolo';
+      }
     } else {
       btnFase2.style.opacity = '0.4';
       btnFase2.style.pointerEvents = 'none';
-      if (btnFase2Sub) btnFase2Sub.textContent = 'Pendiente: aprobación de actas';
+      if (btnFase2Sub) btnFase2Sub.textContent = esDipl ? 'Pendiente: aval de la coordinación (diplomado)' : 'Pendiente: aprobación de actas';
+    }
+    if (esDipl && estadoActual === 'Aprobado') {
+      btnFase2.style.opacity = '0.55';
+      btnFase2.style.pointerEvents = 'none';
+      if (btnFase2Sub) btnFase2Sub.textContent = '✅ Finalizado tras aprobación del comité (modalidad Diplomado)';
     }
   }
 
- if (btnFase3) {
+  if (!esDipl && btnFase3) {
     btnFase3.style.display = 'flex';
     if (fase2Aprobada) {
       btnFase3.style.opacity = '1';
@@ -819,11 +885,15 @@ function limpiar() {
  ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  ['diplomadoFechaIni','diplomadoFechaFin'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
   ['semestre1','semestre2','semestre3','modalidad','area','tutor1Relacion','tutor2Relacion'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('successBox').style.display = 'none';
   setEst(1, document.querySelector('.ne'));
+  actualizarFormModalidad();
 }
 
 async function radicar() {
@@ -837,10 +907,25 @@ async function radicar() {
     );
     return;
   }
-  const reqs = [['cedula1','Cédula estudiante 1'],['nombre1','Nombre estudiante 1'],['email1','Email estudiante 1'],['telefono1','Teléfono estudiante 1'],['semestre1','Semestre estudiante 1'],['titulo','Título del proyecto'],['modalidad','Modalidad'],['area','Área'],['tutor1Nombre','Nombre del tutor 1'],['tutor1Email','Email del tutor 1']];
+  const modalidadSel = document.getElementById('modalidad').value;
+  const dipRad = esModalidadDiplomadoUI(modalidadSel);
+
+  const baseReqs = [['cedula1','Cédula estudiante 1'],['nombre1','Nombre estudiante 1'],['email1','Email estudiante 1'],['telefono1','Teléfono estudiante 1'],['semestre1','Semestre estudiante 1'],['titulo','Nombre del diplomado (o título del proyecto)'],['modalidad','Modalidad']];
+  const reqsTrad = [['area','Área'],['tutor1Nombre','Nombre del tutor 1'],['tutor1Email','Email del tutor 1']];
+  const reqs = dipRad ? baseReqs : baseReqs.concat(reqsTrad);
+
   for (const [id, label] of reqs) {
     const el = document.getElementById(id);
     if (!el || !el.value.trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
+  }
+  if (dipRad) {
+    const dIni = (document.getElementById('diplomadoFechaIni')?.value || '').trim();
+    const dFin = (document.getElementById('diplomadoFechaFin')?.value || '').trim();
+    if (!dIni || !dFin) { toast('Indica fecha de inicio y fin del diplomado.', 'warn'); return; }
+    if (new Date(dIni + 'T12:00:00') > new Date(dFin + 'T12:00:00')) {
+      toast('La fecha de inicio del diplomado no puede ser posterior a la fecha de fin.', 'warn');
+      return;
+    }
   }
   if (numEst >= 2) {
     const e2 = [['cedula2','Cédula estudiante 2'],['nombre2','Nombre estudiante 2'],['email2','Email estudiante 2'],['telefono2','Teléfono estudiante 2'],['semestre2','Semestre estudiante 2']];
@@ -858,7 +943,7 @@ async function radicar() {
   }
   const t2n = (document.getElementById('tutor2Nombre')?.value || '').trim();
   const t2e = (document.getElementById('tutor2Email')?.value || '').trim();
-  if ((t2n && !t2e) || (!t2n && t2e)) { toast('Si indicas tutor 2, completa nombre y email.', 'warn'); return; }
+  if (!dipRad && ((t2n && !t2e) || (!t2n && t2e))) { toast('Si indicas tutor 2, completa nombre y email.', 'warn'); return; }
   const btn = document.getElementById('btnRad');
    const datos = {
     cedula1: document.getElementById('cedula1').value.trim(),
@@ -881,15 +966,17 @@ async function radicar() {
     semillero3: numEst >= 3 ? document.getElementById('semillero3').value.trim() : '',
     titulo: document.getElementById('titulo').value.trim(),
     modalidad: document.getElementById('modalidad').value,
-    area: document.getElementById('area').value,
-    tutor1Nombre: (document.getElementById('tutor1Nombre')?.value || '').trim(),
-    tutor1Email: (document.getElementById('tutor1Email')?.value || '').trim(),
-    tutor1Telefono: (document.getElementById('tutor1Telefono')?.value || '').trim(),
-    tutor1Relacion: document.getElementById('tutor1Relacion')?.value || '',
-    tutor2Nombre: (document.getElementById('tutor2Nombre')?.value || '').trim(),
-    tutor2Email: (document.getElementById('tutor2Email')?.value || '').trim(),
-    tutor2Telefono: (document.getElementById('tutor2Telefono')?.value || '').trim(),
-    tutor2Relacion: document.getElementById('tutor2Relacion')?.value || '',
+    area: dipRad ? '' : document.getElementById('area').value,
+    diplomadoFechaInicio: dipRad ? (document.getElementById('diplomadoFechaIni')?.value || '').trim() : '',
+    diplomadoFechaFin: dipRad ? (document.getElementById('diplomadoFechaFin')?.value || '').trim() : '',
+    tutor1Nombre: dipRad ? '' : (document.getElementById('tutor1Nombre')?.value || '').trim(),
+    tutor1Email: dipRad ? '' : (document.getElementById('tutor1Email')?.value || '').trim(),
+    tutor1Telefono: dipRad ? '' : (document.getElementById('tutor1Telefono')?.value || '').trim(),
+    tutor1Relacion: dipRad ? '' : (document.getElementById('tutor1Relacion')?.value || ''),
+    tutor2Nombre: dipRad ? '' : (document.getElementById('tutor2Nombre')?.value || '').trim(),
+    tutor2Email: dipRad ? '' : (document.getElementById('tutor2Email')?.value || '').trim(),
+    tutor2Telefono: dipRad ? '' : (document.getElementById('tutor2Telefono')?.value || '').trim(),
+    tutor2Relacion: dipRad ? '' : (document.getElementById('tutor2Relacion')?.value || ''),
     observaciones: document.getElementById('observaciones')?.value || ''
   };
 
