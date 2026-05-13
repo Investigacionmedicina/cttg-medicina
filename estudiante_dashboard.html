@@ -811,7 +811,7 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
         document.getElementById('f3Turnitin').textContent = (miSolicitud.pctTurnitin || '—') + '%';
         document.getElementById('f3Fecha').textContent = miSolicitud.fechaSustentacion ? fmtFecha(miSolicitud.fechaSustentacion) : '—';
         document.getElementById('f3Hora').textContent = miSolicitud.horaSustentacion || '—';
-        const obsF3 = miSolicitud.motivoDevolucion || miSolicitud.observacionEstado || miSolicitud.observacionesEstado || (!miSolicitud.fechaSustentacion ? miSolicitud.observaciones : '');
+        const obsF3 = miSolicitud.motivoDevolucion || miSolicitud.observacionesEstado || (!miSolicitud.fechaSustentacion ? miSolicitud.observaciones : '');
         const obsBox = document.getElementById('f3Observaciones');
         if (obsF3) {
           obsBox.style.display = 'block';
