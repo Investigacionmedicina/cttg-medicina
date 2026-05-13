@@ -95,6 +95,13 @@
     <button type="button" class="tab" id="tabTodas" onclick="switchTab('todas',this)">📋 Todas las solicitudes</button>
   </div>
 
+  <div class="filtro-estado-f3" style="margin:10px 0 18px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+    <label for="filtroEstadoF3" style="font-size:12px;color:rgba(255,255,255,.55);flex:1;min-width:220px">
+      Filtrar por texto exacto de <strong style="color:#e2e8f0;font-weight:600">Estado solicitud</strong> (columna AC del Excel). «Observaciones estado» se muestra en las tablas (columna AD); los valores posibles salen de lo que haya en la hoja más los estándar del sistema.
+    </label>
+    <select id="filtroEstadoF3" onchange="renderTablas()" style="min-width:300px;max-width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
+  </div>
+
   <!-- VISTA 1: ASIGNAR JURADOS -->
   <div class="panel on" id="pan-asignar">
     <div class="sec-hdr">
@@ -110,11 +117,12 @@
           <th>% Turnitin</th>
           <th>F. Solicitud</th>
           <th>Jurados Sugeridos</th>
-          <th>Estado</th>
+          <th>Estado solicitud</th>
+          <th>Observaciones estado</th>
           <th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyAsignar">
-          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+          <tr><td colspan="9" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -135,10 +143,12 @@
           <th>Hora</th>
           <th>Jurado 1</th>
           <th>Jurado 2</th>
+          <th>Estado solicitud</th>
+          <th>Observaciones estado</th>
           <th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyResultado">
-          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+          <tr><td colspan="9" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -165,11 +175,12 @@
           <th>F. Solicitud</th>
           <th>F. Sustentación</th>
           <th>Nota</th>
-          <th>Vista coordinación</th>
           <th>Estado solicitud</th>
+          <th>Observaciones estado</th>
+          <th>Vista coordinación</th>
         </tr></thead>
         <tbody id="tbodyTodas">
-          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -330,6 +341,78 @@ function fmtFecha(s) {
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+function escAttr(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+/** Columna «Estado Solicitud» (AC) tal como viene del Excel/API */
+function estadoSheetRaw(r) {
+  const e = String(r.estadoSolicitud != null ? r.estadoSolicitud : '').trim();
+  return e || 'Solicitud sustentación radicada';
+}
+
+function esEstadoDevueltaSheet(estadoTxt) {
+  const e = String(estadoTxt||'').trim().toLowerCase();
+  return e.includes('devuelta') || e.includes('devolución') || e.includes('devolucion');
+}
+
+function badgeEstadoSheet(estadoTxt) {
+  const e = String(estadoTxt||'').trim();
+  const map = {
+    'Solicitud sustentación revisada': 'b-revisada',
+    'Solicitud sustentación devuelta': 'b-devuelta',
+    'Devuelta': 'b-devuelta',
+    'Solicitud sustentación radicada': 'b-pend'
+  };
+  let cls = map[e] || 'b-pend';
+  if (esEstadoDevueltaSheet(e)) cls = 'b-devuelta';
+  return `<span class="badge ${cls}">${esc(e)}</span>`;
+}
+
+function truncObsHtml(obs, max) {
+  const raw = String(obs || '').trim();
+  if (!raw) return '<span style="color:rgba(255,255,255,.35)">—</span>';
+  const short = raw.length <= max ? raw : raw.slice(0, max) + '…';
+  return `<span style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.35;cursor:default" title="${escAttr(raw)}">${esc(short)}</span>`;
+}
+
+function coincideFiltroEstadoSheet(r) {
+  const sel = document.getElementById('filtroEstadoF3');
+  const v = sel && sel.value ? String(sel.value).trim() : '';
+  if (!v) return true;
+  return estadoSheetRaw(r) === v;
+}
+
+function poblarFiltroEstadoF3() {
+  const sel = document.getElementById('filtroEstadoF3');
+  if (!sel) return;
+  const guardado = sel.value;
+  const canon = [
+    'Solicitud sustentación radicada',
+    'Solicitud sustentación revisada',
+    'Solicitud sustentación devuelta',
+    'Devuelta'
+  ];
+  const seen = new Set(canon);
+  fase3.forEach(r => {
+    const e = String(r.estadoSolicitud || '').trim();
+    if (e) seen.add(e);
+  });
+  const opts = [...seen].sort((a, b) => a.localeCompare(b, 'es'));
+  sel.innerHTML = '';
+  const optAll = document.createElement('option');
+  optAll.value = '';
+  optAll.textContent = 'Todos los estados';
+  sel.appendChild(optAll);
+  opts.forEach(text => {
+    const o = document.createElement('option');
+    o.value = text;
+    o.textContent = text;
+    sel.appendChild(o);
+  });
+  sel.value = guardado === '' || opts.includes(guardado) ? guardado : '';
+}
+
 /** Teléfono para mostrar (evita #ERROR! de Excel/Sheets en pantalla) */
 function fmtTelMostrar(v) {
   const s = String(v||'').trim();
@@ -402,22 +485,6 @@ function aplicarDecisionJurado(i) {
   }
 }
 
-function estadoSolicitudFase3(r) {
-  if (r.nota) return parseFloat(r.nota) >= 3 ? 'Sustentado' : 'Reprobado';
-  if (r.fechaSustentacion) return 'Programado';
-  return r.estadoSolicitud || r.estado || 'Solicitud sustentación radicada';
-}
-
-function badgeSolicitudFase3(estado) {
-  const map = {
-    'Solicitud sustentación revisada': 'b-revisada',
-    'Solicitud sustentación devuelta': 'b-devuelta',
-    'Devuelta': 'b-devuelta',
-    'Programado': 'b-revisada'
-  };
-  return `<span class="badge ${map[estado] || 'b-pend'}">${esc(estado)}</span>`;
-}
-
 function toggleDesc() {
   document.getElementById('descDiv').style.display = document.getElementById('mProducto').value === 'SÍ' ? 'block' : 'none';
 }
@@ -429,10 +496,10 @@ async function cargar() {
     if (d.success) { fase3 = d.fase3 || []; renderTablas(); }
     else throw new Error(d.error);
   } catch(e) {
-    document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
-    document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+    document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="9" class="empty">Error: ${e.message}</td></tr>`;
+    document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="9" class="empty">Error: ${e.message}</td></tr>`;
     const tbT = document.getElementById('tbodyTodas');
-    if (tbT) tbT.innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+    if (tbT) tbT.innerHTML = `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
   }
 }
 
@@ -452,22 +519,32 @@ function vistaBucketCoord(r) {
 }
 
 function renderTablas() {
-  const sinFecha = fase3.filter(r => !r.fechaSustentacion || r.fechaSustentacion === '');
-  const conFecha = fase3.filter(r => r.fechaSustentacion && r.fechaSustentacion !== '' && (!r.nota || r.nota === ''));
+  poblarFiltroEstadoF3();
+
+  const sinFecha = fase3.filter(r =>
+    (!r.fechaSustentacion || r.fechaSustentacion === '') && coincideFiltroEstadoSheet(r));
+  const conFecha = fase3.filter(r =>
+    r.fechaSustentacion && r.fechaSustentacion !== '' && (!r.nota || r.nota === '') && coincideFiltroEstadoSheet(r));
+
+  const todasCoincidenEstado = fase3.filter(coincideFiltroEstadoSheet);
 
   const elAsig = document.getElementById('tabAsignar');
   const elRes = document.getElementById('tabResultado');
   const elTod = document.getElementById('tabTodas');
   if (elAsig) elAsig.textContent = `📅 Pendiente Asignación (${sinFecha.length})`;
   if (elRes) elRes.textContent = `🎓 Pendiente Resultado (${conFecha.length})`;
-  if (elTod) elTod.textContent = `📋 Todas (${fase3.length})`;
+  if (elTod) elTod.textContent = `📋 Todas (${todasCoincidenEstado.length}${todasCoincidenEstado.length !== fase3.length ? '/' + fase3.length : ''})`;
+
   const tbA = document.getElementById('tbodyAsignar');
   if (!sinFecha.length) {
-    tbA.innerHTML = '<tr><td colspan="8" class="empty">Sin solicitudes pendientes de asignación.</td></tr>';
+    tbA.innerHTML = '<tr><td colspan="9" class="empty">' +
+      (fase3.filter(r => !r.fechaSustentacion || r.fechaSustentacion === '').length
+        ? 'Ninguna coincide con el filtro de estado solicitud.'
+        : 'Sin solicitudes pendientes de asignación.') + '</td></tr>';
   } else {
     tbA.innerHTML = sinFecha.map(r => {
-      const estado = estadoSolicitudFase3(r);
-      const estaDevuelta = ['Solicitud sustentación devuelta','Devuelta'].includes(estado);
+      const estSh = estadoSheetRaw(r);
+      const estaDevuelta = esEstadoDevueltaSheet(estSh);
       return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
@@ -475,7 +552,8 @@ function renderTablas() {
       <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(lineaTablaJuradosSugeridos(r))}</td>
-      <td>${badgeSolicitudFase3(estado)}</td>
+      <td>${badgeEstadoSheet(estSh)}</td>
+      <td>${truncObsHtml(r.observacionesEstado, 56)}</td>
       <td><div class="act">
         <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisada</button>
         <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
@@ -487,7 +565,10 @@ function renderTablas() {
 
   const tbR = document.getElementById('tbodyResultado');
   if (!conFecha.length) {
-    tbR.innerHTML = '<tr><td colspan="7" class="empty">Sin sustentaciones pendientes de resultado.</td></tr>';
+    tbR.innerHTML = '<tr><td colspan="9" class="empty">' +
+      (fase3.filter(r => r.fechaSustentacion && r.fechaSustentacion !== '' && (!r.nota || r.nota === '')).length
+        ? 'Ninguna coincide con el filtro de estado solicitud.'
+        : 'Sin sustentaciones pendientes de resultado.') + '</td></tr>';
   } else {
     tbR.innerHTML = conFecha.map(r => `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
@@ -496,6 +577,8 @@ function renderTablas() {
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${r.horaSustentacion||'—'}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado1Nombre||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado2Nombre||'—')}</td>
+      <td>${badgeEstadoSheet(estadoSheetRaw(r))}</td>
+      <td>${truncObsHtml(r.observacionesEstado, 44)}</td>
       <td><button class="btn bl" onclick="abrirResultado(${r.rowIndex},'${esc(r.numero)}')">🎓 Registrar</button></td>
     </tr>`).join('');
   }
@@ -505,24 +588,28 @@ function renderTablas() {
     const q = (document.getElementById('searchTodasF3') && document.getElementById('searchTodasF3').value || '').trim().toLowerCase();
     const ordenadas = [...fase3].sort((a, b) => fechaOrdValF3(b) - fechaOrdValF3(a));
     const todasFiltradas = ordenadas.filter(r => {
+      if (!coincideFiltroEstadoSheet(r)) return false;
       if (!q) return true;
-      const blob = [r.numero, r.nombreEstudiante, r.emailEstudiante, r.estadoSolicitud, r.estado].join(' ').toLowerCase();
+      const blob = [r.numero, r.nombreEstudiante, r.emailEstudiante, r.estadoSolicitud, r.estado, r.observacionesEstado].join(' ').toLowerCase();
       return blob.includes(q);
     });
     if (!todasFiltradas.length) {
-      tbTod.innerHTML = '<tr><td colspan="7" class="empty">' + (fase3.length ? 'Ninguna solicitud coincide con la búsqueda.' : 'No hay solicitudes cargadas.') + '</td></tr>';
+      tbTod.innerHTML = '<tr><td colspan="8" class="empty">' +
+        (fase3.length ? 'Ninguna solicitud coincide con el filtro o la búsqueda.' : 'No hay solicitudes cargadas.') + '</td></tr>';
     } else {
       tbTod.innerHTML = todasFiltradas.map(r => {
         const vb = vistaBucketCoord(r);
         const notaTxt = String(r.nota != null ? r.nota : '').trim();
+        const estSh = estadoSheetRaw(r);
         return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:#fcd34d">${fmtFecha(r.fechaSustentacion)}</td>
       <td style="font-size:12px">${esc(notaTxt || '—')}</td>
+      <td>${badgeEstadoSheet(estSh)}</td>
+      <td>${truncObsHtml(r.observacionesEstado, 64)}</td>
       <td><span class="badge ${vb.clase}">${esc(vb.texto)}</span></td>
-      <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(r.estadoSolicitud || '—')}</td>
     </tr>`;
       }).join('');
     }
