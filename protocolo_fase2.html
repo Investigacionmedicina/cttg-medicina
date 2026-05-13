@@ -84,7 +84,7 @@
 <header>
   <div class="hdr-l">
     <div class="logo">📄</div>
-    <div><h1>CTTG Medicina</h1><p>Protocolo Fase 2</p></div>
+    <div><h1>CTTG Medicina</h1><p id="hdrSubFase2">Protocolo Fase 2</p></div>
   </div>
   <div class="hdr-r">
     <div class="user-chip" id="userChip">—</div>
@@ -96,14 +96,14 @@
   <a href="estudiante_dashboard.html" class="back">← Volver al dashboard</a>
   <p id="bannerDiplomado" class="dip-banner">Modalidad <strong>Diplomado</strong>: aquí cargas el <strong>producto</strong> para valoración del comité técnico (mismo flujo que el protocolo). No aplica sustentación en Fase 3.</p>
   <div class="tabs">
-    <button class="tab on" onclick="switchTab('mis-protocolos',this)">📖 Mis Protocolos</button>
-    <button class="tab" onclick="switchTab('cargar',this)">➕ Cargar Protocolo</button>
+    <button class="tab on" id="tabF2Lista" onclick="switchTab('mis-protocolos',this)">📖 Mis Protocolos</button>
+    <button class="tab" id="tabF2Carga" onclick="switchTab('cargar',this)">➕ Cargar Protocolo</button>
   </div>
 
   <!-- MIS PROTOCOLOS -->
   <div class="panel on" id="pan-mis-protocolos">
     <div class="resumen-card" id="resumenCard" style="display:none">
-      <h4>Resumen de mis protocolos</h4>
+      <h4 id="hdrResumenFase2">Resumen de mis protocolos</h4>
       <div class="stats-grid">
         <div class="stat-box"><div class="n n-total" id="statTotal">0</div><div class="l">Total</div></div>
         <div class="stat-box"><div class="n n-aprobadas" id="statAprobadas">0</div><div class="l">Aprobados</div></div>
@@ -114,7 +114,7 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>Fecha</th><th>N° Radicación</th><th>Anexo Cambió</th><th>Estado</th><th>Acción</th>
+          <th>Fecha</th><th>N° Radicación</th><th id="thColEnvio">Anexo Cambió</th><th>Estado</th><th>Acción</th>
         </tr></thead>
         <tbody id="tbodyProtocolos">
           <tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando protocolos...</td></tr>
@@ -125,7 +125,7 @@
     <!-- DETALLES PROTOCOLO SELECCIONADO -->
     <div id="detalleProtocolo" style="display:none;margin-top:24px">
       <div class="detalle-protocolo">
-        <h4>Detalles del protocolo</h4>
+        <h4 id="detalleTituloFase2">Detalles del protocolo</h4>
         <div class="detalle-row">
           <span class="label">Número Radicación</span>
           <span class="value" id="detNumero">—</span>
@@ -170,48 +170,45 @@
   <!-- CARGAR PROTOCOLO -->
   <div class="panel" id="pan-cargar">
     <div class="form-card">
-      <h3><span class="dot"></span>Cargar Protocolo</h3>
-      <p>Sigue los pasos para registrar tu protocolo correctamente. Si el Comité Técnico lo devolvió, carga la versión corregida para solicitar una nueva valoración.</p>
+      <h3 id="f2TituloPrincipal"><span class="dot"></span>Cargar Protocolo</h3>
+      <p id="f2LeadPrincipal">Sigue los pasos para registrar tu protocolo correctamente. Si el Comité Técnico lo devolvió, carga la versión corregida para solicitar una nueva valoración.</p>
 
       <div class="pasos">
         <div class="paso" id="paso1">
           <div class="paso-num">1</div>
           <div class="paso-txt">
-            <strong>Abre el formulario de carga</strong>
-            <span>Se abrirá en una nueva pestaña. Usa tu número de radicación y correo institucional.</span>
+            <strong id="f2Paso1Tit">Abre el formulario de carga</strong>
+            <span id="f2Paso1Txt">Se abrirá en una nueva pestaña. Usa tu número de radicación y correo institucional.</span>
           </div>
         </div>
         <div class="paso" id="paso2">
           <div class="paso-num">2</div>
           <div class="paso-txt">
-            <strong>Adjunta el PDF con toda la documentación</strong>
-            <span>Incluye: Propuesta, Consentimiento (si aplica) y Protocolo completo. Máximo 100MB.</span>
+            <strong id="f2Paso2Tit">Adjunta el PDF con toda la documentación</strong>
+            <span id="f2Paso2Txt">Incluye: Propuesta, Consentimiento (si aplica) y Protocolo completo. Máximo 100MB.</span>
           </div>
         </div>
         <div class="paso" id="paso3">
           <div class="paso-num">3</div>
           <div class="paso-txt">
-            <strong>Vuelve aquí y confirma el envío</strong>
-            <span>Haz clic en "Ya envié mi protocolo" para registrarlo en el sistema.</span>
+            <strong id="f2Paso3Tit">Vuelve aquí y confirma el envío</strong>
+            <span id="f2Paso3Txt">Haz clic en "Ya envié mi protocolo" para registrarlo en el sistema.</span>
           </div>
         </div>
       </div>
 
-      <a href="https://forms.office.com/r/SBFiqKTEKQ?origin=lprLink" target="_blank" class="btn-forms" onclick="marcarPasos()">
+      <a href="https://forms.office.com/r/SBFiqKTEKQ?origin=lprLink" target="_blank" id="lnkFormularioF2" class="btn-forms" onclick="marcarPasos()">
         📝 Abrir formulario de carga ↗
       </a>
 
       <div class="sep">una vez enviado el formulario</div>
 
       <div class="form-card" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);padding:20px;margin-bottom:0">
-        <h3><span class="dot"></span>Confirma tu carga</h3>
+        <h3 id="f2ConfirmaTit"><span class="dot"></span>Confirma tu carga</h3>
 
-        <div style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:16px;line-height:1.6">
-          <strong style="color:#a5b4fc">📋 Documentación requerida:</strong><br>
-          ✓ Archivo 1: Propuesta de trabajo (Anexo A3 o A10 según modalidad)<br>
-          ✓ Archivo 2: Consentimiento/Asentimiento/Parental (si aplica)<br>
-          ✓ Archivo 3: Protocolo de Investigación o Monografía completo<br>
-          <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Unir todos en 1 PDF · Máximo 100MB</span>
+        <div id="f2DocReqBox" style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:16px;line-height:1.6">
+          <strong id="f2DocTit" style="color:#a5b4fc">📋 Documentación requerida:</strong>
+          <span id="f2DocLista"></span>
         </div>
 
         <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px">
@@ -219,17 +216,17 @@
           
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
             <input type="checkbox" id="check1" style="width:auto">
-            <label for="check1" style="margin-bottom:0">Incluí Anexo A3 o A10 (según mi modalidad)</label>
+            <label for="check1" id="lblCheck1">Incluí Anexo A3 o A10 (según mi modalidad)</label>
           </div>
           
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
             <input type="checkbox" id="check2" style="width:auto">
-            <label for="check2" style="margin-bottom:0">Incluí Consentimiento/Asentimiento/Parental (si aplica)</label>
+            <label for="check2" id="lblCheck2">Incluí Consentimiento/Asentimiento/Parental (si aplica)</label>
           </div>
           
           <div style="display:flex;align-items:center;gap:8px">
             <input type="checkbox" id="check3" style="width:auto">
-            <label for="check3" style="margin-bottom:0">Incluí Protocolo de Investigación o Monografía completo</label>
+            <label for="check3" id="lblCheck3">Incluí Protocolo de Investigación o Monografía completo</label>
           </div>
         </div>
 
@@ -242,9 +239,9 @@
 
         <div class="success-box" id="successBox">
           <div style="font-size:28px;margin-bottom:8px">🎉</div>
-          <div style="font-size:15px;font-weight:600;color:#fff">¡Protocolo registrado exitosamente!</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará tu protocolo y recibirás un correo cuando sea evaluado.</div>
-          <button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="switchTab('mis-protocolos',document.querySelectorAll('.tab')[0])">Ver mis protocolos</button>
+          <div id="f2SuccessTit" style="font-size:15px;font-weight:600;color:#fff">¡Protocolo registrado exitosamente!</div>
+          <div id="f2SuccessTxt" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará tu protocolo y recibirás un correo cuando sea evaluado.</div>
+          <button id="btnF2IrLista" class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="switchTab('mis-protocolos',document.getElementById('tabF2Lista'))">Ver mis protocolos</button>
         </div>
       </div>
     </div>
@@ -259,12 +256,144 @@ const TOKEN = localStorage.getItem('cttg_token') || '';
 let user = null;
 let protocoloActual = null;
 
-(function init() {
+function esDiplomadoFase2() {
+  return String(window.radModalidad || '').trim().toLowerCase() === 'diplomado';
+}
+
+function aplicarEtiquetasModalidadFase2() {
+  const dip = esDiplomadoFase2();
+  const sub = document.getElementById('hdrSubFase2');
+  if (sub) sub.textContent = dip ? 'Producto diplomado · Fase 2' : 'Protocolo Fase 2';
+
+  const tL = document.getElementById('tabF2Lista');
+  const tC = document.getElementById('tabF2Carga');
+  if (tL) tL.textContent = dip ? '📖 Mis envíos (Fase 2)' : '📖 Mis Protocolos';
+  if (tC) tC.textContent = dip ? '➕ Cargar producto' : '➕ Cargar Protocolo';
+
+  const hr = document.getElementById('hdrResumenFase2');
+  if (hr) hr.textContent = dip ? 'Resumen de mis envíos' : 'Resumen de mis protocolos';
+
+  const th = document.getElementById('thColEnvio');
+  if (th) th.textContent = dip ? 'Tipo envío / anexo' : 'Anexo Cambió';
+
+  const dt = document.getElementById('detalleTituloFase2');
+  if (dt) dt.textContent = dip ? 'Detalles del envío / producto' : 'Detalles del protocolo';
+
+  const hTit = document.getElementById('f2TituloPrincipal');
+  if (hTit) {
+    hTit.innerHTML =
+      `<span class="dot"></span>` + (dip ? 'Cargar producto (diplomado)' : 'Cargar Protocolo');
+  }
+  const lead = document.getElementById('f2LeadPrincipal');
+  if (lead) {
+    lead.textContent = dip
+      ? 'Completa los pasos para cargar tu producto y que el Comité Técnico lo valide. Si te devolvieron observaciones, vuelve a enviar una versión corregida desde el mismo flujo.'
+      : 'Sigue los pasos para registrar tu protocolo correctamente. Si el Comité Técnico lo devolvió, carga la versión corregida para solicitar una nueva valoración.';
+  }
+
+  const p1 = document.getElementById('f2Paso1Tit');
+  const p1x = document.getElementById('f2Paso1Txt');
+  if (p1) p1.textContent = dip ? 'Abre el formulario de carga' : 'Abre el formulario de carga';
+  if (p1x)
+    p1x.textContent = dip
+      ? 'Úsalo igual que antes: número de radicación y correo institucional. Enviarás el PDF del producto diplomado.'
+      : 'Se abrirá en una nueva pestaña. Usa tu número de radicación y correo institucional.';
+  const p2 = document.getElementById('f2Paso2Tit');
+  const p2x = document.getElementById('f2Paso2Txt');
+  if (p2)
+    p2.textContent = dip
+      ? 'Adjunta el PDF con el producto y anexos requeridos'
+      : 'Adjunta el PDF con toda la documentación';
+  if (p2x)
+    p2x.textContent = dip
+      ? 'Incluye el trabajo final/producto diplomado más la documentación de soporte y consentimientos cuando aplique (mismo PDF). Máximo 100MB.'
+      : 'Incluye: Propuesta, Consentimiento (si aplica) y Protocolo completo. Máximo 100MB.';
+  const p3 = document.getElementById('f2Paso3Tit');
+  const p3x = document.getElementById('f2Paso3Txt');
+  if (p3) p3.textContent = dip ? 'Confirma el envío en esta pantalla' : 'Vuelve aquí y confirma el envío';
+  if (p3x)
+    p3x.textContent = dip
+      ? 'Haz clic en el botón de confirmación para registrar el envío en el sistema.'
+      : 'Haz clic en \"Ya envié mi protocolo\" para registrarlo en el sistema.';
+
+  const lnk = document.getElementById('lnkFormularioF2');
+  if (lnk) lnk.textContent = dip ? '📝 Abrir formulario de carga (producto) ↗' : '📝 Abrir formulario de carga ↗';
+
+  const f2DocTit = document.getElementById('f2DocTit');
+  const f2Lista = document.getElementById('f2DocLista');
+  if (f2DocTit)
+    f2DocTit.innerHTML =
+      dip
+        ? '📋 Documentación requerida (diplomado):'
+        : '📋 Documentación requerida:';
+  if (f2Lista) {
+    f2Lista.innerHTML = dip
+      ? `<br>✓ Producto/work final del diplomado y soporte institucional requerido<br>
+      ✓ Consentimiento/asentimiento o parental cuando aplique<br>
+      ✓ Cualquier anexo solicitado por lineamientos CTTG vigentes<br>
+      <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Unir todo en un solo PDF · Máximo 100MB</span>`
+      : `<br>✓ Archivo 1: Propuesta de trabajo (Anexo A3 o A10 según modalidad)<br>
+      ✓ Archivo 2: Consentimiento/Asentimiento/Parental (si aplica)<br>
+      ✓ Archivo 3: Protocolo de Investigación o Monografía completo<br>
+      <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Unir todos en 1 PDF · Máximo 100MB</span>`;
+  }
+
+  const hConf = document.getElementById('f2ConfirmaTit');
+  if (hConf) {
+    hConf.innerHTML =
+      `<span class="dot"></span>` + (dip ? 'Confirma tu envío' : 'Confirma tu carga');
+  }
+
+  const lbl1 = document.getElementById('lblCheck1');
+  const lbl2 = document.getElementById('lblCheck2');
+  const lbl3 = document.getElementById('lblCheck3');
+  if (lbl1)
+    lbl1.textContent = dip
+      ? 'Incluí el producto del diplomado y la documentación de soporte solicitada por el CTTG'
+      : 'Incluí Anexo A3 o A10 (según mi modalidad)';
+  if (lbl2)
+    lbl2.textContent = dip
+      ? 'Incluí Consentimiento/Asentimiento/Parental (si aplica al producto)'
+      : 'Incluí Consentimiento/Asentimiento/Parental (si aplica)';
+  if (lbl3)
+    lbl3.textContent = dip
+      ? 'Incluí el PDF completo tal como fue enviado en el formulario (un solo archivo)'
+      : 'Incluí Protocolo de Investigación o Monografía completo';
+
+  const obs = document.getElementById('observaciones');
+  if (obs)
+    obs.placeholder = dip
+      ? 'Opcional · describe cambios sobre tu envío o producto diplomado…'
+      : 'Describe brevemente qué cambió en tu protocolo...';
+
+  const bt = document.getElementById('btnConfirmar');
+  if (bt && !bt.disabled) {
+    bt.textContent =
+      dip ? '✅ Ya envié mi producto' : '✅ Ya envié mi protocolo';
+  }
+
+  const st = document.getElementById('f2SuccessTit');
+  const sx = document.getElementById('f2SuccessTxt');
+  const bGo = document.getElementById('btnF2IrLista');
+  if (st)
+    st.textContent = dip
+      ? '¡Envío registrado correctamente!'
+      : '¡Protocolo registrado exitosamente!';
+  if (sx)
+    sx.textContent = dip
+      ? 'Coordinación y comité revisarán tu producto según cronograma.'
+      : 'La coordinadora revisará tu protocolo y recibirás un correo cuando sea evaluado.';
+  if (bGo)
+    bGo.textContent =
+      dip ? 'Ver mis envíos' : 'Ver mis protocolos';
+}
+
+(async function init() {
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
   if (!user || user.rol !== 'estudiante' || !TOKEN) { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
-  cargarRadicacion();
-  cargarProtocolos();
+  await cargarRadicacion();
+  await cargarProtocolos();
 })();
 
 async function cargarRadicacion() {
@@ -281,10 +410,18 @@ async function cargarRadicacion() {
         const dip = String(rad.modalidad || '').trim().toLowerCase() === 'diplomado';
         ban.style.display = dip ? 'block' : 'none';
       }
-    } else if (ban) {
-      ban.style.display = 'none';
+    } else {
+      if (ban) ban.style.display = 'none';
+      if (d.success) {
+        window.numeroRadicacion = '';
+        window.radModalidad = '';
+      }
     }
-  } catch(e) { console.error(e); }
+    aplicarEtiquetasModalidadFase2();
+  } catch(e) {
+    console.error(e);
+    aplicarEtiquetasModalidadFase2();
+  }
 }
 
 async function salir() {
@@ -325,7 +462,6 @@ function switchTab(name, btn) {
     document.getElementById('successBox').style.display = 'none';
     document.getElementById('btnConfirmar').style.display = 'block';
     document.getElementById('btnConfirmar').disabled = false;
-    document.getElementById('btnConfirmar').innerHTML = '✅ Ya envié mi protocolo';
     document.getElementById('observaciones').value = '';
     document.getElementById('check1').checked = false;
     document.getElementById('check2').checked = false;
@@ -333,6 +469,7 @@ function switchTab(name, btn) {
     document.getElementById('paso1').classList.remove('done');
     document.getElementById('paso2').classList.remove('done');
     document.getElementById('paso3').classList.remove('done');
+    aplicarEtiquetasModalidadFase2();
   }
 }
 
@@ -368,7 +505,11 @@ async function cargarProtocolos() {
     );
 
     if (!misProtocolos.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty">Aún no tienes protocolos registrados.</td></tr>';
+      const vacio = esDiplomadoFase2()
+        ? 'Aún no tienes envíos registrados.'
+        : 'Aún no tienes protocolos registrados.';
+      tbody.innerHTML =
+        `<tr><td colspan="5" class="empty">${vacio}</td></tr>`;
       document.getElementById('resumenCard').style.display = 'none';
       document.getElementById('detalleProtocolo').style.display = 'none';
       return;
@@ -390,6 +531,8 @@ async function cargarProtocolos() {
         <td><span class="badge ${badgeClass(p.estado)}">${esc(p.estado||'Cargado')}</span></td>
         <td><button style="background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#a78bfa;padding:6px 12px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif" onclick="mostrarDetalle(${p.rowIndex})">👁 Ver</button></td>
       </tr>`).join('');
+
+    aplicarEtiquetasModalidadFase2();
 
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="5" class="empty">Error al cargar: ${esc(e.message)}</td></tr>`;
@@ -476,7 +619,12 @@ async function confirmarEnvio() {
   const btn = document.getElementById('btnConfirmar');
 
   if (!check1 || !check2 || !check3) {
-    toast('Debes confirmar que incluiste TODOS los documentos requeridos', 'warn');
+    toast(
+      esDiplomadoFase2()
+        ? 'Confirma que incluiste todo lo requerido en tu PDF (producto diplomado)'
+        : 'Debes confirmar que incluiste TODOS los documentos requeridos',
+      'warn'
+    );
     return;
   }
   if (!window.numeroRadicacion) {
@@ -492,8 +640,11 @@ async function confirmarEnvio() {
       emailEstudiante: user.email,
       nombreArchivo: 'Forms-' + new Date().toISOString().split('T')[0],
       urlArchivo: '',
-      anexoCambio: 'Protocolo Completo',
-      observaciones: obs || 'Enviado via Microsoft Forms',
+      anexoCambio: esDiplomadoFase2() ? 'Producto diplomado completo' : 'Protocolo Completo',
+      observaciones:
+        obs || (esDiplomadoFase2()
+          ? 'Enviado por formulario · diplomado Fase 2'
+          : 'Enviado via Microsoft Forms'),
       token: TOKEN
     })});
     const d = await res.json();
@@ -506,7 +657,8 @@ async function confirmarEnvio() {
     else throw new Error(d.error || 'Error desconocido');
   } catch(e) {
     toast('Error al registrar: ' + e.message, 'err');
-    btn.disabled = false; btn.innerHTML = '✅ Ya envié mi protocolo';
+    btn.disabled = false;
+    aplicarEtiquetasModalidadFase2();
   }
 }
 </script>
