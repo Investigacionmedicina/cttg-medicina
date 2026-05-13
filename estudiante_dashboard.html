@@ -789,15 +789,24 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
     }
 
     if (dF2.success) {
+      const numRad = String(radicaciones[0].numero || '').trim();
       fase2Aprobada = (dF2.protocolos || []).some(p =>
-        p.emailEstudiante.toLowerCase() === user.email.toLowerCase() && (p.estado === 'Aprobado' || p.estado === 'Aprobado Directo')
+        String(p.emailEstudiante || '').toLowerCase() === user.email.toLowerCase() &&
+        String((p.numero || '')).trim() === numRad &&
+        (p.estado === 'Aprobado' || p.estado === 'Aprobado Directo')
       );
     }
 
     if (dFase3.success && !esDipl) {
       const miSolicitud = (dFase3.fase3 || []).find(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
-      if (miSolicitud) {
-        document.getElementById('panelFase3Estado').style.display = 'block';
+      const ignoraBannerFase3 =
+        estadoActual === 'Devuelto por Comité Técnico' || estadoActual === 'Devuelto';
+      const panel = document.getElementById('panelFase3Estado');
+      if (miSolicitud && panel) {
+        if (ignoraBannerFase3) {
+          panel.style.display = 'none';
+        } else {
+          panel.style.display = 'block';
         document.getElementById('f3Estado').textContent = estadoVisualFase3(miSolicitud);
         document.getElementById('f3Turnitin').textContent = (miSolicitud.pctTurnitin || '—') + '%';
         document.getElementById('f3Fecha').textContent = miSolicitud.fechaSustentacion ? fmtFecha(miSolicitud.fechaSustentacion) : '—';
@@ -840,6 +849,7 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
           document.getElementById('f3Nota').textContent = miSolicitud.nota;
           document.getElementById('f3Acta').textContent = miSolicitud.numeroActa || '—';
         }
+        }
       }
     }
   } catch(e) { console.log('Error cargando fases:', e); }
@@ -867,16 +877,26 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
     }
   }
 
+  const puedePedirSustenta = estadoActual === 'Aprobado' && fase2Aprobada;
+
   if (!esDipl && btnFase3) {
     btnFase3.style.display = 'flex';
-    if (fase2Aprobada) {
+    if (puedePedirSustenta) {
       btnFase3.style.opacity = '1';
       btnFase3.style.pointerEvents = 'auto';
       if (btnFase3Sub) btnFase3Sub.textContent = 'Solicitar fecha de sustentación';
     } else {
       btnFase3.style.opacity = '0.4';
       btnFase3.style.pointerEvents = 'none';
-      if (btnFase3Sub) btnFase3Sub.textContent = 'Pendiente: aprobación de protocolo';
+      let sub = 'Pendiente: aprobación del comité técnico sobre tu último envío.';
+      if (estadoActual === 'Devuelto por Comité Técnico') {
+        sub = 'El comité devolvió el protocolo: continúa en Protocolo/Fase 2 antes de solicitar sustentación.';
+      } else if (estadoActual === 'Pendiente Comité Técnico') {
+        sub = 'Comité debe valorar tu último protocolo cargado antes de Fase 3.';
+      } else if (estadoActual === 'Aprobado' && !fase2Aprobada) {
+        sub = 'La radicación está aprobada; revisa tu último registro del comité sobre el protocolo (Fase 2).';
+      }
+      if (btnFase3Sub) btnFase3Sub.textContent = sub;
     }
   }
 }
