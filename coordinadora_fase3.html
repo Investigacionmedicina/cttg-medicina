@@ -100,12 +100,16 @@
       Filtrar por texto exacto de <strong style="color:#e2e8f0;font-weight:600">Estado solicitud</strong> (columna AC del Excel). «Observaciones estado» se muestra en las tablas (columna AD); los valores posibles salen de lo que haya en la hoja más los estándar del sistema.
     </label>
     <select id="filtroEstadoF3" onchange="renderTablas()" style="min-width:300px;max-width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
+    <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(255,255,255,.72);cursor:pointer;max-width:320px;line-height:1.35">
+      <input type="checkbox" id="chkFase3SinDedupe" onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;margin-top:2px;flex-shrink:0" />
+      <span>Todas las filas de la hoja <strong style="color:#e2e8f0;font-weight:600">sin agrupar</strong> radicaciones repetidas (útil si en Excel hay varias filas por mismo número).</span>
+    </label>
   </div>
 
   <!-- VISTA 1: ASIGNAR JURADOS -->
   <div class="panel on" id="pan-asignar">
     <div class="sec-hdr">
-      <div><h2>Pendiente de Asignación</h2><p>Solicitudes sin fecha de sustentación en el sistema. Las que ya tienen fecha están en «Pendiente resultado» o «Todas».</p></div>
+      <div><h2>Pendiente de Asignación</h2><p>Solicitudes sin fecha programada según el sistema (columna «Fecha sustentación» / D o «Fecha asignada» / U). Si ya tienen fecha, aparecen en «Pendiente resultado» o «Todas».</p></div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
@@ -160,7 +164,7 @@
       <div>
         <h2>Todas las solicitudes</h2>
         <p>Listado completo cargado desde el sistema (incluye cerradas y programadas). Las pestañas anteriores solo muestran pendientes de acción.</p>
-        <p style="font-size:11px;color:rgba(255,255,255,.35);margin-top:6px">Si en la hoja hay más de una fila para el mismo número de radicación, aquí solo aparece la solicitud más reciente por ese número.</p>
+        <p style="font-size:11px;color:rgba(255,255,255,.35);margin-top:6px">Con la casilla «sin agrupar» desactivada, si hay varias filas con el mismo número de radicación solo se muestra la más reciente. Actívela arriba para listar cada fila del Excel.</p>
       </div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
@@ -491,7 +495,8 @@ function toggleDesc() {
 
 async function cargar() {
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken() }) });
+    const sinDedupe = !!(document.getElementById('chkFase3SinDedupe') && document.getElementById('chkFase3SinDedupe').checked);
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe }) });
     const d = await res.json();
     if (d.success) { fase3 = d.fase3 || []; renderTablas(); }
     else throw new Error(d.error);
@@ -508,12 +513,28 @@ function fechaOrdValF3(r) {
   return isNaN(d.getTime()) ? 0 : d.getTime();
 }
 
+function fechaStrTieneValor(v) {
+  return v != null && String(v).trim() !== '';
+}
+
+/** Hay fecha en columna programación (D) y/o fecha asignada (U) en la hoja. */
+function tieneFechaProgramada(r) {
+  return fechaStrTieneValor(r.fechaSustentacion) || fechaStrTieneValor(r.fechaAsignada);
+}
+
+/** Para tablas: prioriza fecha de sustentación (D). */
+function fechaProgramacionPrimaria(r) {
+  if (fechaStrTieneValor(r.fechaSustentacion)) return r.fechaSustentacion;
+  if (fechaStrTieneValor(r.fechaAsignada)) return r.fechaAsignada;
+  return '';
+}
+
 /** Dónde aparece cada solicitud en las pestañas de trabajo */
 function vistaBucketCoord(r) {
   const notaStr = String(r.nota ?? '').trim().replace(',', '.');
   const tieneNota = notaStr !== '' && !isNaN(parseFloat(notaStr));
   if (tieneNota) return { texto: 'Cerrada (tiene nota)', clase: 'b-aprobado' };
-  if (r.fechaSustentacion && String(r.fechaSustentacion).trim() !== '')
+  if (tieneFechaProgramada(r))
     return { texto: 'En «Pendiente resultado»', clase: 'b-revisada' };
   return { texto: 'En «Pendiente asignación»', clase: 'b-pend' };
 }
@@ -522,9 +543,9 @@ function renderTablas() {
   poblarFiltroEstadoF3();
 
   const sinFecha = fase3.filter(r =>
-    (!r.fechaSustentacion || r.fechaSustentacion === '') && coincideFiltroEstadoSheet(r));
+    !tieneFechaProgramada(r) && coincideFiltroEstadoSheet(r));
   const conFecha = fase3.filter(r =>
-    r.fechaSustentacion && r.fechaSustentacion !== '' && (!r.nota || r.nota === '') && coincideFiltroEstadoSheet(r));
+    tieneFechaProgramada(r) && (!r.nota || r.nota === '') && coincideFiltroEstadoSheet(r));
 
   const todasCoincidenEstado = fase3.filter(coincideFiltroEstadoSheet);
 
@@ -538,7 +559,7 @@ function renderTablas() {
   const tbA = document.getElementById('tbodyAsignar');
   if (!sinFecha.length) {
     tbA.innerHTML = '<tr><td colspan="9" class="empty">' +
-      (fase3.filter(r => !r.fechaSustentacion || r.fechaSustentacion === '').length
+      (fase3.filter(r => !tieneFechaProgramada(r)).length
         ? 'Ninguna coincide con el filtro de estado solicitud.'
         : 'Sin solicitudes pendientes de asignación.') + '</td></tr>';
   } else {
@@ -548,7 +569,7 @@ function renderTablas() {
       return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
-      <td style="font-size:13px">${r.semestre}${r.alertaS12==='SÍ'?'<span class="alert-s12">⚠️ S12</span>':''}</td>
+      <td style="font-size:13px">${esc(String(r.semestre ?? ''))}${String(r.alertaS12 || '').trim() === 'SÍ' ? '<span class="alert-s12">⚠️ S12</span>' : ''}</td>
       <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(lineaTablaJuradosSugeridos(r))}</td>
@@ -566,14 +587,14 @@ function renderTablas() {
   const tbR = document.getElementById('tbodyResultado');
   if (!conFecha.length) {
     tbR.innerHTML = '<tr><td colspan="9" class="empty">' +
-      (fase3.filter(r => r.fechaSustentacion && r.fechaSustentacion !== '' && (!r.nota || r.nota === '')).length
+      (fase3.filter(r => tieneFechaProgramada(r) && (!r.nota || r.nota === '')).length
         ? 'Ninguna coincide con el filtro de estado solicitud.'
         : 'Sin sustentaciones pendientes de resultado.') + '</td></tr>';
   } else {
     tbR.innerHTML = conFecha.map(r => `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:12px;color:#fcd34d">${fmtFecha(r.fechaSustentacion)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:#fcd34d">${fmtFecha(fechaProgramacionPrimaria(r))}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${r.horaSustentacion||'—'}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado1Nombre||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado2Nombre||'—')}</td>
@@ -605,7 +626,7 @@ function renderTablas() {
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:#fcd34d">${fmtFecha(r.fechaSustentacion)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:#fcd34d">${fmtFecha(fechaProgramacionPrimaria(r))}</td>
       <td style="font-size:12px">${esc(notaTxt || '—')}</td>
       <td>${badgeEstadoSheet(estSh)}</td>
       <td>${truncObsHtml(r.observacionesEstado, 64)}</td>
