@@ -233,16 +233,20 @@
     <div style="font-size:11px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:8px">👨‍🏫 Jurados Asignados</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
       <div>
-        <div style="color:rgba(255,255,255,.5);margin-bottom:2px">Jurado 1</div>
+        <div style="color:rgba(255,255,255,.5);margin-bottom:2px">Jurado 1 · Temático</div>
         <div style="color:#93c5fd;font-weight:600" id="f3J1">—</div>
         <div style="color:rgba(255,255,255,.3);font-size:10px" id="f3J1Email">—</div>
         <div style="color:rgba(255,255,255,.25);font-size:10px" id="f3J1Tel">—</div>
+        <div style="color:rgba(255,255,255,.22);font-size:10px;margin-top:2px;display:none" id="f3J1Esp"></div>
+        <div style="color:rgba(255,255,255,.22);font-size:10px;display:none" id="f3J1Ace"></div>
       </div>
       <div>
-        <div style="color:rgba(255,255,255,.5);margin-bottom:2px">Jurado 2</div>
+        <div style="color:rgba(255,255,255,.5);margin-bottom:2px">Jurado 2 · Metodológico</div>
         <div style="color:#93c5fd;font-weight:600" id="f3J2">—</div>
         <div style="color:rgba(255,255,255,.3);font-size:10px" id="f3J2Email">—</div>
         <div style="color:rgba(255,255,255,.25);font-size:10px" id="f3J2Tel">—</div>
+        <div style="color:rgba(255,255,255,.22);font-size:10px;margin-top:2px;display:none" id="f3J2Esp"></div>
+        <div style="color:rgba(255,255,255,.22);font-size:10px;display:none" id="f3J2Ace"></div>
       </div>
     </div>
   </div>
@@ -732,7 +736,8 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
           obsBox.style.display = 'none';
           obsBox.innerHTML = '';
         }
-        if (miSolicitud.fechaSustentacion || miSolicitud.jurado1Nombre || miSolicitud.jurado2Nombre) {
+        if (miSolicitud.fechaSustentacion || miSolicitud.jurado1Nombre || miSolicitud.jurado2Nombre ||
+            miSolicitud.jurado1Especialidad || miSolicitud.jurado2Especialidad) {
           document.getElementById('f3Jurados').style.display = 'block';
           document.getElementById('f3J1').textContent = miSolicitud.jurado1Nombre || '—';
           document.getElementById('f3J1Email').textContent = miSolicitud.jurado1Email || '—';
@@ -740,6 +745,20 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
           document.getElementById('f3J2').textContent = miSolicitud.jurado2Nombre || '—';
           document.getElementById('f3J2Email').textContent = miSolicitud.jurado2Email || '—';
           document.getElementById('f3J2Tel').textContent = (miSolicitud.jurado2Telefono || miSolicitud.jurado2Cedula) ? '📞 ' + (miSolicitud.jurado2Telefono || miSolicitud.jurado2Cedula) : '—';
+          [['f3J1Esp', miSolicitud.jurado1Especialidad], ['f3J2Esp', miSolicitud.jurado2Especialidad]].forEach(([id, val]) => {
+            const el = document.getElementById(id);
+            const t = String(val || '').trim();
+            if (!el) return;
+            el.style.display = t ? 'block' : 'none';
+            el.textContent = t ? 'Especialidad: ' + esc(t) : '';
+          });
+          [['f3J1Ace', miSolicitud.jurado1AceptaPropuesta], ['f3J2Ace', miSolicitud.jurado2AceptaPropuesta]].forEach(([id, val]) => {
+            const el = document.getElementById(id);
+            const t = String(val || '').trim();
+            if (!el) return;
+            el.style.display = t ? 'block' : 'none';
+            el.textContent = t ? 'Acuerdo (propuesta): ' + esc(t) : '';
+          });
         }
         if (miSolicitud.nota) {
           document.getElementById('f3Resultado').style.display = 'block';
