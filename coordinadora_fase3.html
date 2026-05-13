@@ -90,14 +90,15 @@
   <a href="coordinadora_dashboard.html" class="back">← Volver al panel</a>
 
   <div class="tabs">
-    <button class="tab on" onclick="switchTab('asignar',this)">📅 Pendiente Asignación</button>
-    <button class="tab" onclick="switchTab('resultado',this)">🎓 Pendiente Resultado</button>
+    <button type="button" class="tab on" id="tabAsignar" onclick="switchTab('asignar',this)">📅 Pendiente Asignación</button>
+    <button type="button" class="tab" id="tabResultado" onclick="switchTab('resultado',this)">🎓 Pendiente Resultado</button>
+    <button type="button" class="tab" id="tabTodas" onclick="switchTab('todas',this)">📋 Todas las solicitudes</button>
   </div>
 
   <!-- VISTA 1: ASIGNAR JURADOS -->
   <div class="panel on" id="pan-asignar">
     <div class="sec-hdr">
-      <div><h2>Pendiente de Asignación</h2><p>Estudiantes que solicitaron sustentación sin fecha asignada.</p></div>
+      <div><h2>Pendiente de Asignación</h2><p>Solicitudes sin fecha de sustentación en el sistema. Las que ya tienen fecha están en «Pendiente resultado» o «Todas».</p></div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
@@ -137,6 +138,37 @@
           <th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyResultado">
+          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VISTA 3: TODAS (historial visible para coordinación) -->
+  <div class="panel" id="pan-todas">
+    <div class="sec-hdr">
+      <div>
+        <h2>Todas las solicitudes</h2>
+        <p>Listado completo cargado desde el sistema (incluye cerradas y programadas). Las pestañas anteriores solo muestran pendientes de acción.</p>
+        <p style="font-size:11px;color:rgba(255,255,255,.35);margin-top:6px">Si en la hoja hay más de una fila para el mismo número de radicación, aquí solo aparece la solicitud más reciente por ese número.</p>
+      </div>
+      <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
+    </div>
+    <div class="filters" style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <input id="searchTodasF3" type="search" placeholder="🔍 Buscar radicación, estudiante o correo..." style="min-width:240px;flex:1;max-width:420px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none" oninput="renderTablas()">
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th>
+          <th>Estudiante</th>
+          <th>F. Solicitud</th>
+          <th>F. Sustentación</th>
+          <th>Nota</th>
+          <th>Vista coordinación</th>
+          <th>Estado solicitud</th>
+        </tr></thead>
+        <tbody id="tbodyTodas">
           <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
@@ -399,12 +431,36 @@ async function cargar() {
   } catch(e) {
     document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
     document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+    const tbT = document.getElementById('tbodyTodas');
+    if (tbT) tbT.innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
   }
 }
 
+function fechaOrdValF3(r) {
+  const d = new Date(r.fechaCarga || '');
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+/** Dónde aparece cada solicitud en las pestañas de trabajo */
+function vistaBucketCoord(r) {
+  const notaStr = String(r.nota ?? '').trim().replace(',', '.');
+  const tieneNota = notaStr !== '' && !isNaN(parseFloat(notaStr));
+  if (tieneNota) return { texto: 'Cerrada (tiene nota)', clase: 'b-aprobado' };
+  if (r.fechaSustentacion && String(r.fechaSustentacion).trim() !== '')
+    return { texto: 'En «Pendiente resultado»', clase: 'b-revisada' };
+  return { texto: 'En «Pendiente asignación»', clase: 'b-pend' };
+}
+
 function renderTablas() {
-  // Pendiente asignación: sin fecha de sustentación
   const sinFecha = fase3.filter(r => !r.fechaSustentacion || r.fechaSustentacion === '');
+  const conFecha = fase3.filter(r => r.fechaSustentacion && r.fechaSustentacion !== '' && (!r.nota || r.nota === ''));
+
+  const elAsig = document.getElementById('tabAsignar');
+  const elRes = document.getElementById('tabResultado');
+  const elTod = document.getElementById('tabTodas');
+  if (elAsig) elAsig.textContent = `📅 Pendiente Asignación (${sinFecha.length})`;
+  if (elRes) elRes.textContent = `🎓 Pendiente Resultado (${conFecha.length})`;
+  if (elTod) elTod.textContent = `📋 Todas (${fase3.length})`;
   const tbA = document.getElementById('tbodyAsignar');
   if (!sinFecha.length) {
     tbA.innerHTML = '<tr><td colspan="8" class="empty">Sin solicitudes pendientes de asignación.</td></tr>';
@@ -429,8 +485,6 @@ function renderTablas() {
     }).join('');
   }
 
-  // Pendiente resultado: con fecha pero sin nota
-  const conFecha = fase3.filter(r => r.fechaSustentacion && r.fechaSustentacion !== '' && (!r.nota || r.nota === ''));
   const tbR = document.getElementById('tbodyResultado');
   if (!conFecha.length) {
     tbR.innerHTML = '<tr><td colspan="7" class="empty">Sin sustentaciones pendientes de resultado.</td></tr>';
@@ -444,6 +498,34 @@ function renderTablas() {
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado2Nombre||'—')}</td>
       <td><button class="btn bl" onclick="abrirResultado(${r.rowIndex},'${esc(r.numero)}')">🎓 Registrar</button></td>
     </tr>`).join('');
+  }
+
+  const tbTod = document.getElementById('tbodyTodas');
+  if (tbTod) {
+    const q = (document.getElementById('searchTodasF3') && document.getElementById('searchTodasF3').value || '').trim().toLowerCase();
+    const ordenadas = [...fase3].sort((a, b) => fechaOrdValF3(b) - fechaOrdValF3(a));
+    const todasFiltradas = ordenadas.filter(r => {
+      if (!q) return true;
+      const blob = [r.numero, r.nombreEstudiante, r.emailEstudiante, r.estadoSolicitud, r.estado].join(' ').toLowerCase();
+      return blob.includes(q);
+    });
+    if (!todasFiltradas.length) {
+      tbTod.innerHTML = '<tr><td colspan="7" class="empty">' + (fase3.length ? 'Ninguna solicitud coincide con la búsqueda.' : 'No hay solicitudes cargadas.') + '</td></tr>';
+    } else {
+      tbTod.innerHTML = todasFiltradas.map(r => {
+        const vb = vistaBucketCoord(r);
+        const notaTxt = String(r.nota != null ? r.nota : '').trim();
+        return `<tr>
+      <td><div class="num-rad">${esc(r.numero)}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:#fcd34d">${fmtFecha(r.fechaSustentacion)}</td>
+      <td style="font-size:12px">${esc(notaTxt || '—')}</td>
+      <td><span class="badge ${vb.clase}">${esc(vb.texto)}</span></td>
+      <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(r.estadoSolicitud || '—')}</td>
+    </tr>`;
+      }).join('');
+    }
   }
 }
 
