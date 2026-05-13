@@ -199,7 +199,7 @@
         ✓ Guía Autores (PDF)<br>
         ✓ Aval CCEB (PDF)<br>
         ✓ Turnitin (PDF)<br>
-        ✓ Dos jurados propuestos con nombre y correo institucional<br>
+        ✓ Dos jurados propuestos con nombre, correo institucional y teléfono de contacto<br>
         <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Máximo 100MB cada archivo</span>
       </div>
 
@@ -240,14 +240,20 @@
         </div>
 
         <div class="sec-label">👨‍🏫 Jurado 1 Temático *</div>
+        <div class="fg full"><label>Desde lista «Jurados» (opcional)</label>
+          <select id="catEstJ1" onchange="aplicarJuradoEstudiante(1)"><option value="">— Escribir datos manualmente o elegir del listado —</option></select>
+        </div>
         <div class="fg"><label>Nombre *</label><input id="jurado1Nombre" placeholder="Dr./Dra."></div>
         <div class="fg"><label>Email *</label><input type="email" id="jurado1Email" placeholder="jurado@usc.edu.co"></div>
-        <div class="fg"><label>Teléfono</label><input id="jurado1Telefono" placeholder="300 000 0000 (opcional)"></div>
+        <div class="fg"><label>Teléfono *</label><input id="jurado1Telefono" placeholder="Ej: 300 000 0000"></div>
 
         <div class="sec-label">👨‍🏫 Jurado 2 Metodológico *</div>
+        <div class="fg full"><label>Desde lista «Jurados» (opcional)</label>
+          <select id="catEstJ2" onchange="aplicarJuradoEstudiante(2)"><option value="">— Escribir datos manualmente o elegir del listado —</option></select>
+        </div>
         <div class="fg"><label>Nombre *</label><input id="jurado2Nombre" placeholder="Dr./Dra."></div>
         <div class="fg"><label>Email *</label><input type="email" id="jurado2Email" placeholder="jurado@usc.edu.co"></div>
-        <div class="fg"><label>Teléfono</label><input id="jurado2Telefono" placeholder="300 000 0000 (opcional)"></div>
+        <div class="fg"><label>Teléfono *</label><input id="jurado2Telefono" placeholder="Ej: 310 000 0000"></div>
       </div>
 
       <button class="btn-rad" id="btnSolicitar" onclick="solicitarSustentacion()">🎓 Solicitar Sustentación</button>
@@ -279,11 +285,14 @@ const TOKEN = localStorage.getItem('cttg_token') || '';
 let user = null;
 
 let numeroRadicacionGlobal = '';
+/** Catálogo hoja Jurados (misma estructura que Tutores). */
+let catalogoJuradosEst = [];
 
 (function init() {
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
   if (!user || user.rol !== 'estudiante' || !TOKEN) { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
+  cargarCatalogoJuradosEstudiante();
   cargarMisSolicitudes();
   fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN }) })
     .then(r => r.json())
@@ -308,6 +317,52 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
 function emailValido(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+}
+
+function telefonoJuradoValidoUI(tel) {
+  return String(tel || '').replace(/\s/g, '').length >= 7;
+}
+
+async function cargarCatalogoJuradosEstudiante() {
+  try {
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getJurados', token: TOKEN })
+    });
+    const d = await res.json();
+    if (redirigirSiSesionInvalida(d)) return;
+    if (!d.success || !Array.isArray(d.jurados)) return;
+    catalogoJuradosEst = d.jurados.map((j, i) => ({
+      id: String(j.id || i + 1),
+      nombre: String(j.nombre || '').trim(),
+      email: String(j.email || '').trim(),
+      telefono: String(j.telefono || '').trim()
+    })).filter(j => j.nombre || j.email);
+    poblarSelectJEst('catEstJ1');
+    poblarSelectJEst('catEstJ2');
+  } catch (e) {}
+}
+
+function poblarSelectJEst(selId) {
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Escribir datos manualmente o elegir del listado —</option>';
+  catalogoJuradosEst.forEach(j => {
+    const opt = document.createElement('option');
+    opt.value = j.id;
+    opt.textContent = j.nombre + (j.email ? ' · ' + j.email : '');
+    sel.appendChild(opt);
+  });
+}
+
+function aplicarJuradoEstudiante(num) {
+  const sel = document.getElementById(num === 1 ? 'catEstJ1' : 'catEstJ2');
+  const j = catalogoJuradosEst.find(x => x.id === sel.value);
+  if (!j) return;
+  const pre = num === 1 ? 'jurado1' : 'jurado2';
+  document.getElementById(pre + 'Nombre').value = j.nombre || '';
+  document.getElementById(pre + 'Email').value = j.email || '';
+  document.getElementById(pre + 'Telefono').value = j.telefono || '';
 }
 
 function redirigirSiSesionInvalida(resp) {
@@ -335,6 +390,8 @@ async function solicitarSustentacion() {
   const jurado1Email = document.getElementById('jurado1Email').value.trim();
   const jurado2Nombre = document.getElementById('jurado2Nombre').value.trim();
   const jurado2Email = document.getElementById('jurado2Email').value.trim();
+  const jurado1Telefono = document.getElementById('jurado1Telefono').value.trim();
+  const jurado2Telefono = document.getElementById('jurado2Telefono').value.trim();
 
   if (!check1 || !check2 || !check3 || !check4 || !check5) {
     document.getElementById('errorBox').style.display = 'block';
@@ -362,6 +419,10 @@ async function solicitarSustentacion() {
     toast('Los dos jurados deben ser personas diferentes', 'warn');
     return;
   }
+  if (!telefonoJuradoValidoUI(jurado1Telefono) || !telefonoJuradoValidoUI(jurado2Telefono)) {
+    toast('Ingresa un teléfono de contacto válido por jurado (mínimo 7 dígitos)', 'warn');
+    return;
+  }
 
   const numeroRadicacion = numeroRadicacionGlobal;
   if (!numeroRadicacion) { toast('No se encontró tu número de radicación', 'err'); return; }
@@ -385,10 +446,10 @@ async function solicitarSustentacion() {
         turnitinDoc: document.getElementById('check5').checked ? 'SÍ' : 'NO',
         jurado1Nombre: jurado1Nombre,
         jurado1Email: jurado1Email,
-        jurado1Telefono: document.getElementById('jurado1Telefono').value.trim(),
+        jurado1Telefono: jurado1Telefono,
         jurado2Nombre: jurado2Nombre,
         jurado2Email: jurado2Email,
-        jurado2Telefono: document.getElementById('jurado2Telefono').value.trim(),
+        jurado2Telefono: jurado2Telefono,
         token: TOKEN
       })
     });
@@ -440,11 +501,11 @@ function estadoVisualSolicitud(s) {
   if (['Solicitud sustentación devuelta','Devuelta'].includes(estadoGuardado)) {
     return { texto: 'Solicitud devuelta', badge: 'b-devuelto', icono: '↩' };
   }
-  if (estadoGuardado === 'Jurados aprobados para coordinación') {
+  if (estadoGuardado === 'Jurados aprobados' || estadoGuardado === 'Jurados aprobados para coordinación') {
     return { texto: 'Jurados aprobados', badge: 'b-aprobado', icono: '✓' };
   }
   if (estadoGuardado === 'Solicitud sustentación revisada') {
-    return { texto: 'Solicitud revisada', badge: 'b-revisado', icono: '✓' };
+    return { texto: 'Jurados aprobados', badge: 'b-aprobado', icono: '✓' };
   }
   return { texto: 'En revisión', badge: 'b-pend', icono: '⏳' };
 }
@@ -506,8 +567,8 @@ function verDetalle(s) {
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Fecha</span><span style="color:#fff">${formatearFecha(s.fechaSustentacion) || '—'}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Hora</span><span style="color:#fff">${s.horaSustentacion || '—'}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Lugar</span><span style="color:#fff">${lugar || '—'}</span></div>
-          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Jurado 1</span><span style="color:#fff">${s.jurado1Nombre || '—'}</span></div>
-          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Jurado 2</span><span style="color:#fff">${s.jurado2Nombre || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><span style="color:rgba(255,255,255,.4)">Jurado 1</span><span style="color:#fff;text-align:right">${esc(s.jurado1Nombre || '—')}${(s.jurado1Telefono || s.jurado1Cedula) ? '<br><span style="font-size:11px;color:rgba(255,255,255,.35)">' + esc(s.jurado1Telefono || s.jurado1Cedula || '') + '</span>' : ''}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><span style="color:rgba(255,255,255,.4)">Jurado 2</span><span style="color:#fff;text-align:right">${esc(s.jurado2Nombre || '—')}${(s.jurado2Telefono || s.jurado2Cedula) ? '<br><span style="font-size:11px;color:rgba(255,255,255,.35)">' + esc(s.jurado2Telefono || s.jurado2Cedula || '') + '</span>' : ''}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">% Turnitin</span><span style="color:#fff">${s.pctTurnitin || '—'}%</span></div>
           ${s.nota ? `<div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Nota</span><span style="color:#6ee7b7;font-weight:700">${s.nota}</span></div>` : ''}
           ${observacionSolicitud ? `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px;color:#fecaca"><strong>Observaciones:</strong><br>${esc(observacionSolicitud)}</div>` : ''}
