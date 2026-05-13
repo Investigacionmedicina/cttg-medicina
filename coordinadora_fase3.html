@@ -555,10 +555,9 @@ function abrirAsignar(rowIndex) {
   document.getElementById('modalAsignar').classList.add('open');
 }
 
-async function abrirRevisarJurados(rowIndex) {
+function abrirRevisarJurados(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
-  await cargarCatalogoJuradosCoord();
   document.getElementById('catJModal1').value = '';
   document.getElementById('catJModal2').value = '';
   document.getElementById('mJuradosRow').value = rowIndex;
@@ -571,6 +570,7 @@ async function abrirRevisarJurados(rowIndex) {
   document.getElementById('jJ2Email').value = r.jurado2Email || '';
   document.getElementById('jJ2Telefono').value = telFuenteRad(r, 2) || '';
   document.getElementById('jJ2Especialidad').value = String(r.jurado2Especialidad || '').trim();
+  poblarSelectJuradosModal();
   document.getElementById('modalJurados').classList.add('open');
 }
 
