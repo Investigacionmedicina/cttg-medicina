@@ -104,6 +104,8 @@
       <input type="checkbox" id="chkFase3SinDedupe" checked onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;margin-top:2px;flex-shrink:0" />
       <span><strong style="color:#e2e8f0;font-weight:600">Sin agrupar</strong> por radicación (recomendado: lista cada fila del Excel). Desmárquelo si solo quiere la fila más reciente por número.</span>
     </label>
+    <button type="button" class="btn-ref" onclick="diagnosticoFase3()" style="flex-shrink:0" title="Compara filas API vs escaneo columna B en Sheets">🔧 Diagnóstico lectura</button>
+    <p style="font-size:11px;color:rgba(255,255,255,.38);margin:0;width:100%;line-height:1.45">Si en la hoja hay más solicitudes radicadas (por ejemplo CONTARA en columna B) que filas en «Todas»: deje el filtro en «Todos los estados», mantenga «Sin agrupar» activo y pulse Diagnóstico para verificar que el script usa el mismo libro y pestaña que su archivo.</p>
   </div>
 
   <!-- VISTA 1: ASIGNAR JURADOS -->
@@ -505,6 +507,29 @@ async function cargar() {
     document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="9" class="empty">Error: ${e.message}</td></tr>`;
     const tbT = document.getElementById('tbodyTodas');
     if (tbT) tbT.innerHTML = `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+/** Ayuda a contrastar Google Sheets vs API cuando «faltan» solicitudes (libro, pestaña o inferencia de radicación). */
+async function diagnosticoFase3() {
+  try {
+    const sinDedupe = !!(document.getElementById('chkFase3SinDedupe') && document.getElementById('chkFase3SinDedupe').checked);
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe, debugFase3: true }) });
+    const d = await res.json();
+    if (!d.success) { toast(String(d.error || 'Error en diagnóstico'), 'err'); return; }
+    const dbg = d.debugFase3 || {};
+    const lineas = [
+      'Libro que abre el script: ' + (dbg.nombreLibroQueLeeElScript || '—'),
+      'Pestaña usada: ' + (dbg.pestañaUsada || '—'),
+      'Filas devueltas por la API: ' + String(dbg.filasDevueltasAPI != null ? dbg.filasDevueltasAPI : (d.fase3 || []).length),
+      'Conteo texto en columna B (aprox. CONTARA sin vacíos): ' + String(dbg.conteo_escaneo_columna_B_sinVacíosNiEncabezado != null ? dbg.conteo_escaneo_columna_B_sinVacíosNiEncabezado : '—'),
+      'Última fila leída del grid: ' + String(dbg.últimaFila_LecturaAmpliada_hastaFila != null ? dbg.últimaFila_LecturaAmpliada_hastaFila : '—'),
+      '',
+      String(dbg.hint || 'Compare el nombre del libro con el archivo donde cuenta las radicaciones.')
+    ];
+    alert(lineas.join('\n'));
+  } catch (e) {
+    toast('Diagnóstico: ' + e.message, 'err');
   }
 }
 
