@@ -236,11 +236,13 @@
         <div style="color:rgba(255,255,255,.5);margin-bottom:2px">Jurado 1</div>
         <div style="color:#93c5fd;font-weight:600" id="f3J1">—</div>
         <div style="color:rgba(255,255,255,.3);font-size:10px" id="f3J1Email">—</div>
+        <div style="color:rgba(255,255,255,.25);font-size:10px" id="f3J1Tel">—</div>
       </div>
       <div>
         <div style="color:rgba(255,255,255,.5);margin-bottom:2px">Jurado 2</div>
         <div style="color:#93c5fd;font-weight:600" id="f3J2">—</div>
         <div style="color:rgba(255,255,255,.3);font-size:10px" id="f3J2Email">—</div>
+        <div style="color:rgba(255,255,255,.25);font-size:10px" id="f3J2Tel">—</div>
       </div>
     </div>
   </div>
@@ -448,8 +450,8 @@ function estadoVisualFase3(s) {
   if (s.nota) return parseFloat(s.nota) >= 3 ? '✅ Sustentado' : '❌ Reprobado';
   if (s.fechaSustentacion) return '📅 Programado';
   if (['Solicitud sustentación devuelta','Devuelta'].includes(estadoGuardado)) return '↩ Solicitud devuelta';
-  if (estadoGuardado === 'Jurados aprobados para coordinación') return '✓ Jurados aprobados: coordina fecha y hora';
-  if (estadoGuardado === 'Solicitud sustentación revisada') return '✓ Solicitud revisada';
+  if (estadoGuardado === 'Jurados aprobados' || estadoGuardado === 'Jurados aprobados para coordinación') return '✓ Jurados aprobados: coordina fecha y hora';
+  if (estadoGuardado === 'Solicitud sustentación revisada') return '✓ Jurados aprobados: coordina fecha y hora';
   return '⏳ En revisión';
 }
 
@@ -734,8 +736,10 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
           document.getElementById('f3Jurados').style.display = 'block';
           document.getElementById('f3J1').textContent = miSolicitud.jurado1Nombre || '—';
           document.getElementById('f3J1Email').textContent = miSolicitud.jurado1Email || '—';
+          document.getElementById('f3J1Tel').textContent = (miSolicitud.jurado1Telefono || miSolicitud.jurado1Cedula) ? '📞 ' + (miSolicitud.jurado1Telefono || miSolicitud.jurado1Cedula) : '—';
           document.getElementById('f3J2').textContent = miSolicitud.jurado2Nombre || '—';
           document.getElementById('f3J2Email').textContent = miSolicitud.jurado2Email || '—';
+          document.getElementById('f3J2Tel').textContent = (miSolicitud.jurado2Telefono || miSolicitud.jurado2Cedula) ? '📞 ' + (miSolicitud.jurado2Telefono || miSolicitud.jurado2Cedula) : '—';
         }
         if (miSolicitud.nota) {
           document.getElementById('f3Resultado').style.display = 'block';
