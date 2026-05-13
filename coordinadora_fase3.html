@@ -52,8 +52,8 @@
   .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
   .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  /* MODAL */
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  /* MODAL (sin backdrop-filter: en equipos lentos retrasa pintar el modal) */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
   .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
   @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
@@ -99,7 +99,7 @@
   <div class="panel on" id="pan-asignar">
     <div class="sec-hdr">
       <div><h2>Pendiente de aprobación y programación</h2><p>Solicitudes de sustentación sin fecha registrada; el estudiante pudo omitir jurados propuestos. Debes cargar dos jurados (temático y metodológico), aprobación y teléfonos antes de «Programar».</p></div>
-      <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
+      <button type="button" class="btn-ref" id="btnRefAsignar" onclick="actualizarListaFase3()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -124,7 +124,7 @@
   <div class="panel" id="pan-resultado">
     <div class="sec-hdr">
       <div><h2>Pendiente de Resultado</h2><p>Sustentaciones programadas sin nota registrada.</p></div>
-      <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
+      <button type="button" class="btn-ref" id="btnRefResultado" onclick="actualizarListaFase3()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -294,16 +294,36 @@ let catalogoJuradosCoord = [];
   if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
   cargarCatalogoJuradosCoord();
-  cargar();
+  cargar({ silent: true });
 })();
+
+/** Evita respuestas en caché y fallos por POST sin tipo (Apps Script Web App). */
+function fetchAppJson(bodyObj) {
+  return fetch(URL_APP, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
+      'Accept': 'application/json'
+    },
+    cache: 'no-store',
+    body: JSON.stringify(Object.assign({}, bodyObj, { _ts: Date.now() }))
+  });
+}
+
+function encontrarRegistroFase3(rowIndex) {
+  const ri = parseInt(String(rowIndex), 10);
+  if (!ri || isNaN(ri)) return null;
+  return fase3.find(x => parseInt(String(x.rowIndex), 10) === ri) || null;
+}
+
+/** Desde botones Actualizar — misma función que cargar pero con feedback. */
+function actualizarListaFase3() {
+  cargar({ silent: false });
+}
 
 async function cargarCatalogoJuradosCoord() {
   try {
-    const res = await fetch(URL_APP, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getJurados', token: coordToken() })
-    });
+    const res = await fetchAppJson({ action: 'getJurados', token: coordToken() });
     const raw = await res.text();
     let d;
     try { d = JSON.parse(raw); } catch (pe) {
@@ -347,13 +367,19 @@ function poblarSelectJuradosModal() {
   ['catJModal1','catJModal2'].forEach(selId => {
     const sel = document.getElementById(selId);
     if (!sel) return;
-    sel.innerHTML = '<option value="">— Escribir manualmente o cargar desde listado —</option>';
+    const frag = document.createDocumentFragment();
+    const defOpt = document.createElement('option');
+    defOpt.value = '';
+    defOpt.textContent = '— Escribir manualmente o cargar desde listado —';
+    frag.appendChild(defOpt);
     catalogoJuradosCoord.forEach(j => {
       const opt = document.createElement('option');
       opt.value = j.id;
       opt.textContent = j.nombre + (j.email ? ' · ' + j.email : '');
-      sel.appendChild(opt);
+      frag.appendChild(opt);
     });
+    sel.innerHTML = '';
+    sel.appendChild(frag);
   });
 }
 
@@ -472,15 +498,53 @@ function toggleDesc() {
   document.getElementById('descDiv').style.display = document.getElementById('mProducto').value === 'SÍ' ? 'block' : 'none';
 }
 
-async function cargar() {
+async function cargar(options) {
+  const silent = !!(options && options.silent);
+  const tbA = document.getElementById('tbodyAsignar');
+  const tbR = document.getElementById('tbodyResultado');
+  const b1 = document.getElementById('btnRefAsignar');
+  const b2 = document.getElementById('btnRefResultado');
+  const prevHtmlA = silent ? tbA.innerHTML : null;
+  const prevHtmlR = silent ? tbR.innerHTML : null;
+
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken() }) });
-    const d = await res.json();
-    if (d.success) { fase3 = d.fase3 || []; renderTablas(); }
-    else throw new Error(d.error);
+    if (!silent) {
+      if (b1) { b1.disabled = true; b1.textContent = '… Actualizando'; }
+      if (b2) { b2.disabled = true; b2.textContent = '… Actualizando'; }
+      tbA.innerHTML = '<tr><td colspan="8" class="empty"><span class="spinner"></span>Actualizando…</td></tr>';
+      tbR.innerHTML = '<tr><td colspan="7" class="empty"><span class="spinner"></span>Actualizando…</td></tr>';
+    }
+
+    const res = await fetchAppJson({ action: 'getFase3', token: coordToken() });
+    const raw = await res.text();
+    let d;
+    try {
+      d = JSON.parse(raw);
+    } catch (pe) {
+      console.error('getFase3 no JSON:', raw.slice(0, 400));
+      throw new Error('La respuesta no es JSON. ¿Desplegaste la Web App correctamente o expiró la sesión?');
+    }
+
+    if (d.success) {
+      fase3 = Array.isArray(d.fase3) ? d.fase3 : [];
+      renderTablas();
+      if (!silent) toast('Lista actualizada ✓', 'ok');
+      return;
+    }
+    throw new Error(d.error || 'No autorizado o error del servidor');
   } catch(e) {
-    document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
-    document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+    if (silent && prevHtmlA !== null) {
+      tbA.innerHTML = prevHtmlA;
+      tbR.innerHTML = prevHtmlR;
+    } else {
+      tbA.innerHTML = `<tr><td colspan="8" class="empty">Error al cargar: ${esc(e.message)}</td></tr>`;
+      tbR.innerHTML = `<tr><td colspan="7" class="empty">Error al cargar: ${esc(e.message)}</td></tr>`;
+    }
+    if (!silent) toast('No se actualizó: ' + e.message, 'err');
+    else console.error('getFase3:', e.message);
+  } finally {
+    if (b1) { b1.disabled = false; b1.textContent = '↻ Actualizar'; }
+    if (b2) { b2.disabled = false; b2.textContent = '↻ Actualizar'; }
   }
 }
 
@@ -531,8 +595,8 @@ function renderTablas() {
 }
 
 function abrirAsignar(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
-  if (!r) return;
+  const r = encontrarRegistroFase3(rowIndex);
+  if (!r) { toast('Registro no encontrado. Pulse «Actualizar».', 'warn'); return; }
   if (!juradosAprobados(r)) {
     toast('Primero aprueba los dos jurados (usa «Revisar jurados»).', 'warn');
     return;
@@ -541,7 +605,7 @@ function abrirAsignar(rowIndex) {
     toast('Registra teléfonos válidos para ambos jurados (usa «Revisar jurados»).', 'warn');
     return;
   }
-  document.getElementById('mAsignarRow').value = rowIndex;
+  document.getElementById('mAsignarRow').value = parseInt(String(r.rowIndex), 10);
   document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero + ' · ' + textoEstudianteCoord(r) + ' · Jurados aprobados';
   document.getElementById('mFecha').value = '';
   document.getElementById('mHora').value = '';
@@ -556,11 +620,12 @@ function abrirAsignar(rowIndex) {
 }
 
 function abrirRevisarJurados(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
-  if (!r) return;
-  document.getElementById('catJModal1').value = '';
-  document.getElementById('catJModal2').value = '';
-  document.getElementById('mJuradosRow').value = rowIndex;
+  const r = encontrarRegistroFase3(rowIndex);
+  if (!r) {
+    toast('No se encontró la fila. Pulse «Actualizar» y vuelva a intentar.', 'warn');
+    return;
+  }
+  document.getElementById('mJuradosRow').value = parseInt(String(r.rowIndex), 10);
   document.getElementById('mJuradosInfo').textContent = 'Radicación: ' + r.numero + ' · Estudiante: ' + textoEstudianteCoord(r);
   document.getElementById('jJ1Nombre').value = r.jurado1Nombre || '';
   document.getElementById('jJ1Email').value = r.jurado1Email || '';
@@ -570,22 +635,25 @@ function abrirRevisarJurados(rowIndex) {
   document.getElementById('jJ2Email').value = r.jurado2Email || '';
   document.getElementById('jJ2Telefono').value = telFuenteRad(r, 2) || '';
   document.getElementById('jJ2Especialidad').value = String(r.jurado2Especialidad || '').trim();
-  poblarSelectJuradosModal();
+  ['catJModal1', 'catJModal2'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) sel.selectedIndex = 0;
+  });
   document.getElementById('modalJurados').classList.add('open');
 }
 
 function abrirDevolver(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
-  if (!r) return;
-  document.getElementById('mDevolverRow').value = rowIndex;
+  const r = encontrarRegistroFase3(rowIndex);
+  if (!r) { toast('Registro no encontrado. Pulse «Actualizar».', 'warn'); return; }
+  document.getElementById('mDevolverRow').value = parseInt(String(r.rowIndex), 10);
   document.getElementById('mDevolverInfo').textContent = 'Radicación: ' + r.numero + ' · ' + textoEstudianteCoord(r);
   document.getElementById('mMotivoDevolucion').value = r.motivoDevolucion || r.observaciones || '';
   document.getElementById('modalDevolver').classList.add('open');
 }
 
 function abrirResultado(rowIndex, numero) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
-  document.getElementById('mResultadoRow').value = rowIndex;
+  const r = encontrarRegistroFase3(rowIndex);
+  document.getElementById('mResultadoRow').value = r ? parseInt(String(r.rowIndex), 10) : parseInt(String(rowIndex), 10);
   document.getElementById('mResultadoInfo').textContent = 'Radicación: ' + numero + (r ? ' · ' + textoEstudianteCoord(r) : '');
   document.getElementById('mNota').value = '';
   document.getElementById('mActa').value = '';
@@ -666,7 +734,7 @@ async function guardarJurados() {
     const d = await res.json();
     if (!d.success) throw new Error(d.error || 'No fue posible guardar jurados');
     closeModal('modalJurados');
-    await cargar();
+    await cargar({ silent: true });
     toast('Jurados aprobados. Estudiante notificado ✓', 'ok');
   } catch(e) { toast('Error: ' + e.message, 'err'); }
   finally {
@@ -685,7 +753,7 @@ async function devolverSolicitud() {
   try {
     await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación devuelta', motivo);
     closeModal('modalDevolver');
-    await cargar();
+    await cargar({ silent: true });
     toast('Solicitud devuelta. Estudiante notificado ✓', 'ok');
   } catch(e) { toast('Error: ' + e.message, 'err'); }
   finally { btn.disabled = false; btn.innerHTML = 'Devolver y notificar'; }
@@ -742,7 +810,7 @@ Coordinación CTTG Medicina`;
 
 async function asignarJurados() {
   const rowIndex = parseInt(document.getElementById('mAsignarRow').value);
-  const registro = fase3.find(x => x.rowIndex === rowIndex) || {};
+  const registro = encontrarRegistroFase3(rowIndex) || {};
   const fecha    = document.getElementById('mFecha').value;
   const hora     = document.getElementById('mHora').value;
  const lugar = document.getElementById('mLugar').value.trim(); 
@@ -791,7 +859,7 @@ async function asignarJurados() {
     const d = await res.json();
     if (d.success) {
       closeModal('modalAsignar');
-      await cargar();
+      await cargar({ silent: true });
       toast('Sustentación programada. Notificación formal enviada/solicitada ✓', 'ok');
     } else throw new Error(d.error);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
@@ -825,7 +893,7 @@ async function guardarResultado() {
     const d = await res.json();
     if (d.success) {
       closeModal('modalResultado');
-      await cargar();
+      await cargar({ silent: true });
       toast('Resultado registrado. Estudiante notificado ✓', 'ok');
     } else throw new Error(d.error);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
