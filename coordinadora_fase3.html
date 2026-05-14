@@ -219,28 +219,15 @@
   </div>
 </div>
 
-<!-- MODAL ASIGNAR JURADOS (2 pasos) -->
+<!-- MODAL ASIGNAR JURADOS -->
 <div class="modal-bg" id="modalAsignar">
   <div class="modal">
     <div class="modal-hdr">
-      <h3 id="mAsignarTitulo">📋 Asignar Jurados</h3>
+      <h3>👥 Confirmar Jurados</h3>
       <button class="btn" onclick="closeModal('modalAsignar')">✕</button>
     </div>
     <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px"></p>
 
-    <!-- Indicador de pasos -->
-    <div class="step-ind">
-      <div class="step-dot act" id="sd1">1</div>
-      <div class="step-line"></div>
-      <span class="step-lbl">Jurados</span>
-      <div class="step-line"></div>
-      <div class="step-dot" id="sd2">2</div>
-      <div class="step-line"></div>
-      <span class="step-lbl">Fecha y hora</span>
-    </div>
-
-    <!-- PASO 1: Jurados -->
-    <div class="step on" id="stepJurados">
       <div class="msec">Jurado 1 · Temático</div>
       <div class="hint-j" id="hintJ1"></div>
       <div class="mfg">
@@ -290,25 +277,10 @@
       <input type="hidden" id="mAsignarRow">
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
         <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
-        <button class="btn-action" onclick="irAStepFecha()">Siguiente: Programar fecha →</button>
+        <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">✅ Aprobar jurados y notificar</button>
       </div>
-    </div>
-
-    <!-- PASO 2: Fecha y hora -->
-    <div class="step" id="stepFecha">
-      <div style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#6ee7b7">
-        ✓ Jurados confirmados. Ahora programa la fecha de sustentación.
-      </div>
-      <div class="msec">Fecha y hora</div>
-      <div class="mgrid" style="margin-bottom:14px">
-        <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
-        <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
-      </div>
-      <div class="mfg"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-        <button class="btn" onclick="volverAStepJurados()">← Anterior</button>
-        <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
-        <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">📅 Confirmar y notificar</button>
+  </div>
+</div>
       </div>
     </div>
   </div>
@@ -330,6 +302,30 @@
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
       <button class="btn" onclick="closeModal('modalDevolver')">Cancelar</button>
       <button class="btn rd" id="btnDevolver" onclick="devolverSolicitud()">Devolver y notificar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROGRAMAR FECHA DE SUSTENTACIÓN -->
+<div class="modal-bg" id="modalProgramar">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>📅 Programar Sustentación</h3>
+      <button class="btn" onclick="closeModal('modalProgramar')">✕</button>
+    </div>
+    <p id="mProgramarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
+    <div style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#6ee7b7">
+      ✓ Jurados aprobados. Ahora asigna la fecha, hora y lugar de sustentación.
+    </div>
+    <div class="mgrid">
+      <div class="mfg"><label>Fecha *</label><input type="date" id="mFecha"></div>
+      <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
+    </div>
+    <div class="mfg"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
+    <input type="hidden" id="mProgramarRow">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn" onclick="closeModal('modalProgramar')">Cancelar</button>
+      <button class="btn-action" id="btnProgramar" onclick="programarFecha()">📅 Confirmar fecha y notificar</button>
     </div>
   </div>
 </div>
@@ -679,6 +675,13 @@ function fechaProgramacionValida(v) {
   return y >= 1990 && y <= 2100;
 }
 
+/** Jurados ya confirmados por la coordinadora (state text o r.nombres con datos) */
+function juradosAprobados(r) {
+  const est = String(r.estadoSolicitud || '').trim().toLowerCase();
+  if (est.includes('jurado')) return true;
+  return !!(String(r.nombres || '').trim()); // col T = assigned jurado names
+}
+
 /** Hay fecha real en columna programación (D) y/o fecha asignada (U). */
 function tieneFechaProgramada(r) {
   return fechaProgramacionValida(r.fechaSustentacion) || fechaProgramacionValida(r.fechaAsignada);
@@ -739,7 +742,9 @@ function renderTablas() {
       <td>${truncObsHtml(r.observacionesEstado, 56)}</td>
       <td><div class="act">
         <button class="btn bl" onclick="abrirRevisar(${r.rowIndex})">👁 Ver</button>
-        <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>📅 Asignar</button>
+        ${juradosAprobados(r)
+          ? `<button class="btn gr" onclick="abrirProgramar(${r.rowIndex})">📅 Programar</button>`
+          : `<button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>👥 Jurados</button>`}
       </div></td>
      </tr>`;
     }).join('');
@@ -804,14 +809,6 @@ function abrirAsignar(rowIndex) {
   solicitudModalActual = r;
   document.getElementById('mAsignarRow').value = rowIndex;
   document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
-  document.getElementById('mFecha').value = '';
-  document.getElementById('mHora').value = '';
-  document.getElementById('mLugar').value = '';
-  // Reset step indicators and show step 1
-  document.getElementById('sd1').className = 'step-dot act';
-  document.getElementById('sd2').className = 'step-dot';
-  document.getElementById('stepJurados').classList.add('on');
-  document.getElementById('stepFecha').classList.remove('on');
   // Reset evaluador dropdowns
   document.getElementById('catJ1').value = '';
   document.getElementById('catJ2').value = '';
@@ -827,28 +824,52 @@ function abrirAsignar(rowIndex) {
   openModal('modalAsignar');
 }
 
-function irAStepFecha() {
-  const j1n = document.getElementById('mJ1Nombre').value.trim();
-  const j1e = document.getElementById('mJ1Email').value.trim();
-  const j1t = document.getElementById('mJ1Tel').value.trim();
-  const j2n = document.getElementById('mJ2Nombre').value.trim();
-  const j2e = document.getElementById('mJ2Email').value.trim();
-  const j2t = document.getElementById('mJ2Tel').value.trim();
-  if (!j1n || !j1e) { toast('Completa nombre y correo del Jurado 1', 'warn'); return; }
-  if (!j1t) { toast('El teléfono del Jurado 1 es obligatorio', 'warn'); return; }
-  if (!j2n || !j2e) { toast('Completa nombre y correo del Jurado 2', 'warn'); return; }
-  if (!j2t) { toast('El teléfono del Jurado 2 es obligatorio', 'warn'); return; }
-  document.getElementById('sd1').className = 'step-dot done';
-  document.getElementById('sd2').className = 'step-dot act';
-  document.getElementById('stepJurados').classList.remove('on');
-  document.getElementById('stepFecha').classList.add('on');
+function abrirProgramar(rowIndex) {
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  solicitudModalActual = r;
+  document.getElementById('mProgramarRow').value = rowIndex;
+  document.getElementById('mFecha').value = '';
+  document.getElementById('mHora').value = '';
+  document.getElementById('mLugar').value = '';
+  document.getElementById('mProgramarInfo').textContent =
+    'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') +
+    (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
+  openModal('modalProgramar');
 }
 
-function volverAStepJurados() {
-  document.getElementById('sd1').className = 'step-dot act';
-  document.getElementById('sd2').className = 'step-dot';
-  document.getElementById('stepFecha').classList.remove('on');
-  document.getElementById('stepJurados').classList.add('on');
+async function programarFecha() {
+  const rowIndex = parseInt(document.getElementById('mProgramarRow').value);
+  const fecha  = document.getElementById('mFecha').value;
+  const hora   = document.getElementById('mHora').value;
+  const lugar  = document.getElementById('mLugar').value.trim();
+  if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
+  if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
+  if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
+  const r = solicitudModalActual || fase3.find(x => x.rowIndex === rowIndex);
+  const btn = document.getElementById('btnProgramar');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'updateFase3Asignacion',
+      rowIndex,
+      fechaSustentacion: fecha,
+      horaSustentacion: hora,
+      lugar,
+      // preserve current jurado data (already saved in sheet)
+      jurado1: { nombre: r ? r.jurado1Nombre : '', cedula: r ? r.jurado1Cedula : '', email: r ? r.jurado1Email : '', telefono: r ? r.jurado1Telefono : '', especialidad: '' },
+      jurado2: { nombre: r ? r.jurado2Nombre : '', cedula: r ? r.jurado2Cedula : '', email: r ? r.jurado2Email : '', telefono: r ? r.jurado2Telefono : '', especialidad: '' },
+      emailCoord: admin.email,
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalProgramar');
+      await cargar();
+      toast('Fecha de sustentación programada ✓', 'ok');
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '📅 Confirmar fecha y notificar'; }
 }
 
 function abrirRevisar(rowIndex) {
@@ -897,21 +918,19 @@ function abrirRevisar(rowIndex) {
     <div style="margin-bottom:4px">${badgeEstadoSheet(estSh)}</div>
     ${r.observacionesEstado?`<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">${esc(r.observacionesEstado)}</div>`:''}`;
 
+  const tieneJurados = juradosAprobados(r);
   document.getElementById('mRevisarActions').innerHTML = `
     <button class="btn" onclick="closeModal('modalRevisar')">Cerrar</button>
     <button class="btn rd" onclick="closeModal('modalRevisar');abrirDevolver(${rowIndex})">↩ Devolver</button>
-    ${!estaDevuelta?`<button class="btn bl" onclick="closeModal('modalRevisar');confirmarRevisada(${rowIndex})">✓ Marcar Revisada</button>`:''}
-    <button class="btn gr" onclick="closeModal('modalRevisar');abrirAsignar(${rowIndex})">📅 Asignar Jurados</button>`;
+    ${!estaDevuelta && !tieneJurados ? `<button class="btn bl" onclick="closeModal('modalRevisar');confirmarRevisada(${rowIndex})">✓ Marcar Revisada</button>` : ''}
+    ${tieneJurados && !tieneFechaProgramada(r)
+      ? `<button class="btn gr" onclick="closeModal('modalRevisar');abrirProgramar(${rowIndex})">📅 Programar Fecha</button>`
+      : (!estaDevuelta && !tieneJurados ? `<button class="btn gr" onclick="closeModal('modalRevisar');abrirAsignar(${rowIndex})">👥 Asignar Jurados</button>` : '')}`;
 
   openModal('modalRevisar');
 }
 
 function confirmarRevisada(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
-  if (!r) return;
-  if (!r.pctTurnitin || String(r.pctTurnitin).trim() === '') {
-    toast('Esta solicitud no tiene % Turnitin registrado', 'warn'); return;
-  }
   marcarRevisada(rowIndex);
 }
 
@@ -952,15 +971,18 @@ async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
 async function marcarRevisada(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
-  if (!r.pctTurnitin || String(r.pctTurnitin).trim() === '') {
-    toast('Esta solicitud no tiene % Turnitin registrado — no se puede marcar como revisada', 'warn'); return;
+  if (r.pctTurnitin == null || String(r.pctTurnitin).trim() === '') {
+    toast('Esta solicitud no tiene % Turnitin registrado. Verifique que el campo esté diligenciado en el Sheet.', 'warn'); return;
   }
   const mensaje = 'Su solicitud de sustentación fue revisada. La documentación radicada se encuentra conforme y en los próximos días se asignarán los jurados.';
   try {
     await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación revisada', mensaje);
     await cargar();
     toast('Solicitud marcada como revisada ✓', 'ok');
-  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  } catch(e) {
+    toast('Error al marcar revisada: ' + e.message, 'err');
+    console.error('marcarRevisada error', e);
+  }
 }
 
 async function devolverSolicitud() {
@@ -981,43 +1003,44 @@ async function devolverSolicitud() {
 
 async function asignarJurados() {
   const rowIndex = parseInt(document.getElementById('mAsignarRow').value);
-  const fecha  = document.getElementById('mFecha').value;
-  const hora   = document.getElementById('mHora').value;
-  const lugar  = document.getElementById('mLugar').value.trim();
-  const j1n    = document.getElementById('mJ1Nombre').value.trim();
-  const j1e    = document.getElementById('mJ1Email').value.trim();
-  const j1t    = document.getElementById('mJ1Tel').value.trim();
-  const j2n    = document.getElementById('mJ2Nombre').value.trim();
-  const j2e    = document.getElementById('mJ2Email').value.trim();
-  const j2t    = document.getElementById('mJ2Tel').value.trim();
+  const j1n = document.getElementById('mJ1Nombre').value.trim();
+  const j1e = document.getElementById('mJ1Email').value.trim();
+  const j1t = document.getElementById('mJ1Tel').value.trim();
+  const j2n = document.getElementById('mJ2Nombre').value.trim();
+  const j2e = document.getElementById('mJ2Email').value.trim();
+  const j2t = document.getElementById('mJ2Tel').value.trim();
 
-  if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
-  if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
-  if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
+  if (!j1n || !j1e) { toast('Completa nombre y correo del Jurado 1', 'warn'); return; }
+  if (!j1t) { toast('El teléfono del Jurado 1 es obligatorio', 'warn'); return; }
+  if (!j2n || !j2e) { toast('Completa nombre y correo del Jurado 2', 'warn'); return; }
+  if (!j2t) { toast('El teléfono del Jurado 2 es obligatorio', 'warn'); return; }
 
   const btn = document.getElementById('btnAsignar');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Asignando...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Aprobando...';
   try {
+    // Save jurado data (no date/time yet — that comes in a separate step)
+    // AS col naming: "cedula"→col O (phone), "telefono"→col AE (specialty)
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'updateFase3Asignacion',
       rowIndex,
-      fechaSustentacion: fecha,
-      horaSustentacion: hora,
-      lugar,
-      // AS col naming: "cedula"→col O (phone), "telefono"→col AE (specialty)
+      fechaSustentacion: '',
+      horaSustentacion: '',
+      lugar: '',
       jurado1: { nombre: j1n, cedula: j1t, email: j1e, telefono: (document.getElementById('mJ1Esp')||{value:''}).value.trim(), especialidad: '' },
       jurado2: { nombre: j2n, cedula: j2t, email: j2e, telefono: (document.getElementById('mJ2Esp')||{value:''}).value.trim(), especialidad: '' },
       emailCoord: admin.email,
       token: coordToken()
     })});
     const d = await res.json();
-    if (d.success) {
-      closeModal('modalAsignar');
-      await cargar();
-      toast('Jurados asignados. Notificaciones enviadas ✓', 'ok');
-    } else throw new Error(d.error);
+    if (!d.success) throw new Error(d.error);
+    // Explicitly set state to "Jurados aprobados"
+    await actualizarEstadoSolicitud(rowIndex, 'Jurados aprobados',
+      'Jurados aprobados. Se han enviado notificaciones. La fecha de sustentación se programará próximamente.');
+    closeModal('modalAsignar');
+    await cargar();
+    toast('Jurados aprobados. Notificaciones enviadas ✓', 'ok');
   } catch(e) { toast('Error: ' + e.message, 'err'); }
-  finally { btn.disabled = false; btn.innerHTML = '📅 Confirmar y notificar'; }
+  finally { btn.disabled = false; btn.innerHTML = '✅ Aprobar jurados y notificar'; }
 }
 
 async function guardarResultado() {
