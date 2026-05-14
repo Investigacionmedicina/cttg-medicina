@@ -662,7 +662,7 @@ async function cargarMisSolicitudes() {
 function verDetalle(s) {
   const estadoBase = estadoVisualSolicitud(s);
   const estado = s.nota ? (parseFloat(s.nota) >= 3 ? 'Sustentación Aprobada' : 'Sustentación Reprobada') : estadoBase.texto;
-  const observacionSolicitud = s.motivoDevolucion || s.observacionEstado || s.observacionesEstado || (!s.fechaSustentacion ? s.observaciones : '');
+  const observacionSolicitud = s.motivoDevolucion || s.observacionesEstado || (!s.fechaSustentacion ? s.observaciones : '');
   const lugar = s.lugar || (s.fechaSustentacion ? s.observaciones : '');
   const html = `
     <div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.remove()">

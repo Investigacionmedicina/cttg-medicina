@@ -1873,7 +1873,17 @@ async function cargarSeguimiento() {
   if (!qRaw) {
     document.getElementById('timelineResumen').style.display = 'none';
     document.getElementById('segSearchInfo').classList.remove('show');
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Busca un trabajo por radicación, título, estudiante o correo.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando actividad reciente...</td></tr>';
+    try {
+      const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
+        action: 'getTrazabilidad', numeroRadicacion: '', limit: 100, token: coordToken()
+      })});
+      const d = await res.json();
+      if (d.success) { seguimientos = d.registros || []; renderSeguimiento(); }
+      else tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay registros de actividad aún.</td></tr>';
+    } catch(e) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">Error cargando actividad reciente.</td></tr>';
+    }
     return;
   }
   if (!radMatch && matches.length > 1) {
