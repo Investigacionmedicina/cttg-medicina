@@ -52,3 +52,45 @@ Todos los archivos HTML ahora usan la misma URL:
 `AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk`
 
 Asegúrate de que este deployment tiene los Fix 1 y Fix 2 aplicados y redespliegado.
+
+---
+
+## Fix 4 — Acción `getJurados` (portal Fase 3)
+
+**Problema:** `fase3_sustentacion.html` envía `action: 'getJurados'` para llenar el desplegable de jurados. Si no existe el `case` en `handleRequest`, la API responde *Acción no reconocida* y la lista queda vacía con error.
+
+**En el `switch` de `handleRequest`, añadir (no meter en `accionesSoloCoordLectura`; debe poder llamarlo el estudiante):**
+
+```javascript
+case "getJurados": result = obtenerJurados(); break;
+```
+
+**Implementación:** ver archivo en el repo `apps-script/fragmentos-faltantes.gs` (función `obtenerJurados`). Hoja sugerida: **Jurados** con columnas alineadas a lo que espera el front: nombre, email, teléfono, especialidad, estado (inactivo = omitir).
+
+---
+
+## Fix 5 — Typo `motivoDevoluccion` en `registrarDecisionComite`
+
+**Problema:** El comité técnico (`comite_tecnico.html`) envía `motivoDevolucion`. En el backend aparece `body.motivoDevoluccion` (triple «c») y el motivo llega siempre `undefined` al registrar una devolución.
+
+**Reemplazar en el `switch`:**
+
+```javascript
+body.motivoDevolucion
+```
+
+en lugar de `body.motivoDevoluccion`.
+
+---
+
+## Fix 6 — Función `ultimaFilaEscrituraFase3` ausente
+
+**Problema:** `esFilaValidaParaModificarFase3` llama a `ultimaFilaEscrituraFase3(sheet)`. Si esa función no está definida en el proyecto, **updateFase3Estado**, **updateFase3Asignacion** y **completarFase3** fallan con `ReferenceError`.
+
+**Solución:** definir la función (ejemplo en `apps-script/fragmentos-faltantes.gs`).
+
+---
+
+## Fix 7 (opcional) — Alerta protocolo vencido: columna de fecha
+
+En `verificarVencimientosYAlertar`, si `crearProtocolo` guarda la fecha de carga en la columna **E** (índice 4 en fila 0-based), conviene usar `dataFase2[k][4]` para calcular días hábiles, no `[5]`, para coherencia con `listaProtocolosFase2Completa` (`fechaRadicacion: formatearFecha(r[4])`).
