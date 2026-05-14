@@ -96,27 +96,25 @@
   </div>
 
   <div class="filtro-estado-f3" style="margin:10px 0 18px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-    <label for="filtroEstadoF3" style="font-size:12px;color:rgba(255,255,255,.55);flex:1;min-width:220px">
-      Filtrar por texto exacto de <strong style="color:#e2e8f0;font-weight:600">Estado solicitud</strong> (columna AC del Excel). «Observaciones estado» se muestra en las tablas (columna AD); los valores posibles salen de lo que haya en la hoja más los estándar del sistema.
-    </label>
-    <select id="filtroEstadoF3" onchange="renderTablas()" style="min-width:300px;max-width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
-    <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(255,255,255,.72);cursor:pointer;max-width:340px;line-height:1.35">
-      <input type="checkbox" id="chkFase3SinDedupe" checked onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;margin-top:2px;flex-shrink:0" />
-      <span><strong style="color:#e2e8f0;font-weight:600">Sin agrupar</strong> por radicación (recomendado: lista cada fila del Excel). Desmárquelo si solo quiere la fila más reciente por número.</span>
+    <label for="filtroEstadoF3" style="font-size:12px;color:rgba(255,255,255,.55)">Filtrar por estado:</label>
+    <select id="filtroEstadoF3" onchange="renderTablas()" style="min-width:240px;max-width:100%;background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.72);cursor:pointer">
+      <input type="checkbox" id="chkFase3SinDedupe" checked onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;flex-shrink:0" />
+      <span>Mostrar cada solicitud por separado (un estudiante puede radicar más de una)</span>
     </label>
   </div>
 
   <!-- VISTA 1: ASIGNAR JURADOS -->
   <div class="panel on" id="pan-asignar">
     <div class="sec-hdr">
-      <div><h2>Pendiente de Asignación</h2><p>Solicitudes sin fecha programada según el sistema (columna «Fecha sustentación» / D o «Fecha asignada» / U). Si ya tienen fecha, aparecen en «Pendiente resultado» o «Todas».</p></div>
+      <div><h2>Pendiente de Asignación</h2><p>Solicitudes sin fecha de sustentación asignada.</p></div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
           <th>N° Radicación</th>
-          <th>Estudiante</th>
+          <th>Estudiante / Correo</th>
           <th>Semestre</th>
           <th>% Turnitin</th>
           <th>F. Solicitud</th>
@@ -142,7 +140,7 @@
       <table>
         <thead><tr>
           <th>N° Radicación</th>
-          <th>Estudiante</th>
+          <th>Estudiante / Correo</th>
           <th>Fecha Sustentación</th>
           <th>Hora</th>
           <th>Jurado 1</th>
@@ -163,8 +161,7 @@
     <div class="sec-hdr">
       <div>
         <h2>Todas las solicitudes</h2>
-        <p>Listado completo cargado desde el sistema (incluye cerradas y programadas). Las pestañas anteriores solo muestran pendientes de acción.</p>
-        <p style="font-size:11px;color:rgba(255,255,255,.35);margin-top:6px">Con la casilla «sin agrupar» desactivada, si hay varias filas con el mismo número de radicación solo se muestra la más reciente. Actívela arriba para listar cada fila del Excel.</p>
+        <p>Historial completo — incluye programadas, cerradas y en proceso.</p>
       </div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
@@ -175,7 +172,7 @@
       <table>
         <thead><tr>
           <th>N° Radicación</th>
-          <th>Estudiante</th>
+          <th>Estudiante / Correo</th>
           <th>F. Solicitud</th>
           <th>F. Sustentación</th>
           <th>Nota</th>
@@ -222,7 +219,7 @@
       <div class="mfg"><label>Cédula</label><input id="mJ1Cedula" placeholder="Número ID"></div>
     </div>
     <div class="mfg"><label>Email *</label><input type="email" id="mJ1Email" placeholder="jurado@usc.edu.co"></div>
-    <div class="mfg"><label>Teléfono</label><input type="tel" id="mJ1Tel" placeholder="300 000 0000"></div>
+    <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ1Tel" placeholder="300 000 0000"></div>
 
     <div class="msec">Jurado 2</div>
     <div class="hint-j" id="hintJ2"></div>
@@ -239,7 +236,7 @@
       <div class="mfg"><label>Cédula</label><input id="mJ2Cedula" placeholder="Número ID"></div>
     </div>
     <div class="mfg"><label>Email *</label><input type="email" id="mJ2Email" placeholder="jurado@usc.edu.co"></div>
-    <div class="mfg"><label>Teléfono</label><input type="tel" id="mJ2Tel" placeholder="300 000 0000"></div>
+    <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ2Tel" placeholder="300 000 0000"></div>
 
     <input type="hidden" id="mAsignarRow">
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
@@ -580,15 +577,15 @@ function renderTablas() {
       const estaDevuelta = esEstadoDevueltaSheet(estSh);
       return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      <td><div style="font-size:13px;color:rgba(255,255,255,.85)">${esc(r.nombreEstudiante||'—')}</div><div style="font-size:11px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace">${esc(r.emailEstudiante||'')}</div></td>
       <td style="font-size:13px">${esc(String(r.semestre ?? ''))}${String(r.alertaS12 || '').trim() === 'SÍ' ? '<span class="alert-s12">⚠️ S12</span>' : ''}</td>
-      <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
+      <td>${r.pctTurnitin ? `<span style="font-size:12px;font-weight:600;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${esc(String(r.pctTurnitin))}%</span>` : '<span style="font-size:11px;color:#fca5a5;font-weight:700">⚠ Sin %</span>'}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(lineaTablaJuradosSugeridos(r))}</td>
       <td>${badgeEstadoSheet(estSh)}</td>
       <td>${truncObsHtml(r.observacionesEstado, 56)}</td>
       <td><div class="act">
-        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisada</button>
+        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisar</button>
         <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
         <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>📅 Asignar</button>
       </div></td>
@@ -605,7 +602,7 @@ function renderTablas() {
   } else {
     tbR.innerHTML = conFecha.map(r => `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      <td><div style="font-size:13px;color:rgba(255,255,255,.85)">${esc(r.nombreEstudiante||'—')}</div><div style="font-size:11px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace">${esc(r.emailEstudiante||'')}</div></td>
       <td style="font-family:'DM Mono',monospace;font-size:12px;color:#fcd34d">${fmtFecha(fechaProgramacionPrimaria(r))}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${r.horaSustentacion||'—'}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado1Nombre||'—')}</td>
@@ -636,7 +633,7 @@ function renderTablas() {
         const estSh = estadoSheetRaw(r);
         return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      <td><div style="font-size:13px;color:rgba(255,255,255,.85)">${esc(r.nombreEstudiante||'—')}</div><div style="font-size:11px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace">${esc(r.emailEstudiante||'')}</div></td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:#fcd34d">${fmtFecha(fechaProgramacionPrimaria(r))}</td>
       <td style="font-size:12px">${esc(notaTxt || '—')}</td>
@@ -654,7 +651,7 @@ function abrirAsignar(rowIndex) {
   if (!r) return;
   solicitudModalActual = r;
   document.getElementById('mAsignarRow').value = rowIndex;
-  document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero;
+  document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
   document.getElementById('mFecha').value = '';
   document.getElementById('mHora').value = '';
  document.getElementById('mLugar').value = '';
@@ -673,14 +670,15 @@ function abrirDevolver(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
   document.getElementById('mDevolverRow').value = rowIndex;
-  document.getElementById('mDevolverInfo').textContent = 'Radicación: ' + r.numero;
+  document.getElementById('mDevolverInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
   document.getElementById('mMotivoDevolucion').value = r.motivoDevolucion || r.observaciones || '';
   document.getElementById('modalDevolver').classList.add('open');
 }
 
 function abrirResultado(rowIndex, numero) {
   document.getElementById('mResultadoRow').value = rowIndex;
-  document.getElementById('mResultadoInfo').textContent = 'Radicación: ' + numero;
+  const rR = fase3.find(x => x.rowIndex === rowIndex);
+  document.getElementById('mResultadoInfo').textContent = 'Radicación: ' + numero + (rR && rR.nombreEstudiante ? ' — ' + rR.nombreEstudiante : '') + (rR && rR.emailEstudiante ? ' (' + rR.emailEstudiante + ')' : '');
   document.getElementById('mNota').value = '';
   document.getElementById('mActa').value = '';
   document.getElementById('mProducto').value = 'NO';
@@ -705,6 +703,9 @@ async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
 async function marcarRevisada(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
+  if (!r.pctTurnitin || String(r.pctTurnitin).trim() === '') {
+    toast('Esta solicitud no tiene % Turnitin registrado — no se puede marcar como revisada', 'warn'); return;
+  }
   const mensaje = 'Su solicitud de sustentación fue revisada. La documentación radicada se encuentra conforme y en los próximos días se asignarán los jurados.';
   try {
     await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación revisada', mensaje);
@@ -739,11 +740,16 @@ async function asignarJurados() {
   const j2n      = document.getElementById('mJ2Nombre').value.trim();
   const j2e      = document.getElementById('mJ2Email').value.trim();
 
+  const j1t = document.getElementById('mJ1Tel').value.trim();
+  const j2t = document.getElementById('mJ2Tel').value.trim();
+
   if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
   if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
- if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
-  if (!j1n || !j1e) { toast('Completa los datos del Jurado 1', 'warn'); return; }
-  if (!j2n || !j2e) { toast('Completa los datos del Jurado 2', 'warn'); return; }
+  if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
+  if (!j1n || !j1e) { toast('Completa nombre y correo del Jurado 1', 'warn'); return; }
+  if (!j1t) { toast('El teléfono del Jurado 1 es obligatorio', 'warn'); return; }
+  if (!j2n || !j2e) { toast('Completa nombre y correo del Jurado 2', 'warn'); return; }
+  if (!j2t) { toast('El teléfono del Jurado 2 es obligatorio', 'warn'); return; }
 
   const btn = document.getElementById('btnAsignar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Asignando...';
@@ -754,8 +760,8 @@ async function asignarJurados() {
       fechaSustentacion: fecha,
       horaSustentacion: hora,
      lugar: lugar,
-      jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e, telefono: document.getElementById('mJ1Tel').value.trim() },
-      jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e, telefono: document.getElementById('mJ2Tel').value.trim() },
+      jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e, telefono: j1t },
+      jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e, telefono: j2t },
       emailCoord: admin.email,
       token: coordToken()
     })});
