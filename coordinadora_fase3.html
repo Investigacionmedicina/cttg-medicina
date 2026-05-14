@@ -541,9 +541,8 @@ function valorTelEditable(v) {
 function hintLineaSugerido(r, i) {
   const nombre = i === 1 ? r.jurado1Nombre : r.jurado2Nombre;
   const email = i === 1 ? r.jurado1Email : r.jurado2Email;
-  // AS naming quirk: col O/R (phones) returned as "Cedula"; col AE/AF (specialty) as "Telefono"
-  const tel = fmtTelMostrar(i === 1 ? r.jurado1Cedula : r.jurado2Cedula);
-  const esp = i === 1 ? (r.jurado1Telefono || '') : (r.jurado2Telefono || '');
+  const tel = fmtTelMostrar(i === 1 ? r.jurado1Telefono : r.jurado2Telefono);
+  const esp = i === 1 ? (r.jurado1Especialidad || '') : (r.jurado2Especialidad || '');
   if (!nombre && !email && tel === '—' && !esp) return 'Sin sugerencia del estudiante para este jurado.';
   return 'Sugerido: ' + [nombre, email, tel !== '—' ? 'Tel ' + tel : '', esp || ''].filter(Boolean).join(' · ');
 }
@@ -551,10 +550,10 @@ function hintLineaSugerido(r, i) {
 function lineaTablaJuradosSugeridos(r) {
   const bloques = [];
   const j1 = [r.jurado1Nombre, r.jurado1Email].filter(Boolean).join(', ');
-  const t1 = valorTelEditable(r.jurado1Cedula); // col O = phone
+  const t1 = valorTelEditable(r.jurado1Telefono);
   if (j1 || t1) bloques.push('J1: ' + [j1, t1 ? 'Tel ' + t1 : ''].filter(Boolean).join(' · '));
   const j2 = [r.jurado2Nombre, r.jurado2Email].filter(Boolean).join(', ');
-  const t2 = valorTelEditable(r.jurado2Cedula); // col R = phone
+  const t2 = valorTelEditable(r.jurado2Telefono);
   if (j2 || t2) bloques.push('J2: ' + [j2, t2 ? 'Tel ' + t2 : ''].filter(Boolean).join(' · '));
   return bloques.length ? bloques.join(' | ') : '—';
 }
@@ -568,9 +567,8 @@ function aplicarDecisionJurado(i) {
   const telEl = document.getElementById('mJ' + i + 'Tel');
   const sugNombre = i === 1 ? (r.jurado1Nombre || '') : (r.jurado2Nombre || '');
   const sugEmail = i === 1 ? (r.jurado1Email || '') : (r.jurado2Email || '');
-  // col O/R = phones (AS field "Cedula"); col AE/AF = specialty (AS field "Telefono")
-  const sugTel = valorTelEditable(i === 1 ? r.jurado1Cedula : r.jurado2Cedula);
-  const sugEsp = String(i === 1 ? (r.jurado1Telefono || '') : (r.jurado2Telefono || ''));
+  const sugTel = valorTelEditable(i === 1 ? r.jurado1Telefono : r.jurado2Telefono);
+  const sugEsp = String(i === 1 ? (r.jurado1Especialidad || '') : (r.jurado2Especialidad || ''));
   const espEl = document.getElementById('mJ' + i + 'Esp');
 
   // Show evaluators dropdown only when coordinator is selecting/replacing
@@ -857,8 +855,8 @@ async function programarFecha() {
       horaSustentacion: hora,
       lugar,
       // preserve current jurado data (already saved in sheet)
-      jurado1: { nombre: r ? r.jurado1Nombre : '', cedula: r ? r.jurado1Cedula : '', email: r ? r.jurado1Email : '', telefono: r ? r.jurado1Telefono : '', especialidad: '' },
-      jurado2: { nombre: r ? r.jurado2Nombre : '', cedula: r ? r.jurado2Cedula : '', email: r ? r.jurado2Email : '', telefono: r ? r.jurado2Telefono : '', especialidad: '' },
+      jurado1: { nombre: r ? r.jurado1Nombre : '', telefono: r ? r.jurado1Telefono : '', email: r ? r.jurado1Email : '', especialidad: r ? (r.jurado1Especialidad || '') : '', cedula: '' },
+      jurado2: { nombre: r ? r.jurado2Nombre : '', telefono: r ? r.jurado2Telefono : '', email: r ? r.jurado2Email : '', especialidad: r ? (r.jurado2Especialidad || '') : '', cedula: '' },
       emailCoord: admin.email,
       token: coordToken()
     })});
@@ -880,14 +878,14 @@ function abrirRevisar(rowIndex) {
   const estaDevuelta = esEstadoDevueltaSheet(estSh);
 
   function docChip(val, label) {
-    const ok = String(val||'').trim().toUpperCase() === 'SÍ' || String(val||'').trim().toUpperCase() === 'SI';
+    const s = String(val||'').trim();
+    const ok = s.toUpperCase() === 'SÍ' || s.toUpperCase() === 'SI' || (s.length > 0 && s.startsWith('http'));
     return `<span class="doc-chip${ok?'':' no'}">${ok?'✓':'✗'} ${label}</span>`;
   }
   function jRow(num) {
     const n = r['jurado'+num+'Nombre'], e = r['jurado'+num+'Email'];
-    // col O/R (AS field "Cedula") = phone; col AE/AF (AS field "Telefono") = specialty
-    const t = fmtTelMostrar(r['jurado'+num+'Cedula']);
-    const esp = r['jurado'+num+'Telefono'] || '';
+    const t = fmtTelMostrar(r['jurado'+num+'Telefono']);
+    const esp = r['jurado'+num+'Especialidad'] || '';
     const ac = r['jurado'+num+'AceptaPropuesta'] || '';
     if (!n && !e) return '<span style="color:rgba(255,255,255,.3)">Sin sugerencia</span>';
     return `<div>${esc(n||'—')}</div>
@@ -908,7 +906,7 @@ function abrirRevisar(rowIndex) {
     </div>
     <div class="det-sec">Documentos cargados</div>
     <div style="margin-bottom:12px">
-      ${docChip(r.anexoA7,'Anexo A7')}${docChip(r.articulo,'Artículo')}${docChip(r.guiaAutores,'Guía Autores')}${docChip(r.avalCCEB,'Aval CCEB')}${docChip(r.turnitinDoc,'Turnitin PDF')}
+      ${docChip(r.urlAnexoA7,'Anexo A7')}${docChip(r.urlArticulo,'Artículo')}${docChip(r.urlGuia,'Guía Autores')}${docChip(r.urlAvalCCEB,'Aval CCEB')}${docChip(r.urlTurnitin,'Turnitin PDF')}
     </div>
     <div class="det-sec">Jurado 1 sugerido · Temático</div>
     <div style="margin-bottom:10px;font-size:13px">${jRow(1)}</div>
@@ -1026,8 +1024,8 @@ async function asignarJurados() {
       fechaSustentacion: '',
       horaSustentacion: '',
       lugar: '',
-      jurado1: { nombre: j1n, cedula: j1t, email: j1e, telefono: (document.getElementById('mJ1Esp')||{value:''}).value.trim(), especialidad: '' },
-      jurado2: { nombre: j2n, cedula: j2t, email: j2e, telefono: (document.getElementById('mJ2Esp')||{value:''}).value.trim(), especialidad: '' },
+      jurado1: { nombre: j1n, telefono: j1t, email: j1e, especialidad: (document.getElementById('mJ1Esp')||{value:''}).value.trim(), cedula: '' },
+      jurado2: { nombre: j2n, telefono: j2t, email: j2e, especialidad: (document.getElementById('mJ2Esp')||{value:''}).value.trim(), cedula: '' },
       emailCoord: admin.email,
       token: coordToken()
     })});
