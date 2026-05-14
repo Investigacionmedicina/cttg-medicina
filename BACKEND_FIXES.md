@@ -94,3 +94,54 @@ en lugar de `body.motivoDevoluccion`.
 ## Fix 7 (opcional) — Alerta protocolo vencido: columna de fecha
 
 En `verificarVencimientosYAlertar`, si `crearProtocolo` guarda la fecha de carga en la columna **E** (índice 4 en fila 0-based), conviene usar `dataFase2[k][4]` para calcular días hábiles, no `[5]`, para coherencia con `listaProtocolosFase2Completa` (`fechaRadicacion: formatearFecha(r[4])`).
+
+---
+
+## Fix 8 — Columnas de teléfono y especialidad de jurados en `listaFase3TodasLasFilasSinDedupe`
+
+**Problema:** Los nombres de campo en la función de lectura están cruzados con la realidad del Sheet:
+- `r[14]` (columna **O**) contiene el **teléfono** del jurado 1, pero el código lo devuelve como `jurado1Cedula`
+- `r[17]` (columna **R**) contiene el **teléfono** del jurado 2, pero el código lo devuelve como `jurado2Cedula`
+- `r[30]` (columna **AE**) contiene la **especialidad** del jurado 1, pero el código lo devuelve como `jurado1Telefono`
+- `r[31]` (columna **AF**) contiene la **especialidad** del jurado 2, pero el código lo devuelve como `jurado2Telefono`
+
+Además, los campos `jurado1AceptaPropuesta` y `jurado2AceptaPropuesta` no están mapeados (averigüar en qué columnas los guarda `crearFase3`).
+
+**Reemplazar en `listaFase3TodasLasFilasSinDedupe`:**
+
+```javascript
+// ANTES (incorrecto):
+jurado1Cedula:     String(r[14] || ""),
+// ...
+jurado2Cedula:     String(r[17] || ""),
+// ...
+jurado1Telefono:   valorCeldaLegible(r[30]),
+jurado2Telefono:   valorCeldaLegible(r[31]),
+
+// DESPUÉS (correcto):
+jurado1Telefono:   String(r[14] || ""),   // col O = teléfono jurado 1
+// ...
+jurado2Telefono:   String(r[17] || ""),   // col R = teléfono jurado 2
+// ...
+jurado1Especialidad: String(r[30] || ""), // col AE = especialidad jurado 1
+jurado2Especialidad: String(r[31] || ""), // col AF = especialidad jurado 2
+// Agregar según columna real:
+// jurado1AceptaPropuesta: String(r[??] || ""),
+// jurado2AceptaPropuesta: String(r[??] || ""),
+```
+
+**También en `crearFase3`:** agregar los parámetros que ya envía el estudiante pero el backend ignora:
+```javascript
+// En el switch:
+case "crearFase3": result = crearFase3(
+  body.numeroRadicacion, body.emailEstudiante, body.porcentajeTurnitin,
+  body.jurado1Nombre, body.jurado1Email, body.jurado1Telefono,
+  body.jurado1Especialidad, body.jurado1AceptaPropuesta,   // <-- añadir
+  body.jurado2Nombre, body.jurado2Email, body.jurado2Telefono,
+  body.jurado2Especialidad, body.jurado2AceptaPropuesta,   // <-- añadir
+  body.anexoA7, body.articulo, body.guiaAutores, body.avalCCEB, body.turnitinDoc,
+  sesion
+); break;
+```
+
+**Nota temporal:** Mientras no se aplique este fix en el AS, el frontend usa los nombres de campo actuales (`Cedula` para teléfono, `Telefono` para especialidad) y los mapea correctamente en pantalla.

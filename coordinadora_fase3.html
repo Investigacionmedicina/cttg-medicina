@@ -244,23 +244,20 @@
       <div class="msec">Jurado 1 · Temático</div>
       <div class="hint-j" id="hintJ1"></div>
       <div class="mfg">
-        <label>Seleccionar de la lista de evaluadores</label>
-        <select id="catJ1" onchange="aplicarEvaluadorLista(1)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
-          <option value="">— Escribir datos manualmente —</option>
-        </select>
-      </div>
-      <div class="mfg">
-        <label>O decisión sobre el jurado sugerido por el estudiante</label>
+        <label>Decisión sobre el jurado sugerido</label>
         <select id="decisionJ1" onchange="aplicarDecisionJurado(1)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
           <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
           <option value="reemplazar">Reemplazar (usar como base, editar datos)</option>
           <option value="rechazar">Rechazar sugerencia — asignar otro</option>
         </select>
       </div>
-      <div class="mgrid" style="margin-bottom:4px">
-        <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
-        <div class="mfg"><label>Cédula</label><input id="mJ1Cedula" placeholder="Número ID"></div>
+      <div id="catJ1Wrap" class="mfg" style="display:none">
+        <label>Seleccionar de la lista de evaluadores</label>
+        <select id="catJ1" onchange="aplicarEvaluadorLista(1)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
+          <option value="">— Seleccionar evaluador —</option>
+        </select>
       </div>
+      <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
       <div class="mfg"><label>Email *</label><input type="email" id="mJ1Email" placeholder="jurado@usc.edu.co"></div>
       <div class="mgrid">
         <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ1Tel" placeholder="300 000 0000"></div>
@@ -270,23 +267,20 @@
       <div class="msec">Jurado 2 · Metodológico</div>
       <div class="hint-j" id="hintJ2"></div>
       <div class="mfg">
-        <label>Seleccionar de la lista de evaluadores</label>
-        <select id="catJ2" onchange="aplicarEvaluadorLista(2)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
-          <option value="">— Escribir datos manualmente —</option>
-        </select>
-      </div>
-      <div class="mfg">
-        <label>O decisión sobre el jurado sugerido por el estudiante</label>
+        <label>Decisión sobre el jurado sugerido</label>
         <select id="decisionJ2" onchange="aplicarDecisionJurado(2)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
           <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
           <option value="reemplazar">Reemplazar (usar como base, editar datos)</option>
           <option value="rechazar">Rechazar sugerencia — asignar otro</option>
         </select>
       </div>
-      <div class="mgrid" style="margin-bottom:4px">
-        <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
-        <div class="mfg"><label>Cédula</label><input id="mJ2Cedula" placeholder="Número ID"></div>
+      <div id="catJ2Wrap" class="mfg" style="display:none">
+        <label>Seleccionar de la lista de evaluadores</label>
+        <select id="catJ2" onchange="aplicarEvaluadorLista(2)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
+          <option value="">— Seleccionar evaluador —</option>
+        </select>
       </div>
+      <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
       <div class="mfg"><label>Email *</label><input type="email" id="mJ2Email" placeholder="jurado@usc.edu.co"></div>
       <div class="mgrid">
         <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ2Tel" placeholder="300 000 0000"></div>
@@ -551,18 +545,20 @@ function valorTelEditable(v) {
 function hintLineaSugerido(r, i) {
   const nombre = i === 1 ? r.jurado1Nombre : r.jurado2Nombre;
   const email = i === 1 ? r.jurado1Email : r.jurado2Email;
-  const tel = fmtTelMostrar(i === 1 ? r.jurado1Telefono : r.jurado2Telefono);
-  if (!nombre && !email && tel === '—') return 'Sin sugerencia del estudiante para este jurado.';
-  return 'Sugerido por el estudiante: ' + [nombre, email, tel !== '—' ? 'Tel ' + tel : ''].filter(Boolean).join(' · ');
+  // AS naming quirk: col O/R (phones) returned as "Cedula"; col AE/AF (specialty) as "Telefono"
+  const tel = fmtTelMostrar(i === 1 ? r.jurado1Cedula : r.jurado2Cedula);
+  const esp = i === 1 ? (r.jurado1Telefono || '') : (r.jurado2Telefono || '');
+  if (!nombre && !email && tel === '—' && !esp) return 'Sin sugerencia del estudiante para este jurado.';
+  return 'Sugerido: ' + [nombre, email, tel !== '—' ? 'Tel ' + tel : '', esp || ''].filter(Boolean).join(' · ');
 }
 
 function lineaTablaJuradosSugeridos(r) {
   const bloques = [];
   const j1 = [r.jurado1Nombre, r.jurado1Email].filter(Boolean).join(', ');
-  const t1 = valorTelEditable(r.jurado1Telefono);
+  const t1 = valorTelEditable(r.jurado1Cedula); // col O = phone
   if (j1 || t1) bloques.push('J1: ' + [j1, t1 ? 'Tel ' + t1 : ''].filter(Boolean).join(' · '));
   const j2 = [r.jurado2Nombre, r.jurado2Email].filter(Boolean).join(', ');
-  const t2 = valorTelEditable(r.jurado2Telefono);
+  const t2 = valorTelEditable(r.jurado2Cedula); // col R = phone
   if (j2 || t2) bloques.push('J2: ' + [j2, t2 ? 'Tel ' + t2 : ''].filter(Boolean).join(' · '));
   return bloques.length ? bloques.join(' | ') : '—';
 }
@@ -576,7 +572,14 @@ function aplicarDecisionJurado(i) {
   const telEl = document.getElementById('mJ' + i + 'Tel');
   const sugNombre = i === 1 ? (r.jurado1Nombre || '') : (r.jurado2Nombre || '');
   const sugEmail = i === 1 ? (r.jurado1Email || '') : (r.jurado2Email || '');
-  const sugTel = valorTelEditable(i === 1 ? r.jurado1Telefono : r.jurado2Telefono);
+  // col O/R = phones (AS field "Cedula"); col AE/AF = specialty (AS field "Telefono")
+  const sugTel = valorTelEditable(i === 1 ? r.jurado1Cedula : r.jurado2Cedula);
+  const sugEsp = String(i === 1 ? (r.jurado1Telefono || '') : (r.jurado2Telefono || ''));
+  const espEl = document.getElementById('mJ' + i + 'Esp');
+
+  // Show evaluators dropdown only when coordinator is selecting/replacing
+  const catWrap = document.getElementById('catJ' + i + 'Wrap');
+  if (catWrap) catWrap.style.display = (decision === 'reemplazar' || decision === 'rechazar') ? '' : 'none';
 
   const sinSugerencia = !String(sugNombre).trim() && !String(sugEmail).trim();
   const lock = decision === 'aceptar' && !sinSugerencia;
@@ -585,24 +588,31 @@ function aplicarDecisionJurado(i) {
     el.readOnly = lock;
     el.classList.toggle('ro-lock', lock);
   });
+  if (espEl) { espEl.readOnly = lock; espEl.classList.toggle('ro-lock', lock); }
 
   if (decision === 'aceptar') {
     nombreEl.value = sugNombre;
     emailEl.value = sugEmail;
     telEl.value = sugTel;
+    if (espEl) espEl.value = sugEsp;
     if (sinSugerencia) {
       [nombreEl, emailEl, telEl].forEach(el => { el.readOnly = false; el.classList.remove('ro-lock'); });
+      if (espEl) { espEl.readOnly = false; espEl.classList.remove('ro-lock'); }
     }
   } else if (decision === 'reemplazar') {
     nombreEl.value = sugNombre;
     emailEl.value = sugEmail;
     telEl.value = sugTel;
+    if (espEl) espEl.value = sugEsp;
     [nombreEl, emailEl, telEl].forEach(el => { el.readOnly = false; el.classList.remove('ro-lock'); });
+    if (espEl) { espEl.readOnly = false; espEl.classList.remove('ro-lock'); }
   } else {
     nombreEl.value = '';
     emailEl.value = '';
     telEl.value = '';
+    if (espEl) espEl.value = '';
     [nombreEl, emailEl, telEl].forEach(el => { el.readOnly = false; el.classList.remove('ro-lock'); });
+    if (espEl) { espEl.readOnly = false; espEl.classList.remove('ro-lock'); }
   }
 }
 
@@ -811,8 +821,9 @@ function abrirAsignar(rowIndex) {
   document.getElementById('hintJ2').textContent = hintLineaSugerido(r, 2);
   aplicarDecisionJurado(1);
   aplicarDecisionJurado(2);
-  document.getElementById('mJ1Cedula').value = r.jurado1Cedula || '';
-  document.getElementById('mJ2Cedula').value = r.jurado2Cedula || '';
+  // catJ dropdowns start hidden (shown when decision = reemplazar/rechazar)
+  const cw1 = document.getElementById('catJ1Wrap'); if (cw1) cw1.style.display = 'none';
+  const cw2 = document.getElementById('catJ2Wrap'); if (cw2) cw2.style.display = 'none';
   openModal('modalAsignar');
 }
 
@@ -853,14 +864,16 @@ function abrirRevisar(rowIndex) {
   }
   function jRow(num) {
     const n = r['jurado'+num+'Nombre'], e = r['jurado'+num+'Email'];
-    const t = fmtTelMostrar(r['jurado'+num+'Telefono']);
-    const esp = r['jurado'+num+'Especialidad'], ac = r['jurado'+num+'AceptaPropuesta'];
+    // col O/R (AS field "Cedula") = phone; col AE/AF (AS field "Telefono") = specialty
+    const t = fmtTelMostrar(r['jurado'+num+'Cedula']);
+    const esp = r['jurado'+num+'Telefono'] || '';
+    const ac = r['jurado'+num+'AceptaPropuesta'] || '';
     if (!n && !e) return '<span style="color:rgba(255,255,255,.3)">Sin sugerencia</span>';
     return `<div>${esc(n||'—')}</div>
       <div style="font-size:11px;color:rgba(255,255,255,.4)">${esc(e||'')}</div>
-      ${t!=='—'?`<div style="font-size:11px;color:rgba(255,255,255,.4)">Tel: ${esc(t)}</div>`:''}
-      ${esp?`<div style="font-size:11px;color:rgba(255,255,255,.4)">${esc(esp)}</div>`:''}
-      ${ac?`<div style="font-size:11px;color:rgba(255,255,255,.35)">Acepta: ${esc(ac)}</div>`:''}`;
+      ${t!=='—'?`<div style="font-size:11px;color:rgba(255,255,255,.4)">📞 ${esc(t)}</div>`:'<div style="font-size:11px;color:#fca5a5">⚠ Sin teléfono</div>'}
+      ${esp?`<div style="font-size:11px;color:rgba(255,255,255,.5)">🎓 ${esc(esp)}</div>`:'<div style="font-size:11px;color:rgba(255,255,255,.3)">Sin especialidad</div>'}
+      ${ac?`<div style="font-size:11px;color:${ac==='Sí'?'#6ee7b7':'#fca5a5'}">Acepta ser jurado: ${esc(ac)}</div>`:''}`;
   }
   const turnitin = r.pctTurnitin ? `<span style="font-weight:700;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${esc(String(r.pctTurnitin))}%</span>` : '<span style="color:#fca5a5;font-weight:700">⚠ No registrado</span>';
 
@@ -991,8 +1004,9 @@ async function asignarJurados() {
       fechaSustentacion: fecha,
       horaSustentacion: hora,
       lugar,
-      jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e, telefono: j1t, especialidad: (document.getElementById('mJ1Esp')||{value:''}).value.trim() },
-      jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e, telefono: j2t, especialidad: (document.getElementById('mJ2Esp')||{value:''}).value.trim() },
+      // AS col naming: "cedula"→col O (phone), "telefono"→col AE (specialty)
+      jurado1: { nombre: j1n, cedula: j1t, email: j1e, telefono: (document.getElementById('mJ1Esp')||{value:''}).value.trim(), especialidad: '' },
+      jurado2: { nombre: j2n, cedula: j2t, email: j2e, telefono: (document.getElementById('mJ2Esp')||{value:''}).value.trim(), especialidad: '' },
       emailCoord: admin.email,
       token: coordToken()
     })});
