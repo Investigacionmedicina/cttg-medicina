@@ -53,6 +53,8 @@
   /* MODAL */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
+  /* Dentro de iframe: position absolute + top dinámico vía JS */
+  body.in-iframe .modal-bg{position:absolute;left:0;right:0;bottom:auto}
   .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
   @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -72,6 +74,21 @@
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
   @media(max-width:680px){main{padding:16px}}
+  /* Stepper modal */
+  .step{display:none}.step.on{display:block}
+  .step-ind{display:flex;gap:6px;align-items:center;margin-bottom:18px}
+  .step-dot{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.35);flex-shrink:0;transition:all .2s}
+  .step-dot.act{background:#059669;border-color:transparent;color:#fff}
+  .step-dot.done{background:rgba(5,150,105,.4);border-color:transparent;color:#6ee7b7}
+  .step-line{flex:1;height:1px;background:rgba(255,255,255,.1)}
+  .step-lbl{font-size:11px;color:rgba(255,255,255,.4)}
+  /* Detail rows inside modals */
+  .det-row{display:flex;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;gap:8px;align-items:flex-start}
+  .det-label{min-width:130px;font-size:11px;color:rgba(255,255,255,.4);flex-shrink:0;padding-top:1px}
+  .det-val{color:#e2e8f0;flex:1;word-break:break-word}
+  .det-sec{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px;font-family:'DM Mono',monospace}
+  .doc-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:5px;font-size:11px;margin:2px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);color:#6ee7b7}
+  .doc-chip.no{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#fca5a5}
 </style>
 </head>
 <body>
@@ -190,60 +207,115 @@
   </div>
 </main>
 
-<!-- MODAL ASIGNAR JURADOS -->
+<!-- MODAL VER SOLICITUD (revisión con info completa) -->
+<div class="modal-bg" id="modalRevisar">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-hdr">
+      <h3>👁 Solicitud de Sustentación</h3>
+      <button class="btn" onclick="closeModal('modalRevisar')">✕</button>
+    </div>
+    <div id="mRevisarBody"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap" id="mRevisarActions"></div>
+  </div>
+</div>
+
+<!-- MODAL ASIGNAR JURADOS (2 pasos) -->
 <div class="modal-bg" id="modalAsignar">
   <div class="modal">
     <div class="modal-hdr">
-      <h3>📅 Asignar Fecha y Jurados</h3>
+      <h3 id="mAsignarTitulo">📋 Asignar Jurados</h3>
       <button class="btn" onclick="closeModal('modalAsignar')">✕</button>
     </div>
-    <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
+    <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px"></p>
 
-    <div class="msec">Fecha y hora</div>
-<div class="mgrid" style="margin-bottom:14px">
-  <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
-  <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
-</div>
-<div class="mfg" style="margin-bottom:14px"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
-   
-    <div class="msec">Jurado 1</div>
-    <div class="hint-j" id="hintJ1"></div>
-    <div class="mfg">
-      <label>Decisión sobre el jurado sugerido</label>
-      <select id="decisionJ1" onchange="aplicarDecisionJurado(1)">
-        <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
-        <option value="reemplazar">Reemplazar por otro jurado (misma idea, otros datos)</option>
-        <option value="rechazar">Rechazar sugerencia — asignar otro (campos en blanco)</option>
-      </select>
+    <!-- Indicador de pasos -->
+    <div class="step-ind">
+      <div class="step-dot act" id="sd1">1</div>
+      <div class="step-line"></div>
+      <span class="step-lbl">Jurados</span>
+      <div class="step-line"></div>
+      <div class="step-dot" id="sd2">2</div>
+      <div class="step-line"></div>
+      <span class="step-lbl">Fecha y hora</span>
     </div>
-    <div class="mgrid" style="margin-bottom:4px">
-      <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Cédula</label><input id="mJ1Cedula" placeholder="Número ID"></div>
-    </div>
-    <div class="mfg"><label>Email *</label><input type="email" id="mJ1Email" placeholder="jurado@usc.edu.co"></div>
-    <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ1Tel" placeholder="300 000 0000"></div>
 
-    <div class="msec">Jurado 2</div>
-    <div class="hint-j" id="hintJ2"></div>
-    <div class="mfg">
-      <label>Decisión sobre el jurado sugerido</label>
-      <select id="decisionJ2" onchange="aplicarDecisionJurado(2)">
-        <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
-        <option value="reemplazar">Reemplazar por otro jurado (misma idea, otros datos)</option>
-        <option value="rechazar">Rechazar sugerencia — asignar otro (campos en blanco)</option>
-      </select>
-    </div>
-    <div class="mgrid" style="margin-bottom:4px">
-      <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Cédula</label><input id="mJ2Cedula" placeholder="Número ID"></div>
-    </div>
-    <div class="mfg"><label>Email *</label><input type="email" id="mJ2Email" placeholder="jurado@usc.edu.co"></div>
-    <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ2Tel" placeholder="300 000 0000"></div>
+    <!-- PASO 1: Jurados -->
+    <div class="step on" id="stepJurados">
+      <div class="msec">Jurado 1 · Temático</div>
+      <div class="hint-j" id="hintJ1"></div>
+      <div class="mfg">
+        <label>Seleccionar de la lista de evaluadores</label>
+        <select id="catJ1" onchange="aplicarEvaluadorLista(1)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
+          <option value="">— Escribir datos manualmente —</option>
+        </select>
+      </div>
+      <div class="mfg">
+        <label>O decisión sobre el jurado sugerido por el estudiante</label>
+        <select id="decisionJ1" onchange="aplicarDecisionJurado(1)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
+          <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
+          <option value="reemplazar">Reemplazar (usar como base, editar datos)</option>
+          <option value="rechazar">Rechazar sugerencia — asignar otro</option>
+        </select>
+      </div>
+      <div class="mgrid" style="margin-bottom:4px">
+        <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
+        <div class="mfg"><label>Cédula</label><input id="mJ1Cedula" placeholder="Número ID"></div>
+      </div>
+      <div class="mfg"><label>Email *</label><input type="email" id="mJ1Email" placeholder="jurado@usc.edu.co"></div>
+      <div class="mgrid">
+        <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ1Tel" placeholder="300 000 0000"></div>
+        <div class="mfg"><label>Especialidad</label><input id="mJ1Esp" placeholder="Ej: Medicina interna"></div>
+      </div>
 
-    <input type="hidden" id="mAsignarRow">
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
-      <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">📅 Asignar y notificar</button>
+      <div class="msec">Jurado 2 · Metodológico</div>
+      <div class="hint-j" id="hintJ2"></div>
+      <div class="mfg">
+        <label>Seleccionar de la lista de evaluadores</label>
+        <select id="catJ2" onchange="aplicarEvaluadorLista(2)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
+          <option value="">— Escribir datos manualmente —</option>
+        </select>
+      </div>
+      <div class="mfg">
+        <label>O decisión sobre el jurado sugerido por el estudiante</label>
+        <select id="decisionJ2" onchange="aplicarDecisionJurado(2)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
+          <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
+          <option value="reemplazar">Reemplazar (usar como base, editar datos)</option>
+          <option value="rechazar">Rechazar sugerencia — asignar otro</option>
+        </select>
+      </div>
+      <div class="mgrid" style="margin-bottom:4px">
+        <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
+        <div class="mfg"><label>Cédula</label><input id="mJ2Cedula" placeholder="Número ID"></div>
+      </div>
+      <div class="mfg"><label>Email *</label><input type="email" id="mJ2Email" placeholder="jurado@usc.edu.co"></div>
+      <div class="mgrid">
+        <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ2Tel" placeholder="300 000 0000"></div>
+        <div class="mfg"><label>Especialidad</label><input id="mJ2Esp" placeholder="Ej: Epidemiología"></div>
+      </div>
+
+      <input type="hidden" id="mAsignarRow">
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
+        <button class="btn-action" onclick="irAStepFecha()">Siguiente: Programar fecha →</button>
+      </div>
+    </div>
+
+    <!-- PASO 2: Fecha y hora -->
+    <div class="step" id="stepFecha">
+      <div style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#6ee7b7">
+        ✓ Jurados confirmados. Ahora programa la fecha de sustentación.
+      </div>
+      <div class="msec">Fecha y hora</div>
+      <div class="mgrid" style="margin-bottom:14px">
+        <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
+        <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
+      </div>
+      <div class="mfg"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="btn" onclick="volverAStepJurados()">← Anterior</button>
+        <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
+        <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">📅 Confirmar y notificar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -311,15 +383,60 @@ function coordToken() { return localStorage.getItem('cttg_token') || ''; }
 let admin = null;
 let fase3 = [];
 let solicitudModalActual = null;
+let catalogoEvaluadores = [];
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
   if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
+  cargarEvaluadores();
   cargar();
 })();
 
-function salir() { localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token'); window.location.href = 'index.html'; }
+function salir() {
+  localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token');
+  window.location.href = 'index.html';
+}
+
+async function cargarEvaluadores() {
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getEvaluadores', token: coordToken() }) });
+    const d = await res.json();
+    if (d.success && Array.isArray(d.evaluadores)) {
+      catalogoEvaluadores = d.evaluadores.filter(j => j.nombre || j.email);
+      poblarSelectEvaluador('catJ1');
+      poblarSelectEvaluador('catJ2');
+    }
+  } catch(e) {}
+}
+
+function poblarSelectEvaluador(selId) {
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Escribir datos manualmente —</option>';
+  catalogoEvaluadores.forEach((j, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = (j.nombre || '') + (j.email ? ' · ' + j.email : '') + (j.especialidad ? ' (' + j.especialidad + ')' : '');
+    sel.appendChild(opt);
+  });
+}
+
+function aplicarEvaluadorLista(num) {
+  const sel = document.getElementById('catJ' + num);
+  const idx = sel.value;
+  if (idx === '') return;
+  const j = catalogoEvaluadores[parseInt(idx)];
+  if (!j) return;
+  const p = 'mJ' + num;
+  document.getElementById(p + 'Nombre').value = j.nombre || '';
+  document.getElementById(p + 'Email').value = j.email || '';
+  document.getElementById(p + 'Tel').value = j.telefono || '';
+  const espEl = document.getElementById(p + 'Esp');
+  if (espEl) espEl.value = j.especialidad || '';
+  // Quitar lock de sugerencia
+  [document.getElementById(p+'Nombre'), document.getElementById(p+'Email'), document.getElementById(p+'Tel')].forEach(el => { el.readOnly = false; el.classList.remove('ro-lock'); });
+}
 
 function switchTab(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
@@ -334,6 +451,7 @@ function toast(msg, type) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
+function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 function fmtFecha(s) {
@@ -610,8 +728,7 @@ function renderTablas() {
       <td>${badgeEstadoSheet(estSh)}</td>
       <td>${truncObsHtml(r.observacionesEstado, 56)}</td>
       <td><div class="act">
-        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisar</button>
-        <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
+        <button class="btn bl" onclick="abrirRevisar(${r.rowIndex})">👁 Ver</button>
         <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>📅 Asignar</button>
       </div></td>
      </tr>`;
@@ -679,7 +796,15 @@ function abrirAsignar(rowIndex) {
   document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
   document.getElementById('mFecha').value = '';
   document.getElementById('mHora').value = '';
- document.getElementById('mLugar').value = '';
+  document.getElementById('mLugar').value = '';
+  // Reset step indicators and show step 1
+  document.getElementById('sd1').className = 'step-dot act';
+  document.getElementById('sd2').className = 'step-dot';
+  document.getElementById('stepJurados').classList.add('on');
+  document.getElementById('stepFecha').classList.remove('on');
+  // Reset evaluador dropdowns
+  document.getElementById('catJ1').value = '';
+  document.getElementById('catJ2').value = '';
   document.getElementById('decisionJ1').value = 'aceptar';
   document.getElementById('decisionJ2').value = 'aceptar';
   document.getElementById('hintJ1').textContent = hintLineaSugerido(r, 1);
@@ -688,7 +813,93 @@ function abrirAsignar(rowIndex) {
   aplicarDecisionJurado(2);
   document.getElementById('mJ1Cedula').value = r.jurado1Cedula || '';
   document.getElementById('mJ2Cedula').value = r.jurado2Cedula || '';
-  document.getElementById('modalAsignar').classList.add('open');
+  openModal('modalAsignar');
+}
+
+function irAStepFecha() {
+  const j1n = document.getElementById('mJ1Nombre').value.trim();
+  const j1e = document.getElementById('mJ1Email').value.trim();
+  const j1t = document.getElementById('mJ1Tel').value.trim();
+  const j2n = document.getElementById('mJ2Nombre').value.trim();
+  const j2e = document.getElementById('mJ2Email').value.trim();
+  const j2t = document.getElementById('mJ2Tel').value.trim();
+  if (!j1n || !j1e) { toast('Completa nombre y correo del Jurado 1', 'warn'); return; }
+  if (!j1t) { toast('El teléfono del Jurado 1 es obligatorio', 'warn'); return; }
+  if (!j2n || !j2e) { toast('Completa nombre y correo del Jurado 2', 'warn'); return; }
+  if (!j2t) { toast('El teléfono del Jurado 2 es obligatorio', 'warn'); return; }
+  document.getElementById('sd1').className = 'step-dot done';
+  document.getElementById('sd2').className = 'step-dot act';
+  document.getElementById('stepJurados').classList.remove('on');
+  document.getElementById('stepFecha').classList.add('on');
+}
+
+function volverAStepJurados() {
+  document.getElementById('sd1').className = 'step-dot act';
+  document.getElementById('sd2').className = 'step-dot';
+  document.getElementById('stepFecha').classList.remove('on');
+  document.getElementById('stepJurados').classList.add('on');
+}
+
+function abrirRevisar(rowIndex) {
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  solicitudModalActual = r;
+  const estSh = estadoSheetRaw(r);
+  const estaDevuelta = esEstadoDevueltaSheet(estSh);
+
+  function docChip(val, label) {
+    const ok = String(val||'').trim().toUpperCase() === 'SÍ' || String(val||'').trim().toUpperCase() === 'SI';
+    return `<span class="doc-chip${ok?'':' no'}">${ok?'✓':'✗'} ${label}</span>`;
+  }
+  function jRow(num) {
+    const n = r['jurado'+num+'Nombre'], e = r['jurado'+num+'Email'];
+    const t = fmtTelMostrar(r['jurado'+num+'Telefono']);
+    const esp = r['jurado'+num+'Especialidad'], ac = r['jurado'+num+'AceptaPropuesta'];
+    if (!n && !e) return '<span style="color:rgba(255,255,255,.3)">Sin sugerencia</span>';
+    return `<div>${esc(n||'—')}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4)">${esc(e||'')}</div>
+      ${t!=='—'?`<div style="font-size:11px;color:rgba(255,255,255,.4)">Tel: ${esc(t)}</div>`:''}
+      ${esp?`<div style="font-size:11px;color:rgba(255,255,255,.4)">${esc(esp)}</div>`:''}
+      ${ac?`<div style="font-size:11px;color:rgba(255,255,255,.35)">Acepta: ${esc(ac)}</div>`:''}`;
+  }
+  const turnitin = r.pctTurnitin ? `<span style="font-weight:700;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${esc(String(r.pctTurnitin))}%</span>` : '<span style="color:#fca5a5;font-weight:700">⚠ No registrado</span>';
+
+  document.getElementById('mRevisarBody').innerHTML = `
+    <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;margin-bottom:12px">
+      <div class="det-row"><span class="det-label">Radicación</span><span class="det-val"><strong style="color:#34d399">${esc(r.numero)}</strong></span></div>
+      <div class="det-row"><span class="det-label">Estudiante</span><span class="det-val"><div>${esc(r.nombreEstudiante||'—')}</div><div style="font-size:11px;color:rgba(255,255,255,.4)">${esc(r.emailEstudiante||'')}</div></span></div>
+      <div class="det-row"><span class="det-label">Semestre</span><span class="det-val">${esc(String(r.semestre||'—'))}${String(r.alertaS12||'').trim()==='SÍ'?' <span class="alert-s12">⚠️ S12</span>':''}</span></div>
+      <div class="det-row"><span class="det-label">F. Solicitud</span><span class="det-val">${fmtFecha(r.fechaCarga)}</span></div>
+      <div class="det-row"><span class="det-label">% Turnitin</span><span class="det-val">${turnitin}</span></div>
+    </div>
+    <div class="det-sec">Documentos cargados</div>
+    <div style="margin-bottom:12px">
+      ${docChip(r.anexoA7,'Anexo A7')}${docChip(r.articulo,'Artículo')}${docChip(r.guiaAutores,'Guía Autores')}${docChip(r.avalCCEB,'Aval CCEB')}${docChip(r.turnitinDoc,'Turnitin PDF')}
+    </div>
+    <div class="det-sec">Jurado 1 sugerido · Temático</div>
+    <div style="margin-bottom:10px;font-size:13px">${jRow(1)}</div>
+    <div class="det-sec">Jurado 2 sugerido · Metodológico</div>
+    <div style="margin-bottom:10px;font-size:13px">${jRow(2)}</div>
+    <div class="det-sec">Estado actual</div>
+    <div style="margin-bottom:4px">${badgeEstadoSheet(estSh)}</div>
+    ${r.observacionesEstado?`<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">${esc(r.observacionesEstado)}</div>`:''}`;
+
+  document.getElementById('mRevisarActions').innerHTML = `
+    <button class="btn" onclick="closeModal('modalRevisar')">Cerrar</button>
+    <button class="btn rd" onclick="closeModal('modalRevisar');abrirDevolver(${rowIndex})">↩ Devolver</button>
+    ${!estaDevuelta?`<button class="btn bl" onclick="closeModal('modalRevisar');confirmarRevisada(${rowIndex})">✓ Marcar Revisada</button>`:''}
+    <button class="btn gr" onclick="closeModal('modalRevisar');abrirAsignar(${rowIndex})">📅 Asignar Jurados</button>`;
+
+  openModal('modalRevisar');
+}
+
+function confirmarRevisada(rowIndex) {
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  if (!r.pctTurnitin || String(r.pctTurnitin).trim() === '') {
+    toast('Esta solicitud no tiene % Turnitin registrado', 'warn'); return;
+  }
+  marcarRevisada(rowIndex);
 }
 
 function abrirDevolver(rowIndex) {
@@ -697,7 +908,7 @@ function abrirDevolver(rowIndex) {
   document.getElementById('mDevolverRow').value = rowIndex;
   document.getElementById('mDevolverInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
   document.getElementById('mMotivoDevolucion').value = r.motivoDevolucion || r.observaciones || '';
-  document.getElementById('modalDevolver').classList.add('open');
+  openModal('modalDevolver');
 }
 
 function abrirResultado(rowIndex, numero) {
@@ -709,7 +920,7 @@ function abrirResultado(rowIndex, numero) {
   document.getElementById('mProducto').value = 'NO';
   document.getElementById('mDesc').value = '';
   document.getElementById('descDiv').style.display = 'none';
-  document.getElementById('modalResultado').classList.add('open');
+  openModal('modalResultado');
 }
 
 async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
@@ -757,24 +968,19 @@ async function devolverSolicitud() {
 
 async function asignarJurados() {
   const rowIndex = parseInt(document.getElementById('mAsignarRow').value);
-  const fecha    = document.getElementById('mFecha').value;
-  const hora     = document.getElementById('mHora').value;
- const lugar = document.getElementById('mLugar').value.trim(); 
- const j1n      = document.getElementById('mJ1Nombre').value.trim();
-  const j1e      = document.getElementById('mJ1Email').value.trim();
-  const j2n      = document.getElementById('mJ2Nombre').value.trim();
-  const j2e      = document.getElementById('mJ2Email').value.trim();
-
-  const j1t = document.getElementById('mJ1Tel').value.trim();
-  const j2t = document.getElementById('mJ2Tel').value.trim();
+  const fecha  = document.getElementById('mFecha').value;
+  const hora   = document.getElementById('mHora').value;
+  const lugar  = document.getElementById('mLugar').value.trim();
+  const j1n    = document.getElementById('mJ1Nombre').value.trim();
+  const j1e    = document.getElementById('mJ1Email').value.trim();
+  const j1t    = document.getElementById('mJ1Tel').value.trim();
+  const j2n    = document.getElementById('mJ2Nombre').value.trim();
+  const j2e    = document.getElementById('mJ2Email').value.trim();
+  const j2t    = document.getElementById('mJ2Tel').value.trim();
 
   if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
   if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
   if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
-  if (!j1n || !j1e) { toast('Completa nombre y correo del Jurado 1', 'warn'); return; }
-  if (!j1t) { toast('El teléfono del Jurado 1 es obligatorio', 'warn'); return; }
-  if (!j2n || !j2e) { toast('Completa nombre y correo del Jurado 2', 'warn'); return; }
-  if (!j2t) { toast('El teléfono del Jurado 2 es obligatorio', 'warn'); return; }
 
   const btn = document.getElementById('btnAsignar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Asignando...';
@@ -784,9 +990,9 @@ async function asignarJurados() {
       rowIndex,
       fechaSustentacion: fecha,
       horaSustentacion: hora,
-     lugar: lugar,
-      jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e, telefono: j1t },
-      jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e, telefono: j2t },
+      lugar,
+      jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e, telefono: j1t, especialidad: (document.getElementById('mJ1Esp')||{value:''}).value.trim() },
+      jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e, telefono: j2t, especialidad: (document.getElementById('mJ2Esp')||{value:''}).value.trim() },
       emailCoord: admin.email,
       token: coordToken()
     })});
@@ -797,7 +1003,7 @@ async function asignarJurados() {
       toast('Jurados asignados. Notificaciones enviadas ✓', 'ok');
     } else throw new Error(d.error);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
-  finally { btn.disabled = false; btn.innerHTML = '📅 Asignar y notificar'; }
+  finally { btn.disabled = false; btn.innerHTML = '📅 Confirmar y notificar'; }
 }
 
 async function guardarResultado() {
@@ -834,7 +1040,7 @@ async function guardarResultado() {
   finally { btn.disabled = false; btn.innerHTML = '✅ Guardar y cerrar'; }
 }
 
-['modalAsignar','modalDevolver','modalResultado'].forEach(id => {
+['modalRevisar','modalAsignar','modalDevolver','modalResultado'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => { if (e.target === document.getElementById(id)) closeModal(id); });
 });
 </script>
