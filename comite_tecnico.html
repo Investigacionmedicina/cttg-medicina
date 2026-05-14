@@ -78,6 +78,9 @@
   .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
   .btn:hover{background:rgba(255,255,255,.07);color:#fff}
   .btn.gr{color:#34d399;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
+  body.in-iframe header{display:none!important}
+  body.in-iframe .back{display:none!important}
+  body.in-iframe main{padding-top:12px}
 </style>
 </head>
 <body>
@@ -252,6 +255,21 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 let user = null;
+
+// Detectar si está dentro de un iframe del dashboard de coordinación
+(function() {
+  if (window.self === window.top) return;
+  document.body.classList.add('in-iframe');
+  function enviarAltura() {
+    var h = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+    window.parent.postMessage({ cttgIframe: true, height: h }, '*');
+  }
+  if (window.ResizeObserver) {
+    new ResizeObserver(enviarAltura).observe(document.body);
+  }
+  setInterval(enviarAltura, 800);
+  enviarAltura();
+})();
 let ultimoNumeroActa = 17; // Tú nos dirás si cambiar
 
 document.addEventListener('DOMContentLoaded', function() {

@@ -452,13 +452,13 @@
  <!-- PANEL COMITÉ TÉCNICO -->
   <div class="panel" id="pan-comite">
     <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
-    <iframe src="comite_tecnico.html" style="width:100%;height:800px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
+    <iframe id="iframeComite" src="comite_tecnico.html" style="width:100%;height:900px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
   </div>
 
   <!-- PANEL SUSTENTACIÓN -->
   <div class="panel" id="pan-fase3">
     <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">🎓 Sustentación</h2>
-    <iframe src="coordinadora_fase3.html" style="width:100%;height:900px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
+    <iframe id="iframeFase3" src="coordinadora_fase3.html" style="width:100%;height:900px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
   </div>
 
   <!-- PANEL FILTROS DINÁMICOS -->
@@ -2561,6 +2561,17 @@ function exportarFiltrosCSV() {
   a.click();
   toast('CSV exportado ✓', 'ok');
 }
+
+// Auto-resize iframes embebidos (comité, fase3): ajusta altura según contenido
+window.addEventListener('message', function(e) {
+  if (!e.data || e.data.cttgIframe !== true) return;
+  ['iframeComite','iframeFase3'].forEach(function(id) {
+    var f = document.getElementById(id);
+    if (f && f.contentWindow === e.source) {
+      f.style.height = (e.data.height + 24) + 'px';
+    }
+  });
+});
 </script>
 </body>
 </html>

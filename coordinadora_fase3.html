@@ -72,6 +72,10 @@
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
   @media(max-width:680px){main{padding:16px}}
+  /* Cuando está embebido dentro del dashboard de coordinación */
+  body.in-iframe header{display:none!important}
+  body.in-iframe .back{display:none!important}
+  body.in-iframe main{padding-top:12px}
 </style>
 </head>
 <body>
@@ -307,17 +311,39 @@
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
 let admin = null;
+
+// Detectar si está dentro de un iframe del dashboard de coordinación
+(function() {
+  if (window.self === window.top) return;
+  document.body.classList.add('in-iframe');
+  function enviarAltura() {
+    var h = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+    window.parent.postMessage({ cttgIframe: true, height: h }, '*');
+  }
+  if (window.ResizeObserver) {
+    new ResizeObserver(enviarAltura).observe(document.body);
+  }
+  setInterval(enviarAltura, 800);
+  enviarAltura();
+})();
 let fase3 = [];
 let solicitudModalActual = null;
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  if (!admin || admin.rol !== 'coordinadora') {
+    const target = window.self !== window.top ? window.top : window;
+    target.location.href = 'coordinadora_login.html'; return;
+  }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
   cargar();
 })();
 
-function salir() { localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token'); window.location.href = 'index.html'; }
+function salir() {
+  localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token');
+  const target = window.self !== window.top ? window.top : window;
+  target.location.href = 'index.html';
+}
 
 function switchTab(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
