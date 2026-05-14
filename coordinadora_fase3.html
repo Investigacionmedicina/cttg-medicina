@@ -53,6 +53,8 @@
   /* MODAL */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
+  /* Dentro de iframe: position absolute + top dinámico vía JS */
+  body.in-iframe .modal-bg{position:absolute;left:0;right:0;bottom:auto}
   .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
   @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -358,7 +360,27 @@ function toast(msg, type) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (window.self !== window.top) {
+    try {
+      const rect = window.frameElement.getBoundingClientRect();
+      const parentH = window.parent.innerHeight;
+      // Offset from iframe top to where the parent viewport currently starts
+      const top = Math.max(0, -rect.top);
+      el.style.top = top + 'px';
+      el.style.height = parentH + 'px';
+    } catch(e) {}
+  }
+  el.classList.add('open');
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('open');
+  el.style.top = '';
+  el.style.height = '';
+}
 
 function fmtFecha(s) {
   if (!s || s === '') return '—';
@@ -689,7 +711,7 @@ function abrirAsignar(rowIndex) {
   aplicarDecisionJurado(2);
   document.getElementById('mJ1Cedula').value = r.jurado1Cedula || '';
   document.getElementById('mJ2Cedula').value = r.jurado2Cedula || '';
-  document.getElementById('modalAsignar').classList.add('open');
+  openModal('modalAsignar');
 }
 
 function abrirDevolver(rowIndex) {
@@ -698,7 +720,7 @@ function abrirDevolver(rowIndex) {
   document.getElementById('mDevolverRow').value = rowIndex;
   document.getElementById('mDevolverInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
   document.getElementById('mMotivoDevolucion').value = r.motivoDevolucion || r.observaciones || '';
-  document.getElementById('modalDevolver').classList.add('open');
+  openModal('modalDevolver');
 }
 
 function abrirResultado(rowIndex, numero) {
@@ -710,7 +732,7 @@ function abrirResultado(rowIndex, numero) {
   document.getElementById('mProducto').value = 'NO';
   document.getElementById('mDesc').value = '';
   document.getElementById('descDiv').style.display = 'none';
-  document.getElementById('modalResultado').classList.add('open');
+  openModal('modalResultado');
 }
 
 async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
