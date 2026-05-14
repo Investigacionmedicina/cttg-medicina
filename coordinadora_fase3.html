@@ -398,10 +398,10 @@ function salir() {
 
 async function cargarEvaluadores() {
   try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getJurados', token: coordToken() }) });
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getEvaluadores', token: coordToken() }) });
     const d = await res.json();
-    if (d.success && Array.isArray(d.jurados)) {
-      catalogoEvaluadores = d.jurados.filter(j => j.nombre || j.email);
+    if (d.success && Array.isArray(d.evaluadores)) {
+      catalogoEvaluadores = d.evaluadores.filter(j => j.nombre || j.email);
       poblarSelectEvaluador('catJ1');
       poblarSelectEvaluador('catJ2');
     }
