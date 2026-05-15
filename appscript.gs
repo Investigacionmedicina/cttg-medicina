@@ -1850,17 +1850,38 @@ function listaFase3Completa() {
   return dedupeFase3PorRadicacion(listaFase3TodasLasFilasSinDedupe());
 }
 
+/**
+ * El estudiante puede radicar varias filas de Fase 3 para el mismo número; la vista coordinadora sigue deduplicando,
+ * pero el estudiante necesita todas las filas para ver devoluciones de intentos anteriores.
+ */
+function ordenarFase3EstudianteMasRecientePrimero(fase3Est) {
+  return fase3Est.slice().sort(function(a, b) {
+    var da = new Date(a.fechaCarga || "");
+    var db = new Date(b.fechaCarga || "");
+    var va = !isNaN(da.getTime());
+    var vb = !isNaN(db.getTime());
+    if (vb && !va) return 1;
+    if (va && !vb) return -1;
+    if (va && vb && da.getTime() !== db.getTime()) return db.getTime() - da.getTime();
+    return (parseInt(b.rowIndex, 10) || 0) - (parseInt(a.rowIndex, 10) || 0);
+  });
+}
+
 function obtenerFase3(sesion, opciones) {
   if (!sesion) return { success: false, error: "Sesión requerida" };
   opciones = opciones || {};
   var sinDedupe = opciones.sinDedupe === true && sesion.rol === "coordinadora";
-  var fase3 = sinDedupe ? listaFase3TodasLasFilasSinDedupe() : listaFase3Completa();
+  var fase3;
   if (sesion.rol === "estudiante") {
     var em = String(sesion.email || "").trim().toLowerCase();
-    fase3 = fase3.filter(function(s) {
-      return String(s.emailEstudiante || "").trim().toLowerCase() === em;
-    });
-  } else if (sesion.rol !== "coordinadora") {
+    fase3 = ordenarFase3EstudianteMasRecientePrimero(
+      listaFase3TodasLasFilasSinDedupe().filter(function(s) {
+        return String(s.emailEstudiante || "").trim().toLowerCase() === em;
+      })
+    );
+  } else if (sesion.rol === "coordinadora") {
+    fase3 = sinDedupe ? listaFase3TodasLasFilasSinDedupe() : listaFase3Completa();
+  } else {
     return { success: false, error: "No autorizado" };
   }
   var out = { success: true, fase3: fase3 };

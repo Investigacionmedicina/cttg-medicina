@@ -825,7 +825,27 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
     }
 
     if (dFase3.success && !esDipl) {
-      const miSolicitud = (dFase3.fase3 || []).find(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
+      const emailLo = user.email.toLowerCase();
+      const numRadF3 = String(radicaciones[0] && radicaciones[0].numero || '').trim();
+      const misF3All = (dFase3.fase3 || []).filter(s => s.emailEstudiante && s.emailEstudiante.toLowerCase() === emailLo);
+      const misF3PorRad = numRadF3 ? misF3All.filter(s => String(s.numero || '').trim() === numRadF3) : misF3All;
+      const candidatas = (misF3PorRad.length ? misF3PorRad : misF3All).slice();
+      candidatas.sort((a, b) => (parseInt(b.rowIndex, 10) || 0) - (parseInt(a.rowIndex, 10) || 0));
+      const miSolicitud = candidatas[0];
+      function esEstadoDevolucionF3Dash(est) {
+        const e = String(est || '').toLowerCase();
+        return e.includes('devuelta') || e.includes('devolver') || e.includes('devolución') || e.includes('devolucion');
+      }
+      const histFuente = numRadF3 ? misF3All.filter(s => String(s.numero || '').trim() === numRadF3) : misF3All;
+      const histDev = histFuente
+        .filter(s => esEstadoDevolucionF3Dash(s.estadoSolicitud || s.estado))
+        .map(s => ({
+          fecha: s.fechaCarga,
+          motivo: String(s.observacionesEstado || s.motivoDevolucion || '').trim(),
+          rowIndex: parseInt(s.rowIndex, 10) || 0
+        }))
+        .filter(h => h.motivo)
+        .sort((a, b) => a.rowIndex - b.rowIndex);
       const ignoraBannerFase3 =
         estadoActual === 'Devuelto por Comité Técnico' || estadoActual === 'Devuelto';
       const panel = document.getElementById('panelFase3Estado');
@@ -838,11 +858,21 @@ fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', toke
         document.getElementById('f3Turnitin').textContent = (miSolicitud.pctTurnitin || '—') + '%';
         document.getElementById('f3Fecha').textContent = miSolicitud.fechaSustentacion ? fmtFecha(miSolicitud.fechaSustentacion) : '—';
         document.getElementById('f3Hora').textContent = miSolicitud.horaSustentacion || '—';
-        const obsF3 = miSolicitud.motivoDevolucion || miSolicitud.observacionesEstado || (!miSolicitud.fechaSustentacion ? miSolicitud.observaciones : '');
         const obsBox = document.getElementById('f3Observaciones');
-        if (obsF3) {
+        let obsInner = '';
+        if (histDev.length) {
+          obsInner = '<strong>Historial de devoluciones (sustentación):</strong><ol style="margin:8px 0 0 18px;padding:0;line-height:1.45">' +
+            histDev.map(h => '<li style="margin-bottom:8px"><span style="font-size:11px;color:rgba(255,255,255,.38)">' + esc(fmtFecha(h.fecha)) + '</span><br>' + esc(h.motivo) + '</li>').join('') + '</ol>';
+          if (!esEstadoDevolucionF3Dash(miSolicitud.estadoSolicitud || miSolicitud.estado) && String(miSolicitud.observacionesEstado || '').trim()) {
+            obsInner += '<div style="margin-top:12px;font-size:12px"><strong>Otras observaciones:</strong><br>' + esc(String(miSolicitud.observacionesEstado || '').trim()) + '</div>';
+          }
+        } else {
+          const obsF3 = miSolicitud.motivoDevolucion || miSolicitud.observacionesEstado || (!miSolicitud.fechaSustentacion ? miSolicitud.observaciones : '');
+          if (obsF3) obsInner = '<strong>Observaciones:</strong><br>' + esc(obsF3);
+        }
+        if (obsInner) {
           obsBox.style.display = 'block';
-          obsBox.innerHTML = `<strong>Observaciones:</strong><br>${esc(obsF3)}`;
+          obsBox.innerHTML = obsInner;
         } else {
           obsBox.style.display = 'none';
           obsBox.innerHTML = '';

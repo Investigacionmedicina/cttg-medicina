@@ -168,6 +168,12 @@
     <h3><span class="dot"></span>Solicitar Sustentación</h3>
     <p>Carga todos los documentos requeridos en el formulario y completa los datos de tu sustentación.</p>
 
+    <div id="f3BannerHistorialDevoluciones" class="form-card" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.34);border-radius:12px;padding:16px;margin-bottom:16px">
+      <h3 style="font-family:'DM Serif Display',serif;font-size:15px;color:#fecaca;margin-bottom:6px;display:flex;align-items:center;gap:8px"><span style="font-size:18px">↩</span> Devoluciones anteriores</h3>
+      <p style="font-size:12px;color:rgba(255,255,255,.58);margin-bottom:6px;line-height:1.55">Estos fueron los motivos que registró la coordinación al devolver <strong>solicitudes previas</strong> de sustentación (puede haber más de una). Revísalos antes de reenviar.</p>
+      <div id="f3HistorialDevolucionesList"></div>
+    </div>
+
     <div class="pasos">
       <div class="paso" id="paso1">
         <div class="paso-num">1</div>
@@ -338,6 +344,7 @@ let catalogoJuradosEst = [];
           if (btnSol) { btnSol.disabled = true; btnSol.style.opacity = '0.55'; btnSol.style.cursor = 'not-allowed'; }
         }
       }
+      if (d.success) pintarBannerHistorialDevoluciones();
     })
     .catch(e => { console.error('getFase1ByEmail', e); toast('No se pudo verificar tu radicación. Recarga la página.', 'err'); });
 })();
@@ -354,6 +361,55 @@ async function salir() {
 function toast(msg, type) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(() => t.classList.remove('show'), 2800); }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function esEstadoDevolucionF3(est) {
+  const e = String(est || '').toLowerCase();
+  return e.includes('devuelta') || e.includes('devolver') || e.includes('devolución') || e.includes('devolucion');
+}
+
+function textoMotivoDevolucionF3(s) {
+  if (!esEstadoDevolucionF3(s.estadoSolicitud || s.estado || '')) return '';
+  return String(s.observacionesEstado || s.motivoDevolucion || '').trim();
+}
+
+/** Devoluciones con motivo, orden cronológico por fila en hoja. */
+function devolucionesHistorialF3(lista, numeroRad) {
+  const nr = String(numeroRad || '').trim();
+  const rows = (lista || []).filter(s => !nr || String(s.numero || '').trim() === nr);
+  const out = [];
+  rows.forEach(s => {
+    const m = textoMotivoDevolucionF3(s);
+    if (m) out.push({ fechaCarga: s.fechaCarga, motivo: m, rowIndex: parseInt(s.rowIndex, 10) || 0 });
+  });
+  out.sort((a, b) => a.rowIndex - b.rowIndex);
+  return out;
+}
+
+function htmlListaHistorialDevoluciones(items) {
+  if (!items.length) return '';
+  return '<ol style="margin:10px 0 0 18px;padding:0;color:rgba(255,255,255,.9);font-size:13px;line-height:1.55">' +
+    items.map(it => '<li style="margin-bottom:12px"><span style="color:rgba(255,255,255,.42);font-size:11px">Solicitud cargada el ' + esc(formatearFecha(it.fechaCarga)) + '</span><br>' + esc(it.motivo) + '</li>').join('') +
+    '</ol>';
+}
+
+function pintarBannerHistorialDevoluciones() {
+  const banner = document.getElementById('f3BannerHistorialDevoluciones');
+  const listEl = document.getElementById('f3HistorialDevolucionesList');
+  if (!banner || !listEl) return;
+  if (!String(numeroRadicacionGlobal || '').trim()) {
+    banner.style.display = 'none';
+    listEl.innerHTML = '';
+    return;
+  }
+  const items = devolucionesHistorialF3(window._solicitudes, numeroRadicacionGlobal);
+  if (!items.length) {
+    banner.style.display = 'none';
+    listEl.innerHTML = '';
+    return;
+  }
+  listEl.innerHTML = htmlListaHistorialDevoluciones(items);
+  banner.style.display = 'block';
+}
 
 function emailValido(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
@@ -644,6 +700,7 @@ async function cargarMisSolicitudes() {
     document.getElementById('countPendientes').textContent = misSolicitudes.filter(s => !s.nota).length;
     
     window._solicitudes = misSolicitudes;
+    pintarBannerHistorialDevoluciones();
     tbody.innerHTML = misSolicitudes.map((s, idx) => {
       const estado = estadoVisualSolicitud(s);
       return `<tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td><td><div class="num-rad">${s.numero}</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td><td><span class="badge ${estado.badge}">${estado.icono} ${estado.texto}</span></td><td><button class="btn-det" onclick="verDetalle(window._solicitudes[${idx}])">👁 Ver</button></td></tr>`;
@@ -664,7 +721,19 @@ async function cargarMisSolicitudes() {
 function verDetalle(s) {
   const estadoBase = estadoVisualSolicitud(s);
   const estado = s.nota ? (parseFloat(s.nota) >= 3 ? 'Sustentación Aprobada' : 'Sustentación Reprobada') : estadoBase.texto;
-  const observacionSolicitud = s.motivoDevolucion || s.observacionesEstado || (!s.fechaSustentacion ? s.observaciones : '');
+  const histDev = devolucionesHistorialF3(window._solicitudes, s.numero);
+  let observacionSolicitud = '';
+  if (!histDev.length) {
+    observacionSolicitud = s.motivoDevolucion || s.observacionesEstado || (!s.fechaSustentacion ? s.observaciones : '');
+  } else {
+    const extra = (!esEstadoDevolucionF3(s.estadoSolicitud || s.estado || '') && String(s.observacionesEstado || '').trim())
+      ? String(s.observacionesEstado || '').trim()
+      : (!s.fechaSustentacion ? String(s.observaciones || '').trim() : '');
+    observacionSolicitud = extra;
+  }
+  const bloqueHistorialDev = histDev.length
+    ? `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px;color:#fecaca"><strong>Historial de devoluciones (${histDev.length})</strong>${htmlListaHistorialDevoluciones(histDev)}</div>`
+    : '';
   const lugar = s.lugar || (s.fechaSustentacion ? s.observaciones : '');
   const html = `
     <div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.remove()">
@@ -682,7 +751,8 @@ function verDetalle(s) {
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><span style="color:rgba(255,255,255,.4)">Jurado 2 · Metodológico</span><span style="color:#fff;text-align:right">${esc(s.jurado2Nombre || '—')}${s.jurado2Especialidad ? '<br><span style="font-size:11px;color:rgba(255,255,255,.4)">' + esc(s.jurado2Especialidad) + '</span>' : ''}${(s.jurado2Telefono || s.jurado2Cedula) ? '<br><span style="font-size:11px;color:rgba(255,255,255,.35)">' + esc(s.jurado2Telefono || s.jurado2Cedula || '') + '</span>' : ''}${s.jurado2AceptaPropuesta ? '<br><span style="font-size:10px;color:rgba(255,255,255,.3)">Aceptó propuesta: ' + esc(s.jurado2AceptaPropuesta) + '</span>' : ''}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">% Turnitin</span><span style="color:#fff">${s.pctTurnitin || '—'}%</span></div>
           ${s.nota ? `<div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Nota</span><span style="color:#6ee7b7;font-weight:700">${s.nota}</span></div>` : ''}
-          ${observacionSolicitud ? `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px;color:#fecaca"><strong>Observaciones:</strong><br>${esc(observacionSolicitud)}</div>` : ''}
+          ${bloqueHistorialDev}
+          ${observacionSolicitud ? `<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#e2e8f0"><strong>Observaciones:</strong><br>${esc(observacionSolicitud)}</div>` : ''}
         </div>
       </div>
     </div>`;
