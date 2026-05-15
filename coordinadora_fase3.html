@@ -239,9 +239,9 @@
         </select>
       </div>
       <div id="catJ1Wrap" class="mfg" style="display:none">
-        <label>Seleccionar de la lista de evaluadores</label>
-        <select id="catJ1" onchange="aplicarEvaluadorLista(1)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
-          <option value="">— Seleccionar evaluador —</option>
+        <label>Seleccionar de la lista de jurados (hoja «Jurados»)</label>
+        <select id="catJ1" onchange="aplicarJuradoCatalogo(1)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
+          <option value="">— Seleccionar jurado —</option>
         </select>
       </div>
       <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
@@ -262,9 +262,9 @@
         </select>
       </div>
       <div id="catJ2Wrap" class="mfg" style="display:none">
-        <label>Seleccionar de la lista de evaluadores</label>
-        <select id="catJ2" onchange="aplicarEvaluadorLista(2)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
-          <option value="">— Seleccionar evaluador —</option>
+        <label>Seleccionar de la lista de jurados (hoja «Jurados»)</label>
+        <select id="catJ2" onchange="aplicarJuradoCatalogo(2)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
+          <option value="">— Seleccionar jurado —</option>
         </select>
       </div>
       <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
@@ -369,13 +369,13 @@ function coordToken() { return localStorage.getItem('cttg_token') || ''; }
 let admin = null;
 let fase3 = [];
 let solicitudModalActual = null;
-let catalogoEvaluadores = [];
+let catalogoJurados = [];
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
   if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
-  cargarEvaluadores();
+  cargarCatalogoJurados();
   cargar();
 })();
 
@@ -384,23 +384,28 @@ function salir() {
   window.location.href = 'index.html';
 }
 
-async function cargarEvaluadores() {
+async function cargarCatalogoJurados() {
   try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getEvaluadores', token: coordToken() }) });
-    const d = await res.json();
-    if (d.success && Array.isArray(d.evaluadores)) {
-      catalogoEvaluadores = d.evaluadores.filter(j => j.nombre || j.email);
-      poblarSelectEvaluador('catJ1');
-      poblarSelectEvaluador('catJ2');
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getJurados', token: coordToken() }) });
+    const raw = await res.text();
+    let d;
+    try { d = JSON.parse(raw); } catch (parseErr) {
+      console.error('getJurados no JSON:', raw.slice(0, 400));
+      return;
     }
-  } catch(e) {}
+    if (d.success && Array.isArray(d.jurados)) {
+      catalogoJurados = d.jurados.filter(j => j.nombre || j.email);
+      poblarSelectJuradoCatalogo('catJ1');
+      poblarSelectJuradoCatalogo('catJ2');
+    }
+  } catch(e) { console.error('cargarCatalogoJurados', e); }
 }
 
-function poblarSelectEvaluador(selId) {
+function poblarSelectJuradoCatalogo(selId) {
   const sel = document.getElementById(selId);
   if (!sel) return;
   sel.innerHTML = '<option value="">— Escribir datos manualmente —</option>';
-  catalogoEvaluadores.forEach((j, i) => {
+  catalogoJurados.forEach((j, i) => {
     const opt = document.createElement('option');
     opt.value = i;
     opt.textContent = (j.nombre || '') + (j.email ? ' · ' + j.email : '') + (j.especialidad ? ' (' + j.especialidad + ')' : '');
@@ -408,11 +413,11 @@ function poblarSelectEvaluador(selId) {
   });
 }
 
-function aplicarEvaluadorLista(num) {
+function aplicarJuradoCatalogo(num) {
   const sel = document.getElementById('catJ' + num);
   const idx = sel.value;
   if (idx === '') return;
-  const j = catalogoEvaluadores[parseInt(idx)];
+  const j = catalogoJurados[parseInt(idx)];
   if (!j) return;
   const p = 'mJ' + num;
   document.getElementById(p + 'Nombre').value = j.nombre || '';
@@ -818,7 +823,7 @@ function abrirAsignar(rowIndex) {
   solicitudModalActual = r;
   document.getElementById('mAsignarRow').value = rowIndex;
   document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
-  // Reset evaluador dropdowns
+  // Reset catálogo jurados (hoja Jurados)
   document.getElementById('catJ1').value = '';
   document.getElementById('catJ2').value = '';
   document.getElementById('decisionJ1').value = 'aceptar';
