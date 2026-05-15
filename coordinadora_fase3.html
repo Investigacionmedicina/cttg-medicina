@@ -585,10 +585,12 @@ function aplicarDecisionJurado(i) {
   const sinSugerencia = !String(sugNombre).trim() && !String(sugEmail).trim();
   const lock = decision === 'aceptar' && !sinSugerencia;
 
-  [nombreEl, emailEl, telEl].forEach(el => {
+  [nombreEl, emailEl].forEach(el => {
     el.readOnly = lock;
     el.classList.toggle('ro-lock', lock);
   });
+  telEl.readOnly = false;
+  telEl.classList.remove('ro-lock');
   if (espEl) { espEl.readOnly = lock; espEl.classList.toggle('ro-lock', lock); }
 
   if (decision === 'aceptar') {
