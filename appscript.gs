@@ -1624,7 +1624,7 @@ function listaFase3TodasLasFilasSinDedupe() {
   var mColB = metricasColumnaRadicacionFase3(sheet);
   var lrEff = Math.max(lrSheet, lrDr, mColB.ultimaFilaNumeroEnColumnaB, 2);
   var lastRow = Math.min(Math.max(lrEff + 45, lrEff), 15000, sheet.getMaxRows());
-  var numCols = Math.min(Math.max(lcSheet, lcDr, 32), 64, maxColsSheet);
+  var numCols = Math.min(Math.max(lcSheet, lcDr, 34), 64, maxColsSheet);
   var data = lastRow < 2 ? [] : sheet.getRange(1, 1, lastRow, numCols).getDisplayValues();
   var nombreMap = {};
   var sheetF1 = getSheet("Fase1");
@@ -1685,13 +1685,14 @@ function listaFase3TodasLasFilasSinDedupe() {
       pctTurnitin:       String(r[11] || ""),
       fechaCarga:        formatearFecha(r[12]),
       jurado1Nombre:     String(r[13] || ""),
-     jurado1Telefono:   String(r[14] || ""),   // col O = teléfono jurado 1
+      // Tel: AE/AF (índ. 30/31) = mismo layout que crearFase3 / updateFase3Asignacion. O/R = cédulas → fallback por hojas viejas.
+      jurado1Telefono:   String(r[30] || r[14] || "").trim(),
       jurado1Email:      String(r[15] || ""),
       jurado2Nombre:     String(r[16] || ""),
-      jurado2Telefono:   String(r[17] || ""),   // col R = teléfono jurado 2
+      jurado2Telefono:   String(r[31] || r[17] || "").trim(),
       jurado2Email:      String(r[18] || ""),
-      jurado1Especialidad: String(r[30] || ""), // col AE = especialidad jurado 1
-      jurado2Especialidad: String(r[31] || ""), // col AF = especialidad jurado 2
+      jurado1Especialidad: String(r[32] || "").trim(),
+      jurado2Especialidad: String(r[33] || "").trim(),
       nombres:           String(r[19] || ""),
       fechaAsignada:     formatearFecha(r[20]),
       numeroActa:        String(r[21] || ""),

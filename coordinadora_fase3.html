@@ -585,11 +585,18 @@ function aplicarDecisionJurado(i) {
   const sinSugerencia = !String(sugNombre).trim() && !String(sugEmail).trim();
   const lock = decision === 'aceptar' && !sinSugerencia;
 
-  [nombreEl, emailEl, telEl].forEach(el => {
+  [nombreEl, emailEl].forEach(el => {
     el.readOnly = lock;
     el.classList.toggle('ro-lock', lock);
   });
-  if (espEl) { espEl.readOnly = lock; espEl.classList.toggle('ro-lock', lock); }
+  // El teléfono a veces no viene del Sheet (columnas); no bloquear edición aunque sea «Aceptar».
+  telEl.readOnly = false;
+  telEl.classList.remove('ro-lock');
+
+  if (espEl) {
+    espEl.readOnly = lock;
+    espEl.classList.toggle('ro-lock', lock);
+  }
 
   if (decision === 'aceptar') {
     nombreEl.value = sugNombre;
