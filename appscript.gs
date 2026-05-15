@@ -485,8 +485,8 @@ function notificarCambioEstado(rowIndex, estado, extras) {
 
   if (estado === "Radicado") {
     if (modalidadDip) {
-      msgEst   = "Tu solicitud de modalidad Diplomado fue radicada.\n\nNúmero: " + numero + "\nPrograma / título: " + titulo + "\n\nRegistraste entre 1 y 3 jurados evaluadores sugeridos por el tutor. La coordinación revisará la solicitud; luego el comité técnico asignará al evaluador, quien valorará el producto en Fase 2. Esta modalidad no incluye sustentación.";
-      msgCoord = "Nueva radicación Diplomado.\n\nNúmero: " + numero + "\nEstudiante: " + nombre1 + "\nPrograma: " + titulo + "\n\nRevise fechas y jurados sugeridos (columnas 39–49). Pendiente aval de coordinación.";
+      msgEst   = "Tu solicitud de modalidad Diplomado fue radicada.\n\nNúmero: " + numero + "\nPrograma / título: " + titulo + "\n\nRegistraste un evaluador sugerido por el tutor para cuando el producto pase por el Comité Técnico de Trabajos de Grado. La coordinación revisará la solicitud; luego podrá asignar a esa persona u otra como evaluador(a) para el comité. Esta modalidad no incluye sustentación.";
+      msgCoord = "Nueva radicación Diplomado.\n\nNúmero: " + numero + "\nEstudiante: " + nombre1 + "\nPrograma: " + titulo + "\n\nRevise fechas y evaluador sugerido (Fase1, columnas del jurado sugerido). Pendiente aval de coordinación.";
     } else {
       msgEst   = "Tu proyecto ha sido radicado exitosamente.\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nLa coordinadora revisará tus tutores pronto. Te notificaremos cuando haya novedades.";
       msgCoord = "Nueva radicación recibida.\n\nNúmero: " + numero + "\nEstudiante: " + nombre1 + "\nTítulo: " + titulo + "\n\nPendiente revisión de tutores.";
@@ -505,8 +505,8 @@ msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nHas sido registrado como tutor 
   }
   else if (estado === "Fase 2 Desbloqueada") {
     if (modalidadDip) {
-      msgEst   = "Tu diplomado fue avalado por la coordinación.\n\nNúmero: " + numero + "\nPrograma: " + titulo + "\n\nYa puedes cargar el producto final en Fase 2 (mismo formulario que protocolo). El comité técnico revisará, asignará evaluador y emitirá el aval final. No aplica sustentación.";
-      msgCoord = "Diplomado avalado (Fase 2 desbloqueada) · " + numero + ".\n\nEstudiante: " + nombre1 + "\nPuede cargar producto para comité.";
+      msgEst   = "Tu diplomado fue avalado por la coordinación.\n\nNúmero: " + numero + "\nPrograma: " + titulo + "\n\nYa puedes cargar el producto final en Fase 2. El Comité Técnico de Trabajos de Grado lo valorará; la coordinación asignará evaluador(a) —puede ser quien sugirió el tutor u otra persona— y se emitirá el aval. No aplica sustentación.";
+      msgCoord = "Diplomado avalado (Fase 2 desbloqueada) · " + numero + ".\n\nEstudiante: " + nombre1 + "\nPuede cargar producto para el comité técnico de trabajos de grado.";
     } else {
       msgEst   = "¡Tus actas de asesoría fueron aprobadas!\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nYa puedes ingresar al portal y subir tu protocolo en la Fase 2.";
       msgCoord = "Actas aprobadas para " + numero + ".\n\nEstudiante: " + nombre1 + "\nEl estudiante ya puede subir su protocolo.";
@@ -517,8 +517,8 @@ msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nHas sido registrado como tutor 
   }
   else if (estado === "Pendiente Comité Técnico") {
     if (modalidadDip) {
-      msgEst   = "Tu producto de diplomado fue recibido.\n\nNúmero: " + numero + "\nPrograma: " + titulo + "\n\nQuedó en cola del comité técnico: revisarán la solicitud, asignarán al evaluador (según disponibilidad; se tomó en cuenta la sugerencia del tutor) y registrarán el aval. No hay sustentación.";
-      msgCoord = "Nuevo producto diplomado (Fase 2) para " + numero + ".\n\nEstudiante: " + nombre1 + "\n\nAsigne fecha de comité y evaluador. Jurados sugeridos en hoja Fase1 cols 41–49.";
+      msgEst   = "Tu producto de diplomado fue recibido.\n\nNúmero: " + numero + "\nPrograma: " + titulo + "\n\nQuedó en cola del Comité Técnico de Trabajos de Grado. La coordinación asignará fecha de sesión y evaluador(a): puede ser la persona sugerida por el tutor en la radicación u otra. Luego el comité registrará el aval. No hay sustentación.";
+      msgCoord = "Nuevo producto diplomado (Fase 2) para " + numero + ".\n\nEstudiante: " + nombre1 + "\n\nAsigne fecha de comité y evaluador. Sugerencia del estudiante en Fase1 (cols. jurado sugerido).";
     } else {
       msgEst   = "Tu protocolo fue recibido correctamente.\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nEstá pendiente de evaluación por el comité técnico. Te notificaremos cuando haya una decisión.";
       msgCoord = "Nuevo protocolo recibido para " + numero + ".\n\nEstudiante: " + nombre1 + "\nTítulo: " + titulo + "\n\nPendiente asignación de evaluador y fecha de comité.";
@@ -529,8 +529,8 @@ msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nHas sido registrado como tutor 
   }
   else if (estado === "Aprobado") {
     if (modalidadDip) {
-      msgEst   = "¡Felicitaciones! El comité técnico avaló tu producto de diplomado.\n\nNúmero: " + numero + "\nPrograma: " + titulo + (notas ? "\n\nObservaciones: " + notas : "") + "\n\nCon esto se cierra el trámite en esta modalidad (no requiere sustentación).";
-      msgCoord = "Producto diplomado aprobado por comité · " + numero + ".\n\nEstudiante: " + nombre1;
+      msgEst   = "¡Felicitaciones! El Comité Técnico de Trabajos de Grado avaló tu producto de diplomado.\n\nNúmero: " + numero + "\nPrograma: " + titulo + (notas ? "\n\nObservaciones: " + notas : "") + "\n\nCon esto se cierra el trámite en esta modalidad (no requiere sustentación).";
+      msgCoord = "Producto diplomado aprobado por el comité técnico de trabajos de grado · " + numero + ".\n\nEstudiante: " + nombre1;
     } else {
       msgEst   = "¡Felicitaciones! Tu protocolo fue aprobado por el comité técnico.\n\nNúmero: " + numero + "\nTítulo: " + titulo + (notas ? "\n\nObservaciones: " + notas : "") + "\n\nYa puedes solicitar tu sustentación desde el portal.";
       msgCoord = "Protocolo aprobado para " + numero + ".\n\nEstudiante: " + nombre1 + "\nTítulo: " + titulo;
@@ -541,8 +541,8 @@ msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nHas sido registrado como tutor 
   }
   else if (estado === "Devuelto por Comité Técnico") {
     if (modalidadDip) {
-      msgEst   = "Tu producto de diplomado fue devuelto por el Comité Técnico para una nueva valoración.\n\nNúmero: " + numero + "\nPrograma: " + titulo + (notas ? "\n\nMotivo: " + notas : "") + "\n\nAjusta el documento y vuelve a cargarlo desde Fase 2 del portal.";
-      msgCoord = "Producto diplomado devuelto por Comité Técnico · " + numero + ".\n\nEstudiante: " + nombre1 + (notas ? "\nMotivo: " + notas : "");
+      msgEst   = "Tu producto de diplomado fue devuelto por el Comité Técnico de Trabajos de Grado para una nueva valoración.\n\nNúmero: " + numero + "\nPrograma: " + titulo + (notas ? "\n\nMotivo: " + notas : "") + "\n\nAjusta el documento y vuelve a cargarlo desde Fase 2 del portal.";
+      msgCoord = "Producto diplomado devuelto por el comité técnico de trabajos de grado · " + numero + ".\n\nEstudiante: " + nombre1 + (notas ? "\nMotivo: " + notas : "");
     } else {
       msgEst   = "Tu protocolo fue devuelto por el Comité Técnico para una nueva valoración.\n\nNúmero: " + numero + "\nTítulo: " + titulo + (notas ? "\n\nMotivo: " + notas : "") + "\n\nRealiza los ajustes indicados y vuelve a cargar el protocolo desde la Fase 2 del portal.";
       msgCoord = "Protocolo devuelto por Comité Técnico para " + numero + ".\n\nEstudiante: " + nombre1 + (notas ? "\nMotivo: " + notas : "");
@@ -630,7 +630,7 @@ function verificarRol(email, rolRequerido) {
 // … AL(38)=DiasRestantes | AM(39)=Diplomado inicio | AN(40)=Diplomado fin
 // AO–AQ jurado sugerido 1 | AR–AT jurado 2 | AU–AW jurado 3 (nombre, email, tel c/u)
 
-/** Garantiza columnas para fechas diplomado y hasta 3 jurados sugeridos por el tutor. */
+/** Garantiza columnas para fechas diplomado y datos del jurado sugerido (1 bloque; cols 44–49 quedan por compatibilidad). */
 function asegurarColumnasFase1DiplomadoJurados(sheet) {
   if (!sheet) return;
   var need = 49;
@@ -705,18 +705,7 @@ function crearRadicacion(datos, emailEstudiante, sesion) {
   var modLower = String(datos.modalidad || "").trim().toLowerCase();
   if (modLower === "diplomado") {
     if (!String(datos.dipJurado1Nombre || "").trim() || !String(datos.dipJurado1Email || "").trim() || !String(datos.dipJurado1Telefono || "").trim()) {
-      return { success: false, error: "Diplomado: el jurado sugerido 1 requiere nombre, email y teléfono." };
-    }
-    var j2any = String(datos.dipJurado2Nombre || datos.dipJurado2Email || datos.dipJurado2Telefono || "").trim();
-    if (j2any && (!String(datos.dipJurado2Nombre || "").trim() || !String(datos.dipJurado2Email || "").trim() || !String(datos.dipJurado2Telefono || "").trim())) {
-      return { success: false, error: "Diplomado: si indica un segundo jurado, complete nombre, email y teléfono." };
-    }
-    var j3any = String(datos.dipJurado3Nombre || datos.dipJurado3Email || datos.dipJurado3Telefono || "").trim();
-    if (j3any && (!String(datos.dipJurado3Nombre || "").trim() || !String(datos.dipJurado3Email || "").trim() || !String(datos.dipJurado3Telefono || "").trim())) {
-      return { success: false, error: "Diplomado: si indica un tercer jurado, complete nombre, email y teléfono." };
-    }
-    if (j3any && !j2any) {
-      return { success: false, error: "Diplomado: no puede registrar jurado 3 sin completar el jurado 2." };
+      return { success: false, error: "Diplomado: indique el evaluador sugerido por el tutor (nombre, email y teléfono)." };
     }
   }
   var sheet  = getSheet("Fase1");
@@ -2447,7 +2436,7 @@ function testSistema() {
 
 // ── ESTRUCTURA DE HOJAS REQUERIDAS ───────────────────────────
 // 1. Usuarios       — ID | Email | Contraseña | Nombre | Rol | FechaCreacion | Estado
-// 2. Fase1 — 38 columnas base (A–AL) + extensión diplomado cols 39–49 (AM–AW): fechas + 3×(nombre,email,tel) jurados sugeridos
+// 2. Fase1 — 38 columnas base (A–AL) + extensión diplomado cols 39–49 (AM–AW): fechas + jurado sugerido (41–43); 44–49 reservadas/compat.
 // 3. Fase 2         — 18 columnas (ver crearProtocolo)
 // 4. Acta asesoria  — 8 columnas (ver crearActasAsesoria)
 // 5. Fase 3         — 34 columnas base (ver crearFase3 / listaFase3)

@@ -279,24 +279,22 @@ function poblarFormulario() {
     bloqueD.style.display = esDipl ? 'block' : 'none';
     const di = r.diplomadoFechaInicio || '';
     const df = r.diplomadoFechaFin || '';
-    const jurs = [1, 2, 3].map(i => {
-      const n = r['dipJurado' + i + 'Nombre'];
-      const e = r['dipJurado' + i + 'Email'];
-      const t = r['dipJurado' + i + 'Telefono'];
-      if (!n && !e) return null;
-      return 'J' + i + ': ' + [n, e, t].filter(Boolean).join(' · ');
-    }).filter(Boolean);
+    const jurs = (function() {
+      const n = r.dipJurado1Nombre, e = r.dipJurado1Email, t = r.dipJurado1Telefono;
+      if (!n && !e) return [];
+      return ['Evaluador sugerido: ' + [n, e, t].filter(Boolean).join(' · ')];
+    })();
     document.getElementById('dipDetalleCoord').textContent =
       'Sin actas de asesoría: al aprobar, el estudiante pasa a Fase 2. · Inicio: ' + fmtFechaCoord(di) + ' · Fin: ' + fmtFechaCoord(df) +
-      (jurs.length ? '\n\nJurados sugeridos por el tutor (referencia para el comité):\n' + jurs.join('\n') : '\n\n(Sin jurados sugeridos en datos de radicación — revise hoja Fase1 cols 41–49.)');
+      (jurs.length ? '\n\n' + jurs[0] + '\n\nEl producto pasará por el Comité Técnico de Trabajos de Grado: puede designarse como evaluador(a) a quien sugiere el tutor u otra persona para la sesión de comité.' : '\n\n(Sin jurado sugerido en la radicación — revise hoja Fase1, columnas del jurado sugerido.)');
   }
 
   document.getElementById('tituloDecisionCoord').textContent = esDipl ? 'Decisión sobre el diplomado' : 'Decisión sobre tutores';
   document.getElementById('txtDecisionAyudaCoord').textContent = esDipl
-    ? 'Avala los datos del diplomado para desbloquear Fase 2 (producto para comité técnico), o devuelve la propuesta.'
+    ? 'Avala los datos del diplomado para desbloquear Fase 2 (producto ante el Comité Técnico de Trabajos de Grado), o devuelve la propuesta.'
     : 'Avala los tutores para que el estudiante pueda continuar con las actas de asesoría, o devuelve la propuesta.';
   document.getElementById('decisionHintCoord').innerHTML = esDipl
-    ? '📌 Modalidad <strong>Diplomado</strong>: no hay actas; el comité técnico valora el producto en Fase 2 y el trámite puede cerrar ahí (sin sustentación).'
+    ? '📌 Modalidad <strong>Diplomado</strong>: el producto se valora en el <strong>Comité Técnico de Trabajos de Grado</strong>. La coordinación puede asignar como evaluador(a) a la persona sugerida por el tutor u otra. El trámite puede cerrar ahí (sin sustentación).'
     : '📌 La fecha del comité técnico se asigna cuando el estudiante suba el protocolo (Fase 2).';
   opcionesDecisionCoord(esDipl);
   document.getElementById('observaciones').placeholder = esDipl
