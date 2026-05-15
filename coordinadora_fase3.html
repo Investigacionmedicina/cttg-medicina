@@ -811,7 +811,7 @@ function renderTablas() {
 }
 
 function abrirAsignar(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
+  const r = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
   if (!r) return;
   solicitudModalActual = r;
   document.getElementById('mAsignarRow').value = rowIndex;
@@ -832,7 +832,7 @@ function abrirAsignar(rowIndex) {
 }
 
 function abrirProgramar(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
+  const r = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
   if (!r) return;
   solicitudModalActual = r;
   document.getElementById('mProgramarRow').value = rowIndex;
@@ -853,7 +853,7 @@ async function programarFecha() {
   if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
   if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
   if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
-  const r = solicitudModalActual || fase3.find(x => x.rowIndex === rowIndex);
+  const r = solicitudModalActual || fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
   const btn = document.getElementById('btnProgramar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
   try {
@@ -880,7 +880,7 @@ async function programarFecha() {
 }
 
 function abrirRevisar(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
+  const r = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
   if (!r) return;
   solicitudModalActual = r;
   const estSh = estadoSheetRaw(r);
@@ -942,7 +942,7 @@ function confirmarRevisada(rowIndex) {
 }
 
 function abrirDevolver(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
+  const r = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
   if (!r) return;
   document.getElementById('mDevolverRow').value = rowIndex;
   document.getElementById('mDevolverInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
@@ -952,7 +952,7 @@ function abrirDevolver(rowIndex) {
 
 function abrirResultado(rowIndex, numero) {
   document.getElementById('mResultadoRow').value = rowIndex;
-  const rR = fase3.find(x => x.rowIndex === rowIndex);
+  const rR = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
   document.getElementById('mResultadoInfo').textContent = 'Radicación: ' + numero + (rR && rR.nombreEstudiante ? ' — ' + rR.nombreEstudiante : '') + (rR && rR.emailEstudiante ? ' (' + rR.emailEstudiante + ')' : '');
   document.getElementById('mNota').value = '';
   document.getElementById('mActa').value = '';
@@ -963,27 +963,56 @@ function abrirResultado(rowIndex, numero) {
 }
 
 async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
-  const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+  const tok = coordToken();
+  if (!tok) throw new Error('Sesión caducada o sin token. Vuelva a iniciar sesión como coordinadora.');
+  const emailCoord = String((admin && (admin.email || admin.correo)) || '').trim();
+  if (!emailCoord) throw new Error('La sesión no incluye correo de coordinadora. Cierre sesión y entre de nuevo.');
+
+  const idx = Number(rowIndex);
+  if (!Number.isFinite(idx)) throw new Error('Identificador de fila inválido. Recargue la página e intente otra vez.');
+
+  const r = fase3.find(x => Number(x.rowIndex) === idx);
+  const body = {
     action: 'updateFase3Estado',
-    rowIndex,
+    rowIndex: idx,
     estado,
-    observaciones,
-    emailCoord: admin.email,
-    token: coordToken()
-  })});
-  const d = await res.json();
-  if (!d.success) throw new Error(d.error);
+    observaciones: String(observaciones || ''),
+    emailCoord,
+    token: tok
+  };
+  if (r && r.numero) body.numeroRadicacion = String(r.numero).trim();
+
+  const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify(body) });
+  const text = await res.text();
+  let d;
+  try {
+    d = JSON.parse(text);
+  } catch (parseErr) {
+    const snippet = text.replace(/\s+/g, ' ').trim().slice(0, 160);
+    throw new Error(
+      'El servidor no devolvió JSON (HTTP ' + res.status + '). Suele indicar error en Apps Script o despliegue. ' +
+      (snippet ? 'Detalle: ' + snippet : '')
+    );
+  }
+  if (!d.success) {
+    const msg = d.error != null && String(d.error).trim() !== '' ? String(d.error) : 'El servidor respondió sin éxito ni mensaje (revise el script: updateFase3Estado).';
+    throw new Error(msg);
+  }
 }
 
 async function marcarRevisada(rowIndex) {
-  const r = fase3.find(x => x.rowIndex === rowIndex);
-  if (!r) return;
+  const idx = Number(rowIndex);
+  const r = fase3.find(x => Number(x.rowIndex) === idx);
+  if (!r) {
+    toast('No se encontró la solicitud en memoria. Pulse «Actualizar» y abra de nuevo «Ver».', 'warn');
+    return;
+  }
   if (r.pctTurnitin == null || String(r.pctTurnitin).trim() === '') {
     toast('Esta solicitud no tiene % Turnitin registrado. Verifique que el campo esté diligenciado en el Sheet.', 'warn'); return;
   }
   const mensaje = 'Su solicitud de sustentación fue revisada. La documentación radicada se encuentra conforme y en los próximos días se asignarán los jurados.';
   try {
-    await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación revisada', mensaje);
+    await actualizarEstadoSolicitud(idx, 'Solicitud sustentación revisada', mensaje);
     await cargar();
     toast('Solicitud marcada como revisada ✓', 'ok');
   } catch(e) {
