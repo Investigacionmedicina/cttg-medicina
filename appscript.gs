@@ -209,6 +209,8 @@ function asegurarColumnasEstadoFase3(sheet) {
   }
   if (!sheet.getRange(1, 29).getValue()) sheet.getRange(1, 29).setValue("Estado Solicitud");
   if (!sheet.getRange(1, 30).getValue()) sheet.getRange(1, 30).setValue("Observaciones Estado");
+  if (!sheet.getRange(1, 15).getValue()) sheet.getRange(1, 15).setValue("Jurado 1 Tel");
+  if (!sheet.getRange(1, 18).getValue()) sheet.getRange(1, 18).setValue("Jurado 2 Tel");
   if (!sheet.getRange(1, 31).getValue()) sheet.getRange(1, 31).setValue("Jurado 1 Tel");
   if (!sheet.getRange(1, 32).getValue()) sheet.getRange(1, 32).setValue("Jurado 2 Tel");
 }
@@ -1385,7 +1387,7 @@ function aprobarActasAsesoria(rowIndex, emailEstudiante, emailCoord, rechazar, m
   return { success: true };
 } 
 // ── FASE 3: SUSTENTACIÓN ─────────────────────────────────────
-// Hoja Fase 3 (32 columnas): cols 1–30 como antes; AE(31)=Jurado 1 Tel; AF(32)=Jurado 2 Tel.
+// Hoja Fase 3 (32 columnas): jurado tel en O(15) y R(18); AE(31)/AF(32) réplica del mismo valor (compatibilidad).
 
 function crearFase3(numeroRadicacion, emailEstudiante, porcentajeTurnitin, jurado1Nombre, jurado1Email, jurado1Telefono, jurado2Nombre, jurado2Email, jurado2Telefono, anexoA7, articulo, guiaAutores, avalCCEB, turnitinDoc, sesion) {
   if (!sesion || sesion.rol !== "estudiante") {
@@ -1432,12 +1434,12 @@ function crearFase3(numeroRadicacion, emailEstudiante, porcentajeTurnitin, jurad
     turnitinDoc || "",        // 11 Turnitin
     String(pct),              // 12 % Turnitin
     hoy(),                    // 13 Fecha Carga
-    jurado1Nombre || "",      // 14 Jurado 1 Nombre
-    "",                       // 15 Jurado 1 Cédula
-    jurado1Email || "",       // 16 Jurado 1 Email
-    jurado2Nombre || "",      // 17 Jurado 2 Nombre
-    "",                       // 18 Jurado 2 Cédula
-    jurado2Email || "",       // 19 Jurado 2 Email
+    jurado1Nombre || "",      // 14 N — Jurado 1 Nombre
+    jurado1Telefono || "",    // 15 O — Jurado 1 Tel
+    jurado1Email || "",       // 16 P — Jurado 1 Email
+    jurado2Nombre || "",      // 17 Q — Jurado 2 Nombre
+    jurado2Telefono || "",    // 18 R — Jurado 2 Tel
+    jurado2Email || "",       // 19 S — Jurado 2 Email
     "",                       // 20 Nombres para el acta
     "",                       // 21 Fecha Asignada
     "",                       // 22 Número Acta
@@ -1624,7 +1626,7 @@ function listaFase3TodasLasFilasSinDedupe() {
   var mColB = metricasColumnaRadicacionFase3(sheet);
   var lrEff = Math.max(lrSheet, lrDr, mColB.ultimaFilaNumeroEnColumnaB, 2);
   var lastRow = Math.min(Math.max(lrEff + 45, lrEff), 15000, sheet.getMaxRows());
-  var numCols = Math.min(Math.max(lcSheet, lcDr, 32), 64, maxColsSheet);
+  var numCols = Math.min(Math.max(lcSheet, lcDr, 34), 64, maxColsSheet);
   var data = lastRow < 2 ? [] : sheet.getRange(1, 1, lastRow, numCols).getDisplayValues();
   var nombreMap = {};
   var sheetF1 = getSheet("Fase1");
@@ -1685,13 +1687,14 @@ function listaFase3TodasLasFilasSinDedupe() {
       pctTurnitin:       String(r[11] || ""),
       fechaCarga:        formatearFecha(r[12]),
       jurado1Nombre:     String(r[13] || ""),
-     jurado1Telefono:   String(r[14] || ""),   // col O = teléfono jurado 1
+      // Tel principal O/R (índ. 14/17); AE/AF (30/31) réplica si solo existía ahí (filas antiguas del portal).
+      jurado1Telefono:   String(r[14] || r[30] || "").trim(),
       jurado1Email:      String(r[15] || ""),
       jurado2Nombre:     String(r[16] || ""),
-      jurado2Telefono:   String(r[17] || ""),   // col R = teléfono jurado 2
+      jurado2Telefono:   String(r[17] || r[31] || "").trim(),
       jurado2Email:      String(r[18] || ""),
-      jurado1Especialidad: String(r[30] || ""), // col AE = especialidad jurado 1
-      jurado2Especialidad: String(r[31] || ""), // col AF = especialidad jurado 2
+      jurado1Especialidad: String(r[32] || "").trim(),
+      jurado2Especialidad: String(r[33] || "").trim(),
       nombres:           String(r[19] || ""),
       fechaAsignada:     formatearFecha(r[20]),
       numeroActa:        String(r[21] || ""),
@@ -1791,13 +1794,13 @@ function updateFase3Asignacion(rowIndex, fechaSustentacion, horaSustentacion, lu
 
   if (jurado1) {
     sheet.getRange(ri, 14).setValue(jurado1.nombre || "");
-    sheet.getRange(ri, 15).setValue(jurado1.cedula || "");
+    sheet.getRange(ri, 15).setValue(jurado1.telefono || "");
     sheet.getRange(ri, 16).setValue(jurado1.email  || "");
     sheet.getRange(ri, 31).setValue(jurado1.telefono || "");
   }
   if (jurado2) {
     sheet.getRange(ri, 17).setValue(jurado2.nombre || "");
-    sheet.getRange(ri, 18).setValue(jurado2.cedula || "");
+    sheet.getRange(ri, 18).setValue(jurado2.telefono || "");
     sheet.getRange(ri, 19).setValue(jurado2.email  || "");
     sheet.getRange(ri, 32).setValue(jurado2.telefono || "");
   }
