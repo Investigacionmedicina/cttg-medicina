@@ -171,8 +171,8 @@
 
   <div id="alertasTiempo" class="alert-wrap" style="display:none"></div>
    <div class="tabs">
-    <button class="tab on" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
-    <button class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
+    <button type="button" class="tab on" id="tabMisRad" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
+    <button type="button" class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
   </div>
 
   <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;margin-bottom:20px">
@@ -279,9 +279,9 @@
       <div style="margin-bottom:16px">
         <label style="display:block;margin-bottom:8px">Número de estudiantes *</label>
         <div class="num-est">
-          <button class="ne on" onclick="setEst(1,this)">1 Estudiante</button>
-          <button class="ne" onclick="setEst(2,this)">2 Estudiantes</button>
-          <button class="ne" onclick="setEst(3,this)">3 Estudiantes</button>
+          <button type="button" class="ne on" onclick="setEst(1,this)">1 Estudiante</button>
+          <button type="button" class="ne" onclick="setEst(2,this)">2 Estudiantes</button>
+          <button type="button" class="ne" onclick="setEst(3,this)">3 Estudiantes</button>
         </div>
       </div>
       <div class="form-grid">
@@ -344,15 +344,15 @@
         </div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
-        <button class="btn-rad" id="btnRad" onclick="radicar()">📋 Radicar proyecto</button>
-        <button class="btn-sec" onclick="limpiar()">Limpiar</button>
+        <button type="button" class="btn-rad" id="btnRad" onclick="radicar()">📋 Radicar proyecto</button>
+        <button type="button" class="btn-sec" onclick="limpiar()">Limpiar</button>
       </div>
       <div class="success-box" id="successBox">
         <div style="font-size:28px;margin-bottom:8px">🎉</div>
         <div style="font-size:15px;font-weight:600;color:#fff">¡Radicación exitosa!</div>
         <div class="num-rad" id="numRadResult">—</div>
         <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">Guarda tu número. Recibirás un correo de confirmación.</div>
-        <button class="btn-rad" style="margin-top:14px" onclick="switchTab('mis-rad',document.querySelectorAll('.tab')[0])">Ver mis radicaciones</button>
+        <button type="button" class="btn-rad" style="margin-top:14px" onclick="switchTab('mis-rad',document.getElementById('tabMisRad'))">Ver mis radicaciones</button>
       </div>
     </div>
   </div>
@@ -721,7 +721,7 @@ document.getElementById('d_notas').textContent = limpiarNotas(r.notas) || '—';
       wrap.innerHTML = `<div class="empty">
         <div style="font-size:32px;margin-bottom:12px">📭</div>
         <div>No tienes radicaciones registradas aún.</div>
-        <button class="btn-rad" style="margin-top:14px" onclick="switchTab('nueva',document.querySelectorAll('.tab')[1])">➕ Radicar ahora</button>
+        <button type="button" class="btn-rad" style="margin-top:14px" onclick="switchTab('nueva',document.getElementById('tabNueva'))">➕ Radicar ahora</button>
       </div>`;
     }
     await actualizarBotonesFases(misRadicaciones);
