@@ -164,7 +164,7 @@
     <p id="f3BloqueoEstado" style="margin-top:10px;font-size:12px;color:#fcd34d;font-weight:600"></p>
   </div>
 
-  <div class="form-card">
+  <div class="form-card" id="f3CardSolicitudPrincipal">
     <h3><span class="dot"></span>Solicitar Sustentación</h3>
     <p>Carga todos los documentos requeridos en el formulario y completa los datos de tu sustentación.</p>
 
@@ -299,7 +299,6 @@
    </div>
   </div>
   </div>
-  </div>
 </main>
 
 <div class="toast" id="toast"></div>
@@ -324,8 +323,9 @@ let catalogoJuradosEst = [];
     .then(r => r.json())
     .then(d => {
       if (redirigirSiSesionInvalida(d)) return;
-      if (d.success && d.radicaciones.length > 0) {
-        const rad = d.radicaciones[0];
+      const rads = Array.isArray(d.radicaciones) ? d.radicaciones : [];
+      if (d.success && rads.length > 0) {
+        const rad = rads[0];
         numeroRadicacionGlobal = rad.numero || '';
         const st = String(rad.estado || '').trim();
         if (st !== 'Aprobado') {
@@ -338,7 +338,8 @@ let catalogoJuradosEst = [];
           if (btnSol) { btnSol.disabled = true; btnSol.style.opacity = '0.55'; btnSol.style.cursor = 'not-allowed'; }
         }
       }
-    });
+    })
+    .catch(e => { console.error('getFase1ByEmail', e); toast('No se pudo verificar tu radicación. Recarga la página.', 'err'); });
 })();
 
 async function salir() {
@@ -650,7 +651,8 @@ async function cargarMisSolicitudes() {
     
     const sustentada = misSolicitudes.find(s => s.nota);
      if (sustentada) {
-      document.querySelector('.form-card').style.display = 'none';
+      const cardSol = document.getElementById('f3CardSolicitudPrincipal');
+      if (cardSol) cardSol.style.display = 'none';
       document.getElementById('successBox').innerHTML = `<div style="font-size:28px;margin-bottom:8px">🎓</div><div style="font-size:15px;font-weight:600;color:#fff">Sustentación Completada</div><div style="font-size:24px;font-weight:700;color:#6ee7b7;margin:12px 0">Nota: ${sustentada.nota}</div><div style="font-size:12px;color:rgba(255,255,255,.5)">¡Felicitaciones!</div><button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver</button>`;
       document.getElementById('successBox').style.display = 'block';
     }
