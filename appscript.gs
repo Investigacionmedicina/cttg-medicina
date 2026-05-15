@@ -71,7 +71,7 @@ function handleRequest(e, body) {
       case "getAlertasCriticas": result = obtenerAlertasCriticas(); break;
       case "getTrazabilidad":    result = obtenerTrazabilidad(sesion, body.numeroRadicacion, body.limit); break;
       case "aprobarActasAsesoria": result = aprobarActasAsesoria(body.rowIndex, body.emailEstudiante, body.emailCoord, body.rechazar, body.motivo); break;
-      case "crearFase3": result = crearFase3(body.numeroRadicacion, body.emailEstudiante, body.porcentajeTurnitin, body.jurado1Nombre, body.jurado1Email, body.jurado1Telefono, body.jurado2Nombre, body.jurado2Email, body.jurado2Telefono, body.anexoA7, body.articulo, body.guiaAutores, body.avalCCEB, body.turnitinDoc, sesion); break;
+      case "crearFase3": result = crearFase3(body.numeroRadicacion, body.emailEstudiante, body.porcentajeTurnitin, body.jurado1Nombre, body.jurado1Email, body.jurado1Telefono, body.jurado2Nombre, body.jurado2Email, body.jurado2Telefono, body.jurado1Especialidad || "", body.jurado2Especialidad || "", body.anexoA7, body.articulo, body.guiaAutores, body.avalCCEB, body.turnitinDoc, sesion); break;
       case "getFase3":             result = obtenerFase3(sesion, { sinDedupe: body.sinDedupe === true, debugFase3: body.debugFase3 === true }); break;
       case "updateFase3Estado": result = updateFase3Estado(body.rowIndex, body.estado, body.observaciones, body.emailCoord); break;
       case "updateFase3Asignacion": result = updateFase3Asignacion(body.rowIndex, body.fechaSustentacion, body.horaSustentacion, body.lugar, body.jurado1, body.jurado2, body.emailCoord); break;
@@ -204,8 +204,9 @@ function registrarTrazabilidadSustentacion(numeroRadicacion, rowIndex, accion, e
 
 function asegurarColumnasEstadoFase3(sheet) {
   if (!sheet) return;
-  if (sheet.getMaxColumns() < 32) {
-    sheet.insertColumnsAfter(sheet.getMaxColumns(), 32 - sheet.getMaxColumns());
+  var minCols = 34;
+  if (sheet.getMaxColumns() < minCols) {
+    sheet.insertColumnsAfter(sheet.getMaxColumns(), minCols - sheet.getMaxColumns());
   }
   if (!sheet.getRange(1, 29).getValue()) sheet.getRange(1, 29).setValue("Estado Solicitud");
   if (!sheet.getRange(1, 30).getValue()) sheet.getRange(1, 30).setValue("Observaciones Estado");
@@ -213,6 +214,8 @@ function asegurarColumnasEstadoFase3(sheet) {
   if (!sheet.getRange(1, 18).getValue()) sheet.getRange(1, 18).setValue("Jurado 2 Tel");
   if (!sheet.getRange(1, 31).getValue()) sheet.getRange(1, 31).setValue("Jurado 1 Tel");
   if (!sheet.getRange(1, 32).getValue()) sheet.getRange(1, 32).setValue("Jurado 2 Tel");
+  if (!sheet.getRange(1, 33).getValue()) sheet.getRange(1, 33).setValue("Jurado 1 Especialidad");
+  if (!sheet.getRange(1, 34).getValue()) sheet.getRange(1, 34).setValue("Jurado 2 Especialidad");
 }
 
 /** Evita mostrar #ERROR! u otros valores corruptos de celda como texto útil */
@@ -1387,9 +1390,9 @@ function aprobarActasAsesoria(rowIndex, emailEstudiante, emailCoord, rechazar, m
   return { success: true };
 } 
 // ── FASE 3: SUSTENTACIÓN ─────────────────────────────────────
-// Hoja Fase 3 (32 columnas): jurado tel en O(15) y R(18); AE(31)/AF(32) réplica del mismo valor (compatibilidad).
+// Hoja Fase 3: tel jurado en O(15) y R(18); réplica en AE/AF; especialidad opcional en AG/AH (34 cols).
 
-function crearFase3(numeroRadicacion, emailEstudiante, porcentajeTurnitin, jurado1Nombre, jurado1Email, jurado1Telefono, jurado2Nombre, jurado2Email, jurado2Telefono, anexoA7, articulo, guiaAutores, avalCCEB, turnitinDoc, sesion) {
+function crearFase3(numeroRadicacion, emailEstudiante, porcentajeTurnitin, jurado1Nombre, jurado1Email, jurado1Telefono, jurado2Nombre, jurado2Email, jurado2Telefono, jurado1Especialidad, jurado2Especialidad, anexoA7, articulo, guiaAutores, avalCCEB, turnitinDoc, sesion) {
   if (!sesion || sesion.rol !== "estudiante") {
     return { success: false, error: "No autorizado" };
   }
@@ -1451,8 +1454,10 @@ function crearFase3(numeroRadicacion, emailEstudiante, porcentajeTurnitin, jurad
     "",                       // 28 Observaciones / Lugar
     "Solicitud sustentación radicada", // 29 Estado Solicitud
     "",                       // 30 Observaciones Estado
-    jurado1Telefono || "",    // 31 Jurado 1 Tel
-    jurado2Telefono || ""     // 32 Jurado 2 Tel
+    jurado1Telefono || "",    // 31 Jurado 1 Tel (réplica)
+    jurado2Telefono || "",    // 32 Jurado 2 Tel (réplica)
+    String(jurado1Especialidad || "").trim(), // 33 AG — Jurado 1 Especialidad
+    String(jurado2Especialidad || "").trim()  // 34 AH — Jurado 2 Especialidad
   ]);
 
   if (alertaS12 === "SÍ") {
@@ -1743,7 +1748,7 @@ function obtenerFase3(sesion, opciones) {
     var maxRowsDbg = sh ? sh.getMaxRows() : 0;
     var maxColsDbg = sh ? sh.getMaxColumns() : 64;
     var lastRowDbg = Math.min(Math.max(lrEffDbg + 45, lrEffDbg), 15000, maxRowsDbg);
-    var numColsDbg = Math.min(Math.max(lcSh, lcDr2, 32), 64, maxColsDbg);
+    var numColsDbg = Math.min(Math.max(lcSh, lcDr2, 34), 64, maxColsDbg);
     var gridDbg = !sh || lastRowDbg < 2 ? [] : sh.getRange(1, 1, lastRowDbg, numColsDbg).getDisplayValues();
     var nombreLibroScript = "";
     var pestañasLibroScript = [];
@@ -1797,12 +1802,14 @@ function updateFase3Asignacion(rowIndex, fechaSustentacion, horaSustentacion, lu
     sheet.getRange(ri, 15).setValue(jurado1.telefono || "");
     sheet.getRange(ri, 16).setValue(jurado1.email  || "");
     sheet.getRange(ri, 31).setValue(jurado1.telefono || "");
+    sheet.getRange(ri, 33).setValue(jurado1.especialidad || "");
   }
   if (jurado2) {
     sheet.getRange(ri, 17).setValue(jurado2.nombre || "");
     sheet.getRange(ri, 18).setValue(jurado2.telefono || "");
     sheet.getRange(ri, 19).setValue(jurado2.email  || "");
     sheet.getRange(ri, 32).setValue(jurado2.telefono || "");
+    sheet.getRange(ri, 34).setValue(jurado2.especialidad || "");
   }
 
   try {
@@ -2310,7 +2317,7 @@ function testSistema() {
 //    | AI fechaAprobacion | AJ notas | AK aprobadoPor | AL diasRestantes
 // 3. Fase 2         — 18 columnas (ver crearProtocolo)
 // 4. Acta asesoria  — 8 columnas (ver crearActasAsesoria)
-// 5. Fase 3         — 28 columnas (ver crearFase3)
+// 5. Fase 3         — 34 columnas base (ver crearFase3 / listaFase3)
 // 6. Tutores        — Nombre | Email | Teléfono
 // 7. Evaluadores    — ID | Nombre | Email | Teléfono | Especialidad | Estado
 // 8. Fecha reuniones— ID | Año | Mes | Fecha Reunión 1 | Fecha Reunión 2 | Estado
