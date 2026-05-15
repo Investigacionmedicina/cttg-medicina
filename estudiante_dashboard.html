@@ -318,6 +318,20 @@
           <div class="fg"><label>Fecha de inicio *</label><input type="date" id="diplomadoFechaIni"></div>
           <div class="fg"><label>Fecha de fin *</label><input type="date" id="diplomadoFechaFin"></div>
           <div class="fg full"><p style="font-size:12px;color:rgba(255,255,255,.45);margin:0">No requiere tutores ni actas. La coordinadora avalará esta opción; luego cargarás el <strong>producto</strong> (mismo proceso que el protocolo) y pasará por el comité técnico. <strong>No hay sustentación.</strong></p></div>
+          <div class="sec-label" style="grid-column:1/-1">👨‍⚖️ Jurado(s) evaluador(es) sugerido(s) por el tutor</div>
+          <div class="fg full"><p style="font-size:12px;color:rgba(255,255,255,.45);margin:0">Indique <strong>al menos 1</strong> y <strong>hasta 3</strong> profesionales propuestos por el tutor para evaluar el producto. El comité revisará la solicitud, asignará al evaluador y emitirá el aval final.</p></div>
+          <div class="sec-label" style="grid-column:1/-1;font-size:12px">Jurado sugerido 1 *</div>
+          <div class="fg"><label>Nombre *</label><input id="dipJur1Nombre" placeholder="Dr./Dra."></div>
+          <div class="fg"><label>Email *</label><input type="email" id="dipJur1Email" placeholder="jurado@usc.edu.co"></div>
+          <div class="fg"><label>Teléfono *</label><input id="dipJur1Tel" placeholder="300 000 0000"></div>
+          <div class="sec-label" style="grid-column:1/-1;font-size:12px;opacity:.85">Jurado sugerido 2 (opcional)</div>
+          <div class="fg"><label>Nombre</label><input id="dipJur2Nombre" placeholder="(opcional)"></div>
+          <div class="fg"><label>Email</label><input type="email" id="dipJur2Email" placeholder="(opcional)"></div>
+          <div class="fg"><label>Teléfono</label><input id="dipJur2Tel" placeholder="(opcional)"></div>
+          <div class="sec-label" style="grid-column:1/-1;font-size:12px;opacity:.85">Jurado sugerido 3 (opcional)</div>
+          <div class="fg"><label>Nombre</label><input id="dipJur3Nombre" placeholder="(opcional)"></div>
+          <div class="fg"><label>Email</label><input type="email" id="dipJur3Email" placeholder="(opcional)"></div>
+          <div class="fg"><label>Teléfono</label><input id="dipJur3Tel" placeholder="(opcional)"></div>
         </div>
         <div class="fg" id="fgArea"><label>Área / Especialidad *</label>
           <select id="area"><option value="">Seleccionar...</option><option>Medicina Interna</option><option>Cirugía General</option><option>Pediatría</option><option>Ginecología y Obstetricia</option><option>Psiquiatría</option><option>Neurología</option><option>Cardiología</option><option>Oncología</option><option>Urgencias y Emergencias</option><option>Salud Pública</option><option>Epidemiología</option><option>Otra</option></select>
@@ -426,6 +440,40 @@ function actualizarFormModalidad() {
     document.getElementById('diplomadoFechaIni').value = '';
     document.getElementById('diplomadoFechaFin').value = '';
   }
+  ['dipJur1Nombre','dipJur1Email','dipJur1Tel','dipJur2Nombre','dipJur2Email','dipJur2Tel','dipJur3Nombre','dipJur3Email','dipJur3Tel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !dip) el.value = '';
+  });
+}
+
+/** Diplomado: 1–3 jurados sugeridos; el 1 es obligatorio completo; 2 y 3 opcionales pero sin huecos. */
+function validarJuradosSugeridosDiplomado() {
+  const slots = [1, 2, 3].map(i => ({
+    n: (document.getElementById('dipJur' + i + 'Nombre')?.value || '').trim(),
+    e: (document.getElementById('dipJur' + i + 'Email')?.value || '').trim(),
+    t: (document.getElementById('dipJur' + i + 'Tel')?.value || '').trim()
+  }));
+  const s1 = slots[0];
+  if (!s1.n || !s1.e || !s1.t) {
+    toast('Diplomado: el jurado sugerido 1 requiere nombre, email y teléfono (propuesta del tutor).', 'warn');
+    return false;
+  }
+  for (let i = 1; i < 3; i++) {
+    const s = slots[i];
+    const prev = slots[i - 1];
+    const any = s.n || s.e || s.t;
+    if (any) {
+      if (!prev.n || !prev.e || !prev.t) {
+        toast('Complete el jurado sugerido ' + i + ' antes de registrar el jurado ' + (i + 1) + '.', 'warn');
+        return false;
+      }
+      if (!s.n || !s.e || !s.t) {
+        toast('Si usa jurado sugerido ' + (i + 1) + ', complete nombre, email y teléfono.', 'warn');
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 function switchTab(name, btn) {
@@ -621,6 +669,14 @@ function verDetalle(rowIndex) {
     <div class="det-sec">Proyecto</div>
     ${fila('Modalidad', r.modalidad)}
     ${esModalidadDiplomadoUI(r.modalidad) ? fila('Fechas del diplomado', (r.diplomadoFechaInicio || r.diplomadoFechaFin) ? ('Inicio: ' + fmtFecha(r.diplomadoFechaInicio) + ' · Fin: ' + fmtFecha(r.diplomadoFechaFin)) : '—') : ''}
+    ${esModalidadDiplomadoUI(r.modalidad) ? (function(){
+      const filasJ = [1,2,3].map(i => {
+        const n = r['dipJurado'+i+'Nombre'], e = r['dipJurado'+i+'Email'], t = r['dipJurado'+i+'Telefono'];
+        if (!n && !e) return '';
+        return fila('Jurado sugerido '+i, [n,e,t].filter(Boolean).join(' · '));
+      }).join('');
+      return '<div class="det-sec">Jurados sugeridos (tutor)</div>' + (filasJ || '<div class="det-row"><span class="det-label">—</span><span class="det-val">Sin datos</span></div>');
+    })() : ''}
     ${!esModalidadDiplomadoUI(r.modalidad) ? fila('Área', r.area) : ''}
     ${fila('F. Radicación', fmtFecha(r.fechaRadicacion))}
     ${fila('F. Aprobación', fmtFecha(r.fechaAprobacion))}
@@ -905,7 +961,7 @@ function limpiar() {
  ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  ['diplomadoFechaIni','diplomadoFechaFin'].forEach(id => {
+  ['diplomadoFechaIni','diplomadoFechaFin','dipJur1Nombre','dipJur1Email','dipJur1Tel','dipJur2Nombre','dipJur2Email','dipJur2Tel','dipJur3Nombre','dipJur3Email','dipJur3Tel'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   ['semestre1','semestre2','semestre3','modalidad','area','tutor1Relacion','tutor2Relacion'].forEach(id => {
@@ -946,6 +1002,7 @@ async function radicar() {
       toast('La fecha de inicio del diplomado no puede ser posterior a la fecha de fin.', 'warn');
       return;
     }
+    if (!validarJuradosSugeridosDiplomado()) return;
   }
   if (numEst >= 2) {
     const e2 = [['cedula2','Cédula estudiante 2'],['nombre2','Nombre estudiante 2'],['email2','Email estudiante 2'],['telefono2','Teléfono estudiante 2'],['semestre2','Semestre estudiante 2']];
@@ -989,6 +1046,15 @@ async function radicar() {
     area: dipRad ? '' : document.getElementById('area').value,
     diplomadoFechaInicio: dipRad ? (document.getElementById('diplomadoFechaIni')?.value || '').trim() : '',
     diplomadoFechaFin: dipRad ? (document.getElementById('diplomadoFechaFin')?.value || '').trim() : '',
+    dipJurado1Nombre: dipRad ? (document.getElementById('dipJur1Nombre')?.value || '').trim() : '',
+    dipJurado1Email: dipRad ? (document.getElementById('dipJur1Email')?.value || '').trim() : '',
+    dipJurado1Telefono: dipRad ? (document.getElementById('dipJur1Tel')?.value || '').trim() : '',
+    dipJurado2Nombre: dipRad ? (document.getElementById('dipJur2Nombre')?.value || '').trim() : '',
+    dipJurado2Email: dipRad ? (document.getElementById('dipJur2Email')?.value || '').trim() : '',
+    dipJurado2Telefono: dipRad ? (document.getElementById('dipJur2Tel')?.value || '').trim() : '',
+    dipJurado3Nombre: dipRad ? (document.getElementById('dipJur3Nombre')?.value || '').trim() : '',
+    dipJurado3Email: dipRad ? (document.getElementById('dipJur3Email')?.value || '').trim() : '',
+    dipJurado3Telefono: dipRad ? (document.getElementById('dipJur3Tel')?.value || '').trim() : '',
     tutor1Nombre: dipRad ? '' : (document.getElementById('tutor1Nombre')?.value || '').trim(),
     tutor1Email: dipRad ? '' : (document.getElementById('tutor1Email')?.value || '').trim(),
     tutor1Telefono: dipRad ? '' : (document.getElementById('tutor1Telefono')?.value || '').trim(),
