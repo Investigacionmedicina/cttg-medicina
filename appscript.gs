@@ -57,12 +57,13 @@ function handleRequest(e, body) {
       case "validarTutores":       result = validarTutores(body.rowIndex, body.tutor1, body.tutor2, body.observaciones, body.emailCoord); break;
       case "getTutores":           result = obtenerTutores(); break;
       case "getEvaluadores":       result = obtenerEvaluadores(); break;
+      case "getJurados":           result = obtenerJurados(); break;
       case "getFechasComite":      result = obtenerFechasComite(); break;
       case "subirArchivo":         result = subirArchivoAutorizado(body.base64, body.nombreArchivo, body.tipoArchivo, body.subcarpeta, sesion); break;
       case "crearProtocolo":       result = crearProtocolo(body.numeroRadicacion, body.emailEstudiante, body.nombreArchivo, body.urlArchivo, body.anexoCambio, body.observaciones, sesion); break;
       case "getFase2":             result = obtenerFase2(sesion); break;
       case "avalarProtocoloFase2": result = avalarProtocoloFase2(body.rowIndex, body.estado, body.motivo, body.evaluador, body.emailEvaluador, body.fechaComite, body.observaciones, body.emailCoord); break;
-      case "registrarDecisionComite": result = registrarDecisionComite(body.rowIndex, body.estado, body.motivoDevoluccion, body.emailEvaluador, body.evaluador, body.numeroActa, body.avalCCEB, body.observaciones); break;
+      case "registrarDecisionComite": result = registrarDecisionComite(body.rowIndex, body.estado, body.motivoDevolucion || body.motivoDevoluccion, body.emailEvaluador, body.evaluador, body.numeroActa, body.avalCCEB, body.observaciones); break;
       case "actualizarProtocolo":  result = actualizarEstadoProtocolo(body.rowIndex, body.estado, body.evaluador, body.emailEvaluador, body.fechaReunion, body.decision, body.motivo, body.emailCoord); break;
       case "crearActasAsesoria":   result = crearActasAsesoria(body.numeroRadicacion, body.emailEstudiante, body.nombreArchivo, body.base64, body.observaciones, sesion); break;
       case "getActasAsesoria":     result = obtenerActasAsesoria(sesion); break;
@@ -1019,6 +1020,30 @@ function obtenerEvaluadores() {
   return { success: true, evaluadores: evaluadores };
 }
 
+// Hoja Jurados: A=ID | B=Nombre | C=Email | D=Teléfono | E=Especialidad | F=Estado (inactivo = omitir)
+function obtenerJurados() {
+  var sheet = getSheet("Jurados");
+  if (!sheet) return { success: true, jurados: [], listaNota: "no_hoja" };
+  var data = sheet.getDataRange().getValues();
+  var jurados = [];
+  for (var i = 1; i < data.length; i++) {
+    var r = data[i];
+    var nombre = String(r[1] || "").trim();
+    var email = String(r[2] || "").trim();
+    if (!nombre && !email) continue;
+    var estado = String(r[5] || "").trim().toLowerCase();
+    if (estado === "inactivo") continue;
+    jurados.push({
+      id: String(r[0] || i).trim(),
+      nombre: nombre,
+      email: email,
+      telefono: String(r[3] || "").trim(),
+      especialidad: String(r[4] || "").trim()
+    });
+  }
+  return { success: true, jurados: jurados, listaNota: jurados.length ? "" : "sin_filas" };
+}
+
 // Hoja Fecha reuniones: A=ID | B=Año | C=Mes | D=Fecha Reunión 1 | E=Fecha Reunión 2 | F=Estado
 function obtenerFechasComite() {
   var sheet = getSheet("Fecha reuniones");
@@ -1153,7 +1178,6 @@ function listaProtocolosFase2Completa() {
       estado: estado,
       fechaAprobacion: formatearFecha(r[9]),
       observaciones: String(r[10] || ""),
-      motivoDevolucio: String(r[10] || ""),
       correoRadica: String(r[13] || ""),
       diasRestantes: diasRestantes,
       vencido: vencido,
@@ -1571,6 +1595,13 @@ function metricasColumnaRadicacionFase3(sheet) {
     ultimaFilaNumeroEnColumnaB: ultimaFila,
     scanEndColumnaB: scanEnd
   };
+}
+
+/** Última fila que puede editarse en Fase 3 (usada por updateFase3Estado / Asignación / completar). */
+function ultimaFilaEscrituraFase3(sheet) {
+  if (!sheet) return 1;
+  var m = metricasColumnaRadicacionFase3(sheet);
+  return Math.max(m.ultimaFilaNumeroEnColumnaB || 1, sheet.getLastRow() || 1);
 }
 
 function esFilaValidaParaModificarFase3(sheet, ri) {
