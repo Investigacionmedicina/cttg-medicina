@@ -107,7 +107,7 @@
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>N° Radicación</th><th>Estudiante</th><th>Estado Fase 2</th><th>Evaluador actual</th><th>Eval. anterior (último comité)</th><th>Motivo última devolución</th>
+            <th>N° Radicación</th><th>Estudiante</th><th>Estado Fase 2</th><th>Evaluador actual</th><th>Eval. anterior (último comité)</th><th>Motivo última devolución</th><th>Jurados sug. (diplomado)</th>
           </tr></thead>
           <tbody id="tbodySinFecha"></tbody>
         </table>
@@ -119,7 +119,7 @@
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>N° Radicación</th><th>Estudiante</th><th>Estado</th><th>Fila</th><th>Último evaluador que devolvió</th><th>Motivo registrado</th>
+            <th>N° Radicación</th><th>Estudiante</th><th>Estado</th><th>Fila</th><th>Último evaluador que devolvió</th><th>Motivo registrado</th><th>Jurados sug. (dip.)</th>
           </tr></thead>
           <tbody id="tbodyDevueltos"></tbody>
         </table>
@@ -153,10 +153,10 @@
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>N° Radicación</th><th>Estudiante</th><th>Evaluador propuesto</th><th>Historial</th><th>Estado</th><th>Acción</th>
+              <th>N° Radicación</th><th>Estudiante</th><th>Evaluador propuesto</th><th>Jurados sug. (diplomado)</th><th>Historial</th><th>Estado</th><th>Acción</th>
             </tr></thead>
             <tbody id="detProtocolos">
-              <tr><td colspan="6" class="empty">Cargando protocolos...</td></tr>
+              <tr><td colspan="7" class="empty">Cargando protocolos...</td></tr>
             </tbody>
           </table>
         </div>
@@ -199,6 +199,9 @@
       <strong>Segunda o posterior valoración:</strong>
       El evaluador que participó en la devolución anterior fue <strong id="decEvAnt">—</strong>.
       <span id="decMotivoAnt" style="display:block;margin-top:6px;opacity:.9"></span>
+    </div>
+    <div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.35);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;line-height:1.5;display:none;color:#a7f3d0" id="decDiplomadoBanner">
+      <strong>Modalidad Diplomado:</strong> no aplica sustentación. El aval del comité cierra el trámite. Los campos de acta CCEB no son obligatorios aquí; se registrará referencia interna automática.
     </div>
 
     <div class="mfg">
@@ -347,6 +350,13 @@ function truncTxt(s, max) {
   return t.length <= max ? t : t.slice(0, max) + '…';
 }
 
+function fmtJuradosDip(p) {
+  if (!p || !p.esDiplomado) return '<span style="opacity:.45">—</span>';
+  const arr = p.juradosSugeridosDiplomado;
+  if (!arr || !arr.length) return '<span style="opacity:.5;font-size:11px">Sin datos</span>';
+  return arr.map((j, i) => '<div style="font-size:10px;line-height:1.35;color:rgba(255,255,255,.65)">' + esc(String(i + 1) + '. ' + [j.nombre, j.email].filter(Boolean).join(' · ')) + '</div>').join('');
+}
+
 function renderSinFecha(protocolos) {
   const bloque = document.getElementById('bloqueSinFecha');
   const tbody = document.getElementById('tbodySinFecha');
@@ -364,7 +374,8 @@ function renderSinFecha(protocolos) {
       <td>${esc(p.estado || '—')}${segunda !== '—' ? ' ' + segunda : ''}</td>
       <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(p.evaluador || '—')}</td>
       <td style="font-size:11px;color:#fcd34d">${esc(p.evaluadorAnteriorComite || '—')}</td>
-      <td style="font-size:11px;color:rgba(255,255,255,.45);max-width:220px">${esc(truncTxt(p.motivoUltimaDevolucion || p.observaciones, 140))}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.45);max-width:200px">${esc(truncTxt(p.motivoUltimaDevolucion || p.observaciones, 120))}</td>
+      <td style="max-width:170px;vertical-align:top">${fmtJuradosDip(p)}</td>
     </tr>`;
   }).join('');
 }
@@ -385,7 +396,8 @@ function renderDevueltos(protocolos) {
       <td>${esc(p.estado)}</td>
       <td style="font-family:monospace;font-size:11px;color:rgba(255,255,255,.4)">${p.rowIndex}</td>
       <td style="font-size:11px;color:#fcd34d">${esc(p.evaluador || '—')}</td>
-      <td style="font-size:11px;color:rgba(255,255,255,.55);max-width:280px">${esc(truncTxt(p.observaciones || p.motivoUltimaDevolucion, 160))}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.55);max-width:220px">${esc(truncTxt(p.observaciones || p.motivoUltimaDevolucion, 140))}</td>
+      <td style="max-width:170px;vertical-align:top">${fmtJuradosDip(p)}</td>
     </tr>`).join('');
 }
 
@@ -478,6 +490,7 @@ function mostrarDetalleReunion(fecha) {
           <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(p.numero || '—')}</td>
           <td style="font-size:12px;color:rgba(255,255,255,.8)">${esc(p.emailEstudiante || '—')}</td>
           <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador || '—')}</td>
+          <td style="max-width:180px;vertical-align:top">${fmtJuradosDip(p)}</td>
           <td>${histHtml}</td>
           <td><span class="badge b-pend">⏱ ${esc(p.estado)}</span></td>
           <td><button class="btn gr" onclick="abrirModalDecision(${p.rowIndex})">✅ Decisión</button></td>
@@ -539,7 +552,8 @@ function abrirModalDecision(rowIndex) {
     rowIndex: idx,
     numero: protocolo.numero || '',
     email: protocolo.emailEstudiante || '',
-    evaluador: protocolo.evaluador || ''
+    evaluador: protocolo.evaluador || '',
+    esDiplomado: !!protocolo.esDiplomado
   };
 
   const histBanner = document.getElementById('decHistorialBanner');
@@ -556,6 +570,9 @@ function abrirModalDecision(rowIndex) {
     motEl.textContent = '';
     motEl.style.display = 'none';
   }
+
+  const dipB = document.getElementById('decDiplomadoBanner');
+  if (dipB) dipB.style.display = protocolo.esDiplomado ? 'block' : 'none';
 
   document.getElementById('decNum').textContent = protocoloActual.numero || '—';
   document.getElementById('decEst').textContent = protocoloActual.email || '—';
@@ -575,10 +592,11 @@ function abrirModalDecision(rowIndex) {
 document.getElementById('decisionSelect')?.addEventListener('change', function() {
   const esAprobado = this.value === 'Aprobado';
   const esDevuelto = this.value === 'Devuelto';
-  
+  const esDip = !!(protocoloActual && protocoloActual.esDiplomado);
+
   document.getElementById('motivoDiv').style.display = esDevuelto ? 'block' : 'none';
-  document.getElementById('actaDiv').style.display = esAprobado ? 'block' : 'none';
-  document.getElementById('avalDiv').style.display = esAprobado ? 'block' : 'none';
+  document.getElementById('actaDiv').style.display = esAprobado && !esDip ? 'block' : 'none';
+  document.getElementById('avalDiv').style.display = esAprobado && !esDip ? 'block' : 'none';
 });
 
 async function guardarDecision() {
@@ -609,12 +627,13 @@ async function guardarDecision() {
     errEl.style.display = 'block';
     return;
   }
-  if (decision === 'Aprobado' && !numActa) {
+  const esDip = !!(protocoloActual && protocoloActual.esDiplomado);
+  if (decision === 'Aprobado' && !esDip && !numActa) {
     errEl.textContent = 'Ingresa el número de acta';
     errEl.style.display = 'block';
     return;
   }
-  if (decision === 'Aprobado' && !aval) {
+  if (decision === 'Aprobado' && !esDip && !aval) {
     errEl.textContent = 'Indica si requiere aval CCEB';
     errEl.style.display = 'block';
     return;
@@ -636,8 +655,8 @@ async function guardarDecision() {
         observaciones: obs,
         emailEvaluador: '',
         evaluador: evaluadorReal,
-        numeroActa: decision === 'Aprobado' ? numActa : '',
-        avalCCEB: decision === 'Aprobado' ? aval : '',
+        numeroActa: decision === 'Aprobado' ? (protocoloActual.esDiplomado ? ('DIP-' + String(protocoloActual.numero || '').replace(/\W/g, '')) : numActa) : '',
+        avalCCEB: decision === 'Aprobado' ? (protocoloActual.esDiplomado ? 'No' : aval) : '',
         token: localStorage.getItem('cttg_token') || '',
         _ts: Date.now()
       })

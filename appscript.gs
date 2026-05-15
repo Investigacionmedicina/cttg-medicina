@@ -479,15 +479,23 @@ function notificarCambioEstado(rowIndex, estado, extras) {
   var j2Email  = extras.j2Email  || "";
   var j2Nombre = extras.j2Nombre || "";
 
+  var modalidadDip = String(sheet.getRange(ri, 23).getValue() || "").trim().toLowerCase() === "diplomado";
+
   var msgEst = "", msgCoord = "", msgT1 = "", msgT2 = "", msgJ1 = "", msgJ2 = "";
 
   if (estado === "Radicado") {
-    msgEst   = "Tu proyecto ha sido radicado exitosamente.\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nLa coordinadora revisará tus tutores pronto. Te notificaremos cuando haya novedades.";
-    msgCoord = "Nueva radicación recibida.\n\nNúmero: " + numero + "\nEstudiante: " + nombre1 + "\nTítulo: " + titulo + "\n\nPendiente revisión de tutores.";
+    if (modalidadDip) {
+      msgEst   = "Tu solicitud de modalidad Diplomado fue radicada.\n\nNúmero: " + numero + "\nPrograma / título: " + titulo + "\n\nRegistraste entre 1 y 3 jurados evaluadores sugeridos por el tutor. La coordinación revisará la solicitud; luego el comité técnico asignará al evaluador, quien valorará el producto en Fase 2. Esta modalidad no incluye sustentación.";
+      msgCoord = "Nueva radicación Diplomado.\n\nNúmero: " + numero + "\nEstudiante: " + nombre1 + "\nPrograma: " + titulo + "\n\nRevise fechas y jurados sugeridos (columnas 39–49). Pendiente aval de coordinación.";
+    } else {
+      msgEst   = "Tu proyecto ha sido radicado exitosamente.\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nLa coordinadora revisará tus tutores pronto. Te notificaremos cuando haya novedades.";
+      msgCoord = "Nueva radicación recibida.\n\nNúmero: " + numero + "\nEstudiante: " + nombre1 + "\nTítulo: " + titulo + "\n\nPendiente revisión de tutores.";
+    }
    var nombre2 = String(sheet.getRange(ri, 11).getValue() || "");
 var nombre3 = String(sheet.getRange(ri, 17).getValue() || "");
 msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nHas sido registrado como tutor del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\n--- ESTUDIANTE(S) ---\nEstudiante 1: " + nombre1 + " · Cédula: " + sheet.getRange(ri, 4).getValue() + " · Email: " + sheet.getRange(ri, 6).getValue() + " · Teléfono: " + sheet.getRange(ri, 7).getValue() + " · Semestre: " + sheet.getRange(ri, 8).getValue() + (nombre2 ? "\n\nEstudiante 2: " + nombre2 + " · Cédula: " + sheet.getRange(ri, 10).getValue() + " · Email: " + sheet.getRange(ri, 12).getValue() + " · Teléfono: " + sheet.getRange(ri, 13).getValue() + " · Semestre: " + sheet.getRange(ri, 14).getValue() : "") + (nombre3 ? "\n\nEstudiante 3: " + nombre3 + " · Cédula: " + sheet.getRange(ri, 16).getValue() + " · Email: " + sheet.getRange(ri, 18).getValue() + " · Teléfono: " + sheet.getRange(ri, 19).getValue() + " · Semestre: " + sheet.getRange(ri, 20).getValue() : "") + "\n\nLa coordinadora confirmará tu vinculación pronto." : "";
    msgT2    = t2Nombre ? "Hola " + t2Nombre + ",\n\nHas sido registrado como tutor del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\n--- ESTUDIANTE(S) ---\nEstudiante 1: " + nombre1 + " · Cédula: " + sheet.getRange(ri, 4).getValue() + " · Email: " + sheet.getRange(ri, 6).getValue() + " · Teléfono: " + sheet.getRange(ri, 7).getValue() + " · Semestre: " + sheet.getRange(ri, 8).getValue() + (nombre2 ? "\n\nEstudiante 2: " + nombre2 + " · Cédula: " + sheet.getRange(ri, 10).getValue() + " · Email: " + sheet.getRange(ri, 12).getValue() + " · Teléfono: " + sheet.getRange(ri, 13).getValue() + " · Semestre: " + sheet.getRange(ri, 14).getValue() : "") + (nombre3 ? "\n\nEstudiante 3: " + nombre3 + " · Cédula: " + sheet.getRange(ri, 16).getValue() + " · Email: " + sheet.getRange(ri, 18).getValue() + " · Teléfono: " + sheet.getRange(ri, 19).getValue() + " · Semestre: " + sheet.getRange(ri, 20).getValue() : "") + "\n\nLa coordinadora confirmará tu vinculación pronto." : "";
+    if (modalidadDip) { msgT1 = ""; msgT2 = ""; }
   }
   else if (estado === "Tutores Avalados") {
     msgEst   = "¡Buenas noticias! Tus tutores han sido avalados por la coordinadora.\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nYa puedes cargar tus actas de asesoría desde el portal.";
@@ -496,26 +504,49 @@ msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nHas sido registrado como tutor 
     msgT2    = t2Nombre ? "Hola " + t2Nombre + ",\n\nTu vinculación como tutor ha sido confirmada para el proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero : "";
   }
   else if (estado === "Fase 2 Desbloqueada") {
-    msgEst   = "¡Tus actas de asesoría fueron aprobadas!\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nYa puedes ingresar al portal y subir tu protocolo en la Fase 2.";
-    msgCoord = "Actas aprobadas para " + numero + ".\n\nEstudiante: " + nombre1 + "\nEl estudiante ya puede subir su protocolo.";
+    if (modalidadDip) {
+      msgEst   = "Tu diplomado fue avalado por la coordinación.\n\nNúmero: " + numero + "\nPrograma: " + titulo + "\n\nYa puedes cargar el producto final en Fase 2 (mismo formulario que protocolo). El comité técnico revisará, asignará evaluador y emitirá el aval final. No aplica sustentación.";
+      msgCoord = "Diplomado avalado (Fase 2 desbloqueada) · " + numero + ".\n\nEstudiante: " + nombre1 + "\nPuede cargar producto para comité.";
+    } else {
+      msgEst   = "¡Tus actas de asesoría fueron aprobadas!\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nYa puedes ingresar al portal y subir tu protocolo en la Fase 2.";
+      msgCoord = "Actas aprobadas para " + numero + ".\n\nEstudiante: " + nombre1 + "\nEl estudiante ya puede subir su protocolo.";
+    }
     msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nLas actas de asesoría del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\nHan sido aprobadas. El estudiante procederá con la Fase 2." : "";
     msgT2    = t2Nombre ? "Hola " + t2Nombre + ",\n\nLas actas de asesoría del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\nHan sido aprobadas. El estudiante procederá con la Fase 2." : "";
+    if (modalidadDip) { msgT1 = ""; msgT2 = ""; }
   }
   else if (estado === "Pendiente Comité Técnico") {
-    msgEst   = "Tu protocolo fue recibido correctamente.\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nEstá pendiente de evaluación por el comité técnico. Te notificaremos cuando haya una decisión.";
-    msgCoord = "Nuevo protocolo recibido para " + numero + ".\n\nEstudiante: " + nombre1 + "\nTítulo: " + titulo + "\n\nPendiente asignación de evaluador y fecha de comité.";
+    if (modalidadDip) {
+      msgEst   = "Tu producto de diplomado fue recibido.\n\nNúmero: " + numero + "\nPrograma: " + titulo + "\n\nQuedó en cola del comité técnico: revisarán la solicitud, asignarán al evaluador (según disponibilidad; se tomó en cuenta la sugerencia del tutor) y registrarán el aval. No hay sustentación.";
+      msgCoord = "Nuevo producto diplomado (Fase 2) para " + numero + ".\n\nEstudiante: " + nombre1 + "\n\nAsigne fecha de comité y evaluador. Jurados sugeridos en hoja Fase1 cols 41–49.";
+    } else {
+      msgEst   = "Tu protocolo fue recibido correctamente.\n\nNúmero: " + numero + "\nTítulo: " + titulo + "\n\nEstá pendiente de evaluación por el comité técnico. Te notificaremos cuando haya una decisión.";
+      msgCoord = "Nuevo protocolo recibido para " + numero + ".\n\nEstudiante: " + nombre1 + "\nTítulo: " + titulo + "\n\nPendiente asignación de evaluador y fecha de comité.";
+    }
     msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nEl protocolo del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\nEstá en revisión por el comité técnico." : "";
     msgT2    = t2Nombre ? "Hola " + t2Nombre + ",\n\nEl protocolo del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\nEstá en revisión por el comité técnico." : "";
+    if (modalidadDip) { msgT1 = ""; msgT2 = ""; }
   }
   else if (estado === "Aprobado") {
-    msgEst   = "¡Felicitaciones! Tu protocolo fue aprobado por el comité técnico.\n\nNúmero: " + numero + "\nTítulo: " + titulo + (notas ? "\n\nObservaciones: " + notas : "") + "\n\nYa puedes solicitar tu sustentación desde el portal.";
-    msgCoord = "Protocolo aprobado para " + numero + ".\n\nEstudiante: " + nombre1 + "\nTítulo: " + titulo;
+    if (modalidadDip) {
+      msgEst   = "¡Felicitaciones! El comité técnico avaló tu producto de diplomado.\n\nNúmero: " + numero + "\nPrograma: " + titulo + (notas ? "\n\nObservaciones: " + notas : "") + "\n\nCon esto se cierra el trámite en esta modalidad (no requiere sustentación).";
+      msgCoord = "Producto diplomado aprobado por comité · " + numero + ".\n\nEstudiante: " + nombre1;
+    } else {
+      msgEst   = "¡Felicitaciones! Tu protocolo fue aprobado por el comité técnico.\n\nNúmero: " + numero + "\nTítulo: " + titulo + (notas ? "\n\nObservaciones: " + notas : "") + "\n\nYa puedes solicitar tu sustentación desde el portal.";
+      msgCoord = "Protocolo aprobado para " + numero + ".\n\nEstudiante: " + nombre1 + "\nTítulo: " + titulo;
+    }
     msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nEl protocolo del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\nFue aprobado por el comité técnico. El estudiante procederá con la sustentación." : "";
     msgT2    = t2Nombre ? "Hola " + t2Nombre + ",\n\nEl protocolo del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\nFue aprobado por el comité técnico. El estudiante procederá con la sustentación." : "";
+    if (modalidadDip) { msgT1 = ""; msgT2 = ""; }
   }
   else if (estado === "Devuelto por Comité Técnico") {
-    msgEst   = "Tu protocolo fue devuelto por el Comité Técnico para una nueva valoración.\n\nNúmero: " + numero + "\nTítulo: " + titulo + (notas ? "\n\nMotivo: " + notas : "") + "\n\nRealiza los ajustes indicados y vuelve a cargar el protocolo desde la Fase 2 del portal.";
-    msgCoord = "Protocolo devuelto por Comité Técnico para " + numero + ".\n\nEstudiante: " + nombre1 + (notas ? "\nMotivo: " + notas : "");
+    if (modalidadDip) {
+      msgEst   = "Tu producto de diplomado fue devuelto por el Comité Técnico para una nueva valoración.\n\nNúmero: " + numero + "\nPrograma: " + titulo + (notas ? "\n\nMotivo: " + notas : "") + "\n\nAjusta el documento y vuelve a cargarlo desde Fase 2 del portal.";
+      msgCoord = "Producto diplomado devuelto por Comité Técnico · " + numero + ".\n\nEstudiante: " + nombre1 + (notas ? "\nMotivo: " + notas : "");
+    } else {
+      msgEst   = "Tu protocolo fue devuelto por el Comité Técnico para una nueva valoración.\n\nNúmero: " + numero + "\nTítulo: " + titulo + (notas ? "\n\nMotivo: " + notas : "") + "\n\nRealiza los ajustes indicados y vuelve a cargar el protocolo desde la Fase 2 del portal.";
+      msgCoord = "Protocolo devuelto por Comité Técnico para " + numero + ".\n\nEstudiante: " + nombre1 + (notas ? "\nMotivo: " + notas : "");
+    }
     msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nEl protocolo del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\nFue devuelto por el Comité Técnico y requiere una nueva valoración." : "";
     msgT2    = t2Nombre ? "Hola " + t2Nombre + ",\n\nEl protocolo del proyecto:\n\n\"" + titulo + "\"\nNúmero: " + numero + "\n\nFue devuelto por el Comité Técnico y requiere una nueva valoración." : "";
   }
@@ -595,16 +626,73 @@ function verificarRol(email, rolRequerido) {
 }
 
 // ── FASE 1: RADICACIÓN ───────────────────────────────────────
-// Hoja Fase1 (38 columnas):
-// A(1)=ID | B(2)=Número Radicación | C(3)=Email Estudiante
-// D(4)=Cédula1 | E(5)=Nombre1 | F(6)=Email1 | G(7)=Teléfono1 | H(8)=Semestre1 | I(9)=Semillero1
-// J(10)=Cédula2 | K(11)=Nombre2 | L(12)=Email2 | M(13)=Teléfono2 | N(14)=Semestre2 | O(15)=Semillero2
-// P(16)=Cédula3 | Q(17)=Nombre3 | R(18)=Email3 | S(19)=Teléfono3 | T(20)=Semestre3 | U(21)=Semillero3
-// V(22)=Título | W(23)=Modalidad | X(24)=Área
-// Y(25)=Tutor1Nombre | Z(26)=Tutor1Email | AA(27)=Tutor1Tel | AB(28)=Tutor1Relacion
-// AC(29)=Tutor2Nombre | AD(30)=Tutor2Email | AE(31)=Tutor2Tel | AF(32)=Tutor2Relacion
-// AG(33)=Estado | AH(34)=FechaRadicación | AI(35)=FechaAprobación
-// AJ(36)=Notas | AK(37)=AprobadoPor | AL(38)=DiasRestantes
+// Hoja Fase1 — columnas base 1–38 (A–AL) + extensión diplomado 39–49 (AM–AW):
+// … AL(38)=DiasRestantes | AM(39)=Diplomado inicio | AN(40)=Diplomado fin
+// AO–AQ jurado sugerido 1 | AR–AT jurado 2 | AU–AW jurado 3 (nombre, email, tel c/u)
+
+/** Garantiza columnas para fechas diplomado y hasta 3 jurados sugeridos por el tutor. */
+function asegurarColumnasFase1DiplomadoJurados(sheet) {
+  if (!sheet) return;
+  var need = 49;
+  if (sheet.getMaxColumns() < need) {
+    sheet.insertColumnsAfter(sheet.getMaxColumns(), need - sheet.getMaxColumns());
+  }
+  var hdrs = [
+    [39, "Diplomado inicio"],
+    [40, "Diplomado fin"],
+    [41, "Dip jurado1 nombre"],
+    [42, "Dip jurado1 email"],
+    [43, "Dip jurado1 tel"],
+    [44, "Dip jurado2 nombre"],
+    [45, "Dip jurado2 email"],
+    [46, "Dip jurado2 tel"],
+    [47, "Dip jurado3 nombre"],
+    [48, "Dip jurado3 email"],
+    [49, "Dip jurado3 tel"]
+  ];
+  for (var h = 0; h < hdrs.length; h++) {
+    var col = hdrs[h][0];
+    if (!String(sheet.getRange(1, col).getValue() || "").trim()) {
+      sheet.getRange(1, col).setValue(hdrs[h][1]);
+    }
+  }
+}
+
+function juradosSugeridosDiplomadoDesdeFilaF1(r) {
+  var out = [];
+  if (!r || r.length < 43) return out;
+  for (var k = 0; k < 3; k++) {
+    var base = 40 + k * 3;
+    var nombre = String(r[base] || "").trim();
+    var email = String(r[base + 1] || "").trim();
+    var tel = String(r[base + 2] || "").trim();
+    if (nombre || email || tel) {
+      out.push({ nombre: nombre, email: email, telefono: tel });
+    }
+  }
+  return out;
+}
+
+function enriquecerProtocolosConRadicacionDiplomado(protocolos) {
+  var sheet = getSheet("Fase1");
+  if (!sheet || !protocolos || !protocolos.length) return protocolos;
+  var data = sheet.getDataRange().getValues();
+  var map = {};
+  for (var i = 1; i < data.length; i++) {
+    map[String(data[i][1] || "").trim()] = data[i];
+  }
+  for (var j = 0; j < protocolos.length; j++) {
+    var p = protocolos[j];
+    var row = map[String(p.numero || "").trim()];
+    if (!row) continue;
+    p.modalidadRadicacion = String(row[22] || "");
+    p.esDiplomado = String(p.modalidadRadicacion || "").trim().toLowerCase() === "diplomado";
+    p.diplomadoFechaInicio = formatearFecha(row[38] || "");
+    p.diplomadoFechaFin = formatearFecha(row[39] || "");
+    p.juradosSugeridosDiplomado = juradosSugeridosDiplomadoDesdeFilaF1(row);
+  }
+  return protocolos;
+}
 
 function crearRadicacion(datos, emailEstudiante, sesion) {
   if (!sesion || sesion.rol !== "estudiante") {
@@ -614,11 +702,41 @@ function crearRadicacion(datos, emailEstudiante, sesion) {
     return { success: false, error: "No autorizado" };
   }
   if (!datos) return { success: false, error: "Datos vacíos" };
+  var modLower = String(datos.modalidad || "").trim().toLowerCase();
+  if (modLower === "diplomado") {
+    if (!String(datos.dipJurado1Nombre || "").trim() || !String(datos.dipJurado1Email || "").trim() || !String(datos.dipJurado1Telefono || "").trim()) {
+      return { success: false, error: "Diplomado: el jurado sugerido 1 requiere nombre, email y teléfono." };
+    }
+    var j2any = String(datos.dipJurado2Nombre || datos.dipJurado2Email || datos.dipJurado2Telefono || "").trim();
+    if (j2any && (!String(datos.dipJurado2Nombre || "").trim() || !String(datos.dipJurado2Email || "").trim() || !String(datos.dipJurado2Telefono || "").trim())) {
+      return { success: false, error: "Diplomado: si indica un segundo jurado, complete nombre, email y teléfono." };
+    }
+    var j3any = String(datos.dipJurado3Nombre || datos.dipJurado3Email || datos.dipJurado3Telefono || "").trim();
+    if (j3any && (!String(datos.dipJurado3Nombre || "").trim() || !String(datos.dipJurado3Email || "").trim() || !String(datos.dipJurado3Telefono || "").trim())) {
+      return { success: false, error: "Diplomado: si indica un tercer jurado, complete nombre, email y teléfono." };
+    }
+    if (j3any && !j2any) {
+      return { success: false, error: "Diplomado: no puede registrar jurado 3 sin completar el jurado 2." };
+    }
+  }
   var sheet  = getSheet("Fase1");
   if (!sheet) return { success: false, error: "Hoja Fase1 no encontrada" };
+  asegurarColumnasFase1DiplomadoJurados(sheet);
   var numero = generarNumero("CTTG", "Fase1");
   var fecha  = hoy();
   var nuevoId = sheet.getLastRow();
+
+  var dipIni = String(datos.diplomadoFechaInicio || "").trim();
+  var dipFin = String(datos.diplomadoFechaFin || "").trim();
+  var d1n = String(datos.dipJurado1Nombre || "").trim();
+  var d1e = String(datos.dipJurado1Email || "").trim();
+  var d1t = String(datos.dipJurado1Telefono || "").trim();
+  var d2n = String(datos.dipJurado2Nombre || "").trim();
+  var d2e = String(datos.dipJurado2Email || "").trim();
+  var d2t = String(datos.dipJurado2Telefono || "").trim();
+  var d3n = String(datos.dipJurado3Nombre || "").trim();
+  var d3e = String(datos.dipJurado3Email || "").trim();
+  var d3t = String(datos.dipJurado3Telefono || "").trim();
 
   sheet.appendRow([
     nuevoId,                    // 1  ID
@@ -658,7 +776,12 @@ function crearRadicacion(datos, emailEstudiante, sesion) {
     "",                         // 35 Fecha Aprobación
     datos.observaciones || "",  // 36 Notas
     "",                         // 37 Aprobado Por
-    ""                          // 38 Días Restantes
+    "",                         // 38 Días Restantes
+    dipIni,                     // 39 Diplomado inicio
+    dipFin,                     // 40 Diplomado fin
+    d1n, d1e, d1t,              // 41–43 Jurado sugerido 1
+    d2n, d2e, d2t,              // 44–46 Jurado 2
+    d3n, d3e, d3t               // 47–49 Jurado 3
   ]);
 
   // Notificar usando función centralizada
@@ -708,7 +831,18 @@ function mapearFilaFase1(r, rowIndex) {
     fechaAprobacion: formatearFecha(r[34]),
     notas:           String(r[35] || ""),
     aprobadoPor:     String(r[36] || ""),
-    diasRestantes:   String(r[37] || "")
+    diasRestantes:   String(r[37] || ""),
+    diplomadoFechaInicio: formatearFecha(r[38] || ""),
+    diplomadoFechaFin:  formatearFecha(r[39] || ""),
+    dipJurado1Nombre:    String(r[40] || ""),
+    dipJurado1Email:     String(r[41] || ""),
+    dipJurado1Telefono:  String(r[42] || ""),
+    dipJurado2Nombre:    String(r[43] || ""),
+    dipJurado2Email:     String(r[44] || ""),
+    dipJurado2Telefono:  String(r[45] || ""),
+    dipJurado3Nombre:    String(r[46] || ""),
+    dipJurado3Email:     String(r[47] || ""),
+    dipJurado3Telefono:  String(r[48] || "")
   };
 }
 
@@ -966,8 +1100,12 @@ function validarTutores(rowIndex, tutor1, tutor2, observaciones, emailCoord) {
     sheet.getRange(ri, 32).setValue(tutor2.vinculo  || "");
   }
   if (observaciones) sheet.getRange(ri, 36).setValue(observaciones);
-  sheet.getRange(ri, 33).setValue("Tutores Avalados");
-  notificarCambioEstado(ri, "Tutores Avalados", {});
+  var modalidadLower = String(sheet.getRange(ri, 23).getValue() || "").trim().toLowerCase();
+  var esDipl = modalidadLower === "diplomado";
+  if (!esDipl) {
+    sheet.getRange(ri, 33).setValue("Tutores Avalados");
+    notificarCambioEstado(ri, "Tutores Avalados", {});
+  }
   registrarAuditoria(emailCoord, "VALIDAR_TUTORES", numeroRad + " | Fila " + rowIndex);
   return { success: true };
 }
@@ -1204,6 +1342,7 @@ function listaProtocolosFase2Completa() {
 function obtenerFase2(sesion) {
   if (!sesion) return { success: false, error: "Sesión requerida" };
   var protocolos = listaProtocolosFase2Completa();
+  protocolos = enriquecerProtocolosConRadicacionDiplomado(protocolos);
   if (sesion.rol === "estudiante") {
     var em = String(sesion.email || "").trim().toLowerCase();
     protocolos = protocolos.filter(function(p) {
@@ -2308,13 +2447,7 @@ function testSistema() {
 
 // ── ESTRUCTURA DE HOJAS REQUERIDAS ───────────────────────────
 // 1. Usuarios       — ID | Email | Contraseña | Nombre | Rol | FechaCreacion | Estado
-// 2. Fase1 — 38 columnas (índice fila JS r[0]…r[37] = columnas A…AL). Igual que hoja vinculada en Excel:
-//    A id | B numero | C emailEstudiante | D cedula1 | E nombre1 | F email1 | G telefono1 | H semestre1
-//    | I semillero1 | J cedula2 | K nombre2 | L email2 | M telefono2 | N semestre2 | O semillero2
-//    | P cedula3 | Q nombre3 | R email3 | S telefono3 | T semestre3 | U semillero3 | V titulo | W modalidad
-//    | X area | Y tutor1Nombre | Z tutor1Email | AA tutor1Telefono | AB tutor1Relacion | AC tutor2Nombre
-//    | AD tutor2Email | AE tutor2Telefono | AF tutor2Relacion | AG estado | AH fechaRadicacion
-//    | AI fechaAprobacion | AJ notas | AK aprobadoPor | AL diasRestantes
+// 2. Fase1 — 38 columnas base (A–AL) + extensión diplomado cols 39–49 (AM–AW): fechas + 3×(nombre,email,tel) jurados sugeridos
 // 3. Fase 2         — 18 columnas (ver crearProtocolo)
 // 4. Acta asesoria  — 8 columnas (ver crearActasAsesoria)
 // 5. Fase 3         — 34 columnas base (ver crearFase3 / listaFase3)

@@ -76,7 +76,7 @@
 
     <div id="bloqueDiplomadoCoord" class="info-card" style="display:none">
       <div class="titulo">🎓 Modalidad Diplomado</div>
-      <div class="meta" id="dipDetalleCoord">—</div>
+      <div class="meta" id="dipDetalleCoord" style="white-space:pre-wrap;line-height:1.45">—</div>
     </div>
 
     <div id="bloqueTutoresCoord">
@@ -279,8 +279,16 @@ function poblarFormulario() {
     bloqueD.style.display = esDipl ? 'block' : 'none';
     const di = r.diplomadoFechaInicio || '';
     const df = r.diplomadoFechaFin || '';
+    const jurs = [1, 2, 3].map(i => {
+      const n = r['dipJurado' + i + 'Nombre'];
+      const e = r['dipJurado' + i + 'Email'];
+      const t = r['dipJurado' + i + 'Telefono'];
+      if (!n && !e) return null;
+      return 'J' + i + ': ' + [n, e, t].filter(Boolean).join(' · ');
+    }).filter(Boolean);
     document.getElementById('dipDetalleCoord').textContent =
-      'Sin actas de asesoría: al aprobar, el estudiante pasa a Fase 2. · Inicio: ' + fmtFechaCoord(di) + ' · Fin: ' + fmtFechaCoord(df);
+      'Sin actas de asesoría: al aprobar, el estudiante pasa a Fase 2. · Inicio: ' + fmtFechaCoord(di) + ' · Fin: ' + fmtFechaCoord(df) +
+      (jurs.length ? '\n\nJurados sugeridos por el tutor (referencia para el comité):\n' + jurs.join('\n') : '\n\n(Sin jurados sugeridos en datos de radicación — revise hoja Fase1 cols 41–49.)');
   }
 
   document.getElementById('tituloDecisionCoord').textContent = esDipl ? 'Decisión sobre el diplomado' : 'Decisión sobre tutores';
