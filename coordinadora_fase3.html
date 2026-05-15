@@ -281,10 +281,6 @@
       </div>
   </div>
 </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- MODAL DEVOLVER SOLICITUD -->
 <div class="modal-bg" id="modalDevolver">
@@ -443,6 +439,17 @@ function toast(msg, type) {
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/** Cierra modal de revisión y ejecuta la acción en el siguiente tick (modales encadenados). */
+function desdeModalRevisar(accion, rowIndex) {
+  closeModal('modalRevisar');
+  setTimeout(() => {
+    if (accion === 'devolver') abrirDevolver(rowIndex);
+    else if (accion === 'revisada') confirmarRevisada(rowIndex);
+    else if (accion === 'programar') abrirProgramar(rowIndex);
+    else if (accion === 'asignar') abrirAsignar(rowIndex);
+  }, 10);
+}
 
 function fmtFecha(s) {
   if (!s || s === '') return '—';
@@ -673,11 +680,13 @@ function fechaProgramacionValida(v) {
   return y >= 1990 && y <= 2100;
 }
 
-/** Jurados ya confirmados por la coordinadora (state text o r.nombres con datos) */
+/** Jurados ya confirmados por la coordinadora (estado explícito o col. nombres en Sheet). */
 function juradosAprobados(r) {
   const est = String(r.estadoSolicitud || '').trim().toLowerCase();
-  if (est.includes('jurado')) return true;
-  return !!(String(r.nombres || '').trim()); // col T = assigned jurado names
+  // No usar includes('jurado'): textos como «pendiente de asignación de jurados» daban falso positivo
+  // y ocultaban «Marcar revisada» / «Asignar jurados».
+  if (/\bjurados?\s+aprobados?\b/i.test(est)) return true;
+  return !!(String(r.nombres || '').trim());
 }
 
 /** Hay fecha real en columna programación (D) y/o fecha asignada (U). */
@@ -918,12 +927,12 @@ function abrirRevisar(rowIndex) {
 
   const tieneJurados = juradosAprobados(r);
   document.getElementById('mRevisarActions').innerHTML = `
-    <button class="btn" onclick="closeModal('modalRevisar')">Cerrar</button>
-    <button class="btn rd" onclick="closeModal('modalRevisar');abrirDevolver(${rowIndex})">↩ Devolver</button>
-    ${!estaDevuelta && !tieneJurados ? `<button class="btn bl" onclick="closeModal('modalRevisar');confirmarRevisada(${rowIndex})">✓ Marcar Revisada</button>` : ''}
+    <button type="button" class="btn" onclick="closeModal('modalRevisar')">Cerrar</button>
+    <button type="button" class="btn rd" onclick="desdeModalRevisar('devolver', ${rowIndex})">↩ Devolver</button>
+    ${!estaDevuelta && !tieneJurados ? `<button type="button" class="btn bl" onclick="desdeModalRevisar('revisada', ${rowIndex})">✓ Marcar Revisada</button>` : ''}
     ${tieneJurados && !tieneFechaProgramada(r)
-      ? `<button class="btn gr" onclick="closeModal('modalRevisar');abrirProgramar(${rowIndex})">📅 Programar Fecha</button>`
-      : (!estaDevuelta && !tieneJurados ? `<button class="btn gr" onclick="closeModal('modalRevisar');abrirAsignar(${rowIndex})">👥 Asignar Jurados</button>` : '')}`;
+      ? `<button type="button" class="btn gr" onclick="desdeModalRevisar('programar', ${rowIndex})">📅 Programar Fecha</button>`
+      : (!estaDevuelta && !tieneJurados ? `<button type="button" class="btn gr" onclick="desdeModalRevisar('asignar', ${rowIndex})">👥 Asignar Jurados</button>` : '')}`;
 
   openModal('modalRevisar');
 }
