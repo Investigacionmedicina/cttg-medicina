@@ -191,6 +191,48 @@ describe('switchTab', () => {
 });
 
 // ============================================================
+// 2b. Clicks nativos (regresión: onclick debe dispararse desde el DOM)
+// ============================================================
+describe('Clicks nativos en botones (onclick)', () => {
+  beforeEach(async () => {
+    await bootPage();
+  });
+
+  test('click en pestaña Nueva Radicación activa pan-nueva', () => {
+    document.getElementById('tabNueva').click();
+    expect(document.getElementById('pan-nueva').classList.contains('on')).toBe(true);
+    expect(document.getElementById('tabNueva').classList.contains('on')).toBe(true);
+  });
+
+  test('click en pestaña Mis Radicaciones vuelve a pan-mis-rad', () => {
+    document.getElementById('tabNueva').click();
+    document.getElementById('tabMisRad').click();
+    expect(document.getElementById('pan-mis-rad').classList.contains('on')).toBe(true);
+    expect(document.getElementById('tabMisRad').classList.contains('on')).toBe(true);
+  });
+
+  test('click en "2 Estudiantes" muestra bloques est2', () => {
+    const btns = document.querySelectorAll('.ne');
+    btns[1].click();
+    document.querySelectorAll('.est2').forEach(el => {
+      expect(el.style.display).not.toBe('none');
+    });
+  });
+
+  test('click en "Radicar ahora" (sin radicaciones) abre el formulario', async () => {
+    global.fetch.mockResolvedValue({
+      json: async () => ({ success: true, radicaciones: [], actas: [], protocolos: [], fase3: [] }),
+    });
+    await window.cargarMisRad();
+    const wrap = document.getElementById('misRadWrap');
+    const btnRadAhora = [...wrap.querySelectorAll('button')].find(b => /Radicar ahora/i.test(b.textContent));
+    expect(btnRadAhora).toBeTruthy();
+    btnRadAhora.click();
+    expect(document.getElementById('pan-nueva').classList.contains('on')).toBe(true);
+  });
+});
+
+// ============================================================
 // 3. setEst — campos de estudiantes adicionales
 // ============================================================
 describe('setEst', () => {
