@@ -1,5 +1,5 @@
 /**
- * Reglas alineadas con validarJuradosSugeridosDiplomado (estudiante_dashboard) y crearRadicacion (appscript): jurado diplomado obligatorio completo.
+ * Reglas alineadas con validarJuradosSugeridosDiplomado (estudiante_dashboard) cuando el tutor sugirió jurado.
  */
 function validarJuradoDiplomadoCompleto(slot) {
   const n = String(slot.n || '').trim();
@@ -14,7 +14,7 @@ function validarJuradoDiplomadoCompleto(slot) {
   return { ok: true };
 }
 
-describe('Diplomado — jurado obligatorio con datos completos', () => {
+describe('Diplomado — jurado cuando el tutor sugiere', () => {
   it('exige nombre, correo, teléfono, especialidad y acuerdo Sí/No', () => {
     expect(validarJuradoDiplomadoCompleto({ n: '', e: 'a@b.co', t: '3001234567', esp: 'X', ac: 'Sí' }).ok).toBe(false);
     expect(validarJuradoDiplomadoCompleto({ n: 'Dr', e: '', t: '3001234567', esp: 'X', ac: 'Sí' }).ok).toBe(false);
@@ -32,5 +32,19 @@ describe('Diplomado — jurado obligatorio con datos completos', () => {
   it('acepta datos completos con Sí o No', () => {
     expect(validarJuradoDiplomadoCompleto({ n: 'Dr A', e: 'a@usc.edu.co', t: '300 123 4567', esp: 'Medicina interna', ac: 'Sí' })).toEqual({ ok: true });
     expect(validarJuradoDiplomadoCompleto({ n: 'Dr A', e: 'a@usc.edu.co', t: '3001234567', esp: 'Epi', ac: 'No' })).toEqual({ ok: true });
+  });
+});
+
+function modoEvaluadorDiplomadoValido(m) {
+  const v = String(m || '').trim().toLowerCase();
+  return v === 'tutor_sugiere' || v === 'cttg_asigna';
+}
+
+describe('Diplomado — modo evaluador (tutor vs CTTG)', () => {
+  it('solo acepta tutor_sugiere o cttg_asigna', () => {
+    expect(modoEvaluadorDiplomadoValido('')).toBe(false);
+    expect(modoEvaluadorDiplomadoValido('otro')).toBe(false);
+    expect(modoEvaluadorDiplomadoValido('tutor_sugiere')).toBe(true);
+    expect(modoEvaluadorDiplomadoValido('cttg_asigna')).toBe(true);
   });
 });

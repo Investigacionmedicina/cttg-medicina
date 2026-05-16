@@ -280,15 +280,22 @@ function poblarFormulario() {
     const di = r.diplomadoFechaInicio || '';
     const df = r.diplomadoFechaFin || '';
     const jurs = (function() {
+      const modo = String(r.diplomadoJuradoModo || '').trim().toLowerCase();
       const n = r.dipJurado1Nombre, e = r.dipJurado1Email, t = r.dipJurado1Telefono;
       const esp = r.dipJurado1Especialidad, ac = r.dipJurado1AceptaPropuesta;
-      if (!n && !e) return [];
-      const line = ['Jurado registrado por el estudiante', [n, e, t].filter(Boolean).join(' · '), esp ? 'Especialidad: ' + esp : '', ac ? 'Acuerdo evaluación: ' + ac : ''].filter(Boolean).join('\n');
-      return [line];
+      if (modo === 'cttg_asigna') {
+        return ['Evaluador: lo asigna el Comité Técnico de Trabajos de Grado (el tutor no sugirió jurado en la radicación).'];
+      }
+      if (n || e) {
+        const line = ['Jurado sugerido por el tutor', [n, e, t].filter(Boolean).join(' · '), esp ? 'Especialidad: ' + esp : '', ac ? 'Acuerdo evaluación: ' + ac : ''].filter(Boolean).join('\n');
+        return [line];
+      }
+      if (modo === 'tutor_sugiere') return ['(Modo tutor sugirió jurado — faltan datos en hoja Fase 1)'];
+      return [];
     })();
     document.getElementById('dipDetalleCoord').textContent =
       'Sin tutores ni actas: al avalar, el estudiante pasa a Fase 2 (producto ante el Comité Técnico). · Inicio: ' + fmtFechaCoord(di) + ' · Fin: ' + fmtFechaCoord(df) +
-      (jurs.length ? '\n\n' + jurs[0] + '\n\nEl comité técnico valorará el producto; puede designarse como evaluador(a) al jurado indicado aquí u otra persona.' : '\n\n(Sin datos de jurado en la radicación — revise columnas Dip jurado en Fase 1.)');
+      (jurs.length ? '\n\n' + jurs[0] + '\n\nEl producto será valorado por el Comité Técnico; la coordinación confirma o asigna al evaluador definitivo cuando aplique.' : '\n\n(Sin datos de jurado/modo en la radicación — revise columnas Dip en Fase 1.)');
   }
 
   document.getElementById('tituloDecisionCoord').textContent = esDipl ? 'Decisión sobre el diplomado' : 'Decisión sobre tutores';
