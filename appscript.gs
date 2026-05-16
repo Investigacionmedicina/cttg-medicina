@@ -32,14 +32,14 @@ function handleRequest(e, body) {
 
     var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1'];
 
-    if (accionesCoord.indexOf(action) !== -1 && sesion.rol !== 'coordinadora') {
+    if (accionesCoord.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
         .createTextOutput(JSON.stringify({ success: false, error: "No autorizado" }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
     var accionesSoloCoordLectura = ['getFase1','getTutores','getEvaluadores','getFechasComite','getEstadisticasTutores','getAlertasCriticas','getTrazabilidad'];
-    if (accionesSoloCoordLectura.indexOf(action) !== -1 && sesion.rol !== 'coordinadora') {
+    if (accionesSoloCoordLectura.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
         .createTextOutput(JSON.stringify({ success: false, error: "No autorizado" }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -87,6 +87,12 @@ function handleRequest(e, body) {
   return ContentService
     .createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Coordinadora o Asistente: mismo permiso operativo (estados, actas, Fase 2/3, etc.). Rol en Sesiones en minúsculas. */
+function sesionEsCoordinadoraOAsistente(sesion) {
+  var r = sesion && String(sesion.rol || "").trim().toLowerCase();
+  return r === "coordinadora" || r === "asistente";
 }
 
 // ── HELPERS ──────────────────────────────────────────────────
@@ -314,7 +320,7 @@ function registrarTrazabilidadGlobal(email, accion, detalle) {
 }
 
 function obtenerTrazabilidad(sesion, numeroRadicacion, limit) {
-  if (!sesion || sesion.rol !== "coordinadora") {
+  if (!sesion || !sesionEsCoordinadoraOAsistente(sesion)) {
     return { success: false, error: "No autorizado" };
   }
   var sheet = getSheet("Trazabilidad");
@@ -1275,7 +1281,7 @@ function obtenerFechasComite() {
 
 // ── ARCHIVOS / DRIVE ─────────────────────────────────────────
 function subirArchivoAutorizado(base64, nombreArchivo, tipoArchivo, subcarpeta, sesion) {
-  if (!sesion || (sesion.rol !== "coordinadora" && sesion.rol !== "estudiante")) {
+  if (!sesion || (!sesionEsCoordinadoraOAsistente(sesion) && sesion.rol !== "estudiante")) {
     return { success: false, error: "No autorizado" };
   }
   return subirArchivo(base64, nombreArchivo, tipoArchivo, subcarpeta);
@@ -1416,7 +1422,7 @@ function obtenerFase2(sesion) {
     protocolos = protocolos.filter(function(p) {
       return String(p.emailEstudiante || "").trim().toLowerCase() === em;
     });
-  } else if (sesion.rol !== "coordinadora") {
+  } else if (!sesionEsCoordinadoraOAsistente(sesion)) {
     return { success: false, error: "No autorizado" };
   }
   return { success: true, protocolos: protocolos };
@@ -1552,7 +1558,7 @@ function obtenerActasAsesoria(sesion) {
     actas = actas.filter(function(a) {
       return String(a.emailEstudiante || "").trim().toLowerCase() === em;
     });
-  } else if (sesion.rol !== "coordinadora") {
+  } else if (!sesionEsCoordinadoraOAsistente(sesion)) {
     return { success: false, error: "No autorizado" };
   }
   return { success: true, actas: actas };
@@ -1949,7 +1955,7 @@ function ordenarFase3EstudianteMasRecientePrimero(fase3Est) {
 function obtenerFase3(sesion, opciones) {
   if (!sesion) return { success: false, error: "Sesión requerida" };
   opciones = opciones || {};
-  var sinDedupe = opciones.sinDedupe === true && sesion.rol === "coordinadora";
+  var sinDedupe = opciones.sinDedupe === true && sesionEsCoordinadoraOAsistente(sesion);
   var fase3;
   if (sesion.rol === "estudiante") {
     var em = String(sesion.email || "").trim().toLowerCase();
@@ -1958,7 +1964,7 @@ function obtenerFase3(sesion, opciones) {
         return String(s.emailEstudiante || "").trim().toLowerCase() === em;
       })
     );
-  } else if (sesion.rol === "coordinadora") {
+  } else if (sesionEsCoordinadoraOAsistente(sesion)) {
     fase3 = sinDedupe ? listaFase3TodasLasFilasSinDedupe() : listaFase3Completa();
   } else {
     return { success: false, error: "No autorizado" };
@@ -2351,7 +2357,7 @@ function obtenerDatosEstudiante(emailEstudiante, sesion) {
     if (em !== String(sesion.email || "").trim().toLowerCase()) {
       return { success: false, error: "No autorizado" };
     }
-  } else if (sesion.rol !== "coordinadora") {
+  } else if (!sesionEsCoordinadoraOAsistente(sesion)) {
     return { success: false, error: "No autorizado" };
   }
   var sheet = getSheet("Fase1");

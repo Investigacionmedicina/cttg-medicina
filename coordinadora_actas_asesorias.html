@@ -76,7 +76,7 @@
 </header>
 
 <main>
-  <a href="coordinadora_dashboard.html" class="back">← Volver al panel</a>
+  <a href="#" class="back" onclick="window.location.href=urlPanelStaff();return false;">← Volver al panel</a>
 
   <div class="filters">
     <select id="fEst" onchange="renderTabla()">
@@ -149,12 +149,19 @@
 
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
+function urlPanelStaff() {
+  try {
+    var u = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
+    return u && u.rol === 'asistente' ? 'asistente_dashboard.html' : 'coordinadora_dashboard.html';
+  } catch (e) { return 'coordinadora_dashboard.html'; }
+}
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
 let admin = null;
 let actas = [];
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  var r_adm = admin && String(admin.rol || '').toLowerCase();
+  if (!admin || (r_adm !== 'coordinadora' && r_adm !== 'asistente')) { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
   cargar();
 })();

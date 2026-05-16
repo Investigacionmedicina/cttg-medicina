@@ -104,7 +104,7 @@
 </header>
 
 <main>
-  <a href="coordinadora_dashboard.html" class="back">← Volver al panel</a>
+  <a href="#" class="back" onclick="window.location.href=urlPanelStaff();return false;">← Volver al panel</a>
 
   <div class="tabs">
     <button type="button" class="tab on" id="tabAsignar" onclick="switchTab('asignar',this)">📅 Pendiente Asignación</button>
@@ -365,6 +365,12 @@
 
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
+function urlPanelStaff() {
+  try {
+    var u = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
+    return u && u.rol === 'asistente' ? 'asistente_dashboard.html' : 'coordinadora_dashboard.html';
+  } catch (e) { return 'coordinadora_dashboard.html'; }
+}
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
 let admin = null;
 let fase3 = [];
@@ -373,7 +379,8 @@ let catalogoJurados = [];
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  var r_adm = admin && String(admin.rol || '').toLowerCase();
+  if (!admin || (r_adm !== 'coordinadora' && r_adm !== 'asistente')) { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
   cargarCatalogoJurados();
   cargar();
@@ -971,9 +978,9 @@ function abrirResultado(rowIndex, numero) {
 
 async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
   const tok = coordToken();
-  if (!tok) throw new Error('Sesión caducada o sin token. Vuelva a iniciar sesión como coordinadora.');
+  if (!tok) throw new Error('Sesión caducada o sin token. Vuelva a iniciar sesión.');
   const emailCoord = String((admin && (admin.email || admin.correo)) || '').trim();
-  if (!emailCoord) throw new Error('La sesión no incluye correo de coordinadora. Cierre sesión y entre de nuevo.');
+  if (!emailCoord) throw new Error('La sesión no incluye correo de la cuenta administrativa. Cierre sesión y entre de nuevo.');
 
   const idx = Number(rowIndex);
   if (!Number.isFinite(idx)) throw new Error('Identificador de fila inválido. Recargue la página e intente otra vez.');
