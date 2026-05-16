@@ -21,8 +21,14 @@
   .user-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
   .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
   main{padding:24px 28px;max-width:1500px;margin:0 auto}
-  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+  .metrics-caption{font-size:11px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.75px;margin:14px 0 8px;font-family:'DM Mono',monospace}
+  .metrics-caption:first-of-type{margin-top:0}
   .mc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;position:relative;overflow:hidden}
+  .mc-go{cursor:pointer;transition:border-color .15s,background .15s}
+  .mc-go:hover{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.055)}
+  .mc-go:active{transform:scale(.985)}
+  .mc .mh{font-size:10px;color:rgba(255,255,255,.45);margin-top:10px;line-height:1.4;font-family:'Outfit',sans-serif;font-weight:400;text-transform:none;letter-spacing:0}
   .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
   .mc.c1::before{background:#3b82f6}.mc.c2::before{background:#10b981}.mc.c3::before{background:#f59e0b}.mc.c4::before{background:#ef4444}.mc.c5::before{background:#a78bfa}.mc.c6::before{background:#00c3a5}
   .mc .ml{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:6px;font-family:'DM Mono',monospace}
@@ -138,7 +144,7 @@
   .seg-pill{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;background:rgba(96,165,250,.14);color:#93c5fd;border:1px solid rgba(96,165,250,.28);border-radius:99px;padding:3px 8px;margin-bottom:6px}
  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
   .toast.show{transform:translateY(0);opacity:1}
-  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
+  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}  .toast.info{background:rgba(59,130,246,.9);color:#fff}
   @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
@@ -156,18 +162,28 @@
 </header>
 
 <main>
+    <div class="metrics-caption">Resumen rápido</div>
     <div class="metrics">
-    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div></div>
-    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div></div>
-    <div class="mc c6"><div class="ml">En Revisión</div><div class="mv" id="mRev">—</div></div>
-    <div class="mc c5"><div class="ml">Pend. Comité</div><div class="mv" id="mPend">—</div></div>
-    <div class="mc c2"><div class="ml">Aprobadas</div><div class="mv" id="mApro">—</div></div>
-    <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
-    <div class="mc c4"><div class="ml">⏰ Plazo Crítico</div><div class="mv" id="mCritico">—</div></div>
+    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en Fase 1</div></div>
+    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div><div class="mh">Sin aval de tutor/diplomado aún</div></div>
+    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⏰ Plazo crítico</div><div class="mv" id="mCritico">—</div><div class="mh">Clic: abrir tab Alertas (&gt;60% tiempo de avance sin cierre)</div></div>
+   </div>
+    <div class="metrics-caption">¿A qué parte del panel ir? · Clic en la tarjeta</div>
+    <div class="metrics">
+    <div class="mc c6 mc-go" id="metricGoAvTutor" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true});}"><div class="ml">Validar tutores</div><div class="mv" id="mAvTutor">—</div><div class="mh">Radicadas sin Diplomado · tab Radicaciones (lista filtrada)</div></div>
+    <div class="mc c5 mc-go" id="metricGoAvDip" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'});}"><div class="ml">Aval Diplomado</div><div class="mv" id="mAvDip">—</div><div class="mh">Diplomado en Radicado · tab Radicaciones</div></div>
+    <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('actas')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('actas');}"><div class="ml">Actas / Fase 1</div><div class="mv" id="mActasF1">—</div><div class="mh">Revisión o Tutores avalados · tab Actas de Asesoría</div></div>
+    <div class="mc c1 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('protocolo')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('protocolo');}"><div class="ml">Protocolo · Fase 2</div><div class="mv" id="mProtF2">—</div><div class="mh">«Fase 2 Desbloqueada» · tab Protocolo</div></div>
+    <div class="mc c5 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('comite')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('comite');}"><div class="ml">Pendiente comité</div><div class="mv" id="mPend">—</div><div class="mh">Decisión pendiente CT · tab Comité Técnico</div></div>
+    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'});}"><div class="ml">Dev. por comité</div><div class="mv" id="mDevComite">—</div><div class="mh">Corrección post CT · tab Radicaciones</div></div>
+    <div class="mc c2 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Aprobado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado'});}"><div class="ml">Aprobadas comité</div><div class="mv" id="mApro">—</div><div class="mh">Listas para tramitar sustentación · luego tab Sustentación</div></div>
+    <div class="mc c3 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('fase3')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('fase3');}"><div class="ml">En sustentación · cierre</div><div class="mv" id="mEnSust">—</div><div class="mh">Fase sustentación, sustentado o reprobado · tab Sustentación</div></div>
+    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto'});}"><div class="ml">Devolución coord.</div><div class="mv" id="mDev">—</div><div class="mh">Devuelto por coordinación · tab Radicaciones</div></div>
+    <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}"><div class="ml">En revisión</div><div class="mv" id="mRev">—</div><div class="mh">Estado Revisión · tab Radicaciones</div></div>
    </div>
 
  <div class="main-tabs">
-    <button class="main-tab on" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
+    <button class="main-tab on" id="tabRad" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
     <button class="main-tab" id="tabActas" onclick="switchPanel('actas', this)">📄 Actas de Asesoría</button>
     <button class="main-tab" id="tabTutores" onclick="switchPanel('tutores', this)">👨‍🏫 Tutores</button>
     <button class="main-tab" id="tabAlertas" onclick="switchPanel('alertas', this)">🚨 Alertas <span class="badge-count" style="display:none"></span></button>
@@ -182,8 +198,8 @@
   <!-- PANEL RADICACIONES -->
   <div class="panel on" id="pan-rad">
     <div class="filters">
-      <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTabla()">
-      <select id="fEstRad" onchange="renderTabla()">
+      <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="limpiarFiltroMetrica();renderTabla()">
+      <select id="fEstRad" onchange="limpiarFiltroMetrica();renderTabla()">
   <option value="">Todos los estados</option>
   <option value="Radicado">Radicado</option>
   <option value="Revisión">En Revisión</option>
@@ -196,7 +212,7 @@
   <option value="Sustentado">Sustentado</option>
   <option value="Reprobado">Reprobado</option>
 </select>
-      <select id="fMod" onchange="renderTabla()"><option value="">Todas las modalidades</option></select>
+      <select id="fMod" onchange="limpiarFiltroMetrica();renderTabla()"><option value="">Todas las modalidades</option></select>
       <button class="btn" onclick="cargar()">↻ Actualizar</button>
       <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
     </div>
@@ -732,6 +748,8 @@
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
 let radicaciones = [], actas = [], admin = null;
+/** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
+let filtroDashboardMetrica = null;
 let solicitudActual = null;
 
 (function(){
@@ -825,6 +843,51 @@ function textoBtnAvalDashboard(r) {
   return esModalidadDiplomadoDash(r) ? '🎓 Aval diplomado' : '✅ Tutores';
 }
 
+function limpiarFiltroMetrica() {
+  filtroDashboardMetrica = null;
+}
+
+/** Desde métricas: abre pestaña y aplica filtros en Radicaciones si aplica */
+function irMetricaRuta(pan, opts) {
+  opts = opts || {};
+  limpiarFiltroMetrica();
+  if (opts.excludeDiplomado) filtroDashboardMetrica = { excludeDiplomado: true };
+  const map = {
+    rad: document.getElementById('tabRad'),
+    actas: document.getElementById('tabActas'),
+    protocolo: document.getElementById('tabProtocolo'),
+    fase3: document.getElementById('tabFase3'),
+    comite: document.getElementById('tabComite')
+  };
+  const btn = map[pan];
+  if (!btn) return;
+  switchPanel(pan, btn);
+
+  const searchEl = document.getElementById('search');
+  if (searchEl) searchEl.value = '';
+
+  const fe = document.getElementById('fEstRad');
+  const fm = document.getElementById('fMod');
+  if (pan !== 'rad') return;
+
+  if (opts.excludeDiplomado) {
+    if (fm) fm.value = '';
+    if (fe && opts.fEstRad !== undefined) fe.value = opts.fEstRad || '';
+  } else {
+    if (!('fMod' in opts) && fm) fm.value = '';
+    if (opts.fEstRad !== undefined && fe) fe.value = opts.fEstRad || '';
+    if ('fMod' in opts && fm) {
+      const target = String(opts.fMod || '').trim();
+      if (!target) fm.value = '';
+      else if (target.toLowerCase() === 'diplomado') {
+        const optFound = [...fm.options].find(function(o) { return String(o.value || '').trim().toLowerCase() === 'diplomado'; });
+        fm.value = optFound ? optFound.value : target;
+      } else fm.value = target;
+    }
+  }
+  renderTabla();
+}
+
 // ── RADICACIONES ─────────────────────────────────────────────
 async function cargar() {
   setSyncState('loading');
@@ -850,28 +913,81 @@ async function cargar() {
 }
     
 function actualizarMetricas() {
-  const s = { total: radicaciones.length, radicado:0, revision:0, pendienteComite:0, aprobado:0, devuelto:0, critico:0 };
+  const s = {
+    total: radicaciones.length,
+    radicado: 0,
+    critico: 0,
+    avTutor: 0,
+    avDip: 0,
+    actasF1: 0,
+    protF2: 0,
+    pendienteComite: 0,
+    devComite: 0,
+    aprobado: 0,
+    devCoord: 0,
+    enSustCierre: 0,
+    revision: 0
+  };
+  const tutoresOk = ['Tutores Avalados','Tutores avalados'];
+
   radicaciones.forEach(r => {
     const est = r.estado || 'Radicado';
-    if (est === 'Radicado') s.radicado++;
-    else if (est === 'Revisión') s.revision++;
-    else if (['Pendiente Comité','Pendiente Comité Técnico'].includes(est)) s.pendienteComite++;
-    else if (est === 'Aprobado') s.aprobado++;
-    else if (est === 'Devuelto') s.devuelto++;
-    
-    // Contar plazo crítico (>60% del plazo transcurrido)
-    const pctPlazo = Number(r.porcentajeAvance ?? r.porcentajePlazo ?? 0);
-    if (pctPlazo > 60 && !['Aprobado','Devuelto','Sustentado'].includes(est)) {
-      s.critico++;
+    const eLow = String(est).toLowerCase();
+
+    if (est === 'Radicado') {
+      s.radicado++;
+      if (esModalidadDiplomadoDash(r)) s.avDip++;
+      else s.avTutor++;
     }
+    if (est === 'Revisión' || tutoresOk.includes(est)) s.actasF1++;
+    if (est === 'Revisión') s.revision++;
+    if (est === 'Fase 2 Desbloqueada') s.protF2++;
+    if (['Pendiente Comité','Pendiente Comité Técnico'].includes(est)) s.pendienteComite++;
+    if (est === 'Devuelto por Comité Técnico') s.devComite++;
+    if (est === 'Aprobado') s.aprobado++;
+    if (est === 'Devuelto') s.devCoord++;
+    if (eLow.includes('sustentado') || eLow.includes('reprobado') || eLow.includes('fase 3') || eLow.includes('sustentaci')) {
+      s.enSustCierre++;
+    }
+
+    const pctPlazo = Number(r.porcentajeAvance ?? r.porcentajePlazo ?? 0);
+    if (pctPlazo > 60 && !['Aprobado','Devuelto','Sustentado'].includes(est)) s.critico++;
   });
-  document.getElementById('mTot').textContent  = s.total;
-  document.getElementById('mRad').textContent  = s.radicado;
-  document.getElementById('mRev').textContent  = s.revision;
-  document.getElementById('mPend').textContent = s.pendienteComite;
-  document.getElementById('mApro').textContent = s.aprobado;
-  document.getElementById('mDev').textContent  = s.devuelto;
-  document.getElementById('mCritico').textContent = s.critico;
+
+  function setTxt(id, n) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = n;
+  }
+
+  setTxt('mTot', s.total);
+  setTxt('mRad', s.radicado);
+  setTxt('mCritico', s.critico);
+  setTxt('mAvTutor', s.avTutor);
+  setTxt('mAvDip', s.avDip);
+  setTxt('mActasF1', s.actasF1);
+  setTxt('mProtF2', s.protF2);
+  setTxt('mPend', s.pendienteComite);
+  setTxt('mDevComite', s.devComite);
+  setTxt('mApro', s.aprobado);
+  setTxt('mDev', s.devCoord);
+  setTxt('mEnSust', s.enSustCierre);
+  setTxt('mRev', s.revision);
+
+  function dimCard(idMetric, count) {
+    var cell = document.getElementById(idMetric);
+    if (!cell || !cell.parentElement) return;
+    cell.parentElement.style.opacity = count > 0 ? '1' : '0.45';
+  }
+  dimCard('mAvTutor', s.avTutor);
+  dimCard('mAvDip', s.avDip);
+  dimCard('mActasF1', s.actasF1);
+  dimCard('mProtF2', s.protF2);
+  dimCard('mPend', s.pendienteComite);
+  dimCard('mDevComite', s.devComite);
+  dimCard('mApro', s.aprobado);
+  dimCard('mEnSust', s.enSustCierre);
+  dimCard('mDev', s.devCoord);
+  dimCard('mRev', s.revision);
 }
 function poblarFiltroMod() {
   const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
@@ -892,7 +1008,9 @@ function renderTabla() {
     const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.modalidad].join(' ').toLowerCase();
     const estadoR = String(r.estado || '');
     const estadoMatch = !fE || estadoR === fE || (fE === 'Tutores Avalados' && estadoR === 'Tutores avalados');
-    return (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
+    let ok = (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
+    if (ok && filtroDashboardMetrica && filtroDashboardMetrica.excludeDiplomado && esModalidadDiplomadoDash(r)) ok = false;
+    return ok;
   });
   const body = document.getElementById('tbody');
   if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
