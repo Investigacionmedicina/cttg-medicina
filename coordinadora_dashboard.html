@@ -139,6 +139,9 @@
  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
+  .sit-panel{max-width:240px;min-width:160px;font-size:11px;line-height:1.4;color:rgba(255,255,255,.74);vertical-align:top!important}
+  .sit-panel .sit-main{font-weight:500;color:rgba(255,255,255,.88);margin-bottom:4px;display:block}
+  .sit-panel .sit-sub{font-size:10px;color:rgba(255,255,255,.48);margin:0;display:block}
   @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
@@ -203,10 +206,10 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor / Diplomado</th><th>F. Radicación</th><th>Estado</th><th>Acciones</th>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor / Diplomado</th><th>F. Radicación</th><th>Estado</th><th>Situación · etapa</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbody">
-          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando registros...</td></tr>
+          <tr><td colspan="9" class="empty"><span class="spinner"></span>Cargando registros...</td></tr>
         </tbody>
       </table>
     </div>
@@ -825,6 +828,80 @@ function textoBtnAvalDashboard(r) {
   return esModalidadDiplomadoDash(r) ? '🎓 Aval diplomado' : '✅ Tutores';
 }
 
+/** Texto contextual: en qué tramo del circuito está el trabajo según estado + modalidad (panel coordinación). */
+function notaModalidadJuradoDiplomado(r) {
+  if (!esModalidadDiplomadoDash(r)) return '';
+  const m = String(r.diplomadoJuradoModo || '').trim().toLowerCase();
+  if (m.includes('tutor')) return 'Jurados: datos sugeridos por tutor.';
+  if (m.includes('cttg')) return 'Jurados: asignación a cargo del CTTG.';
+  return '';
+}
+
+function obtenerSituacionPanelRad(r) {
+  const estado = String(r && r.estado ? r.estado : 'Radicado').trim();
+  const e = estado.toLowerCase();
+  const esDip = esModalidadDiplomadoDash(r);
+  const notaJurado = notaModalidadJuradoDiplomado(r);
+  const inf = inferirEtapaSeguimientoPorEstado(estado, r && r.modalidad);
+  let tituloCircuito = 'Proceso';
+  let subtitulo = inf.siguiente || 'Consultar estado y trazabilidad.';
+
+  if (e.includes('sustentado')) {
+    tituloCircuito = 'Sustentación · Cierre';
+    subtitulo = 'Trabajo sustentado. Cierre administrativo.';
+  } else if (e.includes('reprobado')) {
+    tituloCircuito = 'Sustentación · Cierre';
+    subtitulo = 'Resultado no favorable. Gestión según normativa.';
+  } else if (e.includes('aprobado')) {
+    tituloCircuito = esDip ? 'Comité · Aprobado (Diplomado)' : 'Comité · Aprobado';
+    subtitulo = esDip
+      ? 'Aprobado por comité. En Diplomado puede cerrarse sin sustentación según el caso; ver trazabilidad.'
+      : 'Siguiente: estudiante/coordinación pueden avanzar a solicitud de sustentación.';
+  } else if (e.includes('devuelto por comité') || e.includes('devuelto por comite')) {
+    tituloCircuito = 'Comité · Devolución';
+    subtitulo = 'Estudiante y coordinación deben corregir y reenviar a valoración de comité.';
+  } else if (e.includes('pendiente comité') || e.includes('pendiente comite')) {
+    tituloCircuito = 'Comité técnico';
+    subtitulo = 'Esperando sesión/decisión del comité sobre protocolo.';
+  } else if (estado === 'Fase 2 Desbloqueada' || e.includes('fase 2 desbloqueada')) {
+    tituloCircuito = esDip ? 'Fase 2 · Protocolo (Diplomado)' : 'Fase 2 · Protocolo';
+    subtitulo = esDip
+      ? 'Sin actas de asesoría: estudiante/coordinación preparan protocolo para envío a comité técnico.'
+      : 'Protocolo cargado o por cargar ante comité técnico; seguimiento de observaciones hasta decisión.';
+  } else if (e.includes('tutores avalados') || e.includes('tutores autorizados')) {
+    tituloCircuito = esDip ? 'Fase 1 · Post‑aval Diplomado' : 'Actas · Fase 1';
+    subtitulo = esDip
+      ? 'Aval Diplomado otorgado. Avance hacia Fase 2 según programa (sin tutoría tradicional).' + (notaJurado ? ' ' + notaJurado : '')
+      : 'Estudiante debe cargar actas · coordinadora revisar y aprobar.';
+  } else if (estado === 'Revisión' || e.includes('revisión') || e.includes('revision')) {
+    tituloCircuito = esDip ? 'Fase 1 · Revisión' : 'Fase 1 · Revisión / actas';
+    subtitulo = esDip
+      ? 'Coordinación revisa radicación o aval Diplomado pendiente de cierre.'
+      : 'Antes de o durante carga/aprobación de actas.';
+  } else if (estado === 'Radicado' || e.includes('radicado')) {
+    tituloCircuito = esDip ? 'Fase 1 · Ingreso (Diplomado)' : 'Fase 1 · Ingreso';
+    subtitulo = esDip
+      ? ('Sin tutores: pendiente aval de opción Diplomado.' + (notaJurado ? ' ' + notaJurado : '')).trim()
+      : 'Pendiente validación de tutor(es) antes de avanzar a actas.';
+  } else if (e.includes('devuelto')) {
+    tituloCircuito = 'Fase 1 · Devolución coordinación';
+    subtitulo = 'Corregir observaciones registradas y reprocesar radicación o documentos.';
+  } else if (e.includes('fase 3') || e.includes('sustentaci')) {
+    tituloCircuito = 'Sustentación';
+    subtitulo = inf.siguiente || 'Gestión en módulo Sustentación (jurados, fecha).';
+  } else {
+    tituloCircuito = estado || 'Seguimiento';
+    subtitulo = inf.siguiente || 'Ver detalle para contexto específico.';
+  }
+
+  return { tituloCircuito: tituloCircuito.trim(), subtitulo: subtitulo.trim() };
+}
+
+function htmlCeldaSituacionPanel(r) {
+  const s = obtenerSituacionPanelRad(r);
+  return `<div class="sit-panel"><span class="sit-main">${esc(s.tituloCircuito)}</span><span class="sit-sub">${esc(s.subtitulo)}</span></div>`;
+}
+
 // ── RADICACIONES ─────────────────────────────────────────────
 async function cargar() {
   setSyncState('loading');
@@ -895,13 +972,14 @@ function renderTabla() {
     return (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
   });
   const body = document.getElementById('tbody');
-  if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="9" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
   body.innerHTML = filtered.map(r => {
     const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join('<br>') || '—';
     const estado  = r.estado || 'Radicado';
     const celdaTutor = textoCeldaTutorDashboard(r);
     const btnAvalCls = clasesBtnAvalDashboard(r);
     const btnAvalTxt = textoBtnAvalDashboard(r);
+    const celdaSit = htmlCeldaSituacionPanel(r);
     return `<tr>
       <td><div class="num-rad">${esc(r.numero||'')}</div></td>
       <td style="font-size:12px;max-width:160px">${nombres}</td>
@@ -910,6 +988,7 @@ function renderTabla() {
       <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:180px">${celdaTutor}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
       <td>${badgeEst(estado)}</td>
+      <td class="sit-panel-wrap">${celdaSit}</td>
       <td><div class="act">
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
@@ -1188,8 +1267,11 @@ async function responderSolicitud(aprobar) {
 
 function exportCSV() {
   if (!radicaciones.length) { toast('Sin datos para exportar', 'info'); return; }
-  const h = ['N° Radicación','Estado','Título','Modalidad','Área','Estudiante 1','Cédula 1','Email 1','Semestre 1','Estudiante 2','Estudiante 3','Tutor 1','Email Tutor 1','Tutor 2','F. Radicación','F. Aprobación','Notas'];
-  const rows = radicaciones.map(r => [r.numero,r.estado,`"${(r.titulo||'').replace(/"/g,'""')}"`,r.modalidad,r.area,`"${r.nombre1||''}"`,r.cedula1,r.email1,r.semestre1,`"${r.nombre2||''}"`,`"${r.nombre3||''}"`,`"${r.tutor1Nombre||''}"`,r.tutor1Email,`"${r.tutor2Nombre||''}"`,r.fechaRadicacion,r.fechaAprobacion,`"${(r.notas||'').replace(/"/g,'""')}"`]);
+  const h = ['N° Radicación','Estado','Situación (circuito)','Detalle situación','Título','Modalidad','Área','Estudiante 1','Cédula 1','Email 1','Semestre 1','Estudiante 2','Estudiante 3','Tutor 1','Email Tutor 1','Tutor 2','F. Radicación','F. Aprobación','Notas'];
+  const rows = radicaciones.map(r => {
+    const s = obtenerSituacionPanelRad(r);
+    return [r.numero,r.estado,`"${(s.tituloCircuito||'').replace(/"/g,'""')}"`,`"${(s.subtitulo||'').replace(/"/g,'""')}"`,`"${(r.titulo||'').replace(/"/g,'""')}"`,r.modalidad,r.area,`"${r.nombre1||''}"`,r.cedula1,r.email1,r.semestre1,`"${r.nombre2||''}"`,`"${r.nombre3||''}"`,`"${r.tutor1Nombre||''}"`,r.tutor1Email,`"${r.tutor2Nombre||''}"`,r.fechaRadicacion,r.fechaAprobacion,`"${(r.notas||'').replace(/"/g,'""')}"`];
+  });
   const csv = [h,...rows].map(r => r.join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'}));
