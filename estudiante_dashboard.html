@@ -317,10 +317,22 @@
           <div class="sec-label" style="grid-column:1/-1">🎓 Datos del diplomado</div>
           <div class="fg"><label>Fecha de inicio *</label><input type="date" id="diplomadoFechaIni"></div>
           <div class="fg"><label>Fecha de fin *</label><input type="date" id="diplomadoFechaFin"></div>
-          <div class="fg full"><p style="font-size:12px;color:rgba(255,255,255,.45);margin:0"><strong>No aplica tutoría:</strong> no registras tutores ni actas de asesoría. Debes registrar <strong>un jurado obligatorio</strong> con todos sus datos para referencia del Comité Técnico; la coordinación puede asignar a esa persona u otra como evaluador(a). Luego cargas el <strong>producto</strong> en Fase 2. <strong>No hay sustentación.</strong></p></div>
-          <div class="sec-label" style="grid-column:1/-1">👨‍⚖️ Jurado propuesto (obligatorio)</div>
-          <div class="fg full"><p style="font-size:12px;color:rgba(255,255,255,.45);margin:0">Completa <strong>todos</strong> los campos. Este profesional será la referencia del comité técnico; la coordinación confirma o asigna al evaluador definitivo para la sesión.</p></div>
-          <div class="sec-label" style="grid-column:1/-1;font-size:12px">Datos del jurado *</div>
+          <div class="fg full"><p style="font-size:12px;color:rgba(255,255,255,.45);margin:0;line-height:1.55"><strong>No aplica tutoría:</strong> no registras tutores ni actas de asesoría. Debes elegir cómo seguirá el <strong>evaluador ante el Comité Técnico de Trabajos de Grado</strong>; luego cargas el <strong>producto</strong> en Fase 2. <strong>No hay sustentación.</strong></p></div>
+          <div class="sec-label" style="grid-column:1/-1">👨‍⚖️ Evaluador para el Comité técnico *</div>
+          <div class="fg full" style="grid-column:1/-1">
+            <p style="font-size:12px;color:rgba(255,255,255,.5);margin:0 0 10px">¿El <strong>tutor</strong> te sugirió un jurado o evaluador para el comité?</p>
+            <label style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.88)">
+              <input type="radio" name="diplJuradoModo" id="diplJurModoTutor" value="tutor_sugiere" onchange="actualizarBloqueJuradoDiplomado()" style="margin-top:3px">
+              <span><strong>Sí</strong> — el tutor sugirió jurado: debo registrar sus datos completos abajo.</span>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.88)">
+              <input type="radio" name="diplJuradoModo" id="diplJurModoCttg" value="cttg_asigna" onchange="actualizarBloqueJuradoDiplomado()" style="margin-top:3px">
+              <span><strong>No</strong> — que el <strong>Comité Técnico de Trabajos de Grado</strong> designe al evaluador (no cargo datos de jurado aquí).</span>
+            </label>
+          </div>
+          <div id="bloqueJuradoDipDetalle" style="display:none;grid-column:1/-1">
+          <div class="sec-label" style="grid-column:1/-1;font-size:12px;margin-top:4px">Datos del jurado sugerido por el tutor *</div>
+          <div class="fg full"><p style="font-size:12px;color:rgba(255,255,255,.45);margin:0">Completa todos los campos solo si elegiste «Sí» arriba.</p></div>
           <div class="fg"><label>Nombre completo *</label><input id="dipJur1Nombre" placeholder="Dr.(a). Nombre Apellido"></div>
           <div class="fg"><label>Correo electrónico *</label><input type="email" id="dipJur1Email" placeholder="jurado@usc.edu.co"></div>
           <div class="fg"><label>Teléfono *</label><input id="dipJur1Tel" placeholder="Mínimo 7 dígitos"></div>
@@ -331,6 +343,7 @@
               <option value="Sí">Sí</option>
               <option value="No">No</option>
             </select>
+          </div>
           </div>
         </div>
         <div class="fg" id="fgArea"><label>Área / Especialidad *</label>
@@ -436,6 +449,12 @@ function actualizarFormModalidad() {
     ar.required = !dip;
     if (dip) { ar.value = ''; }
   }
+  if (!dip) {
+    ['diplJurModoTutor', 'diplJurModoCttg'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.checked = false;
+    });
+  }
   if (!dip && document.getElementById('diplomadoFechaIni')) {
     document.getElementById('diplomadoFechaIni').value = '';
     document.getElementById('diplomadoFechaFin').value = '';
@@ -444,6 +463,27 @@ function actualizarFormModalidad() {
     const el = document.getElementById(id);
     if (el && !dip) el.value = '';
   });
+  actualizarBloqueJuradoDiplomado();
+}
+
+function diplJuradoModoSeleccionado() {
+  const r = document.querySelector('input[name="diplJuradoModo"]:checked');
+  return r ? String(r.value || '').trim() : '';
+}
+
+function actualizarBloqueJuradoDiplomado() {
+  const box = document.getElementById('bloqueJuradoDipDetalle');
+  if (!box) return;
+  box.style.display = diplJuradoModoSeleccionado() === 'tutor_sugiere' ? 'block' : 'none';
+}
+
+function validarOpcionJuradoDiplomado() {
+  const m = diplJuradoModoSeleccionado();
+  if (m !== 'tutor_sugiere' && m !== 'cttg_asigna') {
+    toast('Diplomado: indica si el tutor sugirió jurado o si el Comité Técnico de Trabajos de Grado debe asignar el evaluador.', 'warn');
+    return false;
+  }
+  return true;
 }
 
 function emailRadValido(em) {
@@ -454,7 +494,7 @@ function telRadMinOk(tel) {
   return String(tel || '').replace(/\s/g, '').length >= 7;
 }
 
-/** Diplomado: un jurado obligatorio — nombre, correo, teléfono, especialidad, acuerdo (Sí/No). */
+/** Si el tutor sugirió jurado: validar datos completos. */
 function validarJuradosSugeridosDiplomado() {
   const n = (document.getElementById('dipJur1Nombre')?.value || '').trim();
   const e = (document.getElementById('dipJur1Email')?.value || '').trim();
@@ -462,7 +502,7 @@ function validarJuradosSugeridosDiplomado() {
   const esp = (document.getElementById('dipJur1Especialidad')?.value || '').trim();
   const ac = (document.getElementById('dipJur1Acepta')?.value || '').trim();
   if (!n || !e || !t || !esp) {
-    toast('Diplomado: completa todos los datos del jurado (nombre, correo, teléfono y especialidad o área).', 'warn');
+    toast('Diplomado: completa todos los datos del jurado sugerido por el tutor (nombre, correo, teléfono y especialidad o área).', 'warn');
     return false;
   }
   if (!emailRadValido(e)) {
@@ -674,12 +714,20 @@ function verDetalle(rowIndex) {
     ${fila('Modalidad', r.modalidad)}
     ${esModalidadDiplomadoUI(r.modalidad) ? fila('Fechas del diplomado', (r.diplomadoFechaInicio || r.diplomadoFechaFin) ? ('Inicio: ' + fmtFecha(r.diplomadoFechaInicio) + ' · Fin: ' + fmtFecha(r.diplomadoFechaFin)) : '—') : ''}
     ${esModalidadDiplomadoUI(r.modalidad) ? (function(){
+      const modo = String(r.diplomadoJuradoModo || '').trim().toLowerCase();
+      const esCttg = modo === 'cttg_asigna';
+      const esTutor = modo === 'tutor_sugiere';
+      const lineModo = esCttg
+        ? fila('Evaluador (Comité técnico)', 'El Comité Técnico de Trabajos de Grado asignará evaluador — no se registró jurado sugerido por el tutor.')
+        : (esTutor ? fila('Modalidad evaluador', 'Jurado sugerido por el tutor (datos abajo)') : fila('Modalidad evaluador', 'Radicación previa al cambio de formulario — revise datos del jurado si figuran.'));
       const n = r.dipJurado1Nombre, e = r.dipJurado1Email, t = r.dipJurado1Telefono;
       const esp = r.dipJurado1Especialidad, ac = r.dipJurado1AceptaPropuesta;
       const base = [n, e, t].filter(Boolean).join(' · ');
       const extra = [esp ? 'Esp.: ' + esp : '', ac ? 'Acuerdo: ' + ac : ''].filter(Boolean).join(' · ');
-      const line = base ? fila('Jurado registrado', base + (extra ? ' — ' + extra : '')) : '';
-      return '<div class="det-sec">Comité técnico — jurado propuesto</div>' + (line || '<div class="det-row"><span class="det-label">Jurado</span><span class="det-val">Sin datos</span></div>');
+      const lineJur = (esTutor || (!modo && base)) && base
+        ? fila('Jurado sugerido (tutor)', base + (extra ? ' — ' + extra : ''))
+        : '';
+      return '<div class="det-sec">Comité técnico — evaluador</div>' + lineModo + (lineJur || (!esCttg && !base ? '<div class="det-row"><span class="det-label">Jurado</span><span class="det-val">Sin datos</span></div>' : ''));
     })() : ''}
     ${!esModalidadDiplomadoUI(r.modalidad) ? fila('Área', r.area) : ''}
     ${fila('F. Radicación', fmtFecha(r.fechaRadicacion))}
@@ -998,6 +1046,11 @@ function limpiar() {
   ['diplomadoFechaIni','diplomadoFechaFin','dipJur1Nombre','dipJur1Email','dipJur1Tel','dipJur1Especialidad','dipJur1Acepta'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  ['diplJurModoTutor', 'diplJurModoCttg'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = false;
+  });
+  actualizarBloqueJuradoDiplomado();
   ['semestre1','semestre2','semestre3','modalidad','area','tutor1Relacion','tutor2Relacion'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
@@ -1036,7 +1089,8 @@ async function radicar() {
       toast('La fecha de inicio del diplomado no puede ser posterior a la fecha de fin.', 'warn');
       return;
     }
-    if (!validarJuradosSugeridosDiplomado()) return;
+    if (!validarOpcionJuradoDiplomado()) return;
+    if (diplJuradoModoSeleccionado() === 'tutor_sugiere' && !validarJuradosSugeridosDiplomado()) return;
   }
   if (numEst >= 2) {
     const e2 = [['cedula2','Cédula estudiante 2'],['nombre2','Nombre estudiante 2'],['email2','Email estudiante 2'],['telefono2','Teléfono estudiante 2'],['semestre2','Semestre estudiante 2']];
@@ -1080,11 +1134,12 @@ async function radicar() {
     area: dipRad ? '' : document.getElementById('area').value,
     diplomadoFechaInicio: dipRad ? (document.getElementById('diplomadoFechaIni')?.value || '').trim() : '',
     diplomadoFechaFin: dipRad ? (document.getElementById('diplomadoFechaFin')?.value || '').trim() : '',
-    dipJurado1Nombre: dipRad ? (document.getElementById('dipJur1Nombre')?.value || '').trim() : '',
-    dipJurado1Email: dipRad ? (document.getElementById('dipJur1Email')?.value || '').trim() : '',
-    dipJurado1Telefono: dipRad ? (document.getElementById('dipJur1Tel')?.value || '').trim() : '',
-    dipJurado1Especialidad: dipRad ? (document.getElementById('dipJur1Especialidad')?.value || '').trim() : '',
-    dipJurado1AceptaPropuesta: dipRad ? (document.getElementById('dipJur1Acepta')?.value || '').trim() : '',
+    diplomadoJuradoModo: dipRad ? diplJuradoModoSeleccionado() : '',
+    dipJurado1Nombre: dipRad && diplJuradoModoSeleccionado() === 'tutor_sugiere' ? (document.getElementById('dipJur1Nombre')?.value || '').trim() : '',
+    dipJurado1Email: dipRad && diplJuradoModoSeleccionado() === 'tutor_sugiere' ? (document.getElementById('dipJur1Email')?.value || '').trim() : '',
+    dipJurado1Telefono: dipRad && diplJuradoModoSeleccionado() === 'tutor_sugiere' ? (document.getElementById('dipJur1Tel')?.value || '').trim() : '',
+    dipJurado1Especialidad: dipRad && diplJuradoModoSeleccionado() === 'tutor_sugiere' ? (document.getElementById('dipJur1Especialidad')?.value || '').trim() : '',
+    dipJurado1AceptaPropuesta: dipRad && diplJuradoModoSeleccionado() === 'tutor_sugiere' ? (document.getElementById('dipJur1Acepta')?.value || '').trim() : '',
     dipJurado2Nombre: '',
     dipJurado2Email: '',
     dipJurado2Telefono: '',
