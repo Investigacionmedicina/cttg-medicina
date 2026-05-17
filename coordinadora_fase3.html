@@ -53,8 +53,6 @@
   /* MODAL */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
-  /* Dentro de iframe: position absolute + top dinámico vía JS */
-  body.in-iframe .modal-bg{position:absolute;left:0;right:0;bottom:auto}
   .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
   @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -74,21 +72,6 @@
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
   @media(max-width:680px){main{padding:16px}}
-  /* Stepper modal */
-  .step{display:none}.step.on{display:block}
-  .step-ind{display:flex;gap:6px;align-items:center;margin-bottom:18px}
-  .step-dot{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.35);flex-shrink:0;transition:all .2s}
-  .step-dot.act{background:#059669;border-color:transparent;color:#fff}
-  .step-dot.done{background:rgba(5,150,105,.4);border-color:transparent;color:#6ee7b7}
-  .step-line{flex:1;height:1px;background:rgba(255,255,255,.1)}
-  .step-lbl{font-size:11px;color:rgba(255,255,255,.4)}
-  /* Detail rows inside modals */
-  .det-row{display:flex;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;gap:8px;align-items:flex-start}
-  .det-label{min-width:130px;font-size:11px;color:rgba(255,255,255,.4);flex-shrink:0;padding-top:1px}
-  .det-val{color:#e2e8f0;flex:1;word-break:break-word}
-  .det-sec{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px;font-family:'DM Mono',monospace}
-  .doc-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:5px;font-size:11px;margin:2px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);color:#6ee7b7}
-  .doc-chip.no{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#fca5a5}
 </style>
 </head>
 <body>
@@ -113,11 +96,13 @@
   </div>
 
   <div class="filtro-estado-f3" style="margin:10px 0 18px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-    <label for="filtroEstadoF3" style="font-size:12px;color:rgba(255,255,255,.55)">Filtrar por estado:</label>
-    <select id="filtroEstadoF3" onchange="renderTablas()" style="min-width:240px;max-width:100%;background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
-    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.72);cursor:pointer">
-      <input type="checkbox" id="chkFase3SinDedupe" checked onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;flex-shrink:0" />
-      <span>Mostrar cada solicitud por separado (un estudiante puede radicar más de una)</span>
+    <label for="filtroEstadoF3" style="font-size:12px;color:rgba(255,255,255,.55);flex:1;min-width:220px">
+      Filtrar por texto exacto de <strong style="color:#e2e8f0;font-weight:600">Estado solicitud</strong> (columna AC del Excel). «Observaciones estado» se muestra en las tablas (columna AD); los valores posibles salen de lo que haya en la hoja más los estándar del sistema.
+    </label>
+    <select id="filtroEstadoF3" autocomplete="off" onchange="renderTablas()" style="min-width:300px;max-width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
+    <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(255,255,255,.72);cursor:pointer;max-width:340px;line-height:1.35">
+      <input type="checkbox" id="chkFase3SinDedupe" checked onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;margin-top:2px;flex-shrink:0" />
+      <span><strong style="color:#e2e8f0;font-weight:600">Sin agrupar</strong> por radicación (recomendado: lista cada fila del Excel). Desmárquelo si solo quiere la fila más reciente por número.</span>
     </label>
     <button type="button" class="btn-ref" onclick="diagnosticoFase3()" style="flex-shrink:0" title="Compara filas API vs escaneo columna B en Sheets">🔧 Diagnóstico lectura</button>
     <p style="font-size:11px;color:rgba(255,255,255,.38);margin:0;width:100%;line-height:1.45">Si en la hoja hay más solicitudes radicadas (por ejemplo CONTARA en columna B) que filas en «Todas»: deje el filtro en «Todos los estados», mantenga «Sin agrupar» activo y pulse Diagnóstico para verificar que el script usa el mismo libro y pestaña que su archivo.</p>
@@ -126,24 +111,26 @@
   <!-- VISTA 1: ASIGNAR JURADOS -->
   <div class="panel on" id="pan-asignar">
     <div class="sec-hdr">
-      <div><h2>Pendiente de Asignación</h2><p>Solicitudes sin fecha de sustentación asignada.</p></div>
+      <div><h2>Pendiente de Asignación</h2><p>Solicitudes sin fecha programada según el sistema (columna «Fecha sustentación» / D o «Fecha asignada» / U). Si ya tienen fecha, aparecen en «Pendiente resultado» o «Todas».</p></div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
           <th>N° Radicación</th>
-          <th>Estudiante / Correo</th>
+          <th>Estudiante</th>
+          <th>Modalidad (Fase 1)</th>
           <th>Semestre</th>
           <th>% Turnitin</th>
           <th>F. Solicitud</th>
           <th>Jurados Sugeridos</th>
           <th>Estado solicitud</th>
           <th>Observaciones estado</th>
+          <th>Detalle</th>
           <th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyAsignar">
-          <tr><td colspan="9" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+          <tr><td colspan="11" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -159,17 +146,19 @@
       <table>
         <thead><tr>
           <th>N° Radicación</th>
-          <th>Estudiante / Correo</th>
+          <th>Estudiante</th>
+          <th>Modalidad</th>
           <th>Fecha Sustentación</th>
           <th>Hora</th>
           <th>Jurado 1</th>
           <th>Jurado 2</th>
           <th>Estado solicitud</th>
           <th>Observaciones estado</th>
+          <th>Detalle</th>
           <th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyResultado">
-          <tr><td colspan="9" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+          <tr><td colspan="11" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -180,7 +169,8 @@
     <div class="sec-hdr">
       <div>
         <h2>Todas las solicitudes</h2>
-        <p>Historial completo — incluye programadas, cerradas y en proceso.</p>
+        <p>Listado completo cargado desde el sistema (incluye cerradas y programadas). Las pestañas anteriores solo muestran pendientes de acción.</p>
+        <p style="font-size:11px;color:rgba(255,255,255,.35);margin-top:6px">Con la casilla «sin agrupar» desactivada, si hay varias filas con el mismo número de radicación solo se muestra la más reciente. Actívela arriba para listar cada fila del Excel.</p>
       </div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
@@ -191,94 +181,79 @@
       <table>
         <thead><tr>
           <th>N° Radicación</th>
-          <th>Estudiante / Correo</th>
+          <th>Estudiante</th>
+          <th>Modalidad</th>
           <th>F. Solicitud</th>
           <th>F. Sustentación</th>
           <th>Nota</th>
           <th>Estado solicitud</th>
           <th>Observaciones estado</th>
           <th>Vista coordinación</th>
+          <th>Detalle</th>
         </tr></thead>
         <tbody id="tbodyTodas">
-          <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+          <tr><td colspan="10" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </main>
 
-<!-- MODAL VER SOLICITUD (revisión con info completa) -->
-<div class="modal-bg" id="modalRevisar">
-  <div class="modal" style="max-width:560px">
-    <div class="modal-hdr">
-      <h3>👁 Solicitud de Sustentación</h3>
-      <button class="btn" onclick="closeModal('modalRevisar')">✕</button>
-    </div>
-    <div id="mRevisarBody"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap" id="mRevisarActions"></div>
-  </div>
-</div>
-
 <!-- MODAL ASIGNAR JURADOS -->
 <div class="modal-bg" id="modalAsignar">
   <div class="modal">
     <div class="modal-hdr">
-      <h3>👥 Confirmar Jurados</h3>
+      <h3>📅 Asignar Fecha y Jurados</h3>
       <button class="btn" onclick="closeModal('modalAsignar')">✕</button>
     </div>
-    <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px"></p>
+    <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
 
-      <div class="msec">Jurado 1 · Temático</div>
-      <div class="hint-j" id="hintJ1"></div>
-      <div class="mfg">
-        <label>Decisión sobre el jurado sugerido</label>
-        <select id="decisionJ1" onchange="aplicarDecisionJurado(1)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
-          <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
-          <option value="reemplazar">Reemplazar (usar como base, editar datos)</option>
-          <option value="rechazar">Rechazar sugerencia — asignar otro</option>
-        </select>
-      </div>
-      <div id="catJ1Wrap" class="mfg" style="display:none">
-        <label>Seleccionar de la lista de jurados (hoja «Jurados»)</label>
-        <select id="catJ1" onchange="aplicarJuradoCatalogo(1)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
-          <option value="">— Seleccionar jurado —</option>
-        </select>
-      </div>
+    <div class="msec">Fecha y hora</div>
+<div class="mgrid" style="margin-bottom:14px">
+  <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
+  <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
+</div>
+<div class="mfg" style="margin-bottom:14px"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
+   
+    <div class="msec">Jurado 1</div>
+    <div class="hint-j" id="hintJ1"></div>
+    <div class="mfg">
+      <label>Decisión sobre el jurado sugerido</label>
+      <select id="decisionJ1" onchange="aplicarDecisionJurado(1)">
+        <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
+        <option value="reemplazar">Reemplazar por otro jurado (misma idea, otros datos)</option>
+        <option value="rechazar">Rechazar sugerencia — asignar otro (campos en blanco)</option>
+      </select>
+    </div>
+    <div class="mgrid" style="margin-bottom:4px">
       <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Email *</label><input type="email" id="mJ1Email" placeholder="jurado@usc.edu.co"></div>
-      <div class="mgrid">
-        <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ1Tel" placeholder="300 000 0000"></div>
-        <div class="mfg"><label>Especialidad</label><input id="mJ1Esp" placeholder="Ej: Medicina interna"></div>
-      </div>
+      <div class="mfg"><label>Cédula</label><input id="mJ1Cedula" placeholder="Número ID"></div>
+    </div>
+    <div class="mfg"><label>Email *</label><input type="email" id="mJ1Email" placeholder="jurado@usc.edu.co"></div>
+    <div class="mfg"><label>Teléfono</label><input type="tel" id="mJ1Tel" placeholder="300 000 0000"></div>
 
-      <div class="msec">Jurado 2 · Metodológico</div>
-      <div class="hint-j" id="hintJ2"></div>
-      <div class="mfg">
-        <label>Decisión sobre el jurado sugerido</label>
-        <select id="decisionJ2" onchange="aplicarDecisionJurado(2)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
-          <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
-          <option value="reemplazar">Reemplazar (usar como base, editar datos)</option>
-          <option value="rechazar">Rechazar sugerencia — asignar otro</option>
-        </select>
-      </div>
-      <div id="catJ2Wrap" class="mfg" style="display:none">
-        <label>Seleccionar de la lista de jurados (hoja «Jurados»)</label>
-        <select id="catJ2" onchange="aplicarJuradoCatalogo(2)" style="background:#1a2535;border:1px solid rgba(255,255,255,.2);border-radius:9px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px">
-          <option value="">— Seleccionar jurado —</option>
-        </select>
-      </div>
+    <div class="msec">Jurado 2</div>
+    <div class="hint-j" id="hintJ2"></div>
+    <div class="mfg">
+      <label>Decisión sobre el jurado sugerido</label>
+      <select id="decisionJ2" onchange="aplicarDecisionJurado(2)">
+        <option value="aceptar">Aceptar jurado sugerido por el estudiante</option>
+        <option value="reemplazar">Reemplazar por otro jurado (misma idea, otros datos)</option>
+        <option value="rechazar">Rechazar sugerencia — asignar otro (campos en blanco)</option>
+      </select>
+    </div>
+    <div class="mgrid" style="margin-bottom:4px">
       <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Email *</label><input type="email" id="mJ2Email" placeholder="jurado@usc.edu.co"></div>
-      <div class="mgrid">
-        <div class="mfg"><label>Teléfono *</label><input type="tel" id="mJ2Tel" placeholder="300 000 0000"></div>
-        <div class="mfg"><label>Especialidad</label><input id="mJ2Esp" placeholder="Ej: Epidemiología"></div>
-      </div>
+      <div class="mfg"><label>Cédula</label><input id="mJ2Cedula" placeholder="Número ID"></div>
+    </div>
+    <div class="mfg"><label>Email *</label><input type="email" id="mJ2Email" placeholder="jurado@usc.edu.co"></div>
+    <div class="mfg"><label>Teléfono</label><input type="tel" id="mJ2Tel" placeholder="300 000 0000"></div>
 
-      <input type="hidden" id="mAsignarRow">
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-        <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
-        <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">✅ Aprobar jurados y notificar</button>
-      </div>
+    <input type="hidden" id="mAsignarRow">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
+      <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">📅 Asignar y notificar</button>
+    </div>
   </div>
 </div>
 
@@ -298,30 +273,6 @@
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
       <button class="btn" onclick="closeModal('modalDevolver')">Cancelar</button>
       <button class="btn rd" id="btnDevolver" onclick="devolverSolicitud()">Devolver y notificar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL PROGRAMAR FECHA DE SUSTENTACIÓN -->
-<div class="modal-bg" id="modalProgramar">
-  <div class="modal">
-    <div class="modal-hdr">
-      <h3>📅 Programar Sustentación</h3>
-      <button class="btn" onclick="closeModal('modalProgramar')">✕</button>
-    </div>
-    <p id="mProgramarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
-    <div style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#6ee7b7">
-      ✓ Jurados aprobados. Ahora asigna la fecha, hora y lugar de sustentación.
-    </div>
-    <div class="mgrid">
-      <div class="mfg"><label>Fecha *</label><input type="date" id="mFecha"></div>
-      <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
-    </div>
-    <div class="mfg"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
-    <input type="hidden" id="mProgramarRow">
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-      <button class="btn" onclick="closeModal('modalProgramar')">Cancelar</button>
-      <button class="btn-action" id="btnProgramar" onclick="programarFecha()">📅 Confirmar fecha y notificar</button>
     </div>
   </div>
 </div>
@@ -361,80 +312,84 @@
   </div>
 </div>
 
+<div class="modal-bg" id="modalVerEnvioDiploma">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-hdr">
+      <h3 id="mVerEnvioTitulo">Detalle de la solicitud</h3>
+      <button class="btn" type="button" onclick="closeModal('modalVerEnvioDiploma')">✕</button>
+    </div>
+    <div id="mVerEnvioBody"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
-function urlPanelStaff() {
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+
+/** Cuando esta página va dentro del panel (`iframe`), el padre envía el token aquí (localStorage puede estar particionado). */
+let tokenDesdePanelPadre = '';
+
+window.addEventListener('message', function(ev) {
+  if (window.parent === window.self) return;
+  const d = ev.data;
+  if (!d || d.type !== 'CTTG_COORD_TOKEN' || typeof d.token !== 'string') return;
   try {
-    var u = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
-    return u && u.rol === 'asistente' ? 'asistente_dashboard.html' : 'coordinadora_dashboard.html';
-  } catch (e) { return 'coordinadora_dashboard.html'; }
+    if (ev.source !== window.parent) return;
+  } catch (e) { return; }
+  tokenDesdePanelPadre = d.token.trim();
+  if (typeof cargar === 'function') cargar();
+});
+
+function coordToken() {
+  return tokenDesdePanelPadre || localStorage.getItem('cttg_token_coord') || localStorage.getItem('cttg_token') || '';
 }
-function coordToken() { return localStorage.getItem('cttg_token') || ''; }
+
+/** Igual que devuelve handleRequest por token inválido (no usar «inválid» suelto: Fila inválida etc.). */
+function esErrorSesionCoord(texto) {
+  var k = String(texto || '').trim().toLowerCase();
+  k = k.replace(/ó/g, 'o').replace(/í/g, 'i').replace(/á/g, 'a').replace(/é/g, 'e').replace(/ú/g, 'u').replace(/ñ/g, 'n');
+  return k === 'sesion invalida o expirada' || k === 'sesion requerida' || k === 'no autorizado' || k === 'sesion expirada';
+}
+
+function redirigirLoginCoordPorSesion(mensaje) {
+  sessionStorage.setItem('cttg_coord_relogin_msg', mensaje || 'Inicie sesión de nuevo para continuar.');
+  localStorage.removeItem('cttg_admin');
+  localStorage.removeItem('cttg_token_coord');
+  window.location.href = 'coordinadora_login.html';
+}
+
 let admin = null;
 let fase3 = [];
+/** Número de radicación normalizado → modalidad texto en Fase 1 (coordina vista diplomado vs medicina) */
+let modalidadPorRad = {};
 let solicitudModalActual = null;
-let catalogoJurados = [];
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
   var r_adm = admin && String(admin.rol || '').toLowerCase();
   if (!admin || (r_adm !== 'coordinadora' && r_adm !== 'asistente')) { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
-  cargarCatalogoJurados();
+
+  let enIframe = false;
+  try { enIframe = window.parent !== window.self; } catch (e) { enIframe = true; }
+
+  if (!coordToken()) {
+    if (enIframe) {
+      setTimeout(function() {
+        if (!coordToken()) {
+          redirigirLoginCoordPorSesion('Esta vista está dentro del panel pero no recibió la sesión. Use «Abrir Fase 3 en pestaña nueva» desde el panel o vuelva a iniciar sesión.');
+        }
+      }, 12000);
+      return;
+    }
+    redirigirLoginCoordPorSesion('No hay sesión de coordinadora guardada en este navegador. Ingrese de nuevo.');
+    return;
+  }
   cargar();
 })();
 
-function salir() {
-  localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token');
-  window.location.href = 'index.html';
-}
-
-async function cargarCatalogoJurados() {
-  try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getJurados', token: coordToken() }) });
-    const raw = await res.text();
-    let d;
-    try { d = JSON.parse(raw); } catch (parseErr) {
-      console.error('getJurados no JSON:', raw.slice(0, 400));
-      return;
-    }
-    if (d.success && Array.isArray(d.jurados)) {
-      catalogoJurados = d.jurados.filter(j => j.nombre || j.email);
-      poblarSelectJuradoCatalogo('catJ1');
-      poblarSelectJuradoCatalogo('catJ2');
-    }
-  } catch(e) { console.error('cargarCatalogoJurados', e); }
-}
-
-function poblarSelectJuradoCatalogo(selId) {
-  const sel = document.getElementById(selId);
-  if (!sel) return;
-  sel.innerHTML = '<option value="">— Escribir datos manualmente —</option>';
-  catalogoJurados.forEach((j, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = (j.nombre || '') + (j.email ? ' · ' + j.email : '') + (j.especialidad ? ' (' + j.especialidad + ')' : '');
-    sel.appendChild(opt);
-  });
-}
-
-function aplicarJuradoCatalogo(num) {
-  const sel = document.getElementById('catJ' + num);
-  const idx = sel.value;
-  if (idx === '') return;
-  const j = catalogoJurados[parseInt(idx)];
-  if (!j) return;
-  const p = 'mJ' + num;
-  document.getElementById(p + 'Nombre').value = j.nombre || '';
-  document.getElementById(p + 'Email').value = j.email || '';
-  document.getElementById(p + 'Tel').value = j.telefono || '';
-  const espEl = document.getElementById(p + 'Esp');
-  if (espEl) espEl.value = j.especialidad || '';
-  // Quitar lock de sugerencia
-  [document.getElementById(p+'Nombre'), document.getElementById(p+'Email'), document.getElementById(p+'Tel')].forEach(el => { el.readOnly = false; el.classList.remove('ro-lock'); });
-}
+function salir() { localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token_coord'); window.location.href = 'index.html'; }
 
 function switchTab(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
@@ -449,19 +404,7 @@ function toast(msg, type) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-/** Cierra modal de revisión y ejecuta la acción en el siguiente tick (modales encadenados). */
-function desdeModalRevisar(accion, rowIndex) {
-  closeModal('modalRevisar');
-  setTimeout(() => {
-    if (accion === 'devolver') abrirDevolver(rowIndex);
-    else if (accion === 'revisada') confirmarRevisada(rowIndex);
-    else if (accion === 'programar') abrirProgramar(rowIndex);
-    else if (accion === 'asignar') abrirAsignar(rowIndex);
-  }, 10);
-}
 
 function fmtFecha(s) {
   if (!s || s === '') return '—';
@@ -561,9 +504,8 @@ function hintLineaSugerido(r, i) {
   const nombre = i === 1 ? r.jurado1Nombre : r.jurado2Nombre;
   const email = i === 1 ? r.jurado1Email : r.jurado2Email;
   const tel = fmtTelMostrar(i === 1 ? r.jurado1Telefono : r.jurado2Telefono);
-  const esp = i === 1 ? (r.jurado1Especialidad || '') : (r.jurado2Especialidad || '');
-  if (!nombre && !email && tel === '—' && !esp) return 'Sin sugerencia del estudiante para este jurado.';
-  return 'Sugerido: ' + [nombre, email, tel !== '—' ? 'Tel ' + tel : '', esp || ''].filter(Boolean).join(' · ');
+  if (!nombre && !email && tel === '—') return 'Sin sugerencia del estudiante para este jurado.';
+  return 'Sugerido por el estudiante: ' + [nombre, email, tel !== '—' ? 'Tel ' + tel : ''].filter(Boolean).join(' · ');
 }
 
 function lineaTablaJuradosSugeridos(r) {
@@ -577,6 +519,130 @@ function lineaTablaJuradosSugeridos(r) {
   return bloques.length ? bloques.join(' | ') : '—';
 }
 
+function tieneSugerenciaJuradoN(n, r) {
+  if (n === 1) {
+    return !!(String(r.jurado1Nombre || '').trim()
+      || String(r.jurado1Email || '').trim()
+      || valorTelEditable(r.jurado1Telefono));
+  }
+  return !!(String(r.jurado2Nombre || '').trim()
+    || String(r.jurado2Email || '').trim()
+    || valorTelEditable(r.jurado2Telefono));
+}
+
+/** Indicadores visibles: si cada jurado fue sugerido o no (+ resumen corto debajo del texto técnico) */
+function htmlBadgesEstadoSugerenciaJurados(r) {
+  const j1 = tieneSugerenciaJuradoN(1, r);
+  const j2 = tieneSugerenciaJuradoN(2, r);
+  const chip = (lbl, tiene) =>
+    tiene
+      ? `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:rgba(52,211,153,.2);border:1px solid rgba(52,211,153,.42);color:#86efac;font-size:11px;font-weight:600">${lbl}: tiene sugerencia</span>`
+      : `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.38);color:#fca5a5;font-size:11px;font-weight:600">${lbl}: sin sugerencia del estudiante</span>`;
+  let resumen;
+  if (j1 && j2) resumen = '<span style="color:#bbf7d0;font-size:11px;font-weight:600">● Ambos jurados tienen datos sugeridos</span>';
+  else if (!j1 && !j2) resumen = '<span style="color:#fca5a5;font-size:11px;font-weight:600">● El estudiante no envió jurados sugeridos</span>';
+  else resumen = '<span style="color:#fcd34d;font-size:11px;font-weight:600">● Sugerencia parcial · falta información de uno de los jurados</span>';
+  return `<div style="margin-bottom:6px;display:flex;flex-wrap:wrap;align-items:center">${chip('J1', j1)}${chip('J2', j2)}</div><div>${resumen}</div>`;
+}
+
+function celdaTablaColumnaSugerencias(r) {
+  const linea = esc(lineaTablaJuradosSugeridos(r));
+  const detalle = linea === '—'
+    ? '<span style="color:rgba(255,255,255,.42);font-size:11px">Ningún nombre, correo ni teléfono sugeridos en esta fila.</span>'
+    : linea;
+  return `<td style="max-width:340px;vertical-align:top">${htmlBadgesEstadoSugerenciaJurados(r)}<div style="margin-top:8px;font-size:12px;color:rgba(252,252,252,.78);line-height:1.4;word-break:break-word">${detalle}</div></td>`;
+}
+
+function celdaBotonDetalleCompleto(rowIndex) {
+  return `<td style="vertical-align:middle"><button type="button" class="btn bl" onclick="abrirModalDetalleCompletoEnvio(${rowIndex})">📋 Ver solicitud</button></td>`;
+}
+
+function normRadCoordF3(numero) {
+  return String(numero || '').trim().toUpperCase();
+}
+
+function esModalidadDiplomadoTxt(mod) {
+  const s = String(mod || '').toLowerCase();
+  return s.includes('diplomado') || s.includes('diplom');
+}
+
+function modalidadDeNumeroFase1(numero) {
+  const k = normRadCoordF3(numero);
+  return k ? String(modalidadPorRad[k] || '') : '';
+}
+
+function celdaModalidadF3(numeroRad) {
+  const m = modalidadDeNumeroFase1(numeroRad);
+  if (!m) return '<td style="font-size:11px;color:rgba(255,255,255,.3)" title="Sin modalidad en Fase 1 para este número (no enlazado o libro distinto).">—</td>';
+  const diplomado = esModalidadDiplomadoTxt(m);
+  const style = diplomado ? 'background:rgba(167,139,250,.1);border-radius:6px;max-width:150px;line-height:1.25;color:#e5e7eb' : 'max-width:150px;line-height:1.25;color:rgba(255,255,255,.7)';
+  const shortText = esc(m.length > 32 ? m.slice(0, 30) + '…' : m);
+  return `<td style="${style}" title="${escAttr(m)}">${shortText}</td>`;
+}
+
+function bloqueKv(label, texto) {
+  const v = String(texto ?? '').trim();
+  const inner = v ? esc(v).replace(/\n/g, '<br>') : '<span style="color:rgba(255,255,255,.35)">—</span>';
+  return `<div class="mfg" style="margin-bottom:11px"><label>${esc(label)}</label>` +
+    `<div style="white-space:pre-wrap;word-break:break-word;color:rgba(229,231,235,.92);font-size:13px;line-height:1.45;margin-top:3px">${inner}</div></div>`;
+}
+
+function campoDocPortal(label, val) {
+  const v = String(val || '').trim();
+  if (!v) return bloqueKv(label, '');
+  if (/^https?:\/\//i.test(v)) {
+    const href = escAttr(v);
+    const shown = esc(v.length > 120 ? v.slice(0, 117) + '…' : v);
+    return `<div class="mfg" style="margin-bottom:11px"><label>${esc(label)}</label>` +
+      `<div style="word-break:break-all"><a href="${href}" target="_blank" rel="noopener" style="color:#6ee7b7">${shown}</a></div></div>`;
+  }
+  return bloqueKv(label, v);
+}
+
+function htmlDetalleCompletoEnvioF3(r) {
+  const mod = modalidadDeNumeroFase1(r.numero);
+  let h = `<p style="font-size:12px;line-height:1.45;color:rgba(251,211,141,.93);margin:-2px 0 14px">${mod ? 'Modalidad Fase 1: <strong>' + esc(mod) + '</strong>' : '⚠ Modalidad no enlazada con Fase 1 para esta radicación (no se marca diplomado).'}</p>`;
+  h += '<div style="margin-bottom:16px;background:rgba(255,255,255,.04);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,.08)">' + htmlBadgesEstadoSugerenciaJurados(r) + '</div>';
+  h += '<div class="msec">Lo registrado desde el estudiante</div>';
+  h += campoDocPortal('Campo 1 (Anexo/producto equiv.)', r.urlAnexoA7);
+  h += campoDocPortal('Campo 2', r.urlArticulo);
+  h += campoDocPortal('Campo 3', r.urlGuia);
+  h += campoDocPortal('Campo 4', r.urlAvalCCEB);
+  h += campoDocPortal('Campo 5 (Turnitin)', r.urlTurnitin);
+  h += bloqueKv('% Turnitin declarado', r.pctTurnitin ? r.pctTurnitin + '%' : '');
+  h += bloqueKv('Correo en la solicitud', r.emailEstudiante || '');
+  h += bloqueKv('Nombre en Fase 1 (referencia)', r.nombreEstudiante || '');
+  h += bloqueKv('Semestre (hoja)', r.semestre || '');
+  h += bloqueKv('Alerta semestre 12', r.alertaS12 || '');
+  h += '<div class="msec">Jurados · sugerencia del estudiante</div>';
+  h += `<p style="font-size:11px;line-height:1.4;color:rgba(255,255,255,.5);margin:-4px 0 8px">${esc(lineaTablaJuradosSugeridos(r))}</p>`;
+  h += bloqueKv('J1 · nombre', r.jurado1Nombre || '');
+  h += bloqueKv('J1 · email', r.jurado1Email || '');
+  h += bloqueKv('J1 · teléfono', fmtTelMostrar(r.jurado1Telefono));
+  h += bloqueKv('J1 · cédula', r.jurado1Cedula || '');
+  h += bloqueKv('J2 · nombre', r.jurado2Nombre || '');
+  h += bloqueKv('J2 · email', r.jurado2Email || '');
+  h += bloqueKv('J2 · teléfono', fmtTelMostrar(r.jurado2Telefono));
+  h += bloqueKv('J2 · cédula', r.jurado2Cedula || '');
+  h += '<div class="msec">Coordinación en hoja</div>';
+  h += bloqueKv('Estado solicitud', r.estadoSolicitud || '');
+  h += bloqueKv('Fecha solicitud / carga', r.fechaCarga || '');
+  h += campoDocPortal('Observaciones (AB / uso interno lugar)', r.observaciones);
+  h += bloqueKv('Observaciones estado (AD)', r.observacionesEstado || '');
+  h += bloqueKv('Fecha sustentación', r.fechaSustentacion || '');
+  h += bloqueKv('Fecha asignada', r.fechaAsignada || '');
+  h += bloqueKv('Hora', r.horaSustentacion || '');
+  return h;
+}
+
+function abrirModalDetalleCompletoEnvio(rowIndex) {
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  document.getElementById('mVerEnvioTitulo').textContent = 'Solicitud de sustentación · ' + r.numero;
+  document.getElementById('mVerEnvioBody').innerHTML = htmlDetalleCompletoEnvioF3(r);
+  document.getElementById('modalVerEnvioDiploma').classList.add('open');
+}
+
 function aplicarDecisionJurado(i) {
   const r = solicitudModalActual;
   if (!r) return;
@@ -587,47 +653,32 @@ function aplicarDecisionJurado(i) {
   const sugNombre = i === 1 ? (r.jurado1Nombre || '') : (r.jurado2Nombre || '');
   const sugEmail = i === 1 ? (r.jurado1Email || '') : (r.jurado2Email || '');
   const sugTel = valorTelEditable(i === 1 ? r.jurado1Telefono : r.jurado2Telefono);
-  const sugEsp = String(i === 1 ? (r.jurado1Especialidad || '') : (r.jurado2Especialidad || ''));
-  const espEl = document.getElementById('mJ' + i + 'Esp');
-
-  // Show evaluators dropdown only when coordinator is selecting/replacing
-  const catWrap = document.getElementById('catJ' + i + 'Wrap');
-  if (catWrap) catWrap.style.display = (decision === 'reemplazar' || decision === 'rechazar') ? '' : 'none';
 
   const sinSugerencia = !String(sugNombre).trim() && !String(sugEmail).trim();
   const lock = decision === 'aceptar' && !sinSugerencia;
 
-  [nombreEl, emailEl].forEach(el => {
+  [nombreEl, emailEl, telEl].forEach(el => {
     el.readOnly = lock;
     el.classList.toggle('ro-lock', lock);
   });
-  telEl.readOnly = false;
-  telEl.classList.remove('ro-lock');
-  if (espEl) { espEl.readOnly = lock; espEl.classList.toggle('ro-lock', lock); }
 
   if (decision === 'aceptar') {
     nombreEl.value = sugNombre;
     emailEl.value = sugEmail;
     telEl.value = sugTel;
-    if (espEl) espEl.value = sugEsp;
     if (sinSugerencia) {
       [nombreEl, emailEl, telEl].forEach(el => { el.readOnly = false; el.classList.remove('ro-lock'); });
-      if (espEl) { espEl.readOnly = false; espEl.classList.remove('ro-lock'); }
     }
   } else if (decision === 'reemplazar') {
     nombreEl.value = sugNombre;
     emailEl.value = sugEmail;
     telEl.value = sugTel;
-    if (espEl) espEl.value = sugEsp;
     [nombreEl, emailEl, telEl].forEach(el => { el.readOnly = false; el.classList.remove('ro-lock'); });
-    if (espEl) { espEl.readOnly = false; espEl.classList.remove('ro-lock'); }
   } else {
     nombreEl.value = '';
     emailEl.value = '';
     telEl.value = '';
-    if (espEl) espEl.value = '';
     [nombreEl, emailEl, telEl].forEach(el => { el.readOnly = false; el.classList.remove('ro-lock'); });
-    if (espEl) { espEl.readOnly = false; espEl.classList.remove('ro-lock'); }
   }
 }
 
@@ -638,15 +689,30 @@ function toggleDesc() {
 async function cargar() {
   try {
     const sinDedupe = !!(document.getElementById('chkFase3SinDedupe') && document.getElementById('chkFase3SinDedupe').checked);
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe }) });
-    const d = await res.json();
+    const reqF3 = fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe }) }).then(function(r){ return r.json(); });
+    const reqF1 = fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1', token: coordToken() }) }).then(function(r){ return r.json(); });
+    const [d, dF1] = await Promise.all([reqF3, reqF1]);
+    modalidadPorRad = {};
+    if (dF1.success) {
+      (dF1.radicaciones || []).forEach(function(row) {
+        const k = normRadCoordF3(row.numero);
+        if (k && row.modalidad) modalidadPorRad[k] = String(row.modalidad).trim();
+      });
+    }
     if (d.success) { fase3 = d.fase3 || []; renderTablas(); }
-    else throw new Error(d.error);
+    else {
+      if (esErrorSesionCoord(d.error)) {
+        redirigirLoginCoordPorSesion(
+          'Sesión no válida para el libro actual del sistema (común tras cambiar de archivo en Apps Script). Vuelva a ingresar con correo y contraseña de coordinadora.');
+        return;
+      }
+      throw new Error(d.error);
+    }
   } catch(e) {
-    document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="9" class="empty">Error: ${e.message}</td></tr>`;
-    document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="9" class="empty">Error: ${e.message}</td></tr>`;
+    document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="11" class="empty">Error: ${e.message}</td></tr>`;
+    document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="11" class="empty">Error: ${e.message}</td></tr>`;
     const tbT = document.getElementById('tbodyTodas');
-    if (tbT) tbT.innerHTML = `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
+    if (tbT) tbT.innerHTML = `<tr><td colspan="10" class="empty">Error: ${e.message}</td></tr>`;
   }
 }
 
@@ -656,7 +722,14 @@ async function diagnosticoFase3() {
     const sinDedupe = !!(document.getElementById('chkFase3SinDedupe') && document.getElementById('chkFase3SinDedupe').checked);
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe, debugFase3: true }) });
     const d = await res.json();
-    if (!d.success) { toast(String(d.error || 'Error en diagnóstico'), 'err'); return; }
+    if (!d.success) {
+      if (esErrorSesionCoord(d.error)) {
+        redirigirLoginCoordPorSesion(String(d.error || '') + ' — Ingrese de nuevo.');
+        return;
+      }
+      toast(String(d.error || 'Error en diagnóstico'), 'err');
+      return;
+    }
     const dbg = d.debugFase3 || {};
     const lineas = [
       'Libro que abre el script: ' + (dbg.nombreLibroQueLeeElScript || '—'),
@@ -692,15 +765,6 @@ function fechaProgramacionValida(v) {
   if (isNaN(d.getTime())) return false;
   const y = d.getFullYear();
   return y >= 1990 && y <= 2100;
-}
-
-/** Jurados ya confirmados por la coordinadora (estado explícito o col. nombres en Sheet). */
-function juradosAprobados(r) {
-  const est = String(r.estadoSolicitud || '').trim().toLowerCase();
-  // No usar includes('jurado'): textos como «pendiente de asignación de jurados» daban falso positivo
-  // y ocultaban «Marcar revisada» / «Asignar jurados».
-  if (/\bjurados?\s+aprobados?\b/i.test(est)) return true;
-  return !!(String(r.nombres || '').trim());
 }
 
 /** Hay fecha real en columna programación (D) y/o fecha asignada (U). */
@@ -744,7 +808,7 @@ function renderTablas() {
 
   const tbA = document.getElementById('tbodyAsignar');
   if (!sinFecha.length) {
-    tbA.innerHTML = '<tr><td colspan="9" class="empty">' +
+    tbA.innerHTML = '<tr><td colspan="11" class="empty">' +
       (fase3.filter(r => !tieneFechaProgramada(r)).length
         ? 'Ninguna coincide con el filtro de estado solicitud.'
         : 'Sin solicitudes pendientes de asignación.') + '</td></tr>';
@@ -754,18 +818,19 @@ function renderTablas() {
       const estaDevuelta = esEstadoDevueltaSheet(estSh);
       return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td><div style="font-size:13px;color:rgba(255,255,255,.85)">${esc(r.nombreEstudiante||'—')}</div><div style="font-size:11px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace">${esc(r.emailEstudiante||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      ${celdaModalidadF3(r.numero)}
       <td style="font-size:13px">${esc(String(r.semestre ?? ''))}${String(r.alertaS12 || '').trim() === 'SÍ' ? '<span class="alert-s12">⚠️ S12</span>' : ''}</td>
-      <td>${r.pctTurnitin ? `<span style="font-size:12px;font-weight:600;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${esc(String(r.pctTurnitin))}%</span>` : '<span style="font-size:11px;color:#fca5a5;font-weight:700">⚠ Sin %</span>'}</td>
+      <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(lineaTablaJuradosSugeridos(r))}</td>
+      ${celdaTablaColumnaSugerencias(r)}
       <td>${badgeEstadoSheet(estSh)}</td>
       <td>${truncObsHtml(r.observacionesEstado, 56)}</td>
+      ${celdaBotonDetalleCompleto(r.rowIndex)}
       <td><div class="act">
-        <button class="btn bl" onclick="abrirRevisar(${r.rowIndex})">👁 Ver</button>
-        ${juradosAprobados(r)
-          ? `<button class="btn gr" onclick="abrirProgramar(${r.rowIndex})">📅 Programar</button>`
-          : `<button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>👥 Jurados</button>`}
+        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisada</button>
+        <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
+        <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>📅 Asignar</button>
       </div></td>
      </tr>`;
     }).join('');
@@ -773,20 +838,22 @@ function renderTablas() {
 
   const tbR = document.getElementById('tbodyResultado');
   if (!conFecha.length) {
-    tbR.innerHTML = '<tr><td colspan="9" class="empty">' +
+    tbR.innerHTML = '<tr><td colspan="11" class="empty">' +
       (fase3.filter(r => tieneFechaProgramada(r) && (!r.nota || r.nota === '')).length
         ? 'Ninguna coincide con el filtro de estado solicitud.'
         : 'Sin sustentaciones pendientes de resultado.') + '</td></tr>';
   } else {
     tbR.innerHTML = conFecha.map(r => `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td><div style="font-size:13px;color:rgba(255,255,255,.85)">${esc(r.nombreEstudiante||'—')}</div><div style="font-size:11px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace">${esc(r.emailEstudiante||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      ${celdaModalidadF3(r.numero)}
       <td style="font-family:'DM Mono',monospace;font-size:12px;color:#fcd34d">${fmtFecha(fechaProgramacionPrimaria(r))}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5)">${r.horaSustentacion||'—'}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado1Nombre||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado2Nombre||'—')}</td>
       <td>${badgeEstadoSheet(estadoSheetRaw(r))}</td>
       <td>${truncObsHtml(r.observacionesEstado, 44)}</td>
+      ${celdaBotonDetalleCompleto(r.rowIndex)}
       <td><button class="btn bl" onclick="abrirResultado(${r.rowIndex},'${esc(r.numero)}')">🎓 Registrar</button></td>
     </tr>`).join('');
   }
@@ -798,11 +865,11 @@ function renderTablas() {
     const todasFiltradas = ordenadas.filter(r => {
       if (!coincideFiltroEstadoSheet(r)) return false;
       if (!q) return true;
-      const blob = [r.numero, r.nombreEstudiante, r.emailEstudiante, r.estadoSolicitud, r.estado, r.observacionesEstado].join(' ').toLowerCase();
+      const blob = [r.numero, r.nombreEstudiante, r.emailEstudiante, modalidadDeNumeroFase1(r.numero), r.estadoSolicitud, r.estado, r.observacionesEstado].join(' ').toLowerCase();
       return blob.includes(q);
     });
     if (!todasFiltradas.length) {
-      tbTod.innerHTML = '<tr><td colspan="8" class="empty">' +
+      tbTod.innerHTML = '<tr><td colspan="10" class="empty">' +
         (fase3.length ? 'Ninguna solicitud coincide con el filtro o la búsqueda.' : 'No hay solicitudes cargadas.') + '</td></tr>';
     } else {
       tbTod.innerHTML = todasFiltradas.map(r => {
@@ -811,13 +878,15 @@ function renderTablas() {
         const estSh = estadoSheetRaw(r);
         return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td><div style="font-size:13px;color:rgba(255,255,255,.85)">${esc(r.nombreEstudiante||'—')}</div><div style="font-size:11px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace">${esc(r.emailEstudiante||'')}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      ${celdaModalidadF3(r.numero)}
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:#fcd34d">${fmtFecha(fechaProgramacionPrimaria(r))}</td>
       <td style="font-size:12px">${esc(notaTxt || '—')}</td>
       <td>${badgeEstadoSheet(estSh)}</td>
       <td>${truncObsHtml(r.observacionesEstado, 64)}</td>
       <td><span class="badge ${vb.clase}">${esc(vb.texto)}</span></td>
+      ${celdaBotonDetalleCompleto(r.rowIndex)}
     </tr>`;
       }).join('');
     }
@@ -825,214 +894,75 @@ function renderTablas() {
 }
 
 function abrirAsignar(rowIndex) {
-  const r = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
+  const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
   solicitudModalActual = r;
   document.getElementById('mAsignarRow').value = rowIndex;
-  document.getElementById('mAsignarInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
-  // Reset catálogo jurados (hoja Jurados)
-  document.getElementById('catJ1').value = '';
-  document.getElementById('catJ2').value = '';
+  let infoHtml = `<span>Radicación: <strong>${esc(r.numero)}</strong></span>`;
+  const mod = modalidadDeNumeroFase1(r.numero);
+    if (mod) {
+    infoHtml += `<br/><span style="color:rgba(203,213,225,.93)">Modalidad Fase 1: ${esc(mod)}</span>`;
+    if (esModalidadDiplomadoTxt(mod)) {
+      infoHtml += `<div style="margin-top:8px;font-size:11px;line-height:1.45;color:rgba(251,191,129,.9)">Diplomado: antes de asignar puede usar <strong>📋 Ver solicitud</strong> para revisar lo que cargó el estudiante (incl. jurados sugeridos).</div>`;
+    }
+  }
+  document.getElementById('mAsignarInfo').innerHTML = infoHtml;
+  document.getElementById('mFecha').value = '';
+  document.getElementById('mHora').value = '';
+ document.getElementById('mLugar').value = '';
   document.getElementById('decisionJ1').value = 'aceptar';
   document.getElementById('decisionJ2').value = 'aceptar';
   document.getElementById('hintJ1').textContent = hintLineaSugerido(r, 1);
   document.getElementById('hintJ2').textContent = hintLineaSugerido(r, 2);
   aplicarDecisionJurado(1);
   aplicarDecisionJurado(2);
-  // catJ dropdowns start hidden (shown when decision = reemplazar/rechazar)
-  const cw1 = document.getElementById('catJ1Wrap'); if (cw1) cw1.style.display = 'none';
-  const cw2 = document.getElementById('catJ2Wrap'); if (cw2) cw2.style.display = 'none';
-  openModal('modalAsignar');
-}
-
-function abrirProgramar(rowIndex) {
-  const r = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
-  if (!r) return;
-  solicitudModalActual = r;
-  document.getElementById('mProgramarRow').value = rowIndex;
-  document.getElementById('mFecha').value = '';
-  document.getElementById('mHora').value = '';
-  document.getElementById('mLugar').value = '';
-  document.getElementById('mProgramarInfo').textContent =
-    'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') +
-    (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
-  openModal('modalProgramar');
-}
-
-async function programarFecha() {
-  const rowIndex = parseInt(document.getElementById('mProgramarRow').value);
-  const fecha  = document.getElementById('mFecha').value;
-  const hora   = document.getElementById('mHora').value;
-  const lugar  = document.getElementById('mLugar').value.trim();
-  if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
-  if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
-  if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
-  const r = solicitudModalActual || fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
-  const btn = document.getElementById('btnProgramar');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
-  try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-      action: 'updateFase3Asignacion',
-      rowIndex,
-      fechaSustentacion: fecha,
-      horaSustentacion: hora,
-      lugar,
-      // preserve current jurado data (already saved in sheet)
-      jurado1: { nombre: r ? r.jurado1Nombre : '', telefono: r ? r.jurado1Telefono : '', email: r ? r.jurado1Email : '', especialidad: r ? (r.jurado1Especialidad || '') : '', cedula: '' },
-      jurado2: { nombre: r ? r.jurado2Nombre : '', telefono: r ? r.jurado2Telefono : '', email: r ? r.jurado2Email : '', especialidad: r ? (r.jurado2Especialidad || '') : '', cedula: '' },
-      emailCoord: String((admin && (admin.email || admin.correo)) || '').trim(),
-      token: coordToken()
-    })});
-    const d = await res.json();
-    if (d.success) {
-      closeModal('modalProgramar');
-      await cargar();
-      toast('Fecha de sustentación programada ✓', 'ok');
-    } else throw new Error(d.error);
-  } catch(e) { toast('Error: ' + e.message, 'err'); }
-  finally { btn.disabled = false; btn.innerHTML = '📅 Confirmar fecha y notificar'; }
-}
-
-function abrirRevisar(rowIndex) {
-  const r = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
-  if (!r) return;
-  solicitudModalActual = r;
-  const estSh = estadoSheetRaw(r);
-  const estaDevuelta = esEstadoDevueltaSheet(estSh);
-
-  function docChip(val, label) {
-    const s = String(val||'').trim();
-    const ok = s.toUpperCase() === 'SÍ' || s.toUpperCase() === 'SI' || (s.length > 0 && s.startsWith('http'));
-    return `<span class="doc-chip${ok?'':' no'}">${ok?'✓':'✗'} ${label}</span>`;
-  }
-  function jRow(num) {
-    const n = r['jurado'+num+'Nombre'], e = r['jurado'+num+'Email'];
-    const t = fmtTelMostrar(r['jurado'+num+'Telefono']);
-    const esp = r['jurado'+num+'Especialidad'] || '';
-    const ac = r['jurado'+num+'AceptaPropuesta'] || '';
-    if (!n && !e) return '<span style="color:rgba(255,255,255,.3)">Sin sugerencia</span>';
-    return `<div>${esc(n||'—')}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.4)">${esc(e||'')}</div>
-      ${t!=='—'?`<div style="font-size:11px;color:rgba(255,255,255,.4)">📞 ${esc(t)}</div>`:'<div style="font-size:11px;color:#fca5a5">⚠ Sin teléfono</div>'}
-      ${esp?`<div style="font-size:11px;color:rgba(255,255,255,.5)">🎓 ${esc(esp)}</div>`:'<div style="font-size:11px;color:rgba(255,255,255,.3)">Sin especialidad</div>'}
-      ${ac?`<div style="font-size:11px;color:${ac==='Sí'?'#6ee7b7':'#fca5a5'}">Acepta ser jurado: ${esc(ac)}</div>`:''}`;
-  }
-  const turnitin = r.pctTurnitin ? `<span style="font-weight:700;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${esc(String(r.pctTurnitin))}%</span>` : '<span style="color:#fca5a5;font-weight:700">⚠ No registrado</span>';
-
-  document.getElementById('mRevisarBody').innerHTML = `
-    <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;margin-bottom:12px">
-      <div class="det-row"><span class="det-label">Radicación</span><span class="det-val"><strong style="color:#34d399">${esc(r.numero)}</strong></span></div>
-      <div class="det-row"><span class="det-label">Estudiante</span><span class="det-val"><div>${esc(r.nombreEstudiante||'—')}</div><div style="font-size:11px;color:rgba(255,255,255,.4)">${esc(r.emailEstudiante||'')}</div></span></div>
-      <div class="det-row"><span class="det-label">Semestre</span><span class="det-val">${esc(String(r.semestre||'—'))}${String(r.alertaS12||'').trim()==='SÍ'?' <span class="alert-s12">⚠️ S12</span>':''}</span></div>
-      <div class="det-row"><span class="det-label">F. Solicitud</span><span class="det-val">${fmtFecha(r.fechaCarga)}</span></div>
-      <div class="det-row"><span class="det-label">% Turnitin</span><span class="det-val">${turnitin}</span></div>
-    </div>
-    <div class="det-sec">Documentos cargados</div>
-    <div style="margin-bottom:12px">
-      ${docChip(r.urlAnexoA7,'Anexo A7')}${docChip(r.urlArticulo,'Artículo')}${docChip(r.urlGuia,'Guía Autores')}${docChip(r.urlAvalCCEB,'Aval CCEB')}${docChip(r.urlTurnitin,'Turnitin PDF')}
-    </div>
-    <div class="det-sec">Jurado 1 sugerido · Temático</div>
-    <div style="margin-bottom:10px;font-size:13px">${jRow(1)}</div>
-    <div class="det-sec">Jurado 2 sugerido · Metodológico</div>
-    <div style="margin-bottom:10px;font-size:13px">${jRow(2)}</div>
-    <div class="det-sec">Estado actual</div>
-    <div style="margin-bottom:4px">${badgeEstadoSheet(estSh)}</div>
-    ${r.observacionesEstado?`<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">${esc(r.observacionesEstado)}</div>`:''}`;
-
-  const tieneJurados = juradosAprobados(r);
-  document.getElementById('mRevisarActions').innerHTML = `
-    <button type="button" class="btn" onclick="closeModal('modalRevisar')">Cerrar</button>
-    <button type="button" class="btn rd" onclick="desdeModalRevisar('devolver', ${rowIndex})">↩ Devolver</button>
-    ${!estaDevuelta && !tieneJurados ? `<button type="button" class="btn bl" onclick="desdeModalRevisar('revisada', ${rowIndex})">✓ Marcar Revisada</button>` : ''}
-    ${tieneJurados && !tieneFechaProgramada(r)
-      ? `<button type="button" class="btn gr" onclick="desdeModalRevisar('programar', ${rowIndex})">📅 Programar Fecha</button>`
-      : (!estaDevuelta && !tieneJurados ? `<button type="button" class="btn gr" onclick="desdeModalRevisar('asignar', ${rowIndex})">👥 Asignar Jurados</button>` : '')}`;
-
-  openModal('modalRevisar');
-}
-
-function confirmarRevisada(rowIndex) {
-  marcarRevisada(rowIndex);
+  document.getElementById('mJ1Cedula').value = r.jurado1Cedula || '';
+  document.getElementById('mJ2Cedula').value = r.jurado2Cedula || '';
+  document.getElementById('modalAsignar').classList.add('open');
 }
 
 function abrirDevolver(rowIndex) {
-  const r = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
+  const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
   document.getElementById('mDevolverRow').value = rowIndex;
-  document.getElementById('mDevolverInfo').textContent = 'Radicación: ' + r.numero + (r.nombreEstudiante ? ' — ' + r.nombreEstudiante : '') + (r.emailEstudiante ? ' (' + r.emailEstudiante + ')' : '');
+  document.getElementById('mDevolverInfo').textContent = 'Radicación: ' + r.numero;
   document.getElementById('mMotivoDevolucion').value = r.motivoDevolucion || r.observaciones || '';
-  openModal('modalDevolver');
+  document.getElementById('modalDevolver').classList.add('open');
 }
 
 function abrirResultado(rowIndex, numero) {
   document.getElementById('mResultadoRow').value = rowIndex;
-  const rR = fase3.find(x => Number(x.rowIndex) === Number(rowIndex));
-  document.getElementById('mResultadoInfo').textContent = 'Radicación: ' + numero + (rR && rR.nombreEstudiante ? ' — ' + rR.nombreEstudiante : '') + (rR && rR.emailEstudiante ? ' (' + rR.emailEstudiante + ')' : '');
+  document.getElementById('mResultadoInfo').textContent = 'Radicación: ' + numero;
   document.getElementById('mNota').value = '';
   document.getElementById('mActa').value = '';
   document.getElementById('mProducto').value = 'NO';
   document.getElementById('mDesc').value = '';
   document.getElementById('descDiv').style.display = 'none';
-  openModal('modalResultado');
+  document.getElementById('modalResultado').classList.add('open');
 }
 
 async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
-  const tok = coordToken();
-  if (!tok) throw new Error('Sesión caducada o sin token. Vuelva a iniciar sesión.');
-  const emailCoord = String((admin && (admin.email || admin.correo)) || '').trim();
-  if (!emailCoord) throw new Error('La sesión no incluye correo de la cuenta administrativa. Cierre sesión y entre de nuevo.');
-
-  const idx = Number(rowIndex);
-  if (!Number.isFinite(idx)) throw new Error('Identificador de fila inválido. Recargue la página e intente otra vez.');
-
-  const r = fase3.find(x => Number(x.rowIndex) === idx);
-  const body = {
+  const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
     action: 'updateFase3Estado',
-    rowIndex: idx,
+    rowIndex,
     estado,
-    observaciones: String(observaciones || ''),
-    emailCoord,
-    token: tok
-  };
-  if (r && r.numero) body.numeroRadicacion = String(r.numero).trim();
-
-  const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify(body) });
-  const text = await res.text();
-  let d;
-  try {
-    d = JSON.parse(text);
-  } catch (parseErr) {
-    const snippet = text.replace(/\s+/g, ' ').trim().slice(0, 160);
-    throw new Error(
-      'El servidor no devolvió JSON (HTTP ' + res.status + '). Suele indicar error en Apps Script o despliegue. ' +
-      (snippet ? 'Detalle: ' + snippet : '')
-    );
-  }
-  if (!d.success) {
-    const msg = d.error != null && String(d.error).trim() !== '' ? String(d.error) : 'El servidor respondió sin éxito ni mensaje (revise el script: updateFase3Estado).';
-    throw new Error(msg);
-  }
+    observaciones,
+    emailCoord: admin.email,
+    token: coordToken()
+  })});
+  const d = await res.json();
+  if (!d.success) throw new Error(d.error);
 }
 
 async function marcarRevisada(rowIndex) {
-  const idx = Number(rowIndex);
-  const r = fase3.find(x => Number(x.rowIndex) === idx);
-  if (!r) {
-    toast('No se encontró la solicitud en memoria. Pulse «Actualizar» y abra de nuevo «Ver».', 'warn');
-    return;
-  }
-  if (r.pctTurnitin == null || String(r.pctTurnitin).trim() === '') {
-    toast('Esta solicitud no tiene % Turnitin registrado. Verifique que el campo esté diligenciado en el Sheet.', 'warn'); return;
-  }
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
   const mensaje = 'Su solicitud de sustentación fue revisada. La documentación radicada se encuentra conforme y en los próximos días se asignarán los jurados.';
   try {
-    await actualizarEstadoSolicitud(idx, 'Solicitud sustentación revisada', mensaje);
+    await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación revisada', mensaje);
     await cargar();
     toast('Solicitud marcada como revisada ✓', 'ok');
-  } catch(e) {
-    toast('Error al marcar revisada: ' + e.message, 'err');
-    console.error('marcarRevisada error', e);
-  }
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
 }
 
 async function devolverSolicitud() {
@@ -1053,44 +983,42 @@ async function devolverSolicitud() {
 
 async function asignarJurados() {
   const rowIndex = parseInt(document.getElementById('mAsignarRow').value);
-  const j1n = document.getElementById('mJ1Nombre').value.trim();
-  const j1e = document.getElementById('mJ1Email').value.trim();
-  const j1t = document.getElementById('mJ1Tel').value.trim();
-  const j2n = document.getElementById('mJ2Nombre').value.trim();
-  const j2e = document.getElementById('mJ2Email').value.trim();
-  const j2t = document.getElementById('mJ2Tel').value.trim();
+  const fecha    = document.getElementById('mFecha').value;
+  const hora     = document.getElementById('mHora').value;
+ const lugar = document.getElementById('mLugar').value.trim(); 
+ const j1n      = document.getElementById('mJ1Nombre').value.trim();
+  const j1e      = document.getElementById('mJ1Email').value.trim();
+  const j2n      = document.getElementById('mJ2Nombre').value.trim();
+  const j2e      = document.getElementById('mJ2Email').value.trim();
 
-  if (!j1n || !j1e) { toast('Completa nombre y correo del Jurado 1', 'warn'); return; }
-  if (!j1t) { toast('El teléfono del Jurado 1 es obligatorio', 'warn'); return; }
-  if (!j2n || !j2e) { toast('Completa nombre y correo del Jurado 2', 'warn'); return; }
-  if (!j2t) { toast('El teléfono del Jurado 2 es obligatorio', 'warn'); return; }
+  if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
+  if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
+ if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
+  if (!j1n || !j1e) { toast('Completa los datos del Jurado 1', 'warn'); return; }
+  if (!j2n || !j2e) { toast('Completa los datos del Jurado 2', 'warn'); return; }
 
   const btn = document.getElementById('btnAsignar');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Aprobando...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Asignando...';
   try {
-    // Save jurado data (no date/time yet — that comes in a separate step)
-    // Tel en O/R y réplica AE/AF; especialidad en AG/AH (ver appscript crearFase3 / updateFase3Asignacion).
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'updateFase3Asignacion',
       rowIndex,
-      fechaSustentacion: '',
-      horaSustentacion: '',
-      lugar: '',
-      jurado1: { nombre: j1n, telefono: j1t, email: j1e, especialidad: (document.getElementById('mJ1Esp')||{value:''}).value.trim(), cedula: '' },
-      jurado2: { nombre: j2n, telefono: j2t, email: j2e, especialidad: (document.getElementById('mJ2Esp')||{value:''}).value.trim(), cedula: '' },
-      emailCoord: String((admin && (admin.email || admin.correo)) || '').trim(),
+      fechaSustentacion: fecha,
+      horaSustentacion: hora,
+     lugar: lugar,
+      jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e, telefono: document.getElementById('mJ1Tel').value.trim() },
+      jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e, telefono: document.getElementById('mJ2Tel').value.trim() },
+      emailCoord: admin.email,
       token: coordToken()
     })});
     const d = await res.json();
-    if (!d.success) throw new Error(d.error);
-    // Explicitly set state to "Jurados aprobados"
-    await actualizarEstadoSolicitud(rowIndex, 'Jurados aprobados',
-      'Jurados aprobados. Se han enviado notificaciones. La fecha de sustentación se programará próximamente.');
-    closeModal('modalAsignar');
-    await cargar();
-    toast('Jurados aprobados. Notificaciones enviadas ✓', 'ok');
+    if (d.success) {
+      closeModal('modalAsignar');
+      await cargar();
+      toast('Jurados asignados. Notificaciones enviadas ✓', 'ok');
+    } else throw new Error(d.error);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
-  finally { btn.disabled = false; btn.innerHTML = '✅ Aprobar jurados y notificar'; }
+  finally { btn.disabled = false; btn.innerHTML = '📅 Asignar y notificar'; }
 }
 
 async function guardarResultado() {
@@ -1114,7 +1042,7 @@ async function guardarResultado() {
       numeroActa: acta,
       producto,
       descripcion: desc,
-      emailCoord: String((admin && (admin.email || admin.correo)) || '').trim(),
+      emailCoord: admin.email,
       token: coordToken()
     })});
     const d = await res.json();
@@ -1127,7 +1055,7 @@ async function guardarResultado() {
   finally { btn.disabled = false; btn.innerHTML = '✅ Guardar y cerrar'; }
 }
 
-['modalRevisar','modalAsignar','modalDevolver','modalResultado'].forEach(id => {
+['modalAsignar','modalDevolver','modalResultado'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => { if (e.target === document.getElementById(id)) closeModal(id); });
 });
 </script>
