@@ -310,71 +310,75 @@
         <div class="fg" id="wrapArea"><label>Área / Especialidad *</label>
           <select id="area"><option value="">Seleccionar...</option><option>Medicina Interna</option><option>Cirugía General</option><option>Pediatría</option><option>Ginecología y Obstetricia</option><option>Psiquiatría</option><option>Neurología</option><option>Cardiología</option><option>Oncología</option><option>Urgencias y Emergencias</option><option>Salud Pública</option><option>Epidemiología</option><option>Otra</option></select>
         </div>
+      </div>
 
-        <!-- ── SECCIÓN DIPLOMADO (se muestra solo cuando modalidad = Diplomado) ── -->
-        <div id="seccionDiplomado" style="display:none;grid-column:1/-1">
+      <!-- ── SECCIÓN DIPLOMADO (aparece solo cuando modalidad = Diplomado) ── -->
+      <div id="seccionDiplomado" style="display:none">
+        <div class="form-grid">
           <div class="sec-label">🎓 Datos del Diplomado</div>
-          <div class="form-grid" style="margin-top:8px">
-            <div class="fg"><label>Fecha inicio del diplomado *</label><input type="date" id="diplomadoFechaInicio"></div>
-            <div class="fg"><label>Fecha fin del diplomado *</label><input type="date" id="diplomadoFechaFin"></div>
-            <div class="fg full"><label>¿Quién propone el evaluador para el producto? *</label>
-              <select id="diplomadoJuradoModo" onchange="alModoJuradoCambiar()">
+          <div class="fg"><label>Fecha inicio del diplomado *</label><input type="date" id="diplomadoFechaInicio"></div>
+          <div class="fg"><label>Fecha fin del diplomado *</label><input type="date" id="diplomadoFechaFin"></div>
+          <div class="fg full"><label>¿Quién propone el evaluador para el producto? *</label>
+            <select id="diplomadoJuradoModo" onchange="alModoJuradoCambiar()">
+              <option value="">Seleccionar...</option>
+              <option value="tutor_sugiere">El tutor sugiere un jurado evaluador</option>
+              <option value="cttg_asigna">El Comité Técnico de Trabajos de Grado (CTTG) asigna el evaluador</option>
+            </select>
+          </div>
+          <div class="fg full" id="infoCttg" style="display:none">
+            <div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:9px;padding:12px 14px;font-size:13px;color:#c4b5fd">
+              📌 El Comité Técnico de Trabajos de Grado, junto con la coordinación, asignará el evaluador para la sesión de valoración del producto. No es necesario registrar un jurado en este momento.
+            </div>
+          </div>
+        </div>
+        <div id="seccionJuradoDip" style="display:none">
+          <div class="form-grid">
+            <div class="sec-label">👤 Jurado evaluador sugerido por el tutor</div>
+            <div class="fg"><label>Nombre completo *</label><input id="dipJurado1Nombre" placeholder="Dr./Dra. Nombre Apellido"></div>
+            <div class="fg"><label>Email *</label><input type="email" id="dipJurado1Email" placeholder="jurado@institución.edu.co"></div>
+            <div class="fg"><label>Teléfono</label><input id="dipJurado1Telefono" placeholder="300 000 0000"></div>
+            <div class="fg"><label>Especialidad / Perfil</label><input id="dipJurado1Especialidad" placeholder="Ej: Medicina Interna, PhD en..."></div>
+            <div class="fg full"><label>¿El jurado acepta participar como evaluador?</label>
+              <select id="dipJurado1AceptaPropuesta">
                 <option value="">Seleccionar...</option>
-                <option value="tutor_sugiere">El tutor sugiere un jurado evaluador</option>
-                <option value="cttg_asigna">El Comité Técnico de Trabajos de Grado (CTTG) asigna el evaluador</option>
+                <option value="Sí, acepta">Sí, acepta</option>
+                <option value="Pendiente confirmación">Pendiente confirmación</option>
+                <option value="No acepta">No acepta</option>
               </select>
             </div>
-            <div class="fg full" id="infoCttg" style="display:none">
-              <div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:9px;padding:12px 14px;font-size:13px;color:#c4b5fd">
-                📌 El Comité Técnico de Trabajos de Grado, junto con la coordinación, asignará el evaluador para la sesión de valoración del producto. No es necesario registrar un jurado en este momento.
-              </div>
-            </div>
-          </div>
-          <div id="seccionJuradoDip" style="display:none">
-            <div class="sec-label" style="margin-top:8px">👤 Jurado evaluador sugerido por el tutor</div>
-            <div class="form-grid" style="margin-top:8px">
-              <div class="fg"><label>Nombre completo *</label><input id="dipJurado1Nombre" placeholder="Dr./Dra. Nombre Apellido"></div>
-              <div class="fg"><label>Email *</label><input type="email" id="dipJurado1Email" placeholder="jurado@institución.edu.co"></div>
-              <div class="fg"><label>Teléfono</label><input id="dipJurado1Telefono" placeholder="300 000 0000"></div>
-              <div class="fg"><label>Especialidad / Perfil</label><input id="dipJurado1Especialidad" placeholder="Ej: Medicina Interna, PhD en..."></div>
-              <div class="fg full"><label>¿El jurado acepta participar como evaluador?</label>
-                <select id="dipJurado1AceptaPropuesta">
-                  <option value="">Seleccionar...</option>
-                  <option value="Sí, acepta">Sí, acepta</option>
-                  <option value="Pendiente confirmación">Pendiente confirmación</option>
-                  <option value="No acepta">No acepta</option>
-                </select>
-              </div>
-            </div>
-            <div class="sec-label" style="margin-top:4px">👤 Jurado 2 (Opcional)</div>
-            <div class="form-grid" style="margin-top:8px">
-              <div class="fg"><label>Nombre</label><input id="dipJurado2Nombre" placeholder="(opcional)"></div>
-              <div class="fg"><label>Email</label><input type="email" id="dipJurado2Email" placeholder="(opcional)"></div>
-              <div class="fg"><label>Teléfono</label><input id="dipJurado2Telefono" placeholder="(opcional)"></div>
-            </div>
-            <div class="sec-label" style="margin-top:4px">👤 Jurado 3 (Opcional)</div>
-            <div class="form-grid" style="margin-top:8px">
-              <div class="fg"><label>Nombre</label><input id="dipJurado3Nombre" placeholder="(opcional)"></div>
-              <div class="fg"><label>Email</label><input type="email" id="dipJurado3Email" placeholder="(opcional)"></div>
-              <div class="fg"><label>Teléfono</label><input id="dipJurado3Telefono" placeholder="(opcional)"></div>
-            </div>
+            <div class="sec-label">👤 Jurado 2 (Opcional)</div>
+            <div class="fg"><label>Nombre</label><input id="dipJurado2Nombre" placeholder="(opcional)"></div>
+            <div class="fg"><label>Email</label><input type="email" id="dipJurado2Email" placeholder="(opcional)"></div>
+            <div class="fg"><label>Teléfono</label><input id="dipJurado2Telefono" placeholder="(opcional)"></div>
+            <div class="sec-label">👤 Jurado 3 (Opcional)</div>
+            <div class="fg"><label>Nombre</label><input id="dipJurado3Nombre" placeholder="(opcional)"></div>
+            <div class="fg"><label>Email</label><input type="email" id="dipJurado3Email" placeholder="(opcional)"></div>
+            <div class="fg"><label>Teléfono</label><input id="dipJurado3Telefono" placeholder="(opcional)"></div>
           </div>
         </div>
+      </div>
 
-        <div class="sec-label tutor-label">👨‍🏫 Tutor 1</div>
-        <div class="fg tutor-field"><label>Nombre *</label><input id="tutor1Nombre" placeholder="Dr./Dra."></div>
-        <div class="fg tutor-field"><label>Email *</label><input type="email" id="tutor1Email" placeholder="tutor@usc.edu.co"></div>
-        <div class="fg tutor-field"><label>Teléfono</label><input id="tutor1Telefono" placeholder="300 000 0000"></div>
-        <div class="fg tutor-field"><label>Rol</label>
-          <select id="tutor1Relacion"><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
+      <!-- ── SECCIÓN TUTORES (se oculta cuando es Diplomado) ── -->
+      <div id="seccionTutores">
+        <div class="form-grid">
+          <div class="sec-label">👨‍🏫 Tutor 1</div>
+          <div class="fg"><label>Nombre *</label><input id="tutor1Nombre" placeholder="Dr./Dra."></div>
+          <div class="fg"><label>Email *</label><input type="email" id="tutor1Email" placeholder="tutor@usc.edu.co"></div>
+          <div class="fg"><label>Teléfono</label><input id="tutor1Telefono" placeholder="300 000 0000"></div>
+          <div class="fg"><label>Rol</label>
+            <select id="tutor1Relacion"><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
+          </div>
+          <div class="sec-label">👨‍🏫 Tutor 2 (Opcional)</div>
+          <div class="fg"><label>Nombre</label><input id="tutor2Nombre" placeholder="(opcional)"></div>
+          <div class="fg"><label>Email</label><input type="email" id="tutor2Email" placeholder="(opcional)"></div>
+          <div class="fg"><label>Teléfono</label><input id="tutor2Telefono" placeholder="(opcional)"></div>
+          <div class="fg"><label>Rol</label>
+            <select id="tutor2Relacion"><option value="">— Sin tutor 2 —</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
+          </div>
         </div>
-        <div class="sec-label tutor-label">👨‍🏫 Tutor 2 (Opcional)</div>
-        <div class="fg tutor-field"><label>Nombre</label><input id="tutor2Nombre" placeholder="(opcional)"></div>
-        <div class="fg tutor-field"><label>Email</label><input type="email" id="tutor2Email" placeholder="(opcional)"></div>
-        <div class="fg tutor-field"><label>Teléfono</label><input id="tutor2Telefono" placeholder="(opcional)"></div>
-        <div class="fg tutor-field"><label>Rol</label>
-          <select id="tutor2Relacion"><option value="">— Sin tutor 2 —</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
-        </div>
+      </div>
+
+      <div class="form-grid">
         <div class="sec-label">📝 Observaciones (Opcional)</div>
         <div class="fg full"><label>Observaciones adicionales</label>
           <textarea id="observaciones" placeholder="Agrega cualquier observación adicional..." style="min-height:80px;resize:vertical"></textarea>
@@ -937,10 +941,8 @@ function alModalidadCambiar() {
   const mod = (document.getElementById('modalidad')?.value || '').trim().toLowerCase();
   const esDip = mod === 'diplomado';
   document.getElementById('seccionDiplomado').style.display = esDip ? 'block' : 'none';
-  document.getElementById('wrapArea').style.display = esDip ? 'none' : '';
-  document.querySelectorAll('.tutor-label,.tutor-field').forEach(el => {
-    el.style.display = esDip ? 'none' : '';
-  });
+  document.getElementById('seccionTutores').style.display  = esDip ? 'none'  : 'block';
+  document.getElementById('wrapArea').style.display        = esDip ? 'none'  : '';
   if (!esDip) {
     document.getElementById('seccionJuradoDip').style.display = 'none';
     document.getElementById('infoCttg').style.display = 'none';
