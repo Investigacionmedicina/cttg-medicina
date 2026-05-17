@@ -305,23 +305,74 @@
         <div class="sec-label">📄 Proyecto</div>
         <div class="fg full"><label>Título del proyecto * (o escribe "Ninguno")</label><input id="titulo" placeholder="Título del trabajo de grado o Ninguno"></div>
         <div class="fg"><label>Modalidad *</label>
-          <select id="modalidad"><option value="">Seleccionar...</option><option>Diplomado</option><option>Trabajo de investigación</option><option>Monografia Revision sistematica</option><option>Monografia Reporte de caso</option><option>Monografia serie de casos</option><option>Monografia Metaanalisis</option><option>Monografia revision de alcance</option></select>
+          <select id="modalidad" onchange="alModalidadCambiar()"><option value="">Seleccionar...</option><option>Diplomado</option><option>Trabajo de investigación</option><option>Monografia Revision sistematica</option><option>Monografia Reporte de caso</option><option>Monografia serie de casos</option><option>Monografia Metaanalisis</option><option>Monografia revision de alcance</option></select>
         </div>
-        <div class="fg"><label>Área / Especialidad *</label>
+        <div class="fg" id="wrapArea"><label>Área / Especialidad *</label>
           <select id="area"><option value="">Seleccionar...</option><option>Medicina Interna</option><option>Cirugía General</option><option>Pediatría</option><option>Ginecología y Obstetricia</option><option>Psiquiatría</option><option>Neurología</option><option>Cardiología</option><option>Oncología</option><option>Urgencias y Emergencias</option><option>Salud Pública</option><option>Epidemiología</option><option>Otra</option></select>
         </div>
-        <div class="sec-label">👨‍🏫 Tutor 1</div>
-        <div class="fg"><label>Nombre *</label><input id="tutor1Nombre" placeholder="Dr./Dra."></div>
-        <div class="fg"><label>Email *</label><input type="email" id="tutor1Email" placeholder="tutor@usc.edu.co"></div>
-        <div class="fg"><label>Teléfono</label><input id="tutor1Telefono" placeholder="300 000 0000"></div>
-        <div class="fg"><label>Rol</label>
+
+        <!-- ── SECCIÓN DIPLOMADO (se muestra solo cuando modalidad = Diplomado) ── -->
+        <div id="seccionDiplomado" style="display:none;grid-column:1/-1">
+          <div class="sec-label">🎓 Datos del Diplomado</div>
+          <div class="form-grid" style="margin-top:8px">
+            <div class="fg"><label>Fecha inicio del diplomado *</label><input type="date" id="diplomadoFechaInicio"></div>
+            <div class="fg"><label>Fecha fin del diplomado *</label><input type="date" id="diplomadoFechaFin"></div>
+            <div class="fg full"><label>¿Quién propone el evaluador para el producto? *</label>
+              <select id="diplomadoJuradoModo" onchange="alModoJuradoCambiar()">
+                <option value="">Seleccionar...</option>
+                <option value="tutor_sugiere">El tutor sugiere un jurado evaluador</option>
+                <option value="cttg_asigna">El Comité Técnico de Trabajos de Grado (CTTG) asigna el evaluador</option>
+              </select>
+            </div>
+            <div class="fg full" id="infoCttg" style="display:none">
+              <div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:9px;padding:12px 14px;font-size:13px;color:#c4b5fd">
+                📌 El Comité Técnico de Trabajos de Grado, junto con la coordinación, asignará el evaluador para la sesión de valoración del producto. No es necesario registrar un jurado en este momento.
+              </div>
+            </div>
+          </div>
+          <div id="seccionJuradoDip" style="display:none">
+            <div class="sec-label" style="margin-top:8px">👤 Jurado evaluador sugerido por el tutor</div>
+            <div class="form-grid" style="margin-top:8px">
+              <div class="fg"><label>Nombre completo *</label><input id="dipJurado1Nombre" placeholder="Dr./Dra. Nombre Apellido"></div>
+              <div class="fg"><label>Email *</label><input type="email" id="dipJurado1Email" placeholder="jurado@institución.edu.co"></div>
+              <div class="fg"><label>Teléfono</label><input id="dipJurado1Telefono" placeholder="300 000 0000"></div>
+              <div class="fg"><label>Especialidad / Perfil</label><input id="dipJurado1Especialidad" placeholder="Ej: Medicina Interna, PhD en..."></div>
+              <div class="fg full"><label>¿El jurado acepta participar como evaluador?</label>
+                <select id="dipJurado1AceptaPropuesta">
+                  <option value="">Seleccionar...</option>
+                  <option value="Sí, acepta">Sí, acepta</option>
+                  <option value="Pendiente confirmación">Pendiente confirmación</option>
+                  <option value="No acepta">No acepta</option>
+                </select>
+              </div>
+            </div>
+            <div class="sec-label" style="margin-top:4px">👤 Jurado 2 (Opcional)</div>
+            <div class="form-grid" style="margin-top:8px">
+              <div class="fg"><label>Nombre</label><input id="dipJurado2Nombre" placeholder="(opcional)"></div>
+              <div class="fg"><label>Email</label><input type="email" id="dipJurado2Email" placeholder="(opcional)"></div>
+              <div class="fg"><label>Teléfono</label><input id="dipJurado2Telefono" placeholder="(opcional)"></div>
+            </div>
+            <div class="sec-label" style="margin-top:4px">👤 Jurado 3 (Opcional)</div>
+            <div class="form-grid" style="margin-top:8px">
+              <div class="fg"><label>Nombre</label><input id="dipJurado3Nombre" placeholder="(opcional)"></div>
+              <div class="fg"><label>Email</label><input type="email" id="dipJurado3Email" placeholder="(opcional)"></div>
+              <div class="fg"><label>Teléfono</label><input id="dipJurado3Telefono" placeholder="(opcional)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-label tutor-label">👨‍🏫 Tutor 1</div>
+        <div class="fg tutor-field"><label>Nombre *</label><input id="tutor1Nombre" placeholder="Dr./Dra."></div>
+        <div class="fg tutor-field"><label>Email *</label><input type="email" id="tutor1Email" placeholder="tutor@usc.edu.co"></div>
+        <div class="fg tutor-field"><label>Teléfono</label><input id="tutor1Telefono" placeholder="300 000 0000"></div>
+        <div class="fg tutor-field"><label>Rol</label>
           <select id="tutor1Relacion"><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
         </div>
-        <div class="sec-label">👨‍🏫 Tutor 2 (Opcional)</div>
-        <div class="fg"><label>Nombre</label><input id="tutor2Nombre" placeholder="(opcional)"></div>
-        <div class="fg"><label>Email</label><input type="email" id="tutor2Email" placeholder="(opcional)"></div>
-        <div class="fg"><label>Teléfono</label><input id="tutor2Telefono" placeholder="(opcional)"></div>
-        <div class="fg"><label>Rol</label>
+        <div class="sec-label tutor-label">👨‍🏫 Tutor 2 (Opcional)</div>
+        <div class="fg tutor-field"><label>Nombre</label><input id="tutor2Nombre" placeholder="(opcional)"></div>
+        <div class="fg tutor-field"><label>Email</label><input type="email" id="tutor2Email" placeholder="(opcional)"></div>
+        <div class="fg tutor-field"><label>Teléfono</label><input id="tutor2Telefono" placeholder="(opcional)"></div>
+        <div class="fg tutor-field"><label>Rol</label>
           <select id="tutor2Relacion"><option value="">— Sin tutor 2 —</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
         </div>
         <div class="sec-label">📝 Observaciones (Opcional)</div>
@@ -870,22 +921,61 @@ let actasAprobadas = false;
 }
 
 function limpiar() {
- ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono'].forEach(id => {
+  ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono',
+   'diplomadoFechaInicio','diplomadoFechaFin','dipJurado1Nombre','dipJurado1Email','dipJurado1Telefono','dipJurado1Especialidad','dipJurado2Nombre','dipJurado2Email','dipJurado2Telefono','dipJurado3Nombre','dipJurado3Email','dipJurado3Telefono'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  ['semestre1','semestre2','semestre3','modalidad','area','tutor1Relacion','tutor2Relacion'].forEach(id => {
+  ['semestre1','semestre2','semestre3','modalidad','area','tutor1Relacion','tutor2Relacion','diplomadoJuradoModo','dipJurado1AceptaPropuesta'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('successBox').style.display = 'none';
+  alModalidadCambiar();
   setEst(1, document.querySelector('.ne'));
+}
+
+function alModalidadCambiar() {
+  const mod = (document.getElementById('modalidad')?.value || '').trim().toLowerCase();
+  const esDip = mod === 'diplomado';
+  document.getElementById('seccionDiplomado').style.display = esDip ? 'block' : 'none';
+  document.getElementById('wrapArea').style.display = esDip ? 'none' : '';
+  document.querySelectorAll('.tutor-label,.tutor-field').forEach(el => {
+    el.style.display = esDip ? 'none' : '';
+  });
+  if (!esDip) {
+    document.getElementById('seccionJuradoDip').style.display = 'none';
+    document.getElementById('infoCttg').style.display = 'none';
+  } else {
+    alModoJuradoCambiar();
+  }
+}
+
+function alModoJuradoCambiar() {
+  const modo = (document.getElementById('diplomadoJuradoModo')?.value || '');
+  document.getElementById('seccionJuradoDip').style.display = modo === 'tutor_sugiere' ? 'block' : 'none';
+  document.getElementById('infoCttg').style.display = modo === 'cttg_asigna' ? 'block' : 'none';
 }
 
 async function radicar() {
   if (bloquearNuevaRad) { toast('No puedes radicar hasta recibir respuesta de tu radicación actual.', 'warn'); return; }
-  const reqs = [['cedula1','Cédula estudiante 1'],['nombre1','Nombre estudiante 1'],['email1','Email estudiante 1'],['telefono1','Teléfono estudiante 1'],['semestre1','Semestre estudiante 1'],['titulo','Título del proyecto'],['modalidad','Modalidad'],['area','Área'],['tutor1Nombre','Nombre del tutor 1'],['tutor1Email','Email del tutor 1']];
+  const modalidadVal = (document.getElementById('modalidad')?.value || '').trim();
+  const esDip = modalidadVal.toLowerCase() === 'diplomado';
+
+  const reqsBase = [['cedula1','Cédula estudiante 1'],['nombre1','Nombre estudiante 1'],['email1','Email estudiante 1'],['telefono1','Teléfono estudiante 1'],['semestre1','Semestre estudiante 1'],['titulo','Título del proyecto'],['modalidad','Modalidad']];
+  const reqsTutor = [['tutor1Nombre','Nombre del tutor 1'],['tutor1Email','Email del tutor 1'],['area','Área']];
+  const reqs = esDip ? reqsBase : [...reqsBase, ...reqsTutor];
   for (const [id, label] of reqs) {
     const el = document.getElementById(id);
     if (!el || !el.value.trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
+  }
+  if (esDip) {
+    const modoJur = document.getElementById('diplomadoJuradoModo')?.value || '';
+    if (!document.getElementById('diplomadoFechaInicio')?.value) { toast('Indica la fecha de inicio del diplomado', 'warn'); return; }
+    if (!document.getElementById('diplomadoFechaFin')?.value) { toast('Indica la fecha de fin del diplomado', 'warn'); return; }
+    if (!modoJur) { toast('Indica quién propone el evaluador para el producto', 'warn'); return; }
+    if (modoJur === 'tutor_sugiere') {
+      if (!(document.getElementById('dipJurado1Nombre')?.value || '').trim()) { toast('Completa: Nombre del jurado evaluador sugerido', 'warn'); return; }
+      if (!(document.getElementById('dipJurado1Email')?.value || '').trim()) { toast('Completa: Email del jurado evaluador sugerido', 'warn'); return; }
+    }
   }
   if (numEst >= 2) {
     const e2 = [['cedula2','Cédula estudiante 2'],['nombre2','Nombre estudiante 2'],['email2','Email estudiante 2'],['telefono2','Teléfono estudiante 2'],['semestre2','Semestre estudiante 2']];
@@ -901,11 +991,13 @@ async function radicar() {
       if (!el || !String(el.value).trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
     }
   }
-  const t2n = (document.getElementById('tutor2Nombre')?.value || '').trim();
-  const t2e = (document.getElementById('tutor2Email')?.value || '').trim();
-  if ((t2n && !t2e) || (!t2n && t2e)) { toast('Si indicas tutor 2, completa nombre y email.', 'warn'); return; }
+  if (!esDip) {
+    const t2n = (document.getElementById('tutor2Nombre')?.value || '').trim();
+    const t2e = (document.getElementById('tutor2Email')?.value || '').trim();
+    if ((t2n && !t2e) || (!t2n && t2e)) { toast('Si indicas tutor 2, completa nombre y email.', 'warn'); return; }
+  }
   const btn = document.getElementById('btnRad');
-   const datos = {
+  const datos = {
     cedula1: document.getElementById('cedula1').value.trim(),
     nombre1: document.getElementById('nombre1').value.trim(),
     email1: document.getElementById('email1').value.trim(),
@@ -925,17 +1017,31 @@ async function radicar() {
     semestre3: numEst >= 3 ? document.getElementById('semestre3').value : '',
     semillero3: numEst >= 3 ? document.getElementById('semillero3').value.trim() : '',
     titulo: document.getElementById('titulo').value.trim(),
-    modalidad: document.getElementById('modalidad').value,
-    area: document.getElementById('area').value,
-    tutor1Nombre: (document.getElementById('tutor1Nombre')?.value || '').trim(),
-    tutor1Email: (document.getElementById('tutor1Email')?.value || '').trim(),
-    tutor1Telefono: (document.getElementById('tutor1Telefono')?.value || '').trim(),
-    tutor1Relacion: document.getElementById('tutor1Relacion')?.value || '',
-    tutor2Nombre: (document.getElementById('tutor2Nombre')?.value || '').trim(),
-    tutor2Email: (document.getElementById('tutor2Email')?.value || '').trim(),
-    tutor2Telefono: (document.getElementById('tutor2Telefono')?.value || '').trim(),
-    tutor2Relacion: document.getElementById('tutor2Relacion')?.value || '',
-    observaciones: document.getElementById('observaciones')?.value || ''
+    modalidad: modalidadVal,
+    area: esDip ? '' : document.getElementById('area').value,
+    tutor1Nombre: esDip ? '' : (document.getElementById('tutor1Nombre')?.value || '').trim(),
+    tutor1Email: esDip ? '' : (document.getElementById('tutor1Email')?.value || '').trim(),
+    tutor1Telefono: esDip ? '' : (document.getElementById('tutor1Telefono')?.value || '').trim(),
+    tutor1Relacion: esDip ? '' : (document.getElementById('tutor1Relacion')?.value || ''),
+    tutor2Nombre: esDip ? '' : (document.getElementById('tutor2Nombre')?.value || '').trim(),
+    tutor2Email: esDip ? '' : (document.getElementById('tutor2Email')?.value || '').trim(),
+    tutor2Telefono: esDip ? '' : (document.getElementById('tutor2Telefono')?.value || '').trim(),
+    tutor2Relacion: esDip ? '' : (document.getElementById('tutor2Relacion')?.value || ''),
+    observaciones: document.getElementById('observaciones')?.value || '',
+    diplomadoFechaInicio: esDip ? (document.getElementById('diplomadoFechaInicio')?.value || '') : '',
+    diplomadoFechaFin:    esDip ? (document.getElementById('diplomadoFechaFin')?.value    || '') : '',
+    diplomadoJuradoModo:  esDip ? (document.getElementById('diplomadoJuradoModo')?.value  || '') : '',
+    dipJurado1Nombre:        esDip ? (document.getElementById('dipJurado1Nombre')?.value        || '').trim() : '',
+    dipJurado1Email:         esDip ? (document.getElementById('dipJurado1Email')?.value         || '').trim() : '',
+    dipJurado1Telefono:      esDip ? (document.getElementById('dipJurado1Telefono')?.value      || '').trim() : '',
+    dipJurado1Especialidad:  esDip ? (document.getElementById('dipJurado1Especialidad')?.value  || '').trim() : '',
+    dipJurado1AceptaPropuesta: esDip ? (document.getElementById('dipJurado1AceptaPropuesta')?.value || '') : '',
+    dipJurado2Nombre:   esDip ? (document.getElementById('dipJurado2Nombre')?.value   || '').trim() : '',
+    dipJurado2Email:    esDip ? (document.getElementById('dipJurado2Email')?.value    || '').trim() : '',
+    dipJurado2Telefono: esDip ? (document.getElementById('dipJurado2Telefono')?.value || '').trim() : '',
+    dipJurado3Nombre:   esDip ? (document.getElementById('dipJurado3Nombre')?.value   || '').trim() : '',
+    dipJurado3Email:    esDip ? (document.getElementById('dipJurado3Email')?.value    || '').trim() : '',
+    dipJurado3Telefono: esDip ? (document.getElementById('dipJurado3Telefono')?.value || '').trim() : '',
   };
 
   btn.disabled = true;
