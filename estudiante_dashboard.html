@@ -431,6 +431,65 @@ function esModalidadDiplomado(mod) {
   return s.includes('diplomado') || s.includes('diplom');
 }
 
+function fechaRadMs(fr) {
+  const s = String(fr || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const d = new Date(s + 'T12:00:00');
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  }
+  const d = new Date(fr);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+/** Misma clave que usa Fase 3 en servicio (evita desalinear CTTG‑… con variaciones) */
+function normNumRadEst(n) {
+  return String(n || '').trim().replace(/\u00a0/g, '').toUpperCase();
+}
+
+/**
+ * Radiación de referencia para actas / Fase 2 / Fase 3: si hay diplomado, la más reciente diplomada;
+ * si no, la más reciente por fecha de radicación. Así no se usa solo [0] cuando el Sheet devuelve otro orden.
+ */
+function radicacionReferenciaDashboard(rads) {
+  if (!rads || !rads.length) return null;
+  const pickNewer = (a, b) => (fechaRadMs(a.fechaRadicacion) >= fechaRadMs(b.fechaRadicacion) ? a : b);
+  const diplos = rads.filter(r => esModalidadDiplomado(r.modalidad));
+  if (diplos.length) return diplos.reduce(pickNewer);
+  return rads.reduce(pickNewer);
+}
+
+function actasAprobadasParaRadicacion(actasList, numeroRad, emailEst) {
+  const n = normNumRadEst(numeroRad);
+  const em = String(emailEst || '').trim().toLowerCase();
+  return (actasList || []).some(a =>
+    normNumRadEst(a.numero) === n
+    && String(a.emailEstudiante || '').trim().toLowerCase() === em
+    && String(a.estado || '').trim() === 'Aprobada');
+}
+
+function protocoloAprobadoParaRadicacion(protocolos, numeroRad, emailEst) {
+  const n = normNumRadEst(numeroRad);
+  const em = String(emailEst || '').trim().toLowerCase();
+  return (protocolos || []).some(p =>
+    normNumRadEst(p.numero) === n
+    && String(p.emailEstudiante || '').trim().toLowerCase() === em
+    && (p.estado === 'Aprobado' || p.estado === 'Aprobado Directo'));
+}
+
+function solicitudFase3ParaRadicacion(f3List, numeroRad, emailEst) {
+  const n = normNumRadEst(numeroRad);
+  const em = String(emailEst || '').trim().toLowerCase();
+  const lista = f3List || [];
+  const mismoNum = lista.filter(s =>
+    String(s.emailEstudiante || '').trim().toLowerCase() === em
+    && normNumRadEst(s.numero) === n);
+  if (mismoNum.length) {
+    return mismoNum.reduce((a, b) => (parseInt(b.rowIndex || 0, 10) >= parseInt(a.rowIndex || 0, 10) ? b : a));
+  }
+  const soloEmail = lista.filter(s => String(s.emailEstudiante || '').trim().toLowerCase() === em);
+  return soloEmail.length ? soloEmail.reduce((a, b) => (parseInt(b.rowIndex || 0, 10) >= parseInt(a.rowIndex || 0, 10) ? b : a)) : null;
+}
+
 function badgeEst(est) {
   const map = {
     'Radicado':                'b-radicado',
@@ -599,21 +658,20 @@ async function cargarMisRad() {
     }
     if (data.success && data.radicaciones?.length > 0) {
       misRadicaciones = data.radicaciones;
-     const r = misRadicaciones[0];
+      const r = radicacionReferenciaDashboard(misRadicaciones) || misRadicaciones[0];
 
-document.getElementById('d_numeroRadicacion').textContent = r.numero || '—';
-document.getElementById('d_estado').textContent = r.estado || '—';
-document.getElementById('d_titulo').textContent = r.titulo || '—';
-document.getElementById('d_modalidad').textContent = r.modalidad || '—';
-document.getElementById('d_area').textContent = r.area || '—';
-document.getElementById('d_tutor1').textContent = r.tutor1Nombre || '—';
-document.getElementById('d_tutor2').textContent = r.tutor2Nombre || '—';
-document.getElementById('d_fechaRadicacion').textContent = fmtFecha(r.fechaRadicacion);
-document.getElementById('d_fechaAprobacion').textContent = fmtFecha(r.fechaAprobacion);
-document.getElementById('d_notas').textContent = limpiarNotas(r.notas) || '—';
-      
-      // Actualizar contador general
-      actualizarContadorGeneral(misRadicaciones[0]);
+      document.getElementById('d_numeroRadicacion').textContent = r.numero || '—';
+      document.getElementById('d_estado').textContent = r.estado || '—';
+      document.getElementById('d_titulo').textContent = r.titulo || '—';
+      document.getElementById('d_modalidad').textContent = r.modalidad || '—';
+      document.getElementById('d_area').textContent = r.area || '—';
+      document.getElementById('d_tutor1').textContent = r.tutor1Nombre || '—';
+      document.getElementById('d_tutor2').textContent = r.tutor2Nombre || '—';
+      document.getElementById('d_fechaRadicacion').textContent = fmtFecha(r.fechaRadicacion);
+      document.getElementById('d_fechaAprobacion').textContent = fmtFecha(r.fechaAprobacion);
+      document.getElementById('d_notas').textContent = limpiarNotas(r.notas) || '—';
+
+      actualizarContadorGeneral(r);
       
       renderAlertasSuperiores(misRadicaciones);
       bloquearNuevaRad = misRadicaciones.some(r => !['Aprobado','Devuelto'].includes(String(r.estado||'')));
@@ -679,7 +737,8 @@ async function actualizarBotonesFases(radicaciones) {
     return;
   }
   [btnActas, btnFase2, btnFase3].forEach(b => { if (b) b.style.display = 'flex'; });
-  const estadoActual = radicaciones[0].estado || '';
+  const radRef = radicacionReferenciaDashboard(radicaciones);
+  const estadoActual = (radRef && radRef.estado) || '';
   const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Aprobado','Sustentado'];
 
   if (btnActas) {
@@ -706,10 +765,17 @@ let actasAprobadas = false;
 
     if (redirigirSiSesionInvalida(dActas) || redirigirSiSesionInvalida(dF2) || redirigirSiSesionInvalida(dFase3)) return;
 
+    const numRef = radRef.numero;
+    const emEst = user.email;
+
     if (dActas.success) {
-      const misActas = (dActas.actas || []).filter(a => a.emailEstudiante.toLowerCase() === user.email.toLowerCase());
-      actasAprobadas = misActas.some(a => a.estado === 'Aprobada');
-      const pendientes = misActas.filter(a => a.estado === 'Pendiente revisión').length;
+      const listaActas = dActas.actas || [];
+      actasAprobadas = actasAprobadasParaRadicacion(listaActas, numRef, emEst);
+      const misActasRad = listaActas.filter(a =>
+        normNumRadEst(a.numero) === normNumRadEst(numRef)
+        && String(a.emailEstudiante || '').trim().toLowerCase() === String(emEst || '').trim().toLowerCase()
+      );
+      const pendientes = misActasRad.filter(a => String(a.estado || '').trim() === 'Pendiente revisión').length;
       if (btnActasSub) {
         if (actasAprobadas) btnActasSub.textContent = '✅ Actas aprobadas';
         else if (pendientes > 0) btnActasSub.textContent = `⏳ ${pendientes} acta(s) en revisión`;
@@ -718,16 +784,17 @@ let actasAprobadas = false;
     }
 
     if (dF2.success) {
-      fase2Aprobada = (dF2.protocolos || []).some(p =>
-        p.emailEstudiante.toLowerCase() === user.email.toLowerCase() && (p.estado === 'Aprobado' || p.estado === 'Aprobado Directo')
-      );
+      fase2Aprobada = protocoloAprobadoParaRadicacion(dF2.protocolos || [], numRef, emEst);
     }
 
+    const panelF3 = document.getElementById('panelFase3Estado');
     if (dFase3.success) {
-      const miSolicitud = (dFase3.fase3 || []).find(s => s.emailEstudiante.toLowerCase() === user.email.toLowerCase());
-      if (miSolicitud) {
+      const miSolicitud = solicitudFase3ParaRadicacion(dFase3.fase3 || [], numRef, emEst);
+      if (!miSolicitud) {
+        if (panelF3) panelF3.style.display = 'none';
+      } else if (panelF3) {
+        panelF3.style.display = 'block';
         const fechaProg = miSolicitud.fechaSustentacion || miSolicitud.fechaAsignada || '';
-        document.getElementById('panelFase3Estado').style.display = 'block';
         document.getElementById('f3Estado').textContent = estadoVisualFase3(miSolicitud);
         document.getElementById('f3Turnitin').textContent = (miSolicitud.pctTurnitin || '—') + '%';
         document.getElementById('f3Fecha').textContent = fechaProg ? fmtFecha(fechaProg) : '—';
@@ -741,19 +808,27 @@ let actasAprobadas = false;
           obsBox.style.display = 'none';
           obsBox.innerHTML = '';
         }
-        if (fechaProg) {
-          document.getElementById('f3Jurados').style.display = 'block';
+        const blkJ = document.getElementById('f3Jurados');
+        if (fechaProg && blkJ) {
+          blkJ.style.display = 'block';
           document.getElementById('f3J1').textContent = miSolicitud.jurado1Nombre || '—';
           document.getElementById('f3J1Email').textContent = miSolicitud.jurado1Email || '—';
           document.getElementById('f3J2').textContent = miSolicitud.jurado2Nombre || '—';
           document.getElementById('f3J2Email').textContent = miSolicitud.jurado2Email || '—';
+        } else if (blkJ) {
+          blkJ.style.display = 'none';
         }
-        if (miSolicitud.nota) {
-          document.getElementById('f3Resultado').style.display = 'block';
+        const blkRes = document.getElementById('f3Resultado');
+        if (miSolicitud.nota && blkRes) {
+          blkRes.style.display = 'block';
           document.getElementById('f3Nota').textContent = miSolicitud.nota;
           document.getElementById('f3Acta').textContent = miSolicitud.numeroActa || '—';
+        } else if (blkRes) {
+          blkRes.style.display = 'none';
         }
       }
+    } else if (panelF3) {
+      panelF3.style.display = 'none';
     }
   } catch(e) { console.log('Error cargando fases:', e); }
 
@@ -772,20 +847,22 @@ let actasAprobadas = false;
 
  if (btnFase3) {
     btnFase3.style.display = 'flex';
-    const modalidadPrimera = radicaciones[0].modalidad || '';
+    const modalidadRef = radRef.modalidad || '';
+    const diplomatPassF1 = esModalidadDiplomado(modalidadRef) && ['Aprobado','Sustentado'].includes(String(estadoActual || '').trim());
     const rutasFase3Habilitada =
-      fase2Aprobada || (esModalidadDiplomado(modalidadPrimera) && actasAprobadas);
+      fase2Aprobada
+      || (esModalidadDiplomado(modalidadRef) && (actasAprobadas || diplomatPassF1));
 
     if (rutasFase3Habilitada) {
       btnFase3.style.opacity = '1';
       btnFase3.style.pointerEvents = 'auto';
-      if (btnFase3Sub) btnFase3Sub.textContent = esModalidadDiplomado(modalidadPrimera) ? 'Solicitar fecha de sustentación (diplomado)' : 'Solicitar fecha de sustentación';
+      if (btnFase3Sub) btnFase3Sub.textContent = esModalidadDiplomado(modalidadRef) ? 'Solicitar fecha de sustentación (diplomado)' : 'Solicitar fecha de sustentación';
     } else {
       btnFase3.style.opacity = '0.4';
       btnFase3.style.pointerEvents = 'none';
       if (btnFase3Sub) {
-        btnFase3Sub.textContent = esModalidadDiplomado(modalidadPrimera)
-          ? 'Pendiente: actas aprobadas (diplomado no requiere protocolo)'
+        btnFase3Sub.textContent = esModalidadDiplomado(modalidadRef)
+          ? 'Pendiente: actas aprobadas o aprobación Fase 1 (diplomado no requiere protocolo)'
           : 'Pendiente: aprobación de protocolo';
       }
     }
