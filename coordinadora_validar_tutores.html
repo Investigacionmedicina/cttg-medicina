@@ -286,23 +286,34 @@ function poblarFormulario() {
     bloqueD.style.display = esDipl ? 'block' : 'none';
     const di = r.diplomadoFechaInicio || '';
     const df = r.diplomadoFechaFin || '';
-    const jurs = (function() {
-      const modo = String(r.diplomadoJuradoModo || '').trim().toLowerCase();
-      const n = r.dipJurado1Nombre, e = r.dipJurado1Email, t = r.dipJurado1Telefono;
-      const esp = r.dipJurado1Especialidad, ac = r.dipJurado1AceptaPropuesta;
-      if (modo === 'cttg_asigna') {
-        return ['Evaluador: lo asigna el Comité Técnico de Trabajos de Grado (el tutor no sugirió jurado en la radicación).'];
-      }
-      if (n || e) {
-        const line = ['Jurado sugerido por el tutor', [n, e, t].filter(Boolean).join(' · '), esp ? 'Especialidad: ' + esp : '', ac ? 'Acuerdo evaluación: ' + ac : ''].filter(Boolean).join('\n');
-        return [line];
-      }
-      if (modo === 'tutor_sugiere') return ['(Modo tutor sugirió jurado — faltan datos en hoja Fase 1)'];
-      return [];
-    })();
-    document.getElementById('dipDetalleCoord').textContent =
-      'Sin tutores ni actas: al avalar, el estudiante pasa a Fase 2 (producto ante el Comité Técnico). · Inicio: ' + fmtFechaCoord(di) + ' · Fin: ' + fmtFechaCoord(df) +
-      (jurs.length ? '\n\n' + jurs[0] + '\n\nEl producto será valorado por el Comité Técnico; la coordinación confirma o asigna al evaluador definitivo cuando aplique.' : '\n\n(Sin datos de jurado/modo en la radicación — revise columnas Dip en Fase 1.)');
+    const modo = String(r.diplomadoJuradoModo || '').trim().toLowerCase();
+    const esCttg  = modo === 'cttg_asigna';
+    const esTutor = modo === 'tutor_sugiere';
+    const modoLabel = esCttg  ? '🏛 Comité CTTG asigna evaluador'
+                    : esTutor ? '👥 Tutor sugirió jurado'
+                    : '⚠️ Sin modo registrado';
+    const row = (label, val) => val ? `<div style="display:flex;gap:8px;margin:4px 0;font-size:13px"><span style="color:rgba(255,255,255,.45);min-width:140px">${label}</span><span style="color:#e2e8f0">${val}</span></div>` : '';
+    const juradoHtml = esCttg
+      ? `<div style="margin-top:8px;padding:10px 12px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:8px;font-size:13px;color:#fcd34d">El Comité Técnico de Trabajos de Grado asignará al evaluador definitivo.</div>`
+      : [
+          row('Jurado 1',        r.dipJurado1Nombre),
+          row('Email J1',        r.dipJurado1Email),
+          row('Teléfono J1',     r.dipJurado1Telefono),
+          row('Especialidad J1', r.dipJurado1Especialidad),
+          row('Acuerdo eval.',   r.dipJurado1AceptaPropuesta),
+          row('Jurado 2',        r.dipJurado2Nombre),
+          row('Email J2',        r.dipJurado2Email),
+          row('Teléfono J2',     r.dipJurado2Telefono),
+          row('Jurado 3',        r.dipJurado3Nombre),
+          row('Email J3',        r.dipJurado3Email),
+          row('Teléfono J3',     r.dipJurado3Telefono),
+        ].join('') || `<div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:6px">(Sin datos de jurado en la radicación — revise columnas Dip en Fase 1)</div>`;
+    document.getElementById('dipDetalleCoord').innerHTML =
+      `<div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px">Sin tutores ni actas: al avalar, el estudiante pasa a Fase 2 (producto ante el Comité Técnico).</div>
+       ${row('Inicio diplomado', fmtFechaCoord(di))}${row('Fin diplomado', fmtFechaCoord(df))}
+       <div style="margin-top:10px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.3)">Jurado / Evaluador</div>
+       <div style="margin:4px 0 6px;font-size:13px;font-weight:600;color:#a78bfa">${modoLabel}</div>
+       ${juradoHtml}`;
   }
 
   document.getElementById('tituloDecisionCoord').textContent = esDipl ? 'Decisión sobre el diplomado' : 'Decisión sobre tutores';

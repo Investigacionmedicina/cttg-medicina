@@ -171,7 +171,7 @@
 
   <div id="alertasTiempo" class="alert-wrap" style="display:none"></div>
    <div class="tabs">
-    <button class="tab on" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
+    <button class="tab on" id="tabMisRad" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
     <button class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
   </div>
 
@@ -410,7 +410,7 @@ function toast(msg, type) {
 function mensajeEsSesionInvalidaBackend(msg) {
   var k = String(msg || '').trim().toLowerCase();
   k = k.replace(/ó/g, 'o').replace(/í/g, 'i').replace(/á/g, 'a').replace(/é/g, 'e').replace(/ú/g, 'u').replace(/ñ/g, 'n');
-  return k === 'sesion invalida o expirada' || k === 'sesion requerida' || k === 'no autorizado' || k === 'sesion expirada';
+  return k === 'sesion invalida o expirada' || k === 'sesion requerida' || k === 'no autorizado' || k === 'sesion expirada' || k === 'token invalido';
 }
 
 function redirigirSiSesionInvalida(resp) {

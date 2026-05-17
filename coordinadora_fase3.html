@@ -363,6 +363,8 @@ let admin = null;
 let fase3 = [];
 /** Número de radicación normalizado → modalidad texto en Fase 1 (coordina vista diplomado vs medicina) */
 let modalidadPorRad = {};
+/** Número de radicación normalizado → datos jurados diplomado desde Fase 1 */
+let dipDatosPorRad = {};
 let solicitudModalActual = null;
 
 (function(){
@@ -501,37 +503,59 @@ function valorTelEditable(v) {
 }
 
 function hintLineaSugerido(r, i) {
-  const nombre = i === 1 ? r.jurado1Nombre : r.jurado2Nombre;
-  const email = i === 1 ? r.jurado1Email : r.jurado2Email;
-  const tel = fmtTelMostrar(i === 1 ? r.jurado1Telefono : r.jurado2Telefono);
+  const jef = juradoEfectivo(r, i);
+  if (jef.modoEsCttg) return 'Diplomado: el estudiante indicó que el Comité Técnico asigna el evaluador.';
+  const nombre = jef.nombre;
+  const email = jef.email;
+  const tel = fmtTelMostrar(jef.telefono);
   if (!nombre && !email && tel === '—') return 'Sin sugerencia del estudiante para este jurado.';
-  return 'Sugerido por el estudiante: ' + [nombre, email, tel !== '—' ? 'Tel ' + tel : ''].filter(Boolean).join(' · ');
+  let linea = 'Sugerido por el estudiante: ' + [nombre, email, tel !== '—' ? 'Tel ' + tel : ''].filter(Boolean).join(' · ');
+  if (jef.especialidad) linea += ' · Esp: ' + jef.especialidad;
+  if (jef.aceptaPropuesta) linea += ' · Acepta: ' + jef.aceptaPropuesta;
+  return linea;
 }
 
 function lineaTablaJuradosSugeridos(r) {
+  const mod = modalidadDeNumeroFase1(r.numero);
+  if (esModalidadDiplomadoTxt(mod)) {
+    const dip = dipDatosParaRad(r.numero);
+    if (dip) {
+      const modo = String(dip.diplomadoJuradoModo || '').trim().toLowerCase();
+      if (modo === 'cttg_asigna') return 'Diplomado: Comité Técnico asigna el evaluador';
+    }
+  }
   const bloques = [];
-  const j1 = [r.jurado1Nombre, r.jurado1Email].filter(Boolean).join(', ');
-  const t1 = valorTelEditable(r.jurado1Telefono);
-  if (j1 || t1) bloques.push('J1: ' + [j1, t1 ? 'Tel ' + t1 : ''].filter(Boolean).join(' · '));
-  const j2 = [r.jurado2Nombre, r.jurado2Email].filter(Boolean).join(', ');
-  const t2 = valorTelEditable(r.jurado2Telefono);
-  if (j2 || t2) bloques.push('J2: ' + [j2, t2 ? 'Tel ' + t2 : ''].filter(Boolean).join(' · '));
+  for (let n = 1; n <= 2; n++) {
+    const jef = juradoEfectivo(r, n);
+    if (jef.modoEsCttg) return 'Diplomado: Comité Técnico asigna el evaluador';
+    const j = [jef.nombre, jef.email].filter(Boolean).join(', ');
+    const t = valorTelEditable(jef.telefono);
+    if (j || t) bloques.push('J' + n + ': ' + [j, t ? 'Tel ' + t : ''].filter(Boolean).join(' · '));
+  }
   return bloques.length ? bloques.join(' | ') : '—';
 }
 
 function tieneSugerenciaJuradoN(n, r) {
-  if (n === 1) {
-    return !!(String(r.jurado1Nombre || '').trim()
-      || String(r.jurado1Email || '').trim()
-      || valorTelEditable(r.jurado1Telefono));
-  }
-  return !!(String(r.jurado2Nombre || '').trim()
-    || String(r.jurado2Email || '').trim()
-    || valorTelEditable(r.jurado2Telefono));
+  const jef = juradoEfectivo(r, n);
+  if (jef.modoEsCttg) return false;
+  return !!(String(jef.nombre || '').trim()
+    || String(jef.email || '').trim()
+    || valorTelEditable(jef.telefono));
 }
 
 /** Indicadores visibles: si cada jurado fue sugerido o no (+ resumen corto debajo del texto técnico) */
 function htmlBadgesEstadoSugerenciaJurados(r) {
+  const mod = modalidadDeNumeroFase1(r.numero);
+  if (esModalidadDiplomadoTxt(mod)) {
+    const dip = dipDatosParaRad(r.numero);
+    if (dip) {
+      const modo = String(dip.diplomadoJuradoModo || '').trim().toLowerCase();
+      if (modo === 'cttg_asigna') {
+        const chip = `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:rgba(167,139,250,.2);border:1px solid rgba(167,139,250,.42);color:#c4b5fd;font-size:11px;font-weight:600">Diplomado: Comité Técnico asigna evaluador</span>`;
+        return `<div style="margin-bottom:6px">${chip}</div><div><span style="color:#c4b5fd;font-size:11px;font-weight:600">● El estudiante indicó que el Comité Técnico debe asignar el evaluador</span></div>`;
+      }
+    }
+  }
   const j1 = tieneSugerenciaJuradoN(1, r);
   const j2 = tieneSugerenciaJuradoN(2, r);
   const chip = (lbl, tiene) =>
@@ -564,6 +588,35 @@ function normRadCoordF3(numero) {
 function esModalidadDiplomadoTxt(mod) {
   const s = String(mod || '').toLowerCase();
   return s.includes('diplomado') || s.includes('diplom');
+}
+
+/** Devuelve los datos de jurados diplomado (Fase 1) para una radicación, o null si no existe. */
+function dipDatosParaRad(numero) {
+  const k = normRadCoordF3(numero);
+  return k ? (dipDatosPorRad[k] || null) : null;
+}
+
+/**
+ * Devuelve { nombre, email, telefono, especialidad?, aceptaPropuesta?, modoEsCttg? }
+ * para el jurado n (1, 2 ó 3) de una fila de Fase 3.
+ * Si la modalidad es diplomado, lee los datos desde Fase 1 (dipDatosPorRad).
+ */
+function juradoEfectivo(r, n) {
+  const mod = modalidadDeNumeroFase1(r.numero);
+  if (esModalidadDiplomadoTxt(mod)) {
+    const dip = dipDatosParaRad(r.numero);
+    if (dip) {
+      const modo = String(dip.diplomadoJuradoModo || '').trim().toLowerCase();
+      if (modo === 'cttg_asigna') return { nombre: '', email: '', telefono: '', modoEsCttg: true };
+      if (n === 1) return { nombre: dip.dipJurado1Nombre, email: dip.dipJurado1Email, telefono: dip.dipJurado1Telefono, especialidad: dip.dipJurado1Especialidad, aceptaPropuesta: dip.dipJurado1AceptaPropuesta };
+      if (n === 2) return { nombre: dip.dipJurado2Nombre, email: dip.dipJurado2Email, telefono: dip.dipJurado2Telefono };
+      if (n === 3) return { nombre: dip.dipJurado3Nombre, email: dip.dipJurado3Email, telefono: dip.dipJurado3Telefono };
+    }
+    return { nombre: '', email: '', telefono: '' };
+  }
+  if (n === 1) return { nombre: r.jurado1Nombre || '', email: r.jurado1Email || '', telefono: r.jurado1Telefono || '' };
+  if (n === 2) return { nombre: r.jurado2Nombre || '', email: r.jurado2Email || '', telefono: r.jurado2Telefono || '' };
+  return { nombre: '', email: '', telefono: '' };
 }
 
 function modalidadDeNumeroFase1(numero) {
@@ -616,14 +669,40 @@ function htmlDetalleCompletoEnvioF3(r) {
   h += bloqueKv('Alerta semestre 12', r.alertaS12 || '');
   h += '<div class="msec">Jurados · sugerencia del estudiante</div>';
   h += `<p style="font-size:11px;line-height:1.4;color:rgba(255,255,255,.5);margin:-4px 0 8px">${esc(lineaTablaJuradosSugeridos(r))}</p>`;
-  h += bloqueKv('J1 · nombre', r.jurado1Nombre || '');
-  h += bloqueKv('J1 · email', r.jurado1Email || '');
-  h += bloqueKv('J1 · teléfono', fmtTelMostrar(r.jurado1Telefono));
-  h += bloqueKv('J1 · cédula', r.jurado1Cedula || '');
-  h += bloqueKv('J2 · nombre', r.jurado2Nombre || '');
-  h += bloqueKv('J2 · email', r.jurado2Email || '');
-  h += bloqueKv('J2 · teléfono', fmtTelMostrar(r.jurado2Telefono));
-  h += bloqueKv('J2 · cédula', r.jurado2Cedula || '');
+  const modDet = modalidadDeNumeroFase1(r.numero);
+  if (esModalidadDiplomadoTxt(modDet)) {
+    const dip = dipDatosParaRad(r.numero);
+    const modoJur = dip ? String(dip.diplomadoJuradoModo || '').trim().toLowerCase() : '';
+    h += bloqueKv('Modo jurado diplomado', modoJur === 'cttg_asigna' ? 'Comité Técnico asigna el evaluador' : modoJur === 'tutor_sugiere' ? 'Tutor sugirió jurado(s)' : (modoJur || '—'));
+    if (modoJur === 'tutor_sugiere' && dip) {
+      h += bloqueKv('J1 · nombre', dip.dipJurado1Nombre || '');
+      h += bloqueKv('J1 · email', dip.dipJurado1Email || '');
+      h += bloqueKv('J1 · teléfono', fmtTelMostrar(dip.dipJurado1Telefono));
+      h += bloqueKv('J1 · especialidad', dip.dipJurado1Especialidad || '');
+      h += bloqueKv('J1 · acepta propuesta', dip.dipJurado1AceptaPropuesta || '');
+      if (dip.dipJurado2Nombre || dip.dipJurado2Email || dip.dipJurado2Telefono) {
+        h += bloqueKv('J2 · nombre', dip.dipJurado2Nombre || '');
+        h += bloqueKv('J2 · email', dip.dipJurado2Email || '');
+        h += bloqueKv('J2 · teléfono', fmtTelMostrar(dip.dipJurado2Telefono));
+      }
+      if (dip.dipJurado3Nombre || dip.dipJurado3Email || dip.dipJurado3Telefono) {
+        h += bloqueKv('J3 · nombre', dip.dipJurado3Nombre || '');
+        h += bloqueKv('J3 · email', dip.dipJurado3Email || '');
+        h += bloqueKv('J3 · teléfono', fmtTelMostrar(dip.dipJurado3Telefono));
+      }
+    } else if (modoJur === 'cttg_asigna') {
+      h += `<p style="font-size:12px;color:rgba(167,139,250,.85);margin:-4px 0 8px">El estudiante indicó que el Comité Técnico de Trabajos de Grado debe asignar el evaluador. No hay jurado sugerido por el estudiante.</p>`;
+    }
+  } else {
+    h += bloqueKv('J1 · nombre', r.jurado1Nombre || '');
+    h += bloqueKv('J1 · email', r.jurado1Email || '');
+    h += bloqueKv('J1 · teléfono', fmtTelMostrar(r.jurado1Telefono));
+    h += bloqueKv('J1 · cédula', r.jurado1Cedula || '');
+    h += bloqueKv('J2 · nombre', r.jurado2Nombre || '');
+    h += bloqueKv('J2 · email', r.jurado2Email || '');
+    h += bloqueKv('J2 · teléfono', fmtTelMostrar(r.jurado2Telefono));
+    h += bloqueKv('J2 · cédula', r.jurado2Cedula || '');
+  }
   h += '<div class="msec">Coordinación en hoja</div>';
   h += bloqueKv('Estado solicitud', r.estadoSolicitud || '');
   h += bloqueKv('Fecha solicitud / carga', r.fechaCarga || '');
@@ -650,11 +729,12 @@ function aplicarDecisionJurado(i) {
   const nombreEl = document.getElementById('mJ' + i + 'Nombre');
   const emailEl = document.getElementById('mJ' + i + 'Email');
   const telEl = document.getElementById('mJ' + i + 'Tel');
-  const sugNombre = i === 1 ? (r.jurado1Nombre || '') : (r.jurado2Nombre || '');
-  const sugEmail = i === 1 ? (r.jurado1Email || '') : (r.jurado2Email || '');
-  const sugTel = valorTelEditable(i === 1 ? r.jurado1Telefono : r.jurado2Telefono);
+  const jef = juradoEfectivo(r, i);
+  const sugNombre = jef.nombre || '';
+  const sugEmail = jef.email || '';
+  const sugTel = valorTelEditable(jef.telefono);
 
-  const sinSugerencia = !String(sugNombre).trim() && !String(sugEmail).trim();
+  const sinSugerencia = jef.modoEsCttg || (!String(sugNombre).trim() && !String(sugEmail).trim());
   const lock = decision === 'aceptar' && !sinSugerencia;
 
   [nombreEl, emailEl, telEl].forEach(el => {
@@ -697,6 +777,22 @@ async function cargar() {
       (dF1.radicaciones || []).forEach(function(row) {
         const k = normRadCoordF3(row.numero);
         if (k && row.modalidad) modalidadPorRad[k] = String(row.modalidad).trim();
+        if (k) {
+          dipDatosPorRad[k] = {
+            dipJurado1Nombre:    String(row.dipJurado1Nombre    || ''),
+            dipJurado1Email:     String(row.dipJurado1Email     || ''),
+            dipJurado1Telefono:  String(row.dipJurado1Telefono  || ''),
+            dipJurado1Especialidad:    String(row.dipJurado1Especialidad    || ''),
+            dipJurado1AceptaPropuesta: String(row.dipJurado1AceptaPropuesta || ''),
+            dipJurado2Nombre:   String(row.dipJurado2Nombre   || ''),
+            dipJurado2Email:    String(row.dipJurado2Email    || ''),
+            dipJurado2Telefono: String(row.dipJurado2Telefono || ''),
+            dipJurado3Nombre:   String(row.dipJurado3Nombre   || ''),
+            dipJurado3Email:    String(row.dipJurado3Email    || ''),
+            dipJurado3Telefono: String(row.dipJurado3Telefono || ''),
+            diplomadoJuradoModo: String(row.diplomadoJuradoModo || '')
+          };
+        }
       });
     }
     if (d.success) { fase3 = d.fase3 || []; renderTablas(); }
