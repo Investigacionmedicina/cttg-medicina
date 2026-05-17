@@ -285,6 +285,29 @@ function esModalidadDiplomado(m) {
   return s.includes('diplomado') || s.includes('diplom');
 }
 
+function fechaRadMsF3(fr) {
+  const s = String(fr || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const d = new Date(s + 'T12:00:00');
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  }
+  const d = new Date(fr);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+/** Igual que en estudiante_dashboard: prioriza radicación diplomado más reciente. */
+function radicacionReferenciaF3(rads) {
+  if (!rads || !rads.length) return null;
+  const pickNewer = (a, b) => (fechaRadMsF3(a.fechaRadicacion) >= fechaRadMsF3(b.fechaRadicacion) ? a : b);
+  const diplos = rads.filter(r => esModalidadDiplomado(r.modalidad));
+  if (diplos.length) return diplos.reduce(pickNewer);
+  return rads.reduce(pickNewer);
+}
+
+function normNumRadF3(n) {
+  return String(n || '').trim().replace(/\u00a0/g, '').toUpperCase();
+}
+
 function aplicarVistaPorModalidadFase3() {
   if (!esModalidadDiplomado(modalidadRadicacionF1)) return;
   const paso = document.getElementById('paso2LineaDoc');
@@ -333,8 +356,9 @@ function aplicarVistaPorModalidadFase3() {
     .then(d => {
       if (redirigirSiSesionInvalida(d)) return;
       if (d.success && (d.radicaciones || []).length > 0) {
-        numeroRadicacionGlobal = (d.radicaciones[0].numero || '').trim();
-        modalidadRadicacionF1 = (d.radicaciones[0].modalidad || '').trim();
+        const ref = radicacionReferenciaF3(d.radicaciones) || d.radicaciones[0];
+        numeroRadicacionGlobal = (ref.numero || '').trim();
+        modalidadRadicacionF1 = (ref.modalidad || '').trim();
         aplicarVistaPorModalidadFase3();
       }
     });
@@ -480,7 +504,12 @@ async function cargarMisSolicitudes() {
     if (!d.success) { tbody.innerHTML = '<tr><td colspan="5" class="empty">Error cargando datos.</td></tr>'; return; }
     
     const email = user.email.toLowerCase();
-    const misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante && s.emailEstudiante.toLowerCase() === email);
+    let misSolicitudes = (d.fase3 || []).filter(s => s.emailEstudiante && s.emailEstudiante.toLowerCase() === email);
+    const nr = normNumRadF3(numeroRadicacionGlobal);
+    if (nr) {
+      const porRad = misSolicitudes.filter(s => normNumRadF3(s.numero) === nr);
+      if (porRad.length) misSolicitudes = porRad;
+    }
     
     if (!misSolicitudes.length) {
       tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin solicitudes registradas aún.</td></tr>';
