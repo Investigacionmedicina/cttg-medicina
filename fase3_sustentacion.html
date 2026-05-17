@@ -155,24 +155,9 @@
   <!-- PANEL NUEVA SOLICITUD -->
   <div class="panel" id="pan-nueva">
 
-  <div id="f3BloqueoComite" class="form-card" style="display:none;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.38);margin-bottom:16px">
-    <h3><span class="dot"></span>Fase 3 no disponible hasta nueva aprobación</h3>
-    <p style="font-size:13px;line-height:1.55;color:rgba(255,255,255,.75)">
-      Solo puedes enviar (o reenviar) la solicitud de sustentación cuando la radicación esté en estado <strong>«Aprobado»</strong> en Fase 1, es decir después de que el comité técnico <strong>apruebe tu último protocolo</strong> cargado en Fase 2.
-      Si el comité <strong>devolvió</strong> el trabajo, continúa primero en <strong>Protocolo / Fase 2</strong> y espera de nuevo «Aprobado».
-    </p>
-    <p id="f3BloqueoEstado" style="margin-top:10px;font-size:12px;color:#fcd34d;font-weight:600"></p>
-  </div>
-
-  <div class="form-card" id="f3CardSolicitudPrincipal">
+  <div class="form-card">
     <h3><span class="dot"></span>Solicitar Sustentación</h3>
     <p>Carga todos los documentos requeridos en el formulario y completa los datos de tu sustentación.</p>
-
-    <div id="f3BannerHistorialDevoluciones" class="form-card" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.34);border-radius:12px;padding:16px;margin-bottom:16px">
-      <h3 style="font-family:'DM Serif Display',serif;font-size:15px;color:#fecaca;margin-bottom:6px;display:flex;align-items:center;gap:8px"><span style="font-size:18px">↩</span> Devoluciones anteriores</h3>
-      <p style="font-size:12px;color:rgba(255,255,255,.58);margin-bottom:6px;line-height:1.55">Estos fueron los motivos que registró la coordinación al devolver <strong>solicitudes previas</strong> de sustentación (puede haber más de una). Revísalos antes de reenviar.</p>
-      <div id="f3HistorialDevolucionesList"></div>
-    </div>
 
     <div class="pasos">
       <div class="paso" id="paso1">
@@ -186,7 +171,7 @@
         <div class="paso-num">2</div>
         <div class="paso-txt">
           <strong>Adjunta los documentos obligatorios</strong>
-          <span>Anexo A7, Artículo, Guía Autores, Aval CCEB, Turnitin. Máximo 100MB cada uno.</span>
+          <span id="paso2LineaDoc">Anexo A7, Artículo, Guía Autores, Aval CCEB, Turnitin (instructivo trabajo de grado medicina).</span>
         </div>
       </div>
       <div class="paso" id="paso3">
@@ -207,14 +192,13 @@
     <div class="form-card" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);padding:20px;margin-bottom:0">
       <h3><span class="dot"></span>Confirma tu solicitud</h3>
 
-      <div style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:16px;line-height:1.6">
-        <strong style="color:#a5b4fc">📋 Documentación requerida:</strong><br>
+      <div style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:16px;line-height:1.6" id="docListaResumen">
+        <strong style="color:#a5b4fc">📋 Documentación (Medicina · trabajo de grado):</strong><br>
         ✓ Anexo A7 (PDF)<br>
         ✓ Artículo (PDF)<br>
         ✓ Guía Autores (PDF)<br>
         ✓ Aval CCEB (PDF)<br>
         ✓ Turnitin (PDF)<br>
-        ✓ Sugerencias de jurado (opcional): si vas a nombrar a alguien, completa jurado temático y/o jurado metodológico con nombre, correo, teléfono, especialidad y si esa persona está de acuerdo (Sí/No)<br>
         <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Máximo 100MB cada archivo</span>
       </div>
 
@@ -254,37 +238,15 @@
           <input type="number" id="porcentajeTurnitin" placeholder="Ej: 15" min="0" max="100">
         </div>
 
-        <div class="sec-label">👨‍🏫 Jurado 1 · Temático (opcional)</div>
-        <div class="fg full"><label>Desde lista «Jurados» (opcional)</label>
-          <select id="catEstJ1" onchange="aplicarJuradoEstudiante(1)"><option value="">— Escribir datos manualmente o elegir del listado —</option></select>
-        </div>
-        <div class="fg"><label>Nombre</label><input id="jurado1Nombre" placeholder="Dr./Dra."></div>
-        <div class="fg"><label>Email</label><input type="email" id="jurado1Email" placeholder="jurado@usc.edu.co"></div>
-        <div class="fg"><label>Teléfono</label><input id="jurado1Telefono" placeholder="Ej: 300 000 0000"></div>
-        <div class="fg"><label>Especialidad o área</label><input id="jurado1Especialidad" placeholder="Ej: Medicina interna"></div>
-        <div class="fg full"><label>¿Está de acuerdo en ser jurado si lo sugieres?</label>
-          <select id="jurado1AceptaPropuesta">
-            <option value="">— Solo si sugieres a esta persona —</option>
-            <option value="Sí">Sí</option>
-            <option value="No">No</option>
-          </select>
-        </div>
+        <div class="sec-label">👨‍🏫 Jurado 1 Temático (Opcional)</div>
+        <div class="fg"><label>Nombre</label><input id="jurado1Nombre" placeholder="Dr./Dra. (opcional)"></div>
+        <div class="fg"><label>Email</label><input type="email" id="jurado1Email" placeholder="jurado@usc.edu.co (opcional)"></div>
+        <div class="fg"><label>Teléfono</label><input id="jurado1Telefono" placeholder="300 000 0000 (opcional)"></div>
 
-        <div class="sec-label">👨‍🏫 Jurado 2 · Metodológico (opcional)</div>
-        <div class="fg full"><label>Desde lista «Jurados» (opcional)</label>
-          <select id="catEstJ2" onchange="aplicarJuradoEstudiante(2)"><option value="">— Escribir datos manualmente o elegir del listado —</option></select>
-        </div>
-        <div class="fg"><label>Nombre</label><input id="jurado2Nombre" placeholder="Dr./Dra."></div>
-        <div class="fg"><label>Email</label><input type="email" id="jurado2Email" placeholder="jurado@usc.edu.co"></div>
-        <div class="fg"><label>Teléfono</label><input id="jurado2Telefono" placeholder="Ej: 310 000 0000"></div>
-        <div class="fg"><label>Especialidad o área</label><input id="jurado2Especialidad" placeholder="Ej: Epidemiología"></div>
-        <div class="fg full"><label>¿Está de acuerdo en ser jurado si lo sugieres?</label>
-          <select id="jurado2AceptaPropuesta">
-            <option value="">— Solo si sugieres a esta persona —</option>
-            <option value="Sí">Sí</option>
-            <option value="No">No</option>
-          </select>
-        </div>
+        <div class="sec-label">👨‍🏫 Jurado 2 Metodológico (Opcional)</div>
+        <div class="fg"><label>Nombre</label><input id="jurado2Nombre" placeholder="Dr./Dra. (opcional)"></div>
+        <div class="fg"><label>Email</label><input type="email" id="jurado2Email" placeholder="jurado@usc.edu.co (opcional)"></div>
+        <div class="fg"><label>Teléfono</label><input id="jurado2Telefono" placeholder="300 000 0000 (opcional)"></div>
       </div>
 
       <button class="btn-rad" id="btnSolicitar" onclick="solicitarSustentacion()">🎓 Solicitar Sustentación</button>
@@ -292,7 +254,7 @@
       <div class="success-box" id="successBox">
         <div style="font-size:28px;margin-bottom:8px">🎉</div>
         <div style="font-size:15px;font-weight:600;color:#fff">¡Solicitud enviada exitosamente!</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará la solicitud y asignará o aprobará los jurados. Si sugeriste nombres, puede confirmarlos o sustituirlos. Cuando haya jurados aprobados, podrás coordinar disponibilidad y se registrará fecha y hora.</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará tu solicitud y te notificará cuando asigne los jurados y la fecha de sustentación.</div>
         <button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver al dashboard</button>
       </div>
 
@@ -305,48 +267,77 @@
    </div>
   </div>
   </div>
+  </div>
 </main>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 const TOKEN = localStorage.getItem('cttg_token') || '';
 let user = null;
 
 let numeroRadicacionGlobal = '';
-window.fase3NuevaPermitida = true;
-/** Catálogo hoja Jurados (misma estructura que Tutores). */
-let catalogoJuradosEst = [];
+let modalidadRadicacionF1 = '';
+
+function esModalidadDiplomado(m) {
+  const s = String(m || '').toLowerCase();
+  return s.includes('diplomado') || s.includes('diplom');
+}
+
+function aplicarVistaPorModalidadFase3() {
+  if (!esModalidadDiplomado(modalidadRadicacionF1)) return;
+  const paso = document.getElementById('paso2LineaDoc');
+  if (paso) {
+    paso.textContent =
+      'Entregables del diplomado según instructivo institucional (formulario externo): evidencias y productos del programa.';
+  }
+  const bloc = document.getElementById('docListaResumen');
+  if (bloc) {
+    bloc.innerHTML =
+      '<strong style="color:#a5b4fc">📋 Documentación — modalidad Diplomado:</strong><br>' +
+      '✓ Portafolio / producto integral o informe según formato del programa (PDF)<br>' +
+      '✓ Soporte bibliográfico o producto aplicado (PDF)<br>' +
+      '✓ Guías o autorizaciones requeridas por el diplomado si aplica (PDF)<br>' +
+      '✓ Aval institucional o certificación cargada según programa (PDF)<br>' +
+      '✓ Reporte Turnitin cuando corresponda (PDF)<br>' +
+      '<span style="font-size:11px;color:rgba(255,255,255,.65)">' +
+      '⚠️ Los mismos cinco puntos siguen cargándose al backend con los mismos campos técnicos; revise el instructivo.' +
+      '</span>';
+  }
+  const map = [
+    ['check1', 'Cargué producto/portafolio o integrador del diplomado (equiv. campo 1 del sistema)'],
+    ['check2', 'Cargué evidencia aplicada o soporte académico (equiv. campo 2 del sistema)'],
+    ['check3', 'Cargué autorizaciones/formato de guías (equiv. campo 3 del sistema)'],
+    ['check4', 'Cargué aval o certificación requerida (equiv. campo 4 del sistema)'],
+    ['check5', 'Cargué informe/similitud Turnitin (equiv. campo 5 del sistema)']
+  ];
+  map.forEach(([id, txt]) => {
+    const lbl = document.querySelector('label[for="' + id + '"]');
+    if (lbl) lbl.textContent = txt;
+  });
+  var secs = document.querySelectorAll('#pan-nueva .form-grid > .sec-label');
+  if (secs.length >= 3) {
+    secs[1].textContent = '👨\u200d🏫 Jurado sugerido 1 · diplomado';
+    secs[2].textContent = '👨\u200d🏫 Jurado sugerido 2 · diplomado';
+  }
+}
 
 (function init() {
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
   if (!user || user.rol !== 'estudiante' || !TOKEN) { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
-  cargarCatalogoJuradosEstudiante();
   cargarMisSolicitudes();
   fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN }) })
     .then(r => r.json())
     .then(d => {
       if (redirigirSiSesionInvalida(d)) return;
-      const rads = Array.isArray(d.radicaciones) ? d.radicaciones : [];
-      if (d.success && rads.length > 0) {
-        const rad = rads[0];
-        numeroRadicacionGlobal = rad.numero || '';
-        const st = String(rad.estado || '').trim();
-        if (st !== 'Aprobado') {
-          window.fase3NuevaPermitida = false;
-          const box = document.getElementById('f3BloqueoComite');
-          const est = document.getElementById('f3BloqueoEstado');
-          if (box) box.style.display = 'block';
-          if (est) est.textContent = 'Estado actual de tu radicación: «' + (st || '—') + '»';
-          const btnSol = document.getElementById('btnSolicitar');
-          if (btnSol) { btnSol.disabled = true; btnSol.style.opacity = '0.55'; btnSol.style.cursor = 'not-allowed'; }
-        }
+      if (d.success && (d.radicaciones || []).length > 0) {
+        numeroRadicacionGlobal = (d.radicaciones[0].numero || '').trim();
+        modalidadRadicacionF1 = (d.radicaciones[0].modalidad || '').trim();
+        aplicarVistaPorModalidadFase3();
       }
-      if (d.success) pintarBannerHistorialDevoluciones();
-    })
-    .catch(e => { console.error('getFase1ByEmail', e); toast('No se pudo verificar tu radicación. Recarga la página.', 'err'); });
+    });
 })();
 
 async function salir() {
@@ -360,195 +351,31 @@ async function salir() {
 }
 function toast(msg, type) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type + ' show'; setTimeout(() => t.classList.remove('show'), 2800); }
 
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function esEstadoDevolucionF3(est) {
-  const e = String(est || '').toLowerCase();
-  return e.includes('devuelta') || e.includes('devolver') || e.includes('devolución') || e.includes('devolucion');
-}
-
-function textoMotivoDevolucionF3(s) {
-  if (!esEstadoDevolucionF3(s.estadoSolicitud || s.estado || '')) return '';
-  return String(s.observacionesEstado || s.motivoDevolucion || '').trim();
-}
-
-/** Devoluciones con motivo, orden cronológico por fila en hoja. */
-function devolucionesHistorialF3(lista, numeroRad) {
-  const nr = String(numeroRad || '').trim();
-  const rows = (lista || []).filter(s => !nr || String(s.numero || '').trim() === nr);
-  const out = [];
-  rows.forEach(s => {
-    const m = textoMotivoDevolucionF3(s);
-    if (m) out.push({ fechaCarga: s.fechaCarga, motivo: m, rowIndex: parseInt(s.rowIndex, 10) || 0 });
-  });
-  out.sort((a, b) => a.rowIndex - b.rowIndex);
-  return out;
-}
-
-function htmlListaHistorialDevoluciones(items) {
-  if (!items.length) return '';
-  return '<ol style="margin:10px 0 0 18px;padding:0;color:rgba(255,255,255,.9);font-size:13px;line-height:1.55">' +
-    items.map(it => '<li style="margin-bottom:12px"><span style="color:rgba(255,255,255,.42);font-size:11px">Solicitud cargada el ' + esc(formatearFecha(it.fechaCarga)) + '</span><br>' + esc(it.motivo) + '</li>').join('') +
-    '</ol>';
-}
-
-function pintarBannerHistorialDevoluciones() {
-  const banner = document.getElementById('f3BannerHistorialDevoluciones');
-  const listEl = document.getElementById('f3HistorialDevolucionesList');
-  if (!banner || !listEl) return;
-  if (!String(numeroRadicacionGlobal || '').trim()) {
-    banner.style.display = 'none';
-    listEl.innerHTML = '';
-    return;
-  }
-  const items = devolucionesHistorialF3(window._solicitudes, numeroRadicacionGlobal);
-  if (!items.length) {
-    banner.style.display = 'none';
-    listEl.innerHTML = '';
-    return;
-  }
-  listEl.innerHTML = htmlListaHistorialDevoluciones(items);
-  banner.style.display = 'block';
-}
-
-function emailValido(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
-}
-
-function telefonoJuradoValidoUI(tel) {
-  return String(tel || '').replace(/\s/g, '').length >= 7;
-}
-
-function algunCampoJuradoOpcionalUI(nombre, email, tel, esp, acepta) {
-  const t = String(tel || '').replace(/\s/g, '');
-  return !!(String(nombre || '').trim() ||
-    String(email || '').trim() ||
-    t.length > 0 ||
-    String(esp || '').trim() ||
-    String(acepta || '').trim());
-}
-
-function validarPropuestaUnJuradoCliente(rotuloCorto, nombre, email, tel, esp, acepta) {
-  if (!algunCampoJuradoOpcionalUI(nombre, email, tel, esp, acepta)) return { ok: true };
-  const n = String(nombre || '').trim();
-  const e = String(email || '').trim();
-  const t = String(tel || '').trim();
-  const es = String(esp || '').trim();
-  const ac = String(acepta || '').trim();
-  if (!n) return { ok: false, msg: `Si indicas datos del jurado ${rotuloCorto}, escribe también el nombre completo o borra todos los datos de ese bloque.` };
-  if (!e) return { ok: false, msg: `Completa el correo del jurado ${rotuloCorto}.` };
-  if (!emailValido(e)) return { ok: false, msg: `Verifica el correo del jurado ${rotuloCorto}.` };
-  if (!telefonoJuradoValidoUI(t)) return { ok: false, msg: `Indica un teléfono válido del jurado ${rotuloCorto} (mínimo 7 dígitos).` };
-  if (!es) return { ok: false, msg: `Indica la especialidad o área del jurado ${rotuloCorto}.` };
-  if (ac !== 'Sí' && ac !== 'No') return { ok: false, msg: `Indica si el jurado ${rotuloCorto} está de acuerdo en ser jurado ante tu sugerencia: Sí o No.` };
-  return { ok: true };
-}
-
-async function cargarCatalogoJuradosEstudiante() {
-  try {
-    const res = await fetch(URL_APP, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getJurados', token: TOKEN })
-    });
-    const raw = await res.text();
-    let d;
-    try { d = JSON.parse(raw); } catch (pe) {
-      toast('No se pudo leer la lista de jurados (respuesta del servidor no es JSON). ¿Actualizaste el Apps Script con la acción getJurados?', 'err');
-      console.error('getJurados parse:', raw.slice(0, 500));
-      return;
-    }
-    if (redirigirSiSesionInvalida(d)) return;
-    if (!d.success) {
-      toast(String(d.error || 'No se pudo cargar jurados') + '. Si dice «no reconocida», vuelve a desplegar el script con el código actual.', 'err');
-      return;
-    }
-    if (!Array.isArray(d.jurados)) {
-      toast('Respuesta del servidor incompleta al pedir jurados.', 'err');
-      return;
-    }
-    catalogoJuradosEst = d.jurados.map((j, i) => ({
-      id: String(j.id || i + 1),
-      nombre: String(j.nombre || '').trim(),
-      email: String(j.email || '').trim(),
-      telefono: String(j.telefono || '').trim(),
-      especialidad: String(j.especialidad || '').trim()
-    })).filter(j => j.nombre || j.email);
-    poblarSelectJEst('catEstJ1');
-    poblarSelectJEst('catEstJ2');
-    if (catalogoJuradosEst.length === 0) {
-      if (d.listaNota === 'no_hoja') {
-        toast('No existe ninguna pestaña llamada «Jurados» en la hoja de cálculo (o tiene otro nombre). Créala como en Tutores o pide a TI que revise el libro.', 'warn');
-      } else if (d.listaNota === 'sin_filas') {
-        toast('La pestaña Jurados existe pero no hay filas con nombre/correo (o están como inactivos).', 'warn');
-      } else {
-        toast('Lista de jurados vacía. Completa datos manualmente o revisa la hoja Jurados.', 'warn');
-      }
-    }
-  } catch (e) {
-    toast('Error de red al cargar jurados: ' + e.message, 'err');
-  }
-}
-
-function poblarSelectJEst(selId) {
-  const sel = document.getElementById(selId);
-  if (!sel) return;
-  sel.innerHTML = '<option value="">— Escribir datos manualmente o elegir del listado —</option>';
-  catalogoJuradosEst.forEach(j => {
-    const opt = document.createElement('option');
-    opt.value = j.id;
-    opt.textContent = j.nombre + (j.email ? ' · ' + j.email : '');
-    sel.appendChild(opt);
-  });
-}
-
-function aplicarJuradoEstudiante(num) {
-  const sel = document.getElementById(num === 1 ? 'catEstJ1' : 'catEstJ2');
-  const j = catalogoJuradosEst.find(x => x.id === sel.value);
-  if (!j) return;
-  const pre = num === 1 ? 'jurado1' : 'jurado2';
-  document.getElementById(pre + 'Nombre').value = j.nombre || '';
-  document.getElementById(pre + 'Email').value = j.email || '';
-  document.getElementById(pre + 'Telefono').value = j.telefono || '';
-  const espEl = document.getElementById(pre + 'Especialidad');
-  if (espEl) espEl.value = j.especialidad || '';
+function mensajeEsSesionInvalidaBackend(msg) {
+  var k = String(msg || '').trim().toLowerCase();
+  k = k.replace(/ó/g, 'o').replace(/í/g, 'i').replace(/á/g, 'a').replace(/é/g, 'e').replace(/ú/g, 'u').replace(/ñ/g, 'n');
+  return k === 'sesion invalida o expirada' || k === 'sesion requerida' || k === 'no autorizado' || k === 'sesion expirada';
 }
 
 function redirigirSiSesionInvalida(resp) {
   if (resp && resp.success) return false;
-  const msg = String((resp && resp.error) || '');
-  if (/sesión|sesion|inválid|invalid|expirad|expired|autorizad|no autorizado|token/i.test(msg)) {
-    localStorage.removeItem('cttg_user');
-    localStorage.removeItem('cttg_token');
-    window.location.href = 'estudiante_login.html';
-    return true;
-  }
-  return false;
+  const msg = String((resp && resp.error) || '').trim();
+  if (!mensajeEsSesionInvalidaBackend(msg)) return false;
+  localStorage.removeItem('cttg_user');
+  localStorage.removeItem('cttg_token');
+  window.location.href = 'estudiante_login.html';
+  return true;
 }
 
 function marcarPasos() { setTimeout(() => { document.getElementById('paso1').classList.add('done'); document.getElementById('paso2').classList.add('done'); }, 500); }
 
 async function solicitarSustentacion() {
-  if (window.fase3NuevaPermitida === false) {
-    toast('Tu radicación debe estar «Aprobado» en Fase 1. Si el comité devolvió el protocolo, corrige en Protocolo/Fase 2 y espera nueva aprobación.', 'warn');
-    return;
-  }
   const check1 = document.getElementById('check1').checked;
   const check2 = document.getElementById('check2').checked;
   const check3 = document.getElementById('check3').checked;
   const check4 = document.getElementById('check4').checked;
   const check5 = document.getElementById('check5').checked;
   const turnitin = document.getElementById('porcentajeTurnitin').value.trim();
-  const jurado1Nombre = document.getElementById('jurado1Nombre').value.trim();
-  const jurado1Email = document.getElementById('jurado1Email').value.trim();
-  const jurado2Nombre = document.getElementById('jurado2Nombre').value.trim();
-  const jurado2Email = document.getElementById('jurado2Email').value.trim();
-  const jurado1Telefono = document.getElementById('jurado1Telefono').value.trim();
-  const jurado2Telefono = document.getElementById('jurado2Telefono').value.trim();
-  const jurado1Especialidad = document.getElementById('jurado1Especialidad').value.trim();
-  const jurado2Especialidad = document.getElementById('jurado2Especialidad').value.trim();
-  const jurado1AceptaPropuesta = document.getElementById('jurado1AceptaPropuesta').value.trim();
-  const jurado2AceptaPropuesta = document.getElementById('jurado2AceptaPropuesta').value.trim();
 
   if (!check1 || !check2 || !check3 || !check4 || !check5) {
     document.getElementById('errorBox').style.display = 'block';
@@ -559,18 +386,6 @@ async function solicitarSustentacion() {
 
   if (!turnitin || isNaN(parseFloat(turnitin))) {
     toast('Ingresa un porcentaje válido de Turnitin', 'warn');
-    return;
-  }
-
-  const chk1 = validarPropuestaUnJuradoCliente('temático', jurado1Nombre, jurado1Email, jurado1Telefono, jurado1Especialidad, jurado1AceptaPropuesta);
-  if (!chk1.ok) { toast(chk1.msg, 'warn'); return; }
-  const chk2 = validarPropuestaUnJuradoCliente('metodológico', jurado2Nombre, jurado2Email, jurado2Telefono, jurado2Especialidad, jurado2AceptaPropuesta);
-  if (!chk2.ok) { toast(chk2.msg, 'warn'); return; }
-
-  const j1Completo = algunCampoJuradoOpcionalUI(jurado1Nombre, jurado1Email, jurado1Telefono, jurado1Especialidad, jurado1AceptaPropuesta);
-  const j2Completo = algunCampoJuradoOpcionalUI(jurado2Nombre, jurado2Email, jurado2Telefono, jurado2Especialidad, jurado2AceptaPropuesta);
-  if (j1Completo && j2Completo && jurado1Email.toLowerCase() === jurado2Email.toLowerCase()) {
-    toast('Si sugieres dos jurados, deben tener correos distintos.', 'warn');
     return;
   }
 
@@ -589,21 +404,17 @@ async function solicitarSustentacion() {
         numeroRadicacion: numeroRadicacion,
         emailEstudiante: user.email,
         porcentajeTurnitin: parseFloat(turnitin),
-        anexoA7: document.getElementById('check1').checked ? 'SÍ' : 'NO',
+       anexoA7: document.getElementById('check1').checked ? 'SÍ' : 'NO',
         articulo: document.getElementById('check2').checked ? 'SÍ' : 'NO',
         guiaAutores: document.getElementById('check3').checked ? 'SÍ' : 'NO',
         avalCCEB: document.getElementById('check4').checked ? 'SÍ' : 'NO',
         turnitinDoc: document.getElementById('check5').checked ? 'SÍ' : 'NO',
-        jurado1Nombre: jurado1Nombre,
-        jurado1Email: jurado1Email,
-        jurado1Telefono: jurado1Telefono,
-        jurado1Especialidad: jurado1Especialidad,
-        jurado1AceptaPropuesta: jurado1AceptaPropuesta,
-        jurado2Nombre: jurado2Nombre,
-        jurado2Email: jurado2Email,
-        jurado2Telefono: jurado2Telefono,
-        jurado2Especialidad: jurado2Especialidad,
-        jurado2AceptaPropuesta: jurado2AceptaPropuesta,
+        jurado1Nombre: document.getElementById('jurado1Nombre').value.trim(),
+        jurado1Email: document.getElementById('jurado1Email').value.trim(),
+        jurado1Telefono: document.getElementById('jurado1Telefono').value.trim(),
+        jurado2Nombre: document.getElementById('jurado2Nombre').value.trim(),
+        jurado2Email: document.getElementById('jurado2Email').value.trim(),
+        jurado2Telefono: document.getElementById('jurado2Telefono').value.trim(),
         token: TOKEN
       })
     });
@@ -618,26 +429,14 @@ async function solicitarSustentacion() {
     } else {
       document.getElementById('errorBox').style.display = 'block';
       document.getElementById('errorMsg').textContent = '❌ ' + (d.error || 'Error');
-      restaurarBotonSolicitarFase3(btn);
+      btn.disabled = false;
+      btn.innerHTML = '🎓 Solicitar Sustentación';
     }
   } catch(e) {
     document.getElementById('errorBox').style.display = 'block';
     document.getElementById('errorMsg').textContent = '❌ Error: ' + e.message;
-    restaurarBotonSolicitarFase3(btn);
-  }
-}
-
-function restaurarBotonSolicitarFase3(btn) {
-  if (!btn) return;
-  btn.innerHTML = '🎓 Solicitar Sustentación';
-  if (window.fase3NuevaPermitida === false) {
-    btn.disabled = true;
-    btn.style.opacity = '0.55';
-    btn.style.cursor = 'not-allowed';
-  } else {
     btn.disabled = false;
-    btn.style.opacity = '';
-    btn.style.cursor = '';
+    btn.innerHTML = '🎓 Solicitar Sustentación';
   }
 }
 
@@ -646,7 +445,8 @@ function reintentar() {
   document.getElementById('successBox').style.display = 'none';
   const btn = document.getElementById('btnSolicitar');
   btn.style.display = 'block';
-  restaurarBotonSolicitarFase3(btn);
+  btn.disabled = false;
+  btn.innerHTML = '🎓 Solicitar Sustentación';
 }
 
 function switchTab(name, btn) {
@@ -655,23 +455,18 @@ function switchTab(name, btn) {
   document.getElementById('pan-' + name).classList.add('on');
   btn.classList.add('on');
   if (name === 'mis-sust') cargarMisSolicitudes();
-  if (name === 'nueva') cargarCatalogoJuradosEstudiante();
 }
 
 function estadoVisualSolicitud(s) {
   const estadoGuardado = s.estadoSolicitud || s.estado || '';
-  if (s.nota) return parseFloat(s.nota) >= 3
-    ? { texto: 'Sustentado', badge: 'b-aprobado', icono: '✅' }
-    : { texto: 'Reprobado', badge: 'b-devuelto', icono: '❌' };
-  if (s.fechaSustentacion) return { texto: 'Programado', badge: 'b-comite', icono: '📅' };
+  const fechaProg = s.fechaSustentacion || s.fechaAsignada || '';
+  if (s.nota) return { texto: 'Sustentado', badge: 'b-aprobado', icono: '✅' };
+  if (fechaProg) return { texto: 'Programado', badge: 'b-comite', icono: '📅' };
   if (['Solicitud sustentación devuelta','Devuelta'].includes(estadoGuardado)) {
     return { texto: 'Solicitud devuelta', badge: 'b-devuelto', icono: '↩' };
   }
-  if (estadoGuardado === 'Jurados aprobados' || estadoGuardado === 'Jurados aprobados para coordinación') {
-    return { texto: 'Jurados aprobados', badge: 'b-aprobado', icono: '✓' };
-  }
   if (estadoGuardado === 'Solicitud sustentación revisada') {
-    return { texto: 'Jurados aprobados', badge: 'b-aprobado', icono: '✓' };
+    return { texto: 'Solicitud revisada', badge: 'b-revisado', icono: '✓' };
   }
   return { texto: 'En revisión', badge: 'b-pend', icono: '⏳' };
 }
@@ -700,7 +495,6 @@ async function cargarMisSolicitudes() {
     document.getElementById('countPendientes').textContent = misSolicitudes.filter(s => !s.nota).length;
     
     window._solicitudes = misSolicitudes;
-    pintarBannerHistorialDevoluciones();
     tbody.innerHTML = misSolicitudes.map((s, idx) => {
       const estado = estadoVisualSolicitud(s);
       return `<tr><td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${formatearFecha(s.fechaCarga)}</td><td><div class="num-rad">${s.numero}</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${s.pctTurnitin||'—'}%</td><td><span class="badge ${estado.badge}">${estado.icono} ${estado.texto}</span></td><td><button class="btn-det" onclick="verDetalle(window._solicitudes[${idx}])">👁 Ver</button></td></tr>`;
@@ -708,8 +502,7 @@ async function cargarMisSolicitudes() {
     
     const sustentada = misSolicitudes.find(s => s.nota);
      if (sustentada) {
-      const cardSol = document.getElementById('f3CardSolicitudPrincipal');
-      if (cardSol) cardSol.style.display = 'none';
+      document.querySelector('.form-card').style.display = 'none';
       document.getElementById('successBox').innerHTML = `<div style="font-size:28px;margin-bottom:8px">🎓</div><div style="font-size:15px;font-weight:600;color:#fff">Sustentación Completada</div><div style="font-size:24px;font-weight:700;color:#6ee7b7;margin:12px 0">Nota: ${sustentada.nota}</div><div style="font-size:12px;color:rgba(255,255,255,.5)">¡Felicitaciones!</div><button class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="volver()">Volver</button>`;
       document.getElementById('successBox').style.display = 'block';
     }
@@ -721,20 +514,9 @@ async function cargarMisSolicitudes() {
 function verDetalle(s) {
   const estadoBase = estadoVisualSolicitud(s);
   const estado = s.nota ? (parseFloat(s.nota) >= 3 ? 'Sustentación Aprobada' : 'Sustentación Reprobada') : estadoBase.texto;
-  const histDev = devolucionesHistorialF3(window._solicitudes, s.numero);
-  let observacionSolicitud = '';
-  if (!histDev.length) {
-    observacionSolicitud = s.motivoDevolucion || s.observacionesEstado || (!s.fechaSustentacion ? s.observaciones : '');
-  } else {
-    const extra = (!esEstadoDevolucionF3(s.estadoSolicitud || s.estado || '') && String(s.observacionesEstado || '').trim())
-      ? String(s.observacionesEstado || '').trim()
-      : (!s.fechaSustentacion ? String(s.observaciones || '').trim() : '');
-    observacionSolicitud = extra;
-  }
-  const bloqueHistorialDev = histDev.length
-    ? `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px;color:#fecaca"><strong>Historial de devoluciones (${histDev.length})</strong>${htmlListaHistorialDevoluciones(histDev)}</div>`
-    : '';
-  const lugar = s.lugar || (s.fechaSustentacion ? s.observaciones : '');
+  const fechaProg = s.fechaSustentacion || s.fechaAsignada || '';
+  const observacionSolicitud = s.motivoDevolucion || s.observacionEstado || s.observacionesEstado || (!fechaProg ? s.observaciones : '');
+  const lugar = s.lugar || (fechaProg ? s.observaciones : '');
   const html = `
     <div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.remove()">
       <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;max-width:420px;width:100%">
@@ -744,15 +526,14 @@ function verDetalle(s) {
         </div>
         <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;font-size:13px">
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Estado</span><span style="color:#a78bfa;font-weight:600">${estado}</span></div>
-          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Fecha</span><span style="color:#fff">${formatearFecha(s.fechaSustentacion) || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Fecha</span><span style="color:#fff">${formatearFecha(fechaProg) || '—'}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Hora</span><span style="color:#fff">${s.horaSustentacion || '—'}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Lugar</span><span style="color:#fff">${lugar || '—'}</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><span style="color:rgba(255,255,255,.4)">Jurado 1 · Temático</span><span style="color:#fff;text-align:right">${esc(s.jurado1Nombre || '—')}${s.jurado1Especialidad ? '<br><span style="font-size:11px;color:rgba(255,255,255,.4)">' + esc(s.jurado1Especialidad) + '</span>' : ''}${(s.jurado1Telefono || s.jurado1Cedula) ? '<br><span style="font-size:11px;color:rgba(255,255,255,.35)">' + esc(s.jurado1Telefono || s.jurado1Cedula || '') + '</span>' : ''}${s.jurado1AceptaPropuesta ? '<br><span style="font-size:10px;color:rgba(255,255,255,.3)">Aceptó propuesta: ' + esc(s.jurado1AceptaPropuesta) + '</span>' : ''}</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><span style="color:rgba(255,255,255,.4)">Jurado 2 · Metodológico</span><span style="color:#fff;text-align:right">${esc(s.jurado2Nombre || '—')}${s.jurado2Especialidad ? '<br><span style="font-size:11px;color:rgba(255,255,255,.4)">' + esc(s.jurado2Especialidad) + '</span>' : ''}${(s.jurado2Telefono || s.jurado2Cedula) ? '<br><span style="font-size:11px;color:rgba(255,255,255,.35)">' + esc(s.jurado2Telefono || s.jurado2Cedula || '') + '</span>' : ''}${s.jurado2AceptaPropuesta ? '<br><span style="font-size:10px;color:rgba(255,255,255,.3)">Aceptó propuesta: ' + esc(s.jurado2AceptaPropuesta) + '</span>' : ''}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Jurado 1</span><span style="color:#fff">${s.jurado1Nombre || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Jurado 2</span><span style="color:#fff">${s.jurado2Nombre || '—'}</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">% Turnitin</span><span style="color:#fff">${s.pctTurnitin || '—'}%</span></div>
           ${s.nota ? `<div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,.4)">Nota</span><span style="color:#6ee7b7;font-weight:700">${s.nota}</span></div>` : ''}
-          ${bloqueHistorialDev}
-          ${observacionSolicitud ? `<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#e2e8f0"><strong>Observaciones:</strong><br>${esc(observacionSolicitud)}</div>` : ''}
+          ${observacionSolicitud ? `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px;color:#fecaca"><strong>Observaciones:</strong><br>${esc(observacionSolicitud)}</div>` : ''}
         </div>
       </div>
     </div>`;
