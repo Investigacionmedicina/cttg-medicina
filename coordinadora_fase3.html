@@ -126,7 +126,7 @@
           <th>Jurados Sugeridos</th>
           <th>Estado solicitud</th>
           <th>Observaciones estado</th>
-          <th>Envío diplomado</th>
+          <th>Detalle</th>
           <th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyAsignar">
@@ -154,7 +154,7 @@
           <th>Jurado 2</th>
           <th>Estado solicitud</th>
           <th>Observaciones estado</th>
-          <th>Envío diplomado</th>
+          <th>Detalle</th>
           <th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyResultado">
@@ -189,7 +189,7 @@
           <th>Estado solicitud</th>
           <th>Observaciones estado</th>
           <th>Vista coordinación</th>
-          <th>Envío diplomado</th>
+          <th>Detalle</th>
         </tr></thead>
         <tbody id="tbodyTodas">
           <tr><td colspan="10" class="empty"><span class="spinner"></span>Cargando...</td></tr>
@@ -315,7 +315,7 @@
 <div class="modal-bg" id="modalVerEnvioDiploma">
   <div class="modal" style="max-width:720px">
     <div class="modal-hdr">
-      <h3 id="mVerEnvioTitulo">Detalle del envío (diplomado)</h3>
+      <h3 id="mVerEnvioTitulo">Detalle de la solicitud</h3>
       <button class="btn" type="button" onclick="closeModal('modalVerEnvioDiploma')">✕</button>
     </div>
     <div id="mVerEnvioBody"></div>
@@ -518,6 +518,44 @@ function lineaTablaJuradosSugeridos(r) {
   return bloques.length ? bloques.join(' | ') : '—';
 }
 
+function tieneSugerenciaJuradoN(n, r) {
+  if (n === 1) {
+    return !!(String(r.jurado1Nombre || '').trim()
+      || String(r.jurado1Email || '').trim()
+      || valorTelEditable(r.jurado1Telefono));
+  }
+  return !!(String(r.jurado2Nombre || '').trim()
+    || String(r.jurado2Email || '').trim()
+    || valorTelEditable(r.jurado2Telefono));
+}
+
+/** Indicadores visibles: si cada jurado fue sugerido o no (+ resumen corto debajo del texto técnico) */
+function htmlBadgesEstadoSugerenciaJurados(r) {
+  const j1 = tieneSugerenciaJuradoN(1, r);
+  const j2 = tieneSugerenciaJuradoN(2, r);
+  const chip = (lbl, tiene) =>
+    tiene
+      ? `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:rgba(52,211,153,.2);border:1px solid rgba(52,211,153,.42);color:#86efac;font-size:11px;font-weight:600">${lbl}: tiene sugerencia</span>`
+      : `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.38);color:#fca5a5;font-size:11px;font-weight:600">${lbl}: sin sugerencia del estudiante</span>`;
+  let resumen;
+  if (j1 && j2) resumen = '<span style="color:#bbf7d0;font-size:11px;font-weight:600">● Ambos jurados tienen datos sugeridos</span>';
+  else if (!j1 && !j2) resumen = '<span style="color:#fca5a5;font-size:11px;font-weight:600">● El estudiante no envió jurados sugeridos</span>';
+  else resumen = '<span style="color:#fcd34d;font-size:11px;font-weight:600">● Sugerencia parcial · falta información de uno de los jurados</span>';
+  return `<div style="margin-bottom:6px;display:flex;flex-wrap:wrap;align-items:center">${chip('J1', j1)}${chip('J2', j2)}</div><div>${resumen}</div>`;
+}
+
+function celdaTablaColumnaSugerencias(r) {
+  const linea = esc(lineaTablaJuradosSugeridos(r));
+  const detalle = linea === '—'
+    ? '<span style="color:rgba(255,255,255,.42);font-size:11px">Ningún nombre, correo ni teléfono sugeridos en esta fila.</span>'
+    : linea;
+  return `<td style="max-width:340px;vertical-align:top">${htmlBadgesEstadoSugerenciaJurados(r)}<div style="margin-top:8px;font-size:12px;color:rgba(252,252,252,.78);line-height:1.4;word-break:break-word">${detalle}</div></td>`;
+}
+
+function celdaBotonDetalleCompleto(rowIndex) {
+  return `<td style="vertical-align:middle"><button type="button" class="btn bl" onclick="abrirModalDetalleCompletoEnvio(${rowIndex})">📋 Ver solicitud</button></td>`;
+}
+
 function normRadCoordF3(numero) {
   return String(numero || '').trim().toUpperCase();
 }
@@ -541,14 +579,6 @@ function celdaModalidadF3(numeroRad) {
   return `<td style="${style}" title="${escAttr(m)}">${shortText}</td>`;
 }
 
-function celdaBotonEnvioDiplomado(rowIndex, numeroRad) {
-  const m = modalidadDeNumeroFase1(numeroRad);
-  if (!esModalidadDiplomadoTxt(m)) {
-    return '<td style="color:rgba(255,255,255,.26);font-size:11px;line-height:1.3" title="Activo solo cuando en Fase 1 la modalidad contiene «Diplomado».">—</td>';
-  }
-  return `<td><button type="button" class="btn bl" onclick="abrirModalVerEnvioDiplomado(${rowIndex})">📄 Ver todo</button></td>`;
-}
-
 function bloqueKv(label, texto) {
   const v = String(texto ?? '').trim();
   const inner = v ? esc(v).replace(/\n/g, '<br>') : '<span style="color:rgba(255,255,255,.35)">—</span>';
@@ -570,7 +600,8 @@ function campoDocPortal(label, val) {
 
 function htmlDetalleCompletoEnvioF3(r) {
   const mod = modalidadDeNumeroFase1(r.numero);
-  let h = `<p style="font-size:12px;line-height:1.45;color:rgba(251,211,141,.93);margin:-2px 0 12px">${mod ? 'Modalidad Fase 1: <strong>' + esc(mod) + '</strong>' : '⚠ Modalidad no enlazada con Fase 1 para esta radicación.'}</p>`;
+  let h = `<p style="font-size:12px;line-height:1.45;color:rgba(251,211,141,.93);margin:-2px 0 14px">${mod ? 'Modalidad Fase 1: <strong>' + esc(mod) + '</strong>' : '⚠ Modalidad no enlazada con Fase 1 para esta radicación (no se marca diplomado).'}</p>`;
+  h += '<div style="margin-bottom:16px;background:rgba(255,255,255,.04);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,.08)">' + htmlBadgesEstadoSugerenciaJurados(r) + '</div>';
   h += '<div class="msec">Lo registrado desde el estudiante</div>';
   h += campoDocPortal('Campo 1 (Anexo/producto equiv.)', r.urlAnexoA7);
   h += campoDocPortal('Campo 2', r.urlArticulo);
@@ -603,15 +634,10 @@ function htmlDetalleCompletoEnvioF3(r) {
   return h;
 }
 
-function abrirModalVerEnvioDiplomado(rowIndex) {
+function abrirModalDetalleCompletoEnvio(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
-  const m = modalidadDeNumeroFase1(r.numero);
-  if (!esModalidadDiplomadoTxt(m)) {
-    toast('La vista amplia sólo aparece cuando la modalidad es Diplomado en la Fase 1.', 'warn');
-    return;
-  }
-  document.getElementById('mVerEnvioTitulo').textContent = 'Diplomado — envío radicación ' + r.numero;
+  document.getElementById('mVerEnvioTitulo').textContent = 'Solicitud de sustentación · ' + r.numero;
   document.getElementById('mVerEnvioBody').innerHTML = htmlDetalleCompletoEnvioF3(r);
   document.getElementById('modalVerEnvioDiploma').classList.add('open');
 }
@@ -796,10 +822,10 @@ function renderTablas() {
       <td style="font-size:13px">${esc(String(r.semestre ?? ''))}${String(r.alertaS12 || '').trim() === 'SÍ' ? '<span class="alert-s12">⚠️ S12</span>' : ''}</td>
       <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaCarga)}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(lineaTablaJuradosSugeridos(r))}</td>
+      ${celdaTablaColumnaSugerencias(r)}
       <td>${badgeEstadoSheet(estSh)}</td>
       <td>${truncObsHtml(r.observacionesEstado, 56)}</td>
-      ${celdaBotonEnvioDiplomado(r.rowIndex, r.numero)}
+      ${celdaBotonDetalleCompleto(r.rowIndex)}
       <td><div class="act">
         <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisada</button>
         <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
@@ -826,7 +852,7 @@ function renderTablas() {
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.jurado2Nombre||'—')}</td>
       <td>${badgeEstadoSheet(estadoSheetRaw(r))}</td>
       <td>${truncObsHtml(r.observacionesEstado, 44)}</td>
-      ${celdaBotonEnvioDiplomado(r.rowIndex, r.numero)}
+      ${celdaBotonDetalleCompleto(r.rowIndex)}
       <td><button class="btn bl" onclick="abrirResultado(${r.rowIndex},'${esc(r.numero)}')">🎓 Registrar</button></td>
     </tr>`).join('');
   }
@@ -859,7 +885,7 @@ function renderTablas() {
       <td>${badgeEstadoSheet(estSh)}</td>
       <td>${truncObsHtml(r.observacionesEstado, 64)}</td>
       <td><span class="badge ${vb.clase}">${esc(vb.texto)}</span></td>
-      ${celdaBotonEnvioDiplomado(r.rowIndex, r.numero)}
+      ${celdaBotonDetalleCompleto(r.rowIndex)}
     </tr>`;
       }).join('');
     }
@@ -873,10 +899,10 @@ function abrirAsignar(rowIndex) {
   document.getElementById('mAsignarRow').value = rowIndex;
   let infoHtml = `<span>Radicación: <strong>${esc(r.numero)}</strong></span>`;
   const mod = modalidadDeNumeroFase1(r.numero);
-  if (mod) {
+    if (mod) {
     infoHtml += `<br/><span style="color:rgba(203,213,225,.93)">Modalidad Fase 1: ${esc(mod)}</span>`;
     if (esModalidadDiplomadoTxt(mod)) {
-      infoHtml += `<div style="margin-top:8px;font-size:11px;line-height:1.45;color:rgba(251,191,129,.9)">Diplomado: use <strong>📄 Ver todo</strong> en la columna de envío para revisar evidencias declaradas antes de asignar.</div>`;
+      infoHtml += `<div style="margin-top:8px;font-size:11px;line-height:1.45;color:rgba(251,191,129,.9)">Diplomado: antes de asignar puede usar <strong>📋 Ver solicitud</strong> para revisar lo que cargó el estudiante (incl. jurados sugeridos).</div>`;
     }
   }
   document.getElementById('mAsignarInfo').innerHTML = infoHtml;
