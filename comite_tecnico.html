@@ -277,12 +277,13 @@ let ultimoNumeroActa = 17; // Tú nos dirás si cambiar
 
 document.addEventListener('DOMContentLoaded', function() {
   user = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!user || user.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  var r_u = user && String(user.rol || '').toLowerCase();
+  if (!user || (r_u !== 'coordinadora' && r_u !== 'asistente')) { window.location.href = 'coordinadora_login.html'; return; }
   console.log('=== INICIANDO COMITÉ TÉCNICO ===');
   cargarReuniones();
 });
 
-function salir() { localStorage.removeItem('cttg_admin'); window.location.href = 'index.html'; }
+function salir() { localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token'); window.location.href = 'index.html'; }
 function toast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast ' + type + ' show';

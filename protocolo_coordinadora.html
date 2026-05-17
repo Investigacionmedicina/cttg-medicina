@@ -133,12 +133,16 @@
  <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
+function esRolStaffProtocolo(user) {
+  var r = user && String(user.rol || '').toLowerCase();
+  return r === 'coordinadora' || r === 'asistente';
+}
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 let protocoloActual = null;
 
 document.addEventListener('DOMContentLoaded', function() {
   const user = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
-  if (!user || user.rol !== 'coordinadora' || !coordToken()) {
+  if (!esRolStaffProtocolo(user) || !coordToken()) {
     window.location.href = 'coordinadora_login.html';
     return;
   }

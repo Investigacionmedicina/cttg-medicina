@@ -32,7 +32,7 @@
   <a href="index.html" class="back">← Volver</a>
   <div class="logo">👩‍💼</div>
   <h2>Acceso Coordinación</h2>
-  <p class="desc">Gestión de radicaciones y seguimiento</p>
+  <p class="desc">Coordinadora o Asistente — gestión de radicaciones</p>
   <div id="err" class="err"></div>
   <div class="fg"><label>Correo administrativo</label><input type="email" id="email" placeholder="coordinadora@usc.edu.co" autocomplete="email"></div>
   <div class="fg"><label>Contraseña</label><input type="password" id="pass" placeholder="••••••••" autocomplete="current-password"></div>
@@ -54,13 +54,20 @@ async function login() {
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'login', email, password: pass }) });
     const data = await res.json();
-    if (data.success && data.user.rol === 'coordinadora') {
+  if (data.success && data.user && data.token) {
+      var rol = String(data.user.rol || '').toLowerCase();
       localStorage.setItem('cttg_admin', JSON.stringify(data.user));
-     localStorage.setItem('cttg_token', data.token);
-      window.location.href = 'coordinadora_dashboard.html';
-    } else if (data.success) {
-      err.textContent = 'Esta cuenta no tiene perfil de coordinadora.';
-      err.style.display = 'block';
+      localStorage.setItem('cttg_token', data.token);
+      if (rol === 'coordinadora') {
+        window.location.href = 'coordinadora_dashboard.html';
+      } else if (rol === 'asistente') {
+        window.location.href = 'asistente_dashboard.html';
+      } else {
+        localStorage.removeItem('cttg_admin');
+        localStorage.removeItem('cttg_token');
+        err.textContent = 'Esta cuenta no tiene perfil de coordinación o asistente.';
+        err.style.display = 'block';
+      }
     } else {
       err.textContent = data.error || 'Acceso restringido';
       err.style.display = 'block';

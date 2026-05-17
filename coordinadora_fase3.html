@@ -87,7 +87,7 @@
 </header>
 
 <main>
-  <a href="coordinadora_dashboard.html" class="back">← Volver al panel</a>
+  <a href="#" class="back" onclick="window.location.href=urlPanelStaff();return false;">← Volver al panel</a>
 
   <div class="tabs">
     <button type="button" class="tab on" id="tabAsignar" onclick="switchTab('asignar',this)">📅 Pendiente Asignación</button>
@@ -367,7 +367,8 @@ let solicitudModalActual = null;
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  var r_adm = admin && String(admin.rol || '').toLowerCase();
+  if (!admin || (r_adm !== 'coordinadora' && r_adm !== 'asistente')) { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
 
   let enIframe = false;

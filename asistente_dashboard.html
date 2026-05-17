@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Coordinadora — CTTG</title>
+<title>Dashboard Asistente — CTTG</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -152,7 +152,7 @@
 <header>
   <div class="hdr-l">
     <div class="logo">👩‍💼</div>
-    <div><h1>CTTG Medicina · Coordinación</h1><p>Panel de Gestión de Radicaciones</p></div>
+    <div><h1>CTTG Medicina · Asistente</h1><p>Panel operativo · radicaciones y seguimiento</p></div>
   </div>
   <div class="hdr-r">
     <div class="sync"><span class="dot loading" id="syncDot"></span><span id="syncLbl">Conectando...</span></div>
@@ -214,7 +214,6 @@
 </select>
       <select id="fMod" onchange="limpiarFiltroMetrica();renderTabla()"><option value="">Todas las modalidades</option></select>
       <button class="btn" onclick="cargar()">↻ Actualizar</button>
-      <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -554,7 +553,6 @@
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn bl" onclick="renderFiltros()">🔄 Actualizar</button>
-      <button class="btn gr" onclick="exportarFiltrosCSV()">⬇ Exportar</button>
       <button class="btn" onclick="limpiarFiltros()">✕ Limpiar</button>
     </div>
     <div class="tbl-wrap">
@@ -620,7 +618,6 @@
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn bl" onclick="poblarFiltroTutoresInforme();renderInformes()">🔄 Actualizar</button>
-      <button class="btn gr" onclick="exportarInformeCSV()">⬇ Exportar CSV</button>
     </div>
 
     <div class="metrics" style="margin-bottom:18px">
@@ -754,9 +751,10 @@ let solicitudActual = null;
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!admin) { window.location.href = 'coordinadora_login.html'; return; }
-  if (admin.rol === 'asistente') { window.location.href = 'asistente_dashboard.html'; return; }
-  if (admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  if (!admin || admin.rol !== 'asistente') {
+    if (admin && admin.rol === 'coordinadora') { window.location.href = 'coordinadora_dashboard.html'; return; }
+    window.location.href = 'coordinadora_login.html'; return;
+  }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
   cargar();
   setInterval(cargar, 60000);

@@ -63,7 +63,7 @@
 </header>
 
 <main>
-  <a href="coordinadora_dashboard.html" class="back">← Volver al panel</a>
+  <a href="#" class="back" onclick="window.location.href=urlPanelStaff();return false;">← Volver al panel</a>
 
   <div id="loadWrap" class="empty">Cargando radicación...</div>
 
@@ -152,7 +152,7 @@
 
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn-action" id="btnGuardar" onclick="guardar()">✅ Avalar tutores y notificar</button>
-      <button class="btn-sec" onclick="window.location.href='coordinadora_dashboard.html'">Cancelar</button>
+      <button class="btn-sec" onclick="window.location.href=urlPanelStaff()">Cancelar</button>
     </div>
   </div>
 </main>
@@ -161,6 +161,12 @@
 
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
+function urlPanelStaff() {
+  try {
+    var u = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
+    return u && u.rol === 'asistente' ? 'asistente_dashboard.html' : 'coordinadora_dashboard.html';
+  } catch (e) { return 'coordinadora_dashboard.html'; }
+}
 let admin = null;
 let rowIndex = null;
 let radicacion = null;
@@ -168,7 +174,8 @@ let catalogoTutores = [];
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  var r = admin && String(admin.rol || '').toLowerCase();
+  if (!admin || (r !== 'coordinadora' && r !== 'asistente')) { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
   const params = new URLSearchParams(window.location.search);
   const rowParam = params.get('row');
@@ -181,7 +188,7 @@ let catalogoTutores = [];
   cargarCatalogoTutores();
 })();
 
-function salir() { localStorage.removeItem('cttg_admin'); window.location.href = 'index.html'; }
+function salir() { localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token'); window.location.href = 'index.html'; }
 
 function esModalidadDiplomadoCoord(m) {
   return String(m || '').trim().toLowerCase() === 'diplomado';
@@ -445,7 +452,7 @@ Este mensaje fue generado automáticamente por el sistema CTTG.`,
     toast(decision === 'revision'
       ? (esDipl ? 'Diplomado avalado. El estudiante puede continuar en Fase 2 (sin actas).' : 'Tutores avalados ✓ El estudiante puede cargar sus actas de asesoría')
       : 'Propuesta devuelta ✓', 'ok');
-    setTimeout(() => window.location.href = 'coordinadora_dashboard.html', 2000);
+    setTimeout(() => window.location.href = urlPanelStaff(), 2000);
   } catch(e) {
     toast('Error: ' + e.message, 'err');
   } finally {
