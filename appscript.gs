@@ -617,28 +617,26 @@ function norm_(s) {
   // Elimina espacios normales, non-breaking spaces y otros Unicode whitespace
   return String(s || "").replace(/[ ​‌‍﻿\t\r\n]+/g, "").trim();
 }
+function leerFilasUsuarios_(sheet) {
+  // Usa getMaxRows() para leer TODAS las filas incluyendo las que getLastRow() omite
+  var totalFilas = Math.max(sheet.getLastRow(), sheet.getMaxRows(), 100);
+  return sheet.getRange(1, 1, totalFilas, 7).getValues();
+}
 function loginUsuario(email, password) {
   if (!email || !password) return { success: false, error: "Credenciales incompletas" };
   var sheet = getSheet("Usuarios");
   if (!sheet) return { success: false, error: "Hoja Usuarios no encontrada" };
-  var data = sheet.getDataRange().getValues();
+  var data = leerFilasUsuarios_(sheet);
   var inputEmail = norm_(email).toLowerCase();
   var inputPass  = norm_(password);
-  // Intenta col B=email primero; si esa fila tiene email en col A, ajusta offset
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    // Detecta si la fila no tiene ID (col A vacía o numérica ausente) y el email está en col A
-    var hasId = (row[0] !== "" && row[0] !== null && row[0] !== undefined);
-    var colOffset = 0;
-    // Si col A tiene algo que parece email y col B no, asumimos offset -1
-    if (!hasId && norm_(row[0]).indexOf("@") !== -1 && norm_(row[1]).indexOf("@") === -1) {
-      colOffset = -1;
-    }
-    var rowEmail  = norm_(row[1 + colOffset]).toLowerCase();
-    var rowPass   = norm_(row[2 + colOffset]);
-    var rowNombre = norm_(row[3 + colOffset]);
-    var rowRol    = norm_(row[4 + colOffset]).toLowerCase();
-    var rowEstado = norm_(row[6 + colOffset]).toLowerCase();
+    var rowEmail  = norm_(String(row[1] || "")).toLowerCase();
+    var rowPass   = norm_(String(row[2] || ""));
+    var rowNombre = norm_(String(row[3] || ""));
+    var rowRol    = norm_(String(row[4] || "")).toLowerCase();
+    var rowEstado = norm_(String(row[6] || "")).toLowerCase();
+    if (!rowEmail) continue;
     if (rowEstado === "inactivo") continue;
     if (rowEmail === inputEmail && rowPass === inputPass) {
       registrarAuditoria(email, "LOGIN", "Acceso exitoso · rol: " + rowRol);
@@ -655,7 +653,8 @@ function loginUsuario(email, password) {
 function debugUsuario(email) {
   var sheet = getSheet("Usuarios");
   if (!sheet) return { success: false, error: "Hoja no encontrada" };
-  var data = sheet.getDataRange().getValues();
+  var data = leerFilasUsuarios_(sheet);
+  var totalFilasSheet = sheet.getLastRow();
   var inputEmail = norm_(email).toLowerCase();
   var rows = [];
   for (var i = 1; i < data.length; i++) {
