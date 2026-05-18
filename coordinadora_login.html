@@ -84,6 +84,9 @@ window.cttgContarUsuariosEnConsola = async function cttgContarUsuariosEnConsola(
     return null;
   }
   console.log('[CTTG] Cantidad usuarios que el servidor encuentra en «Usuarios» (filas con email):', data.total);
+  if (data.diagnostico_lectura_hoja_usuarios) {
+    console.info('[CTTG] Lectura real del Sheet por Apps Script:', data.diagnostico_lectura_hoja_usuarios);
+  }
   return data.total;
 };
 
@@ -95,6 +98,9 @@ window.cttgListarUsuariosEnConsola = async function cttgListarUsuariosEnConsola(
     return data;
   }
   console.log('[CTTG] Total usuarios (filas con email):', data.total);
+  if (data.diagnostico_lectura_hoja_usuarios) {
+    console.info('[CTTG] Lectura real del Sheet por Apps Script:', data.diagnostico_lectura_hoja_usuarios);
+  }
   console.groupCollapsed('[CTTG] Tabla (total ' + data.total + ') · sin contraseñas');
   if (typeof console.table === 'function') console.table(data.usuarios);
   else console.log(data.usuarios);

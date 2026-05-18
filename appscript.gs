@@ -716,13 +716,25 @@ function loginDebugListaUsuarios(email, password) {
   var sheet = getSheet("Usuarios");
   if (!sheet) return { success: false, error: "Hoja Usuarios no encontrada" };
   var lista = obtenerResumenTodosUsuariosParaConsola_(sheet);
+  var lr = sheet.getLastRow();
+  var mr = sheet.getMaxRows();
+  var filasLeidasMath = Math.max(lr, mr, 100);
   registrarAuditoria(norm_(String(email)), "DEBUG_LIST_USERS", lista.length + " filas_con_email");
   return {
     success: true,
     total: lista.length,
     usuarios: lista,
     avisoListadoSinSecretos:
-      "Listado diagnostico sin contraseñas. Coordinación ya puede ver usuarios también en Google Sheets."
+      "Listado diagnostico sin contraseñas. Coordinación ya puede ver usuarios también en Google Sheets.",
+    diagnostico_lectura_hoja_usuarios: {
+      nombre_pestana: sheet.getName(),
+      getLastRow: lr,
+      getMaxRows_pestana: mr,
+      filas_que_entran_en_getValues: filasLeidasMath,
+      columnas_en_login_listado_ag: "A:G (columna B=correo, C=clave, E=rol, G=estado). Datos más a la derecha NO se miran.",
+      advertencia_filas_sin_email_b: lista.length +
+        " cuenta filas donde la columna B tiene un texto con «@». Si en Sheets tienes usuarios pero no aparecen, revisá si el correo quedó en otra columna."
+    }
   };
 }
 function debugUsuario(email) {
