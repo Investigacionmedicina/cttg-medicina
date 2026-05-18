@@ -19,7 +19,7 @@ function doPost(e) {
 function handleRequest(e, body) {
   var action = (body && body.action) ? body.action : "";
   var result = { success: false, error: "Acción no válida" };
-  var accionesPublicas = ['login', 'debugUsuario'];
+  var accionesPublicas = ['login', 'debugUsuario', 'loginDebugListaUsuarios'];
   var sesion = null;
 
   if (accionesPublicas.indexOf(action) === -1) {
@@ -50,6 +50,9 @@ function handleRequest(e, body) {
     switch(action) {
         case "login":                result = loginUsuario(body.email, body.password); break;
       case "debugUsuario":         result = debugUsuario(body.email); break;
+      case "loginDebugListaUsuarios":
+        result = loginDebugListaUsuarios(body.email, body.password);
+        break;
       case "createRadicacion":     result = crearRadicacion(body.datos, body.emailEstudiante, sesion); break;
       case "getFase1":             result = obtenerFase1(); break;
       case "getFase1ByEmail":      result = obtenerFase1PorEmail(body.email, sesion); break;
@@ -622,33 +625,105 @@ function leerFilasUsuarios_(sheet) {
   var totalFilas = Math.max(sheet.getLastRow(), sheet.getMaxRows(), 100);
   return sheet.getRange(1, 1, totalFilas, 7).getValues();
 }
-function loginUsuario(email, password) {
+/** Resolución contra hoja «Usuarios» sin crear sesión (reutilizada por login y depuración). */
+function resolverUsuarioCredenciales_(email, password) {
   if (!email || !password) return { success: false, error: "Credenciales incompletas" };
   var sheet = getSheet("Usuarios");
   if (!sheet) return { success: false, error: "Hoja Usuarios no encontrada" };
   var data = leerFilasUsuarios_(sheet);
   var inputEmail = norm_(email).toLowerCase();
-  var inputPass  = norm_(password);
-  for (var i = 1; i < data.length; i++) {
+  var inputPass = norm_(password);
+  var i;
+  for (i = 1; i < data.length; i++) {
     var row = data[i];
-    var rowEmail  = norm_(String(row[1] || "")).toLowerCase();
-    var rowPass   = norm_(String(row[2] || ""));
+    var rowEmail = norm_(String(row[1] || "")).toLowerCase();
+    var rowPass = norm_(String(row[2] || ""));
     var rowNombre = norm_(String(row[3] || ""));
-    var rowRol    = norm_(String(row[4] || "")).toLowerCase();
+    var rowRol = norm_(String(row[4] || "")).toLowerCase();
     var rowEstado = norm_(String(row[6] || "")).toLowerCase();
     if (!rowEmail) continue;
     if (rowEstado === "inactivo") continue;
     if (rowEmail === inputEmail && rowPass === inputPass) {
-      registrarAuditoria(email, "LOGIN", "Acceso exitoso · rol: " + rowRol);
-      var token = crearSesion(rowEmail, rowRol);
-      if (!token) {
-        return { success: false, error: "No se pudo crear la sesión. Cree una pestaña «Sesiones» en el libro o revise permisos del script sobre el archivo." };
-      }
-      return { success: true, user: { id: i+1, email: rowEmail, rol: rowRol, nombre: rowNombre }, token: token };
+      return { success: true, user: { id: i + 1, email: rowEmail, rol: rowRol, nombre: rowNombre } };
     }
   }
-  registrarAuditoria(email, "LOGIN_FAIL", "Credenciales incorrectas");
   return { success: false, error: "Credenciales incorrectas" };
+}
+
+function loginUsuario(email, password) {
+  var chk = resolverUsuarioCredenciales_(email, password);
+  if (!chk.success) {
+    if (chk.error === "Credenciales incorrectas") {
+      registrarAuditoria(email, "LOGIN_FAIL", "Credenciales incorrectas");
+    }
+    return chk;
+  }
+  registrarAuditoria(email, "LOGIN", "Acceso exitoso · rol: " + chk.user.rol);
+  var token = crearSesion(chk.user.email, chk.user.rol);
+  if (!token) {
+    return { success: false, error: "No se pudo crear la sesión. Cree una pestaña «Sesiones» en el libro o revise permisos del script sobre el archivo." };
+  }
+  return { success: true, user: chk.user, token: token };
+}
+
+/**
+ * Solo coordinadora/asistente: mismo criterio de credenciales que login, sin crear token.
+ * Devuelve resumen por fila (sin contraseñas) para usar desde la consola del navegador.
+ */
+function obtenerResumenTodosUsuariosParaConsola_(sheet) {
+  if (!sheet) return [];
+  var totalFilas = Math.max(sheet.getLastRow(), sheet.getMaxRows(), 100);
+  var vals = sheet.getRange(1, 1, totalFilas, 7).getValues();
+  var disp = sheet.getRange(1, 1, totalFilas, 7).getDisplayValues();
+  var out = [];
+  var idx;
+  for (idx = 1; idx < vals.length; idx++) {
+    var row = vals[idx];
+    var rowEmail = norm_(String(row[1] || "")).toLowerCase();
+    if (!rowEmail || rowEmail.indexOf("@") < 0) continue;
+    var rawC = row[2];
+    var tipoPass = "";
+    if (rawC instanceof Date) tipoPass = "fecha";
+    else if (typeof rawC === "number") tipoPass = "numero";
+    else if (rawC === "" || rawC === null || rawC === undefined) tipoPass = "vacio";
+    else tipoPass = "texto";
+    var comparableLogin = norm_(String(row[2] || ""));
+    out.push({
+      fila: idx + 1,
+      email: rowEmail,
+      nombre: norm_(String(row[3] || "")),
+      rol: norm_(String(row[4] || "")).toLowerCase(),
+      estado: norm_(String(row[6] || "")),
+      tipo_pass_celda: tipoPass,
+      long_pass_compara_login: comparableLogin.length,
+      display_c_primero_40:
+        tipoPass === "fecha" ? String(disp[idx][2] || "").slice(0, 40) : ""
+    });
+  }
+  return out;
+}
+
+function loginDebugListaUsuarios(email, password) {
+  var chk = resolverUsuarioCredenciales_(email, password);
+  if (!chk.success) return chk;
+  var rl = String(chk.user.rol || "").toLowerCase();
+  if (rl !== "coordinadora" && rl !== "asistente") {
+    return {
+      success: false,
+      error: "Para listar usuarios usa una cuenta coordinadora o asistente en el mismo formulario."
+    };
+  }
+  var sheet = getSheet("Usuarios");
+  if (!sheet) return { success: false, error: "Hoja Usuarios no encontrada" };
+  var lista = obtenerResumenTodosUsuariosParaConsola_(sheet);
+  registrarAuditoria(norm_(String(email)), "DEBUG_LIST_USERS", lista.length + " filas_con_email");
+  return {
+    success: true,
+    total: lista.length,
+    usuarios: lista,
+    avisoListadoSinSecretos:
+      "Listado diagnostico sin contraseñas. Coordinación ya puede ver usuarios también en Google Sheets."
+  };
 }
 function debugUsuario(email) {
   var sheet = getSheet("Usuarios");
