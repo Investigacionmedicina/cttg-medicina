@@ -683,17 +683,62 @@ function verificarRol(email, rolRequerido) {
   if (!email) return false;
   var sheet = getSheet("Usuarios");
   if (!sheet) return false;
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    var rowEmail  = String(data[i][1] || "").trim().toLowerCase();
-    var rowRol    = String(data[i][4] || "").trim().toLowerCase();
-    var rowEstado = String(data[i][6] || "").trim().toLowerCase();
-    if (rowEstado === "inactivo") continue;
-    if (rowEmail === email.trim().toLowerCase() && rowRol === rolRequerido) {
-      return true;
-    }
+  var pack = obtenerMatrizFilasUsuario_(sheet);
+  var disp = pack.disp;
+  var raw = pack.raw;
+  var emailBus = normalizarTextoLogin_(email).toLowerCase();
+  var rolReq = String(rolRequerido || "").trim().toLowerCase();
+  var k;
+  for (k = 0; k < disp.length; k++) {
+    var d = disp[k];
+    var r = raw[k];
+    if (!d || !r || d.length < 5) continue;
+    var rowEmail = normalizarTextoLogin_(d[1]).toLowerCase();
+    if (rowEmail !== emailBus) continue;
+    var colEstado = Math.max(Math.min(d.length - 1, 6), 0);
+    if (estadoUsuarioOmiteLogin_(r[colEstado], d[colEstado])) continue;
+    var rowRol = normalizarTextoLogin_(d[4]).toLowerCase();
+    return rowRol === rolReq;
   }
   return false;
+}
+
+/**
+ * Ejecutar una vez desde el editor Apps Script tras problemas en filas tardías del login:
+ * revisa formato de email/pass y omite Estado inactivo. No imprime secretos completos en log.
+ */
+function diagnosticarFilasLoginUsuarios() {
+  var sheet = getSheet("Usuarios");
+  if (!sheet) {
+    Logger.log('Sin hoja Usuarios');
+    return;
+  }
+  var pack = obtenerMatrizFilasUsuario_(sheet);
+  var lr = sheet.getLastRow();
+  Logger.log('Usuarios: lastRow=' + lr + ' filas leídas (sin cabecera)=' + pack.disp.length);
+  var j;
+  for (j = 0; j < pack.disp.length; j++) {
+    var d = pack.disp[j];
+    var r = pack.raw[j];
+    var filaHoja = j + pack.firstRowSheet;
+    var mail = normalizarTextoLogin_(d[1]);
+    if (!mail && !normalizarTextoLogin_(String(r[1]))) continue;
+    var passTxt = textoContrasenaFilaUsuario_(r[2], d[2]);
+    var tipoC = '';
+    var rawC = r[2];
+    if (rawC instanceof Date) tipoC = 'Date';
+    else if (typeof rawC === 'number') tipoC = 'number';
+    else if (typeof rawC === 'string') tipoC = 'string';
+    else if (rawC != null && rawC !== '') tipoC = typeof rawC;
+    var marcaPass = '';
+    if (tipoC === 'Date') marcaPass = '¡COLUMNA C ES FECHA! Corregir a texto.';
+    else if (tipoC === 'number') marcaPass = 'C es número visible «' + String(d[2]) + '»';
+    Logger.log(
+      'Fila ' + filaHoja + ' · email_ok=' + (mail.length > 0) +
+      ' · pass_chars=' + passTxt.length + ' tipoC_raw=' + tipoC +
+      ' · estado=' + String(d[6] || '').trim() + ' · ' + marcaPass
+    );
+  }
 }
 
 // ── FASE 1: RADICACIÓN ───────────────────────────────────────
