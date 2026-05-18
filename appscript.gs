@@ -683,21 +683,22 @@ function verificarRol(email, rolRequerido) {
   if (!email) return false;
   var sheet = getSheet("Usuarios");
   if (!sheet) return false;
-  var pack = obtenerMatrizFilasUsuario_(sheet);
-  var disp = pack.disp;
-  var raw = pack.raw;
-  var emailBus = normalizarTextoLogin_(email).toLowerCase();
+  var data = sheet.getDataRange().getValues();
+  var emailBus = norm_(email).toLowerCase();
   var rolReq = String(rolRequerido || "").trim().toLowerCase();
-  var k;
-  for (k = 0; k < disp.length; k++) {
-    var d = disp[k];
-    var r = raw[k];
-    if (!d || !r || d.length < 5) continue;
-    var rowEmail = normalizarTextoLogin_(d[1]).toLowerCase();
+  var i;
+  for (i = 1; i < data.length; i++) {
+    var row = data[i];
+    var hasId = (row[0] !== "" && row[0] !== null && row[0] !== undefined);
+    var colOffset = 0;
+    if (!hasId && norm_(row[0]).indexOf("@") !== -1 && norm_(row[1]).indexOf("@") === -1) {
+      colOffset = -1;
+    }
+    var rowEmail = norm_(row[1 + colOffset]).toLowerCase();
     if (rowEmail !== emailBus) continue;
-    var colEstado = Math.max(Math.min(d.length - 1, 6), 0);
-    if (estadoUsuarioOmiteLogin_(r[colEstado], d[colEstado])) continue;
-    var rowRol = normalizarTextoLogin_(d[4]).toLowerCase();
+    var rowEstado = norm_(row[6 + colOffset]).toLowerCase();
+    if (rowEstado === "inactivo") continue;
+    var rowRol = norm_(row[4 + colOffset]).toLowerCase();
     return rowRol === rolReq;
   }
   return false;
@@ -713,30 +714,38 @@ function diagnosticarFilasLoginUsuarios() {
     Logger.log('Sin hoja Usuarios');
     return;
   }
-  var pack = obtenerMatrizFilasUsuario_(sheet);
-  var lr = sheet.getLastRow();
-  Logger.log('Usuarios: lastRow=' + lr + ' filas leídas (sin cabecera)=' + pack.disp.length);
-  var j;
-  for (j = 0; j < pack.disp.length; j++) {
-    var d = pack.disp[j];
-    var r = pack.raw[j];
-    var filaHoja = j + pack.firstRowSheet;
-    var mail = normalizarTextoLogin_(d[1]);
-    if (!mail && !normalizarTextoLogin_(String(r[1]))) continue;
-    var passTxt = textoContrasenaFilaUsuario_(r[2], d[2]);
-    var tipoC = '';
-    var rawC = r[2];
+  var data = sheet.getDataRange().getValues();
+  var dispAll = sheet.getDataRange().getDisplayValues();
+  Logger.log('Usuarios filas datos (aprox sin cabecera): ' + (data.length - 1));
+  var i;
+  for (i = 1; i < data.length; i++) {
+    var row = data[i];
+    var rowDisp = dispAll[i];
+    var hasId = (row[0] !== "" && row[0] !== null && row[0] !== undefined);
+    var colOffset = 0;
+    if (!hasId && norm_(row[0]).indexOf("@") !== -1 && norm_(row[1]).indexOf("@") === -1) {
+      colOffset = -1;
+    }
+    var mail = norm_(String(row[1 + colOffset] || ""));
+    if (!mail) continue;
+    var tipoC = "";
+    var rawC = row[2 + colOffset];
     if (rawC instanceof Date) tipoC = 'Date';
     else if (typeof rawC === 'number') tipoC = 'number';
     else if (typeof rawC === 'string') tipoC = 'string';
     else if (rawC != null && rawC !== '') tipoC = typeof rawC;
     var marcaPass = '';
+    var showC = String(rowDisp[2 + colOffset] || "");
+    var passComparable = norm_(rawC instanceof Date ? showC : (rawC != null ? String(rawC) : ""));
     if (tipoC === 'Date') marcaPass = '¡COLUMNA C ES FECHA! Corregir a texto.';
-    else if (tipoC === 'number') marcaPass = 'C es número visible «' + String(d[2]) + '»';
+    else if (tipoC === 'number') marcaPass = 'C es número; visible «' + showC + '»';
+
     Logger.log(
-      'Fila ' + filaHoja + ' · email_ok=' + (mail.length > 0) +
-      ' · pass_chars=' + passTxt.length + ' tipoC_raw=' + tipoC +
-      ' · estado=' + String(d[6] || '').trim() + ' · ' + marcaPass
+      'Fila ' + (i + 1) + ' · email_ok=' + (mail.indexOf('@') !== -1) +
+      ' · pass_norm_len=' + passComparable.length +
+      ' · tipoC_raw=' + tipoC +
+      ' · estado=' + String(rowDisp[6 + colOffset] || '').trim() +
+      ' · ' + marcaPass
     );
   }
 }
