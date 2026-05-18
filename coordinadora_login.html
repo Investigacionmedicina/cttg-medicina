@@ -44,8 +44,8 @@ const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbx
 
 const CTTG_FETCH_HEADERS_LOGIN = { 'Content-Type': 'text/plain;charset=utf-8', Accept: 'application/json' };
 
-/** DevTools→Consola: escribe usuario y clave de coordinadora o asistente en el formulario, luego: await cttgListarUsuariosEnConsola() — muestra todas las filas con email (sin contraseñas). */
-window.cttgListarUsuariosEnConsola = async function cttgListarUsuariosEnConsola() {
+/** Petición lista usuarios; usa correo/clave coord/asistente del formulario. */
+async function cttgFetchListaUsuariosStaff_() {
   const emailEl = document.getElementById('email');
   const passEl = document.getElementById('pass');
   const email = emailEl ? String(emailEl.value).trim() : '';
@@ -68,23 +68,42 @@ window.cttgListarUsuariosEnConsola = async function cttgListarUsuariosEnConsola(
       console.warn('[CTTG lista] Respuesta no JSON:', raw.slice(0, 800));
       return null;
     }
-    if (!data.success) {
-      console.warn('[CTTG lista]', data.error || data);
-      return data;
-    }
-    console.groupCollapsed('[CTTG] Usuarios en hoja (total ' + data.total + ') · sin contraseñas');
-    if (typeof console.table === 'function') console.table(data.usuarios);
-    else console.log(data.usuarios);
-    console.groupEnd();
-    if (data.avisoListadoSinSecretos) console.info('[CTTG]', data.avisoListadoSinSecretos);
     return data;
   } catch (err) {
     console.error('[CTTG lista] Red / fetch:', err);
     return null;
   }
+}
+
+/** Solo muestra cuántos usuarios ve el servidor en la hoja (filas con email). Ej.: await cttgContarUsuariosEnConsola() */
+window.cttgContarUsuariosEnConsola = async function cttgContarUsuariosEnConsola() {
+  const data = await cttgFetchListaUsuariosStaff_();
+  if (!data) return null;
+  if (!data.success) {
+    console.warn('[CTTG conteo]', data.error || data);
+    return null;
+  }
+  console.log('[CTTG] Cantidad usuarios que el servidor encuentra en «Usuarios» (filas con email):', data.total);
+  return data.total;
 };
 
-console.info('[CTTG coordinación] Diagnóstico: pon correo/clave de coord/asistente y ejecuta: await cttgListarUsuariosEnConsola()');
+window.cttgListarUsuariosEnConsola = async function cttgListarUsuariosEnConsola() {
+  const data = await cttgFetchListaUsuariosStaff_();
+  if (!data) return null;
+  if (!data.success) {
+    console.warn('[CTTG lista]', data.error || data);
+    return data;
+  }
+  console.log('[CTTG] Total usuarios (filas con email):', data.total);
+  console.groupCollapsed('[CTTG] Tabla (total ' + data.total + ') · sin contraseñas');
+  if (typeof console.table === 'function') console.table(data.usuarios);
+  else console.log(data.usuarios);
+  console.groupEnd();
+  if (data.avisoListadoSinSecretos) console.info('[CTTG]', data.avisoListadoSinSecretos);
+  return data;
+};
+
+console.info('[CTTG coordinación] await cttgContarUsuariosEnConsola() — sólo el número · await cttgListarUsuariosEnConsola() — número + tabla');
 
 /** Solo diagnóstico en navegador: no muestra contraseña. Copia el objeto y compártelo si hace falta soporte. */
 function cttgLogLoginResp(kind, meta) {
