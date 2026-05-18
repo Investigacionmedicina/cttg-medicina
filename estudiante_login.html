@@ -41,6 +41,8 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
 
+const CTTG_FETCH_HEADERS_LOGIN = { 'Content-Type': 'text/plain;charset=utf-8', Accept: 'application/json' };
+
 function cttgLogLoginResp(kind, meta) {
   var line = '[CTTG login:' + kind + ']';
   if (typeof console.groupCollapsed === 'function') {
@@ -52,18 +54,19 @@ function cttgLogLoginResp(kind, meta) {
 
 document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 async function login() {
-  const email = document.getElementById('email').value.trim();
-  const pass  = document.getElementById('pass').value.trim();
-  const err   = document.getElementById('err');
-  const btn   = document.getElementById('btn');
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const pass = document.getElementById('pass').value.trim();
+  const err = document.getElementById('err');
+  const btn = document.getElementById('btn');
   err.style.display = 'none';
   if (!email || !pass) { err.textContent = 'Completa todos los campos'; err.style.display = 'block'; return; }
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Verificando...';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Verificando...';
   try {
     const t0 = performance.now();
-    const res  = await fetch(URL_APP, {
+    const res = await fetch(URL_APP, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8', Accept: 'application/json' },
+      headers: CTTG_FETCH_HEADERS_LOGIN,
       body: JSON.stringify({ action: 'login', email, password: pass })
     });
     const ms = Math.round(performance.now() - t0);
@@ -83,32 +86,43 @@ async function login() {
       err.style.display = 'block';
       return;
     }
+    if (!data || typeof data !== 'object') {
+      err.textContent = 'Respuesta vacía del servidor. Intenta de nuevo.';
+      err.style.display = 'block';
+      return;
+    }
     cttgLogLoginResp('estudiante', {
       ms: ms,
       httpStatus: res.status,
-      apiSuccess: !!(data && data.success),
-      apiError: data && data.error,
-      tieneToken: !!(data && data.token),
-      rol: data && data.user && data.user.rol
+      apiSuccess: !!data.success,
+      apiError: data.error,
+      tieneToken: !!data.token,
+      rol: data.user && data.user.rol
     });
 
-  if (data.success && data.user && data.user.rol === 'estudiante' && data.token) {
-  localStorage.removeItem('cttg_admin');
-  localStorage.setItem('cttg_user', JSON.stringify(data.user));
-  localStorage.setItem('cttg_token', data.token);
-  window.location.href = 'estudiante_dashboard.html';
-  } else if (data.success && data.user && data.user.rol !== 'estudiante') {
+    var rolNorm = String((data.user && data.user.rol) || '').trim().toLowerCase();
+    if (data.success && data.user && rolNorm === 'estudiante' && data.token) {
+      localStorage.removeItem('cttg_admin');
+      localStorage.setItem('cttg_user', JSON.stringify(data.user));
+      localStorage.setItem('cttg_token', data.token);
+      window.location.href = 'estudiante_dashboard.html';
+    } else if (data.success && data.user && rolNorm !== 'estudiante') {
       console.warn('[CTTG login] Rol esperado estudiante; recibido:', data.user.rol);
-      err.textContent = 'Esta cuenta no tiene perfil de estudiante.'; err.style.display = 'block';
+      err.textContent = 'Esta cuenta no tiene perfil de estudiante.';
+      err.style.display = 'block';
     } else {
       console.warn('[CTTG login] Fallo auth:', data.error);
-      err.textContent = data.error || 'Credenciales incorrectas'; err.style.display = 'block';
+      err.textContent = data.error || 'Credenciales incorrectas';
+      err.style.display = 'block';
     }
-  } catch(e) {
+  } catch (e) {
     console.error('[CTTG login] Fetch / red:', e);
-    err.textContent = 'Error de conexión. Intenta de nuevo.'; err.style.display = 'block';
+    err.textContent = 'Error de conexión. Intenta de nuevo.';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Ingresar al sistema';
   }
-  finally { btn.disabled = false; btn.innerHTML = 'Ingresar al sistema'; }
 }
 </script>
 </body>
