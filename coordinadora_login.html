@@ -42,6 +42,88 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 
+const CTTG_FETCH_HEADERS_LOGIN = { 'Content-Type': 'text/plain;charset=utf-8', Accept: 'application/json' };
+
+/** Petición lista usuarios; usa correo/clave coord/asistente del formulario. */
+async function cttgFetchListaUsuariosStaff_() {
+  const emailEl = document.getElementById('email');
+  const passEl = document.getElementById('pass');
+  const email = emailEl ? String(emailEl.value).trim() : '';
+  const password = passEl ? String(passEl.value).trim() : '';
+  if (!email || !password) {
+    console.warn('[CTTG] Completa correo y contraseña de coordinadora/asistente en el formulario primero.');
+    return null;
+  }
+  try {
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      headers: CTTG_FETCH_HEADERS_LOGIN,
+      body: JSON.stringify({ action: 'loginDebugListaUsuarios', email, password })
+    });
+    const raw = await res.text();
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (parseErr) {
+      console.warn('[CTTG lista] Respuesta no JSON:', raw.slice(0, 800));
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error('[CTTG lista] Red / fetch:', err);
+    return null;
+  }
+}
+
+/** Solo muestra cuántos usuarios ve el servidor en la hoja (filas con email). Ej.: await cttgContarUsuariosEnConsola() */
+window.cttgContarUsuariosEnConsola = async function cttgContarUsuariosEnConsola() {
+  const data = await cttgFetchListaUsuariosStaff_();
+  if (!data) return null;
+  if (!data.success) {
+    console.warn('[CTTG conteo]', data.error || data);
+    return null;
+  }
+  console.log('[CTTG] Cantidad usuarios que el servidor encuentra en «Usuarios» (filas con email):', data.total);
+  if (data.diagnostico_lectura_hoja_usuarios) {
+    console.info('[CTTG] Lectura real del Sheet por Apps Script:', data.diagnostico_lectura_hoja_usuarios);
+  }
+  return data.total;
+};
+
+window.cttgListarUsuariosEnConsola = async function cttgListarUsuariosEnConsola() {
+  const data = await cttgFetchListaUsuariosStaff_();
+  if (!data) return null;
+  if (!data.success) {
+    console.warn('[CTTG lista]', data.error || data);
+    return data;
+  }
+  console.log('[CTTG] Total usuarios (filas con email):', data.total);
+  if (data.diagnostico_lectura_hoja_usuarios) {
+    console.info('[CTTG] Lectura real del Sheet por Apps Script:', data.diagnostico_lectura_hoja_usuarios);
+  }
+  console.groupCollapsed('[CTTG] Tabla (total ' + data.total + ') · sin contraseñas');
+  if (typeof console.table === 'function') console.table(data.usuarios);
+  else console.log(data.usuarios);
+  console.groupEnd();
+  if (data.avisoListadoSinSecretos) console.info('[CTTG]', data.avisoListadoSinSecretos);
+  return data;
+};
+
+try {
+  if (typeof globalThis !== 'undefined') {
+    globalThis.cttgContarUsuariosEnConsola = window.cttgContarUsuariosEnConsola;
+    globalThis.cttgListarUsuariosEnConsola = window.cttgListarUsuariosEnConsola;
+  }
+} catch (_) {}
+
+window.cttg = window.cttg || {};
+window.cttg.contarUsuarios = window.cttgContarUsuariosEnConsola;
+window.cttg.listarUsuarios = window.cttgListarUsuariosEnConsola;
+
+console.info(
+  '[CTTG coordinación] Debe estar en coordinadora_login.html (recarga fuerte Ctrl+Shift+R). Ej.: await window.cttgContarUsuariosEnConsola() o await window.cttg.contarUsuarios().'
+);
+
 /** Solo diagnóstico en navegador: no muestra contraseña. Copia el objeto y compártelo si hace falta soporte. */
 function cttgLogLoginResp(kind, meta) {
   var line = '[CTTG login:' + kind + ']';
@@ -66,7 +148,7 @@ async function login() {
     const t0 = performance.now();
     const res = await fetch(URL_APP, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8', Accept: 'application/json' },
+      headers: CTTG_FETCH_HEADERS_LOGIN,
       body: JSON.stringify({ action: 'login', email, password: pass })
     });
     const ms = Math.round(performance.now() - t0);
