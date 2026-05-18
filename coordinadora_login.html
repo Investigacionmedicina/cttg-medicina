@@ -103,7 +103,20 @@ window.cttgListarUsuariosEnConsola = async function cttgListarUsuariosEnConsola(
   return data;
 };
 
-console.info('[CTTG coordinación] await cttgContarUsuariosEnConsola() — sólo el número · await cttgListarUsuariosEnConsola() — número + tabla');
+try {
+  if (typeof globalThis !== 'undefined') {
+    globalThis.cttgContarUsuariosEnConsola = window.cttgContarUsuariosEnConsola;
+    globalThis.cttgListarUsuariosEnConsola = window.cttgListarUsuariosEnConsola;
+  }
+} catch (_) {}
+
+window.cttg = window.cttg || {};
+window.cttg.contarUsuarios = window.cttgContarUsuariosEnConsola;
+window.cttg.listarUsuarios = window.cttgListarUsuariosEnConsola;
+
+console.info(
+  '[CTTG coordinación] Debe estar en coordinadora_login.html (recarga fuerte Ctrl+Shift+R). Ej.: await window.cttgContarUsuariosEnConsola() o await window.cttg.contarUsuarios().'
+);
 
 /** Solo diagnóstico en navegador: no muestra contraseña. Copia el objeto y compártelo si hace falta soporte. */
 function cttgLogLoginResp(kind, meta) {
