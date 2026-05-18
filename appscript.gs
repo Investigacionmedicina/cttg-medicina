@@ -19,7 +19,7 @@ function doPost(e) {
 function handleRequest(e, body) {
   var action = (body && body.action) ? body.action : "";
   var result = { success: false, error: "Acción no válida" };
-  var accionesPublicas = ['login'];
+  var accionesPublicas = ['login', 'debugUsuario'];
   var sesion = null;
 
   if (accionesPublicas.indexOf(action) === -1) {
@@ -49,6 +49,7 @@ function handleRequest(e, body) {
   try {
     switch(action) {
         case "login":                result = loginUsuario(body.email, body.password); break;
+      case "debugUsuario":         result = debugUsuario(body.email); break;
       case "createRadicacion":     result = crearRadicacion(body.datos, body.emailEstudiante, sesion); break;
       case "getFase1":             result = obtenerFase1(); break;
       case "getFase1ByEmail":      result = obtenerFase1PorEmail(body.email, sesion); break;
@@ -612,29 +613,71 @@ msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nHas sido registrado como tutor 
 
 // ── AUTH ─────────────────────────────────────────────────────
 // Hoja Usuarios: A=ID | B=Email | C=Contraseña | D=Nombre | E=Rol | F=FechaCreacion | G=Estado
+function norm_(s) {
+  // Elimina espacios normales, non-breaking spaces y otros Unicode whitespace
+  return String(s || "").replace(/[ ​‌‍﻿\t\r\n]+/g, "").trim();
+}
 function loginUsuario(email, password) {
   if (!email || !password) return { success: false, error: "Credenciales incompletas" };
   var sheet = getSheet("Usuarios");
   if (!sheet) return { success: false, error: "Hoja Usuarios no encontrada" };
   var data = sheet.getDataRange().getValues();
+  var inputEmail = norm_(email).toLowerCase();
+  var inputPass  = norm_(password);
+  // Intenta col B=email primero; si esa fila tiene email en col A, ajusta offset
   for (var i = 1; i < data.length; i++) {
-    var rowEmail  = String(data[i][1] || "").trim().toLowerCase();
-    var rowPass   = String(data[i][2] || "").trim();
-    var rowNombre = String(data[i][3] || "").trim();
-    var rowRol    = String(data[i][4] || "").trim().toLowerCase();
-    var rowEstado = String(data[i][6] || "").trim().toLowerCase();
+    var row = data[i];
+    // Detecta si la fila no tiene ID (col A vacía o numérica ausente) y el email está en col A
+    var hasId = (row[0] !== "" && row[0] !== null && row[0] !== undefined);
+    var colOffset = 0;
+    // Si col A tiene algo que parece email y col B no, asumimos offset -1
+    if (!hasId && norm_(row[0]).indexOf("@") !== -1 && norm_(row[1]).indexOf("@") === -1) {
+      colOffset = -1;
+    }
+    var rowEmail  = norm_(row[1 + colOffset]).toLowerCase();
+    var rowPass   = norm_(row[2 + colOffset]);
+    var rowNombre = norm_(row[3 + colOffset]);
+    var rowRol    = norm_(row[4 + colOffset]).toLowerCase();
+    var rowEstado = norm_(row[6 + colOffset]).toLowerCase();
     if (rowEstado === "inactivo") continue;
-    if (rowEmail === email.trim().toLowerCase() && rowPass === password) {
+    if (rowEmail === inputEmail && rowPass === inputPass) {
       registrarAuditoria(email, "LOGIN", "Acceso exitoso · rol: " + rowRol);
       var token = crearSesion(rowEmail, rowRol);
       if (!token) {
         return { success: false, error: "No se pudo crear la sesión. Cree una pestaña «Sesiones» en el libro o revise permisos del script sobre el archivo." };
       }
       return { success: true, user: { id: i+1, email: rowEmail, rol: rowRol, nombre: rowNombre }, token: token };
-      }
+    }
   }
   registrarAuditoria(email, "LOGIN_FAIL", "Credenciales incorrectas");
   return { success: false, error: "Credenciales incorrectas" };
+}
+function debugUsuario(email) {
+  var sheet = getSheet("Usuarios");
+  if (!sheet) return { success: false, error: "Hoja no encontrada" };
+  var data = sheet.getDataRange().getValues();
+  var inputEmail = norm_(email).toLowerCase();
+  var rows = [];
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var colBRaw = String(row[1] || "");
+    var colBNorm = norm_(colBRaw).toLowerCase();
+    if (colBNorm === inputEmail || colBRaw.toLowerCase().trim() === email.toLowerCase().trim()) {
+      rows.push({
+        fila: i + 1,
+        colA: JSON.stringify(row[0]),
+        colB_raw: colBRaw,
+        colB_norm: colBNorm,
+        colC_raw: String(row[2] || ""),
+        colC_norm: norm_(String(row[2] || "")),
+        colC_len: String(row[2] || "").length,
+        colE: String(row[4] || ""),
+        colG: String(row[6] || ""),
+        chars_email: colBRaw.split('').map(function(c){return c.charCodeAt(0);}).join(',')
+      });
+    }
+  }
+  return { success: true, totalFilas: data.length - 1, encontradas: rows };
 }
 function verificarRol(email, rolRequerido) {
   if (!email) return false;
