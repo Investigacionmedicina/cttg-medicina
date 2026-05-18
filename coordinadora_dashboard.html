@@ -1082,8 +1082,33 @@ function verDetalle(ri) {
     ? [fmtFecha(r.diplomadoFechaInicio), fmtFecha(r.diplomadoFechaFin)].filter(x => x && x !== '—').join(' → ') || '—'
     : '';
   const tutorBlock = esDip
-    ? `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Diplomado</div>
-       <div class="det-row"><span class="det-label">Tutores</span><span class="det-val">No aplica · modalidad Diplomado</span></div>`
+    ? (() => {
+        const modo = String(r.diplomadoJuradoModo || '').trim().toLowerCase();
+        const esCttg  = modo === 'cttg_asigna';
+        const esTutor = modo === 'tutor_sugiere';
+        const modoLabel = esCttg  ? '🏛 Comité CTTG asigna evaluador'
+                        : esTutor ? '👥 Tutor sugirió jurado'
+                        : modo   ? modo : '—';
+        const juradoRows = esCttg
+          ? `<div class="det-row"><span class="det-label">Evaluador</span><span class="det-val" style="color:#fcd34d">El Comité Técnico de Trabajos de Grado asignará al evaluador</span></div>`
+          : [
+              fila('Jurado 1',       r.dipJurado1Nombre),
+              fila('Email J1',       r.dipJurado1Email),
+              fila('Tel. J1',        r.dipJurado1Telefono),
+              fila('Especialidad J1',r.dipJurado1Especialidad),
+              fila('Acuerdo eval.',  r.dipJurado1AceptaPropuesta),
+              fila('Jurado 2',       r.dipJurado2Nombre),
+              fila('Email J2',       r.dipJurado2Email),
+              fila('Tel. J2',        r.dipJurado2Telefono),
+              fila('Jurado 3',       r.dipJurado3Nombre),
+              fila('Email J3',       r.dipJurado3Email),
+              fila('Tel. J3',        r.dipJurado3Telefono),
+            ].join('');
+        return `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Diplomado · Jurado</div>
+          <div class="det-row"><span class="det-label">Tutores</span><span class="det-val">No aplica · modalidad Diplomado</span></div>
+          ${fila('Modo jurado', modoLabel)}
+          ${juradoRows}`;
+      })()
     : `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
        ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
        ${fila('Email T1',r.tutor1Email)}

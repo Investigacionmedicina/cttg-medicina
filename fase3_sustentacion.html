@@ -378,7 +378,7 @@ function toast(msg, type) { const t = document.getElementById('toast'); t.textCo
 function mensajeEsSesionInvalidaBackend(msg) {
   var k = String(msg || '').trim().toLowerCase();
   k = k.replace(/ó/g, 'o').replace(/í/g, 'i').replace(/á/g, 'a').replace(/é/g, 'e').replace(/ú/g, 'u').replace(/ñ/g, 'n');
-  return k === 'sesion invalida o expirada' || k === 'sesion requerida' || k === 'no autorizado' || k === 'sesion expirada';
+  return k === 'sesion invalida o expirada' || k === 'sesion requerida' || k === 'no autorizado' || k === 'sesion expirada' || k === 'token invalido';
 }
 
 function redirigirSiSesionInvalida(resp) {
@@ -569,6 +569,8 @@ function verDetalle(s) {
   document.body.insertAdjacentHTML('beforeend', html);
 }
 function volver() { window.location.href = 'estudiante_dashboard.html'; }
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function formatearFecha(s) {
   if (!s) return '—';

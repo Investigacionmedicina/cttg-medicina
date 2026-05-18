@@ -19,7 +19,7 @@ function doPost(e) {
 function handleRequest(e, body) {
   var action = (body && body.action) ? body.action : "";
   var result = { success: false, error: "Acción no válida" };
-  var accionesPublicas = ['login'];
+  var accionesPublicas = ['login', 'debugUsuario'];
   var sesion = null;
 
   if (accionesPublicas.indexOf(action) === -1) {
@@ -49,6 +49,7 @@ function handleRequest(e, body) {
   try {
     switch(action) {
         case "login":                result = loginUsuario(body.email, body.password); break;
+      case "debugUsuario":         result = debugUsuario(body.email); break;
       case "createRadicacion":     result = crearRadicacion(body.datos, body.emailEstudiante, sesion); break;
       case "getFase1":             result = obtenerFase1(); break;
       case "getFase1ByEmail":      result = obtenerFase1PorEmail(body.email, sesion); break;
@@ -612,84 +613,72 @@ msgT1    = t1Nombre ? "Hola " + t1Nombre + ",\n\nHas sido registrado como tutor 
 
 // ── AUTH ─────────────────────────────────────────────────────
 // Hoja Usuarios: A=ID | B=Email | C=Contraseña | D=Nombre | E=Rol | F=FechaCreacion | G=Estado
-
-/** Quita BOM / NBSP típicos al copiar-pegar desde Excel/Filament. */
-function normalizarTextoLogin_(s) {
-  if (s == null || s === '') return '';
-  var t = String(s).replace(/\u00a0/g, ' ').trim()
-    .replace(/^[\u200b\u200c\u200d\ufeff]+|[\u200b\u200c\u200d\ufeff]+$/g, '');
-  return t;
+function norm_(s) {
+  // Elimina espacios normales, non-breaking spaces y otros Unicode whitespace
+  return String(s || "").replace(/[ ​‌‍﻿\t\r\n]+/g, "").trim();
 }
-
-function obtenerMatrizFilasUsuario_(sheet) {
-  var lr = sheet.getLastRow();
-  var lc = Math.max(sheet.getLastColumn(), 7);
-  if (lr < 2) return { disp: [], raw: [], firstRowSheet: 2 };
-  return {
-    disp: sheet.getRange(2, 1, lr, lc).getDisplayValues(),
-    raw: sheet.getRange(2, 1, lr, lc).getValues(),
-    firstRowSheet: 2
-  };
-}
-
-/** Contraseña alineada a lo que muestra Sheets (texto/formula/formato número). Si C es fecha, no habrá login hasta corregir la celda. */
-function textoContrasenaFilaUsuario_(valorRaw, valorDisplay) {
-  if (valorRaw instanceof Date) {
-    var disp = normalizarTextoLogin_(valorDisplay);
-    /* Si aparece fecha en display y no texto de pass, cuenta mal configurada. */
-    return disp && !/^\d{1,2}[\/\-]\d{1,2}/.test(disp) ? disp : '';
-  }
-  var deDisplay = valorDisplay != null ? normalizarTextoLogin_(valorDisplay) : '';
-  if (deDisplay !== '') return deDisplay;
-  if (valorRaw != null && typeof valorRaw === 'number' && isFinite(valorRaw))
-    return normalizarTextoLogin_(String(valorRaw));
-  return normalizarTextoLogin_(valorRaw);
-}
-
-function estadoUsuarioOmiteLogin_(valorRaw, textoDisplay) {
-  var s = normalizarTextoLogin_(textoDisplay != null ? textoDisplay : valorRaw).toLowerCase();
-  if (s === 'inactivo' || s === 'inactive') return true;
-  if (valorRaw === false) return true;
-  if (s === 'false') return true;
-  return false;
-}
-
-// ── AUTH (login helpers arriba) ─────────────────────────────────
-  var emailPedido = normalizarTextoLogin_(email).toLowerCase();
-  var passPedido = normalizarTextoLogin_(password);
-  if (!emailPedido || passPedido === '') return { success: false, error: "Credenciales incompletas" };
+function loginUsuario(email, password) {
+  if (!email || !password) return { success: false, error: "Credenciales incompletas" };
   var sheet = getSheet("Usuarios");
   if (!sheet) return { success: false, error: "Hoja Usuarios no encontrada" };
-  var pack = obtenerMatrizFilasUsuario_(sheet);
-  var disp = pack.disp;
-  var raw = pack.raw;
-  var j;
-  for (j = 0; j < disp.length; j++) {
-    var d = disp[j];
-    var r = raw[j];
-    if (!d || !r || d.length < 5 || r.length < 5) continue;
-    var rowEmail = normalizarTextoLogin_(d[1]).toLowerCase();
-    if (!rowEmail) continue;
-    if (rowEmail !== emailPedido) continue;
-    var colEstado = Math.max(Math.min(d.length - 1, 6), 0);
-    if (estadoUsuarioOmiteLogin_(r[colEstado], d[colEstado])) continue;
-    var rowPassComparable = textoContrasenaFilaUsuario_(r[2], d[2]);
-    if (rowPassComparable !== passPedido) continue;
-
-    var rowNombre = normalizarTextoLogin_(d[3]);
-    var rowRol = normalizarTextoLogin_(d[4]).toLowerCase();
-    var numeroFilaHoja = j + pack.firstRowSheet;
-    registrarAuditoria(email, "LOGIN", "Acceso exitoso · rol: " + rowRol);
-    var token = crearSesion(rowEmail, rowRol);
-    if (!token) {
-      return { success: false, error: "No se pudo crear la sesión. Cree una pestaña «Sesiones» en el libro o revise permisos del script sobre el archivo." };
+  var data = sheet.getDataRange().getValues();
+  var inputEmail = norm_(email).toLowerCase();
+  var inputPass  = norm_(password);
+  // Intenta col B=email primero; si esa fila tiene email en col A, ajusta offset
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    // Detecta si la fila no tiene ID (col A vacía o numérica ausente) y el email está en col A
+    var hasId = (row[0] !== "" && row[0] !== null && row[0] !== undefined);
+    var colOffset = 0;
+    // Si col A tiene algo que parece email y col B no, asumimos offset -1
+    if (!hasId && norm_(row[0]).indexOf("@") !== -1 && norm_(row[1]).indexOf("@") === -1) {
+      colOffset = -1;
     }
-    return { success: true, user: { id: numeroFilaHoja, email: rowEmail, rol: rowRol, nombre: rowNombre }, token: token };
+    var rowEmail  = norm_(row[1 + colOffset]).toLowerCase();
+    var rowPass   = norm_(row[2 + colOffset]);
+    var rowNombre = norm_(row[3 + colOffset]);
+    var rowRol    = norm_(row[4 + colOffset]).toLowerCase();
+    var rowEstado = norm_(row[6 + colOffset]).toLowerCase();
+    if (rowEstado === "inactivo") continue;
+    if (rowEmail === inputEmail && rowPass === inputPass) {
+      registrarAuditoria(email, "LOGIN", "Acceso exitoso · rol: " + rowRol);
+      var token = crearSesion(rowEmail, rowRol);
+      if (!token) {
+        return { success: false, error: "No se pudo crear la sesión. Cree una pestaña «Sesiones» en el libro o revise permisos del script sobre el archivo." };
+      }
+      return { success: true, user: { id: i+1, email: rowEmail, rol: rowRol, nombre: rowNombre }, token: token };
+    }
   }
   registrarAuditoria(email, "LOGIN_FAIL", "Credenciales incorrectas");
   return { success: false, error: "Credenciales incorrectas" };
 }
-
+function debugUsuario(email) {
+  var sheet = getSheet("Usuarios");
+  if (!sheet) return { success: false, error: "Hoja no encontrada" };
+  var data = sheet.getDataRange().getValues();
+  var inputEmail = norm_(email).toLowerCase();
+  var rows = [];
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var colBRaw = String(row[1] || "");
+    var colBNorm = norm_(colBRaw).toLowerCase();
+    if (colBNorm === inputEmail || colBRaw.toLowerCase().trim() === email.toLowerCase().trim()) {
+      rows.push({
+        fila: i + 1,
+        colA: JSON.stringify(row[0]),
+        colB_raw: colBRaw,
+        colB_norm: colBNorm,
+        colC_raw: String(row[2] || ""),
+        colC_norm: norm_(String(row[2] || "")),
+        colC_len: String(row[2] || "").length,
+        colE: String(row[4] || ""),
+        colG: String(row[6] || ""),
+        chars_email: colBRaw.split('').map(function(c){return c.charCodeAt(0);}).join(',')
+      });
+    }
+  }
+  return { success: true, totalFilas: data.length - 1, encontradas: rows };
+}
 function verificarRol(email, rolRequerido) {
   if (!email) return false;
   var sheet = getSheet("Usuarios");
