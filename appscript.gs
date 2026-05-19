@@ -93,10 +93,10 @@ function handleRequest(e, body) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-/** Coordinadora o Asistente: mismo permiso operativo (estados, actas, Fase 2/3, etc.). Rol en Sesiones en minúsculas. */
+/** Coordinadora, Asistente o Auxiliar: mismo permiso operativo (estados, actas, Fase 2/3, etc.). Rol en Sesiones en minúsculas. */
 function sesionEsCoordinadoraOAsistente(sesion) {
   var r = sesion && String(sesion.rol || "").trim().toLowerCase();
-  return r === "coordinadora" || r === "asistente";
+  return r === "coordinadora" || r === "asistente" || r === "auxiliar";
 }
 
 // ── HELPERS ──────────────────────────────────────────────────
@@ -707,10 +707,10 @@ function loginDebugListaUsuarios(email, password) {
   var chk = resolverUsuarioCredenciales_(email, password);
   if (!chk.success) return chk;
   var rl = String(chk.user.rol || "").toLowerCase();
-  if (rl !== "coordinadora" && rl !== "asistente") {
+  if (rl !== "coordinadora" && rl !== "asistente" && rl !== "auxiliar") {
     return {
       success: false,
-      error: "Para listar usuarios usa una cuenta coordinadora o asistente en el mismo formulario."
+      error: "Para listar usuarios usa una cuenta coordinadora, asistente o auxiliar en el mismo formulario."
     };
   }
   var sheet = getSheet("Usuarios");
