@@ -1321,8 +1321,8 @@ function verificarVencimientosYAlertar(rowIndex) {
   if (sheetFase2) {
     var dataFase2 = sheetFase2.getDataRange().getValues();
     for (var k = 1; k < dataFase2.length; k++) {
-      if (String(dataFase2[k][1]) === numero && String(dataFase2[k][9]) === 'Cargado') {
-        var diasDesdeProto = calcularDiasHabilesTranscurridos(dataFase2[k][5], new Date());
+      if (String(dataFase2[k][1]) === numero && String(dataFase2[k][8]) === 'Cargado') {
+        var diasDesdeProto = calcularDiasHabilesTranscurridos(dataFase2[k][4], new Date());
         if (diasDesdeProto > 8) {
           try {
             MailApp.sendEmail({
