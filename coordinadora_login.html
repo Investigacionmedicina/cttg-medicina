@@ -188,11 +188,13 @@ async function login() {
         window.location.href = 'coordinadora_dashboard.html';
       } else if (rol === 'asistente') {
         window.location.href = 'asistente_dashboard.html';
+      } else if (rol === 'auxiliar') {
+        window.location.href = 'asistente_dashboard.html';
       } else {
         localStorage.removeItem('cttg_admin');
         localStorage.removeItem('cttg_token');
         console.warn('[CTTG login] Cuenta con rol no permitido aquí:', rol);
-        err.textContent = 'Esta cuenta no tiene perfil de coordinación o asistente.';
+        err.textContent = 'Esta cuenta no tiene perfil de coordinación, asistente o auxiliar.';
         err.style.display = 'block';
       }
     } else {

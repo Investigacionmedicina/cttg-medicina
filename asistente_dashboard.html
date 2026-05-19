@@ -751,7 +751,7 @@ let solicitudActual = null;
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!admin || admin.rol !== 'asistente') {
+  if (!admin || (admin.rol !== 'asistente' && admin.rol !== 'auxiliar')) {
     if (admin && admin.rol === 'coordinadora') { window.location.href = 'coordinadora_dashboard.html'; return; }
     window.location.href = 'coordinadora_login.html'; return;
   }
