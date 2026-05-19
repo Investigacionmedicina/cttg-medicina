@@ -31,6 +31,11 @@
   .mc .mh{font-size:10px;color:rgba(255,255,255,.45);margin-top:10px;line-height:1.4;font-family:'Outfit',sans-serif;font-weight:400;text-transform:none;letter-spacing:0}
   .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
   .mc.c1::before{background:#3b82f6}.mc.c2::before{background:#10b981}.mc.c3::before{background:#f59e0b}.mc.c4::before{background:#ef4444}.mc.c5::before{background:#a78bfa}.mc.c6::before{background:#00c3a5}
+  .mc.mc-urgent{background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.18)}
+  .mc.mc-urgent::before{background:linear-gradient(90deg,#f59e0b,#f97316)}
+  .mc.mc-urgent .mv{color:#fcd34d}
+  .mc.mc-urgent.mc-go:hover{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.28)}
+  .mc-section-urgent{color:rgba(251,191,36,.7)}
   .mc .ml{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:6px;font-family:'DM Mono',monospace}
   .mc .mv{font-size:26px;font-weight:700;font-family:'DM Serif Display',serif}
   .mc.c1 .mv{color:#60a5fa}.mc.c2 .mv{color:#34d399}.mc.c3 .mv{color:#fcd34d}.mc.c4 .mv{color:#fca5a5}.mc.c5 .mv{color:#c4b5fd}.mc.c6 .mv{color:#00c3a5}
@@ -162,25 +167,97 @@
 </header>
 
 <main>
-    <div class="metrics-caption">Resumen rápido</div>
-    <div class="metrics">
-    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en Fase 1</div></div>
-    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div><div class="mh">Sin aval de tutor/diplomado aún</div></div>
-    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⏰ Plazo crítico</div><div class="mv" id="mCritico">—</div><div class="mh">Clic: abrir tab Alertas (&gt;60% tiempo de avance sin cierre)</div></div>
-   </div>
-    <div class="metrics-caption">¿A qué parte del panel ir? · Clic en la tarjeta</div>
-    <div class="metrics">
-    <div class="mc c6 mc-go" id="metricGoAvTutor" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true});}"><div class="ml">Validar tutores</div><div class="mv" id="mAvTutor">—</div><div class="mh">Radicadas sin Diplomado · tab Radicaciones (lista filtrada)</div></div>
-    <div class="mc c5 mc-go" id="metricGoAvDip" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'});}"><div class="ml">Aval Diplomado</div><div class="mv" id="mAvDip">—</div><div class="mh">Diplomado en Radicado · tab Radicaciones</div></div>
-    <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('actas')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('actas');}"><div class="ml">Actas / Fase 1</div><div class="mv" id="mActasF1">—</div><div class="mh">Revisión o Tutores avalados · tab Actas de Asesoría</div></div>
-    <div class="mc c1 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('protocolo')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('protocolo');}"><div class="ml">Protocolo · Fase 2</div><div class="mv" id="mProtF2">—</div><div class="mh">«Fase 2 Desbloqueada» · tab Protocolo</div></div>
-    <div class="mc c5 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('comite')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('comite');}"><div class="ml">Pendiente comité</div><div class="mv" id="mPend">—</div><div class="mh">Decisión pendiente CT · tab Comité Técnico</div></div>
-    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'});}"><div class="ml">Dev. por comité</div><div class="mv" id="mDevComite">—</div><div class="mh">Corrección post CT · tab Radicaciones</div></div>
-    <div class="mc c2 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Aprobado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado'});}"><div class="ml">Aprobadas comité</div><div class="mv" id="mApro">—</div><div class="mh">Listas para tramitar sustentación · luego tab Sustentación</div></div>
-    <div class="mc c3 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('fase3')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('fase3');}"><div class="ml">En sustentación · cierre</div><div class="mv" id="mEnSust">—</div><div class="mh">Fase sustentación, sustentado o reprobado · tab Sustentación</div></div>
-    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto'});}"><div class="ml">Devolución coord.</div><div class="mv" id="mDev">—</div><div class="mh">Devuelto por coordinación · tab Radicaciones</div></div>
-    <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}"><div class="ml">En revisión</div><div class="mv" id="mRev">—</div><div class="mh">Estado Revisión · tab Radicaciones</div></div>
-   </div>
+  <!-- ── PENDIENTES PARA TI ─────────────────────────────────────────────── -->
+  <div class="metrics-caption mc-section-urgent">Pendientes para ti · clic para ir directo</div>
+  <div class="metrics">
+    <div class="mc mc-urgent mc-go" id="metricGoAvTutor" tabindex="0" role="button"
+         onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true})"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true});}">
+      <div class="ml">Solicitudes sin aval de tutor</div>
+      <div class="mv" id="mAvTutor">—</div>
+      <div class="mh">Radicadas esperando que valides tutores</div>
+    </div>
+    <div class="mc mc-urgent mc-go" id="metricGoAvDip" tabindex="0" role="button"
+         onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'})"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'});}">
+      <div class="ml">Diplomados sin aval</div>
+      <div class="mv" id="mAvDip">—</div>
+      <div class="mh">Diplomados radicados esperando aval</div>
+    </div>
+    <div class="mc mc-urgent mc-go" tabindex="0" role="button"
+         onclick="irMetricaRuta('actas')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('actas');}">
+      <div class="ml">Pendiente actas / Fase 1</div>
+      <div class="mv" id="mActasF1">—</div>
+      <div class="mh">En Revisión o Tutores Avalados — emitir acta</div>
+    </div>
+    <div class="mc mc-urgent mc-go" tabindex="0" role="button"
+         onclick="irMetricaRuta('protocolo')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('protocolo');}">
+      <div class="ml">Solicitudes Fase 2</div>
+      <div class="mv" id="mProtF2">—</div>
+      <div class="mh">Fase 2 desbloqueada — revisar protocolo</div>
+    </div>
+    <div class="mc mc-urgent mc-go" tabindex="0" role="button"
+         onclick="irMetricaRuta('comite')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('comite');}">
+      <div class="ml">Pendiente comité</div>
+      <div class="mv" id="mPend">—</div>
+      <div class="mh">Listos para presentar al Comité Técnico</div>
+    </div>
+    <div class="mc mc-urgent mc-go" tabindex="0" role="button"
+         onclick="irMetricaRuta('rad',{fEstRad:'Devuelto'})"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto'});}">
+      <div class="ml">Devueltos por coordinación</div>
+      <div class="mv" id="mDev">—</div>
+      <div class="mh">Estudiante corrigió — verificar y continuar</div>
+    </div>
+    <div class="mc mc-urgent mc-go" tabindex="0" role="button"
+         onclick="irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'})"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'});}">
+      <div class="ml">Devueltos por comité</div>
+      <div class="mv" id="mDevComite">—</div>
+      <div class="mh">Post-CT — estudiante corrigió, verificar</div>
+    </div>
+  </div>
+
+  <!-- ── ESTADO GENERAL ────────────────────────────────────────────────── -->
+  <div class="metrics-caption">Estado general del proceso</div>
+  <div class="metrics">
+    <div class="mc c2 mc-go" tabindex="0" role="button"
+         onclick="irMetricaRuta('rad',{fEstRad:'Aprobado'})"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado'});}">
+      <div class="ml">Aprobadas — tramitar sustentación</div>
+      <div class="mv" id="mApro">—</div>
+      <div class="mh">Aprobadas por CT sin sustentación abierta</div>
+    </div>
+    <div class="mc c3 mc-go" tabindex="0" role="button"
+         onclick="irMetricaRuta('fase3')"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('fase3');}">
+      <div class="ml">En sustentación</div>
+      <div class="mv" id="mEnSust">—</div>
+      <div class="mh">Con fecha asignada — resultado pendiente</div>
+    </div>
+    <div class="mc c4 mc-go" tabindex="0" role="button"
+         onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}">
+      <div class="ml">Plazo crítico</div>
+      <div class="mv" id="mCritico">—</div>
+      <div class="mh">&gt;60% del tiempo sin cierre — ver Alertas</div>
+    </div>
+    <div class="mc c1">
+      <div class="ml">Total en proceso</div>
+      <div class="mv" id="mTot">—</div>
+      <div class="mh">Todos los registros activos en Fase 1</div>
+    </div>
+    <div class="mc c6 mc-go" tabindex="0" role="button"
+         onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}">
+      <div class="ml">En revisión coord.</div>
+      <div class="mv" id="mRev">—</div>
+      <div class="mh">Estado Revisión · tab Radicaciones</div>
+    </div>
+  </div>
 
  <div class="main-tabs">
     <button class="main-tab on" id="tabRad" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
