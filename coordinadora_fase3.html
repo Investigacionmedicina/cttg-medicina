@@ -327,6 +327,13 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 
+function urlPanelStaff() {
+  try {
+    var u = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
+    return (u && (u.rol === 'asistente' || u.rol === 'auxiliar')) ? 'asistente_dashboard.html' : 'coordinadora_dashboard.html';
+  } catch (e) { return 'coordinadora_dashboard.html'; }
+}
+
 /** Cuando esta página va dentro del panel (`iframe`), el padre envía el token aquí (localStorage puede estar particionado). */
 let tokenDesdePanelPadre = '';
 

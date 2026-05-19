@@ -152,7 +152,7 @@ const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbx
 function urlPanelStaff() {
   try {
     var u = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
-    return u && u.rol === 'asistente' ? 'asistente_dashboard.html' : 'coordinadora_dashboard.html';
+    return (u && (u.rol === 'asistente' || u.rol === 'auxiliar')) ? 'asistente_dashboard.html' : 'coordinadora_dashboard.html';
   } catch (e) { return 'coordinadora_dashboard.html'; }
 }
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
