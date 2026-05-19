@@ -161,7 +161,7 @@ let actas = [];
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
   var r_adm = admin && String(admin.rol || '').toLowerCase();
-  if (!admin || (r_adm !== 'coordinadora' && r_adm !== 'asistente')) { window.location.href = 'coordinadora_login.html'; return; }
+  if (!admin || (r_adm !== 'coordinadora' && r_adm !== 'asistente' && r_adm !== 'auxiliar')) { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
   cargar();
 })();
