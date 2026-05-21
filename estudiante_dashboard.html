@@ -812,15 +812,19 @@ async function actualizarBotonesFases(radicaciones) {
   const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Aprobado','Sustentado'];
 
   if (btnActas) {
-    btnActas.style.display = 'flex';
-    if (estadosConAcceso.includes(estadoActual)) {
-      btnActas.style.opacity       = '1';
-      btnActas.style.pointerEvents = 'auto';
-      if (btnActasSub) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
+    if (esModalidadDiplomado(radRef.modalidad || '')) {
+      btnActas.style.display = 'none';
     } else {
-      btnActas.style.opacity       = '0.4';
-      btnActas.style.pointerEvents = 'none';
-      if (btnActasSub) btnActasSub.textContent = 'Pendiente: aval de tutores';
+      btnActas.style.display = 'flex';
+      if (estadosConAcceso.includes(estadoActual)) {
+        btnActas.style.opacity       = '1';
+        btnActas.style.pointerEvents = 'auto';
+        if (btnActasSub) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
+      } else {
+        btnActas.style.opacity       = '0.4';
+        btnActas.style.pointerEvents = 'none';
+        if (btnActasSub) btnActasSub.textContent = 'Pendiente: aval de tutores';
+      }
     }
   }
 let actasAprobadas = false;
