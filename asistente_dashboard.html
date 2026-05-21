@@ -1892,23 +1892,34 @@ function renderProtocolo() {
 function abrirModalProtocolo(rowIndex, accion, numero) {
   const p = protocolos.find(x => x.rowIndex === rowIndex);
   if (!p) return;
-  
-  protocoloActual = { rowIndex, accion };
+
+  protocoloActual = { rowIndex, accion, esDiplomado: !!p.esDiplomado };
   document.getElementById('pNum').textContent = numero;
   document.getElementById('pEst').textContent = p.emailEstudiante || '—';
-  
+
   // Pre-llenar decisión
   document.getElementById('pDecision').value = accion === 'aprobar' ? 'aprobar' : 'rechazar';
   document.getElementById('pMotivo').value = '';
   document.getElementById('pObservaciones').value = '';
-  
+
+  // Diplomado: siempre requiere comité, ocultar opción de aprobación directa
+  const optNO = document.querySelector('#pRequiereComite option[value="no"]');
+  if (optNO) optNO.style.display = p.esDiplomado ? 'none' : '';
+  if (p.esDiplomado && accion === 'aprobar') {
+    document.getElementById('pRequiereComite').value = 'si';
+    mostrarComite();
+  } else {
+    document.getElementById('pRequiereComite').value = '';
+    document.getElementById('seccionComite').style.display = 'none';
+  }
+
   mostrarOpciones();
-  
+
   if (accion === 'aprobar') {
     cargarEvaluadoresProtocolo();
     cargarFechasComiteProtocolo();
   }
-  
+
   document.getElementById('modalProtocolo').classList.add('open');
 }
 function mostrarOpciones() {
