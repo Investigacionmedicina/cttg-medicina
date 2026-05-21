@@ -1630,8 +1630,14 @@ function actualizarEstadoProtocolo(rowIndex, estado, evaluador, emailEvaluador, 
   sheet.getRange(ri, 14).setValue(emailCoord || "");
 
   var numRad = String(sheet.getRange(ri, 2).getValue());
-  var aprobado = (estado === "Aprobado" || estado === "Pendiente Comité");
-  var estadoFase1 = (estado === "Devuelto") ? "Devuelto" : "Aprobado";
+  var estadoFase1;
+  if (estado === "Aprobado" || estado === "Aprobado Directo") {
+    estadoFase1 = "Aprobado";
+  } else if (estado === "Devuelto" || estado === "Devuelto por Comité Técnico") {
+    estadoFase1 = "Devuelto por Comité Técnico";
+  } else {
+    estadoFase1 = "Pendiente Comité Técnico";
+  }
 
   var sheetF1 = getSheet("Fase1");
   var dataF1 = sheetF1.getDataRange().getValues();
@@ -2484,11 +2490,28 @@ function avalarProtocoloFase2(rowIndex, estado, motivo, evaluador, emailEvaluado
   if (!sheet) {
     return { success: false, error: "Hoja Fase2 no encontrada" };
   }
- 
+
   if (rowIndex < 2) {
     return { success: false, error: "Índice de fila inválido" };
   }
- 
+
+  // Diplomado siempre requiere comité — bloquear aprobación directa
+  if (estado === "Aprobado Directo") {
+    var numRadDip = String(sheet.getRange(rowIndex, 2).getValue() || "").trim();
+    var sheetF1Dip = getSheet("Fase1");
+    if (sheetF1Dip && numRadDip) {
+      var dataF1Dip = sheetF1Dip.getDataRange().getValues();
+      for (var k = 1; k < dataF1Dip.length; k++) {
+        if (String(dataF1Dip[k][1] || "").trim() === numRadDip) {
+          if (String(dataF1Dip[k][22] || "").trim().toLowerCase() === "diplomado") {
+            return { success: false, error: "El diplomado debe ser avalado por el Comité Técnico de Trabajos de Grado. No se permite aprobación directa." };
+          }
+          break;
+        }
+      }
+    }
+  }
+
   var ri = rowIndex;
   var hoy_str = hoy();
  
