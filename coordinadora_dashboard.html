@@ -146,6 +146,13 @@
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}  .toast.info{background:rgba(59,130,246,.9);color:#fff}
   @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
+  /* PENDIENTES HOME */
+  .pend-home-hdr{display:flex;align-items:center;gap:10px;margin:14px 0 8px;flex-wrap:wrap}
+  .ph-title{font-size:11px;color:#fcd34d;text-transform:uppercase;letter-spacing:.75px;font-family:'DM Mono',monospace;font-weight:700}
+  .ph-count{font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace}
+  .pend-home-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto;max-height:310px;margin-bottom:20px}
+  .pend-home-wrap table{min-width:600px;width:100%;border-collapse:collapse}
+  .pend-home-wrap thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
 </style>
 </head>
 <body>
@@ -181,6 +188,27 @@
     <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto'});}"><div class="ml">Devolución coord.</div><div class="mv" id="mDev">—</div><div class="mh">Devuelto por coordinación · tab Radicaciones</div></div>
     <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}"><div class="ml">En revisión</div><div class="mv" id="mRev">—</div><div class="mh">Estado Revisión · tab Radicaciones</div></div>
    </div>
+
+    <!-- ── SECCIÓN: POR MODALIDAD ─────────────────────────── -->
+    <div class="metrics-caption">Por Modalidad · Clic para filtrar</div>
+    <div id="modGridWrap" class="metrics" style="min-height:64px"></div>
+
+    <!-- ── SECCIÓN: PENDIENTES DE REVISIÓN ────────────────── -->
+    <div class="pend-home-hdr">
+      <span class="ph-title">🔔 Pendientes de revisión</span>
+      <span class="ph-count" id="pendHomeTot"></span>
+      <button class="btn bl" style="margin-left:auto;font-size:11px;padding:3px 10px" onclick="irTodasRad()">Ver todas en Radicaciones →</button>
+    </div>
+    <div class="pend-home-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Modalidad</th><th>Estado</th><th>F. Radicación</th><th>Acción rápida</th>
+        </tr></thead>
+        <tbody id="tbodyPendHome">
+          <tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
 
  <div class="main-tabs">
     <button class="main-tab on" id="tabRad" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
@@ -990,11 +1018,125 @@ function actualizarMetricas() {
   dimCard('mEnSust', s.enSustCierre);
   dimCard('mDev', s.devCoord);
   dimCard('mRev', s.revision);
+
+  // Secciones nuevas en pantalla principal
+  renderModalidadGrid();
+  renderPendientesHome();
 }
 function poblarFiltroMod() {
   const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
   const sel = document.getElementById('fMod'), cur = sel.value;
   sel.innerHTML = '<option value="">Todas las modalidades</option>' + opts.map(o => `<option value="${o}" ${o===cur?'selected':''}>${o}</option>`).join('');
+}
+
+// ── POR MODALIDAD ──────────────────────────────────────────────
+function iconModalidad(mod) {
+  const m = String(mod || '').toLowerCase();
+  if (m.includes('diplomado')) return '🎓';
+  if (m.includes('investigaci')) return '🔬';
+  return '📄';
+}
+
+function renderModalidadGrid() {
+  const ACTIVOS = ['Radicado','Revisión','Tutores Avalados','Tutores avalados',
+    'Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Devuelto','Aprobado'];
+  const mods = {};
+  radicaciones.forEach(r => {
+    const m = r.modalidad || '(Sin modalidad)';
+    if (!mods[m]) mods[m] = { total: 0, activas: 0 };
+    mods[m].total++;
+    if (ACTIVOS.includes(r.estado || 'Radicado')) mods[m].activas++;
+  });
+  const entries = Object.entries(mods).sort((a, b) => b[1].total - a[1].total);
+  const cols = ['c6','c1','c5','c3','c2','c4'];
+  const wrap = document.getElementById('modGridWrap');
+  if (!wrap) return;
+  if (!entries.length) {
+    wrap.innerHTML = '<div class="mc" style="opacity:.4;font-size:12px;padding:14px;color:rgba(255,255,255,.35)">Sin datos de modalidades aún</div>';
+    return;
+  }
+  wrap.innerHTML = entries.map(([mod, s], i) => {
+    const col = cols[i % cols.length];
+    const ico = iconModalidad(mod);
+    return `<div class="mc ${col} mc-go" tabindex="0" role="button" data-mod="${escAttr(mod)}"
+      onclick="irMetricaRutaMod(this)"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRutaMod(this);}">
+      <div class="ml">${ico} ${esc(mod)}</div>
+      <div class="mv">${s.total}</div>
+      <div class="mh">${s.activas} activa${s.activas !== 1 ? 's' : ''} · clic para filtrar</div>
+    </div>`;
+  }).join('');
+}
+
+function irMetricaRutaMod(el) {
+  irMetricaRuta('rad', { fMod: el.dataset.mod || '', fEstRad: '' });
+}
+
+function irTodasRad() {
+  limpiarFiltroMetrica();
+  const fe = document.getElementById('fEstRad');
+  const fm = document.getElementById('fMod');
+  const q  = document.getElementById('search');
+  if (fe) fe.value = '';
+  if (fm) fm.value = '';
+  if (q)  q.value  = '';
+  switchPanel('rad', document.getElementById('tabRad'));
+  renderTabla();
+}
+
+// ── PENDIENTES EN PANTALLA PRINCIPAL ──────────────────────────
+const PEND_HOME_ESTADOS = ['Radicado','Revisión','Pendiente Comité Técnico','Devuelto','Devuelto por Comité Técnico'];
+const PEND_HOME_PRIO = { 'Radicado': 1, 'Revisión': 2, 'Devuelto': 3, 'Devuelto por Comité Técnico': 4, 'Pendiente Comité Técnico': 5 };
+const PEND_HOME_MAX = 8;
+
+function renderPendientesHome() {
+  const pend = radicaciones
+    .filter(r => PEND_HOME_ESTADOS.includes(r.estado || 'Radicado'))
+    .sort((a, b) => {
+      const pa = PEND_HOME_PRIO[a.estado || 'Radicado'] || 99;
+      const pb = PEND_HOME_PRIO[b.estado || 'Radicado'] || 99;
+      if (pa !== pb) return pa - pb;
+      return (a.fechaRadicacion || '').localeCompare(b.fechaRadicacion || '');
+    });
+
+  const tot = pend.length;
+  const totEl = document.getElementById('pendHomeTot');
+  if (totEl) totEl.textContent = tot
+    ? `${tot} solicitud${tot !== 1 ? 'es' : ''} requieren atención`
+    : '· Todo al día ✅';
+
+  const tbody = document.getElementById('tbodyPendHome');
+  if (!tbody) return;
+
+  if (!pend.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty" style="padding:24px">✅ No hay solicitudes pendientes de revisión</td></tr>';
+    return;
+  }
+
+  const shown = pend.slice(0, PEND_HOME_MAX);
+  tbody.innerHTML = shown.map(r => {
+    const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—';
+    const estado  = r.estado || 'Radicado';
+    return `<tr>
+      <td><div class="num-rad">${esc(r.numero || '')}</div></td>
+      <td style="font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(nombres)}">${esc(nombres)}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.5);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(r.modalidad||'')}">${esc(r.modalidad||'—')}</td>
+      <td>${badgeEst(estado)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
+      <td><div class="act">
+        <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
+        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${escAttr(r.numero||'')}','${escAttr(estado)}')">✎ Estado</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  if (tot > PEND_HOME_MAX) {
+    tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;padding:10px">
+      <button class="btn bl" onclick="irTodasRad()" style="font-size:12px">
+        Ver ${tot - PEND_HOME_MAX} solicitud${(tot - PEND_HOME_MAX) !== 1 ? 'es' : ''} más en Radicaciones →
+      </button>
+    </td></tr>`;
+  }
 }
 
 function badgeEst(est) {
