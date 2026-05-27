@@ -48,14 +48,24 @@ function makeRad(overrides = {}) {
 
 // Fetch mock that handles all GAS actions with neutral responses
 function mockFetchDefault() {
-  global.fetch = jest.fn().mockResolvedValue({
-    json: async () => ({
+  global.fetch = jest.fn().mockImplementation(async (_url, opts) => {
+    let body = {};
+    try { body = opts && opts.body ? JSON.parse(opts.body) : {}; } catch (_) {}
+    const act = body.action || '';
+    const payload = {
       success: true,
       radicaciones: [],
       actas: [],
       protocolos: [],
       fase3: [],
-    }),
+      solicitudes: [],
+    };
+    if (act === 'getMisSolicitudesModRad') {
+      return {
+        json: async () => ({ success: true, solicitudes: [] }),
+      };
+    }
+    return { json: async () => payload };
   });
 }
 
