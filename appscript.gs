@@ -2807,10 +2807,10 @@ function obtenerAlertasCriticas() {
         var numRad = String(dataFase2[j][1] || "").trim();
         var emailEst = String(dataFase2[j][2] || "").trim();
         var estFase2 = String(dataFase2[j][8] || "").trim();
-        var fechaCargaF2 = dataFase2[j][5];
-        
+        var fechaCargaF2 = dataFase2[j][4]; // col E (índice 4) = Fecha de Carga
+
         if (estFase2 === "Cargado" && fechaCargaF2) {
-          var diasHabiles = calcularDiasHabiles(fechaCargaF2, new Date());
+          var diasHabiles = calcularDiasHabilesTranscurridos(fechaCargaF2, new Date());
           if (diasHabiles > 8) {
             var diasVencidos = diasHabiles - 8;
             alertas.push({
