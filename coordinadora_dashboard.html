@@ -153,6 +153,16 @@
   .pend-home-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto;max-height:310px;margin-bottom:20px}
   .pend-home-wrap table{min-width:600px;width:100%;border-collapse:collapse}
   .pend-home-wrap thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
+  .dash-shortcuts{margin-bottom:18px;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:6px 12px 12px;background:rgba(255,255,255,.02)}
+  .dash-shortcuts summary{cursor:pointer;font-size:12px;color:rgba(255,255,255,.55);padding:10px 4px;user-select:none;list-style:none}
+  .dash-shortcuts summary::-webkit-details-marker{display:none}
+  .dash-shortcuts[open] summary{margin-bottom:10px;color:rgba(255,255,255,.7)}
+  .home-comite-hint{font-size:12px;color:rgba(252,211,77,.85);margin:0 0 14px;line-height:1.45}
+  .panel-strip{margin-bottom:12px;padding:10px 12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:12px;color:rgba(255,255,255,.78);line-height:1.55}
+  .panel-strip .strip-tip{font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;display:block}
+  .strip-chip{display:inline-block;margin:3px 8px 3px 0;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
+  .strip-chip b{color:#e2e8f0;font-size:13px;margin-right:4px;font-weight:700;font-family:'DM Serif Display',serif}
+
 </style>
 </head>
 <body>
@@ -169,13 +179,16 @@
 </header>
 
 <main>
-    <div class="metrics-caption">Resumen rápido</div>
+    <div class="metrics-caption">Resumen principal</div>
     <div class="metrics">
-    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en Fase 1</div></div>
-    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div><div class="mh">Sin aval de tutor/diplomado aún</div></div>
-    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⏰ Plazo crítico</div><div class="mv" id="mCritico">—</div><div class="mh">Clic: abrir tab Alertas (&gt;60% tiempo de avance sin cierre)</div></div>
+    <div class="mc c1"><div class="ml">Trabajos · Fase 1</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en la hoja principal</div></div>
+    <div class="mc c4"><div class="ml">Tu gestión pendiente</div><div class="mv" id="mPendGestionHero">—</div><div class="mh">Radicación, revisión coord. o devoluciones donde sueles intervenir primero</div></div>
+    <div class="mc c3 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⚠ Alertas · plazo</div><div class="mv" id="mCritico">—</div><div class="mh">&gt;60% plazo sin cierre · pestaña Alertas</div></div>
    </div>
-    <div class="metrics-caption">¿A qué parte del panel ir? · Clic en la tarjeta</div>
+    <div id="homeComiteHint" class="home-comite-hint" style="display:none"></div>
+    <details class="dash-shortcuts">
+      <summary>Ver indicadores por flujo y atajos…</summary>
+    <div class="metrics-caption" style="margin-top:6px">Atajos · Clic en la tarjeta</div>
     <div class="metrics">
     <div class="mc c6 mc-go" id="metricGoAvTutor" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true});}"><div class="ml">Validar tutores</div><div class="mv" id="mAvTutor">—</div><div class="mh">Radicadas sin Diplomado · tab Radicaciones (lista filtrada)</div></div>
     <div class="mc c5 mc-go" id="metricGoAvDip" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'});}"><div class="ml">Aval Diplomado</div><div class="mv" id="mAvDip">—</div><div class="mh">Diplomado en Radicado · tab Radicaciones</div></div>
@@ -188,14 +201,15 @@
     <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto'});}"><div class="ml">Devolución coord.</div><div class="mv" id="mDev">—</div><div class="mh">Devuelto por coordinación · tab Radicaciones</div></div>
     <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}"><div class="ml">En revisión</div><div class="mv" id="mRev">—</div><div class="mh">Estado Revisión · tab Radicaciones</div></div>
    </div>
+    </details>
 
     <!-- ── SECCIÓN: POR MODALIDAD ─────────────────────────── -->
-    <div class="metrics-caption">Por Modalidad · Clic para filtrar</div>
+    <div class="metrics-caption">Por modalidad · Clic para filtrar en Radicaciones</div>
     <div id="modGridWrap" class="metrics" style="min-height:64px"></div>
 
     <!-- ── SECCIÓN: PENDIENTES DE REVISIÓN ────────────────── -->
     <div class="pend-home-hdr">
-      <span class="ph-title">🔔 Pendientes de revisión</span>
+      <span class="ph-title">🔔 Tu escritorio (Radicación / revisión)</span>
       <span class="ph-count" id="pendHomeTot"></span>
       <button class="btn bl" style="margin-left:auto;font-size:11px;padding:3px 10px" onclick="irTodasRad()">Ver todas en Radicaciones →</button>
     </div>
@@ -225,6 +239,7 @@
 
   <!-- PANEL RADICACIONES -->
   <div class="panel on" id="pan-rad">
+    <div id="stripRad" class="panel-strip" aria-live="polite"><span style="opacity:.55">Resumen Radicaciones…</span></div>
     <div class="filters">
       <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="limpiarFiltroMetrica();renderTabla()">
       <select id="fEstRad" onchange="limpiarFiltroMetrica();renderTabla()">
@@ -258,6 +273,7 @@
 
   <!-- PANEL ACTAS -->
   <div class="panel" id="pan-actas">
+    <div id="stripActas" class="panel-strip" aria-live="polite"><span style="opacity:.55">Abre la pestaña para cargar estadísticas de actas.</span></div>
     <div class="filters">
       <input id="searchActas" placeholder="🔍 Buscar por número, estudiante..." oninput="renderActas()">
       <select id="fEstActas" onchange="renderActas()">
@@ -282,6 +298,7 @@
   </div>
  <!-- PANEL TUTORES -->
   <div class="panel" id="pan-tutores">
+    <div id="stripTutores" class="panel-strip" aria-live="polite"><span style="opacity:.55">Abre la pestaña para cargar estadísticas de tutores.</span></div>
     <div class="filters">
       <input id="searchTutores" placeholder="🔍 Buscar tutor..." oninput="renderTutores()">
       <select id="fEstadoTutor" onchange="renderTutores()">
@@ -358,6 +375,7 @@
 
   <!-- PANEL PROTOCOLO -->
   <div class="panel" id="pan-protocolo">
+    <div id="stripProtocolo" class="panel-strip" aria-live="polite"><span style="opacity:.55">Abre la pestaña para cargar estadísticas.</span></div>
     <div class="filters">
       <input id="searchProtocolo" placeholder="🔍 Buscar por número, estudiante..." oninput="renderProtocolo()">
       <select id="fEstProtocolo" onchange="renderProtocolo()">
@@ -464,7 +482,7 @@
   </div>
   <!-- PANEL SEGUIMIENTO -->
   <div class="panel" id="pan-seguimiento">
-    <div class="seg-help">En <strong>Seguimiento</strong> verás fechas, quién registró cada acción y el detalle cuando el sistema lo guardó. Arriba aparecen <strong>tutores</strong> (o declaración diplomado), <strong>jurados de Fase 3</strong> si ya existen y un listado de <strong>devoluciones/rechazos</strong>; en la línea de tiempo, la tarjeta repetida de estado se simplificó para no llenar la pantalla.</div>
+    <div class="seg-help">Busca un trabajo y revisa la línea de tiempo: en cada evento verás <strong>módulo</strong>, <strong>fecha</strong>, <strong>responsable</strong> y un <strong>detalle estructurado</strong> (decisión del comité, evaluador, fecha de sesión, motivos, etc.) cuando el sistema los haya registrado. Los nuevos movimientos guardan más datos; los antiguos pueden mostrar solo texto breve.</div>
     <div class="filters">
       <input id="searchSeguimiento" placeholder="🔍 Buscar trabajo: radicación, título, estudiante o correo..." oninput="prepararBusquedaSeguimiento()" onkeydown="if(event.key==='Enter') cargarSeguimiento()">
       <select id="fFaseSeg" onchange="renderSeguimiento()">
@@ -495,6 +513,7 @@
   </div>
  <!-- PANEL COMITÉ TÉCNICO -->
   <div class="panel" id="pan-comite">
+    <div id="stripComite" class="panel-strip" aria-live="polite"></div>
     <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
     <a href="comite_tecnico.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:14px;text-decoration:none;color:#fff;transition:background .2s" onmouseover="this.style.background='rgba(102,126,234,.2)'" onmouseout="this.style.background='rgba(102,126,234,.1)'">
       <span style="font-size:32px">📅</span>
@@ -508,6 +527,7 @@
 
   <!-- PANEL SUSTENTACIÓN -->
   <div class="panel" id="pan-fase3">
+    <div id="stripFase3" class="panel-strip" aria-live="polite"></div>
     <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">🎓 Sustentación</h2>
     <a href="coordinadora_fase3.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.3);border-radius:14px;text-decoration:none;color:#fff;transition:background .2s" onmouseover="this.style.background='rgba(5,150,105,.2)'" onmouseout="this.style.background='rgba(5,150,105,.1)'">
       <span style="font-size:32px">🎓</span>
@@ -817,6 +837,8 @@ function switchPanel(name, btn) {
       renderFiltros();
     })();
   }
+  var stripTabs = { rad: 'rad', actas: 'actas', tutores: 'tutores', protocolo: 'protocolo', comite: 'comite', fase3: 'fase3' };
+  if (stripTabs[name]) refreshPanelStrips(stripTabs[name]);
 }
 
 function setSyncState(s) {
@@ -918,6 +940,120 @@ function irMetricaRuta(pan, opts) {
   renderTabla();
 }
 
+// Escritorio coord. (sin filas que sólo esperan al Comité Técnico)
+const PEND_COORD_ESTADOS = ['Radicado', 'Revisión', 'Devuelto', 'Devuelto por Comité Técnico'];
+const PEND_COORD_PRIO = { Radicado: 1, Revisión: 2, Devuelto: 3, 'Devuelto por Comité Técnico': 4 };
+const PEND_HOME_MAX = 8;
+
+function stripChipHtml(label, value) {
+  return '<span class="strip-chip"><span style="opacity:.72">' + esc(label) + '</span> <b>' + esc(String(value)) + '</b></span>';
+}
+
+function cuentaRadPendGestCoord() {
+  return radicaciones.filter(function(r) { return PEND_COORD_ESTADOS.includes(r.estado || 'Radicado'); }).length;
+}
+
+function refreshPanelStrips(which) {
+  function setInner(id, html) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  }
+  if (!which || which === 'rad') {
+    var sr = '';
+    sr += stripChipHtml('Fase 1 cargados', radicaciones.length);
+    sr += stripChipHtml('Tu gestión pendiente', cuentaRadPendGestCoord());
+    var nm = {};
+    radicaciones.forEach(function(r) {
+      var e = r.estado || 'Radicado';
+      nm[e] = (nm[e] || 0) + 1;
+    });
+    ['Radicado', 'Revisión', 'Devuelto', 'Devuelto por Comité Técnico'].forEach(function(st) {
+      if (nm[st]) sr += stripChipHtml(st, nm[st]);
+    });
+    var pc = (nm['Pendiente Comité Técnico'] || 0) + (nm['Pendiente Comité'] || 0);
+    if (pc) sr += stripChipHtml('Solo esperando CT', pc);
+    sr += '<span class="strip-tip">Totales globales; filtros de abajo acotan la tabla.</span>';
+    setInner('stripRad', sr);
+  }
+  if (!which || which === 'actas') {
+    var elA = document.getElementById('stripActas');
+    if (!elA) {}
+    else if (!actas.length) {
+      elA.innerHTML = '<span style="opacity:.55">Abre esta pestaña para cargar actas.</span>';
+    } else {
+      var pr = actas.filter(function(a) { return a.estado === 'Pendiente revisión'; }).length;
+      var sf = actas.filter(function(a) { return a.estado === 'Solicitud Fase 2'; }).length;
+      var ap = actas.filter(function(a) { return a.estado === 'Aprobada'; }).length;
+      var rc = actas.filter(function(a) { return a.estado === 'Rechazada'; }).length;
+      var htmlA = stripChipHtml('Total actas', actas.length) + stripChipHtml('Pend. tu revisión', pr);
+      htmlA += stripChipHtml('Solicitud Fase 2', sf) + stripChipHtml('Aprobadas', ap) + stripChipHtml('Rechazadas', rc);
+      htmlA += '<span class="strip-tip">Resumen de todo lo cargado de actas.</span>';
+      elA.innerHTML = htmlA;
+    }
+  }
+  if (!which || which === 'tutores') {
+    var elT = document.getElementById('stripTutores');
+    if (!elT) {}
+    else if (!tutores.length) {
+      elT.innerHTML = '<span style="opacity:.55">Abre esta pestaña para cargar tutores.</span>';
+    } else {
+      var sumT = 0, radR = 0, fase2 = 0, apr = 0, pend = 0;
+      tutores.forEach(function(tc) {
+        sumT += Number(tc.totalTrabajos || 0);
+        radR += Number(tc.enRadicacion || 0);
+        fase2 += Number(tc.enFase2 || 0);
+        apr += Number(tc.aprobados || 0);
+        pend += Number(tc.pendientes || 0);
+      });
+      var htmlT = stripChipHtml('Registros tutores', tutores.length) + stripChipHtml('Trabajos reportados', sumT);
+      htmlT += stripChipHtml('En radicación', radR) + stripChipHtml('En Fase 2', fase2) + stripChipHtml('Pendientes', pend) + stripChipHtml('Aprobados', apr);
+      htmlT += '<span class="strip-tip">Puede haber deduplicación al unir nombres.</span>';
+      elT.innerHTML = htmlT;
+    }
+  }
+  if (!which || which === 'protocolo') {
+    var elP = document.getElementById('stripProtocolo');
+    if (!elP) {}
+    else if (!protocolos.length) {
+      elP.innerHTML = '<span style="opacity:.55">Abre esta pestaña para protocolos Fase 2.</span>';
+    } else {
+      var by = {};
+      protocolos.forEach(function(z) {
+        var e = z.estado || '—';
+        by[e] = (by[e] || 0) + 1;
+      });
+      var pendEnv = (by.Cargado || 0) + (by.Enviado || 0);
+      var htmlP = stripChipHtml('Total protocolos', protocolos.length) + stripChipHtml('Pend. aval / envío', pendEnv);
+      Object.keys(by).sort().forEach(function(k) {
+        if (by[k]) htmlP += stripChipHtml(k, by[k]);
+      });
+      htmlP += '<span class="strip-tip">Enlazamos con radicación por N° o correo.</span>';
+      elP.innerHTML = htmlP;
+    }
+  }
+  if (!which || which === 'comite') {
+    var nct = radicaciones.filter(function(r) {
+      var e = r.estado || '';
+      return e === 'Pendiente Comité' || e === 'Pendiente Comité Técnico';
+    }).length;
+    var nd = radicaciones.filter(function(r) { return (r.estado || '') === 'Devuelto por Comité Técnico'; }).length;
+    var na = radicaciones.filter(function(r) { return (r.estado || '') === 'Aprobado'; }).length;
+    setInner('stripComite',
+      stripChipHtml('Rad. esperando CT', nct) + stripChipHtml('Dev. CT (corregir)', nd) + stripChipHtml('Aprobadas comité', na) +
+      '<span class="strip-tip">Este enlace lleva a la agenda del CT.</span>');
+  }
+  if (!which || which === 'fase3') {
+    var nf = radicaciones.filter(function(r) {
+      var el = String(r.estado || '').toLowerCase();
+      return el.indexOf('sustentado') !== -1 || el.indexOf('reprobado') !== -1 || el.indexOf('fase 3') !== -1 || el.indexOf('sustentaci') !== -1;
+    }).length;
+    var conSol = radicaciones.filter(function(r) { return String(r.sustentacionEstado || '').trim(); }).length;
+    setInner('stripFase3',
+      stripChipHtml('En cierre / Fase 3 (~)', nf) + stripChipHtml('Con dato solicitud/jur.', conSol) +
+      '<span class="strip-tip">Figuras y devoluciones también en Seguimiento.</span>');
+  }
+}
+
 // ── RADICACIONES ─────────────────────────────────────────────
 async function cargar() {
   setSyncState('loading');
@@ -990,6 +1126,7 @@ function actualizarMetricas() {
   }
 
   setTxt('mTot', s.total);
+  setTxt('mPendGestionHero', cuentaRadPendGestCoord());
   setTxt('mRad', s.radicado);
   setTxt('mCritico', s.critico);
   setTxt('mAvTutor', s.avTutor);
@@ -1019,9 +1156,25 @@ function actualizarMetricas() {
   dimCard('mDev', s.devCoord);
   dimCard('mRev', s.revision);
 
-  // Secciones nuevas en pantalla principal
+  var hintEl = document.getElementById('homeComiteHint');
+  if (hintEl) {
+    if (s.pendienteComite > 0) {
+      hintEl.style.display = '';
+      hintEl.innerHTML = 'Hay <strong>' + s.pendienteComite + '</strong> trabajo(s) en <strong>Pendiente Comité Técnico</strong> '
+        + '(el siguiente actor es el comité; no entran en tu escritorio de acción). '
+        + '<button type="button" class="btn bl" style="margin-top:8px;font-size:11px" onclick="'
+        + "var b=document.getElementById('tabComite');if(b)switchPanel('comite',b);"
+        + '">Ir a pestaña Comité →</button>';
+    } else {
+      hintEl.style.display = 'none';
+      hintEl.innerHTML = '';
+    }
+  }
   renderModalidadGrid();
   renderPendientesHome();
+  refreshPanelStrips('rad');
+  refreshPanelStrips('comite');
+  refreshPanelStrips('fase3');
 }
 function poblarFiltroMod() {
   const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
@@ -1084,17 +1237,14 @@ function irTodasRad() {
   renderTabla();
 }
 
-// ── PENDIENTES EN PANTALLA PRINCIPAL ──────────────────────────
-const PEND_HOME_ESTADOS = ['Radicado','Revisión','Pendiente Comité Técnico','Devuelto','Devuelto por Comité Técnico'];
-const PEND_HOME_PRIO = { 'Radicado': 1, 'Revisión': 2, 'Devuelto': 3, 'Devuelto por Comité Técnico': 4, 'Pendiente Comité Técnico': 5 };
-const PEND_HOME_MAX = 8;
+// ── Escritorio coord. (usa PEND_COORD_* cerca de cargar) ──────────────────────────
 
 function renderPendientesHome() {
   const pend = radicaciones
-    .filter(r => PEND_HOME_ESTADOS.includes(r.estado || 'Radicado'))
+    .filter(r => PEND_COORD_ESTADOS.includes(r.estado || 'Radicado'))
     .sort((a, b) => {
-      const pa = PEND_HOME_PRIO[a.estado || 'Radicado'] || 99;
-      const pb = PEND_HOME_PRIO[b.estado || 'Radicado'] || 99;
+      const pa = PEND_COORD_PRIO[a.estado || 'Radicado'] || 99;
+      const pb = PEND_COORD_PRIO[b.estado || 'Radicado'] || 99;
       if (pa !== pb) return pa - pb;
       return (a.fechaRadicacion || '').localeCompare(b.fechaRadicacion || '');
     });
@@ -1102,14 +1252,14 @@ function renderPendientesHome() {
   const tot = pend.length;
   const totEl = document.getElementById('pendHomeTot');
   if (totEl) totEl.textContent = tot
-    ? `${tot} solicitud${tot !== 1 ? 'es' : ''} requieren atención`
-    : '· Todo al día ✅';
+    ? `${tot} ítem(s) donde corresponde tu gestión (no incluye sólo “Pendiente CT”)`
+    : '· Nada urgente en estos estados por tu lado ✅';
 
   const tbody = document.getElementById('tbodyPendHome');
   if (!tbody) return;
 
   if (!pend.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty" style="padding:24px">✅ No hay solicitudes pendientes de revisión</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty" style="padding:24px">✅ No hay registros en Radicado, Revisión, Devuelto ni Dev. CT que requieran tu gestión aquí</td></tr>';
     return;
   }
 
@@ -1342,7 +1492,7 @@ function renderActas() {
     return (!q || txt.includes(q)) && (!fE || a.estado === fE);
   });
   const tbody = document.getElementById('tbodyActas');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin actas que coincidan.</td></tr>'; return; }
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin actas que coincidan.</td></tr>'; refreshPanelStrips('actas'); return; }
 
   tbody.innerHTML = filtered.map(a => {
     const badgeActa = {
@@ -1378,6 +1528,7 @@ const esPendiente = a.estado === 'Pendiente revisión' && !esSolicitud;
       </div></td>
     </tr>`;
   }).join('');
+  refreshPanelStrips('actas');
 }
 
 function abrirModalActa(ri, email, accion, numero, archivo) {
@@ -1635,7 +1786,7 @@ function renderTutores() {
     return (!q || txt.includes(q)) && (!fE || t.estado === fE);
   });
   const tbody = document.getElementById('tbodyTutores');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin tutores.</td></tr>'; return; }
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin tutores.</td></tr>'; refreshPanelStrips('tutores'); return; }
   tbody.innerHTML = filtered.map(t => `<tr>
     <td style="font-weight:600">
       ${esc(t.nombre||'—')}
@@ -1951,7 +2102,7 @@ function renderProtocolo() {
     return (!q || txt.includes(q)) && (!fE || p.estado === fE);
   });
   const tbody = document.getElementById('tbodyProtocolo');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos.</td></tr>'; return; }
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos.</td></tr>'; refreshPanelStrips('protocolo'); return; }
   tbody.innerHTML = filtered.map(p => {
     const estadoBadge = {
       'Cargado':'b-radicado','Enviado':'b-radicado','Revisado':'b-revisado','En Solicitud':'b-ensolicitud',
@@ -1978,6 +2129,7 @@ function renderProtocolo() {
       </div></td>
     </tr>`;
   }).join('');
+  refreshPanelStrips('protocolo');
 }
  let protocoloActual = null;
 
@@ -2262,6 +2414,74 @@ function renderSeguimiento() {
   }).join('');
 }
 
+
+function bloqueCardSustentacionRadSeg(rad) {
+  var est = String(rad.sustentacionEstado || '').trim();
+  var j1 = String(rad.f3Jurado1Nombre || '').trim();
+  var j2 = String(rad.f3Jurado2Nombre || '').trim();
+  if (!est && !j1 && !j2 && !rad.f3FechaSustentacion && !rad.f3FechaAsignada) return '';
+  return '<div class="seg-card"><div class="k">Estado solicitud sustentación</div><div class="v">' + esc(est || 'Sin registro') + '</div></div>'
+    + '<div class="seg-card"><div class="k">Jurado sustentación 1</div><div class="v" style="font-weight:500;font-size:12px;line-height:1.35">' + esc(j1 || '—')
+    + (rad.f3Jurado1Email ? '<div class="seg-sub">' + esc(rad.f3Jurado1Email) + '</div>' : '') + '</div></div>'
+    + '<div class="seg-card"><div class="k">Jurado sustentación 2</div><div class="v" style="font-weight:500;font-size:12px;line-height:1.35">' + esc(j2 || '—')
+    + (rad.f3Jurado2Email ? '<div class="seg-sub">' + esc(rad.f3Jurado2Email) + '</div>' : '') + '</div></div>'
+    + '<div class="seg-card"><div class="k">Fecha sustentación</div><div class="v">' + esc(fmtFecha(rad.f3FechaSustentacion) || '—') + '</div></div>'
+    + '<div class="seg-card"><div class="k">Fecha asignación</div><div class="v">' + esc(fmtFecha(rad.f3FechaAsignada) || '—') + '</div></div>';
+}
+
+function eventoEsDevolucionSeg(s) {
+  var acc = String(s.accion || '').toUpperCase();
+  if (acc !== 'ACTUALIZAR_ESTADO') return false;
+  var det = String(s.detalle || '');
+  return /→\s*Devuelto/i.test(det) || /Devuelto\s+por/i.test(det);
+}
+
+function htmlListaDevolucionesSeg(registrosAsc) {
+  var devs = registrosAsc.filter(eventoEsDevolucionSeg);
+  if (!devs.length) return '';
+  var items = devs.map(function(ev) {
+    return '<div class="seg-event" style="margin-bottom:8px;background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.22)">' +
+      '<div class="date">' + esc(fmtFechaHoraSeguimiento(ev.timestamp)) + ' · ' + esc(ev.email || '—') + '</div>' +
+      '<div class="detail" style="margin-top:6px">' + htmlDetalleSeguimientoCell(ev) + '</div></div>';
+  }).join('');
+  return '<div class="timeline-title" style="margin-top:4px;color:#fca5a5">Devoluciones · cuándo y motivo (detalle)</div><div>' + items + '</div>';
+}
+
+function htmlFigurasAcademicasSeg(rad) {
+  if (!rad) {
+    return '<div class="seg-help">Busca por número de radicación para enlazar tutor, diplomado y jurados de sustentación.</div>';
+  }
+  if (esModalidadDiplomadoDash(rad)) {
+    var modo = String(rad.diplomadoJuradoModo || '').trim().toLowerCase();
+    var modoLabel = modo === 'cttg_asigna' ? 'Comité CTTG asigna evaluador' : modo === 'tutor_sugiere' ? 'Tutor sugirió jurado' : (modo || '—');
+    var jTxt;
+    if (modo === 'cttg_asigna') jTxt = 'El Comité CTTG asignará evaluador.';
+    else {
+      var bits = [];
+      if (rad.dipJurado1Nombre) bits.push('J1: ' + rad.dipJurado1Nombre + (rad.dipJurado1Email ? ' · ' + rad.dipJurado1Email : ''));
+      if (rad.dipJurado2Nombre) bits.push('J2: ' + rad.dipJurado2Nombre + (rad.dipJurado2Email ? ' · ' + rad.dipJurado2Email : ''));
+      if (rad.dipJurado3Nombre) bits.push('J3: ' + rad.dipJurado3Nombre + (rad.dipJurado3Email ? ' · ' + rad.dipJurado3Email : ''));
+      jTxt = bits.length ? bits.join(String.fromCharCode(10)) : '—';
+    }
+    return '<div class="timeline-title">Figuras · Diplomado</div><div class="seg-grid">'
+      + '<div class="seg-card"><div class="k">Tutores clásicos</div><div class="v">No aplica</div></div>'
+      + '<div class="seg-card"><div class="k">Esquema jurado</div><div class="v">' + esc(modoLabel) + '</div></div>'
+      + '<div class="seg-card"><div class="k">Evaluadores</div><div class="v" style="font-weight:500;font-size:12px;line-height:1.4;white-space:pre-wrap">' + esc(jTxt) + '</div></div>'
+      + bloqueCardSustentacionRadSeg(rad)
+      + '</div>';
+  }
+  var t1 = rad.tutor1Nombre ? rad.tutor1Nombre + (rad.tutor1Relacion ? ' (' + rad.tutor1Relacion + ')' : '') : '';
+  var t2 = rad.tutor2Nombre ? rad.tutor2Nombre + (rad.tutor2Relacion ? ' (' + rad.tutor2Relacion + ')' : '') : '';
+  return '<div class="timeline-title">Figuras · Tutoría y sustentación</div><div class="seg-grid">'
+    + '<div class="seg-card"><div class="k">Tutor 1</div><div class="v" style="font-weight:500;font-size:12px">' + esc(t1 || '—')
+    + (rad.tutor1Email ? '<div class="seg-sub">' + esc(rad.tutor1Email) + '</div>' : '') + '</div></div>'
+    + '<div class="seg-card"><div class="k">Tutor 2</div><div class="v" style="font-weight:500;font-size:12px">' + esc(t2 || '—')
+    + (rad.tutor2Email ? '<div class="seg-sub">' + esc(rad.tutor2Email) + '</div>' : '') + '</div></div>'
+    + bloqueCardSustentacionRadSeg(rad)
+    + '</div>';
+}
+
+
 function renderResumenTimeline(registros) {
   const box = document.getElementById('timelineResumen');
   const numeroBuscado = (document.getElementById('searchSeguimiento').value || '').trim().toUpperCase();
@@ -2314,13 +2534,12 @@ function renderResumenTimeline(registros) {
       <div class="what">${esc(hito.texto)}</div>
       <div class="seg-event-body">${cuerpoDet}</div>
       <div class="detail">Quién registró (cuenta): ${esc(r.email || '—')}</div>
-      <div class="state">Estado global del trabajo en Fase 1: ${esc(estadoVisible)}</div>
     </div>`;
   }).join('') : `<div class="seg-event">
       <div class="date">Sin fecha registrada</div>
       <div class="what">Trabajo encontrado</div>
-      <div class="detail">No hay movimientos de trazabilidad guardados para esta radicación, pero el estado actual del trabajo está disponible.</div>
-      <div class="state">Estado global del trabajo en Fase 1: ${esc(estadoVisible)}</div>
+      <div class="detail">No hay movimientos guardados; el estado actual en Fase&nbsp;1 está en las tarjetas superiores.</div>
+      <div class="state">${esc(estadoVisible)} · vigente tras última sincronización</div>
     </div>`;
   const rows = orden.map(function(step, i){
     const donePorRegistro = step.keys.some(k => acciones.indexOf(k) !== -1);
@@ -2518,7 +2737,15 @@ function describirHitoSeguimiento(s) {
   if (accion === 'UPDATE_FASE3_ESTADO') return { texto: 'Fase 3: actualización de estado de la solicitud', clase: 'b-comite' };
   if (accion === 'ASIGNAR_JURADOS') return { texto: 'Sustentación: fecha, lugar y jurados asignados', clase: 'b-aprobado' };
   if (accion === 'COMPLETAR_FASE3') return { texto: 'Sustentación cerrada (resultado final)', clase: 'b-aprobado' };
-  if (accion === 'ACTUALIZAR_ESTADO') return { texto: 'Cambio de estado en Fase 1', clase: 'b-revision' };
+  if (accion === 'ACTUALIZAR_ESTADO') {
+    var parts = partesDetalleSeguimiento(s.detalle);
+    var flecha = parts.find(function(p) { return /→/.test(p); }) || '';
+    var motivoPart = parts.find(function(p) { return /^Motivo\/notas/i.test(p); }) || '';
+    var extra = flecha ? flecha.trim() : (motivoPart ? motivoPart : '');
+    var txtBase = extra ? ('Fase 1 · ' + extra.slice(0, 220)) : 'Cambio de estado en Fase 1';
+    var cls = (/Devuelto/i.test(txtBase)) ? 'b-devuelto' : 'b-revision';
+    return { texto: txtBase.length > 120 ? txtBase.slice(0, 117) + '…' : txtBase, clase: cls };
+  }
   if (accion === 'LOGIN') return { texto: 'Ingreso al sistema', clase: 'b-pend' };
   if (accion === 'LOGIN_FAIL') return { texto: 'Intento de ingreso fallido', clase: 'b-devuelto' };
   if (modulo === 'SISTEMA' || accion === 'ERROR') return { texto: 'Evento de sistema / error', clase: 'b-devuelto' };
