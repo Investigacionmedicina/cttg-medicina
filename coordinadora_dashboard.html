@@ -438,8 +438,15 @@
 
         <!-- Si requiere comité -->
         <div id="seccionComite" style="display:none">
+          <div class="mfg" style="margin-bottom:18px">
+            <label>Evaluador sugerido por el estudiante</label>
+            <div id="pEvalSugeridoContenido" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.22);border-radius:10px;padding:12px 14px;font-size:13px;color:rgba(255,255,255,.82)">
+              —
+            </div>
+          </div>
           <div class="mfg">
-            <label>Evaluador Asignado *</label>
+            <label>Evaluador asignado por coordinación *</label>
+            <div style="font-size:11px;color:rgba(255,255,255,.4);margin:-2px 0 6px">Puede ser la misma persona que figuró como sugerencia u otra de la lista (o la opción «Sugerencia del estudiante» si no está en el catálogo).</div>
             <select id="pEvaluador" onchange="cargarEmailEval()">
               <option value="">— Selecciona evaluador —</option>
             </select>
@@ -2174,26 +2181,76 @@ function renderProtocolo() {
 }
  let protocoloActual = null;
 
+function primeraSugerenciaEvaluadorRadicacion(p) {
+  if (!p || !p.esDiplomado) return null;
+  const modo = String(p.diplomadoJuradoModo || '').toLowerCase();
+  if (modo === 'cttg_asigna') return null;
+  const jur = p.juradosSugeridosDiplomado;
+  if (!Array.isArray(jur) || jur.length === 0) return null;
+  const j0 = jur[0];
+  if (!j0 || (!String(j0.nombre || '').trim() && !String(j0.email || '').trim())) return null;
+  return {
+    nombre: String(j0.nombre || '').trim(),
+    email: String(j0.email || '').trim(),
+    telefono: String(j0.telefono || '').trim(),
+    especialidad: String(j0.especialidad || '').trim(),
+    aceptaPropuesta: String(j0.aceptaPropuesta || '').trim()
+  };
+}
+
+function rellenarBloqueEvaluadorSugerido(p) {
+  const el = document.getElementById('pEvalSugeridoContenido');
+  if (!el || !p) return;
+  if (p.esDiplomado) {
+    const modo = String(p.diplomadoJuradoModo || '').toLowerCase();
+    if (modo === 'cttg_asigna') {
+      el.innerHTML = '<p style="margin:0;line-height:1.55;color:rgba(255,255,255,.78)">El estudiante eligió que el <strong>Comité Técnico de Trabajos de Grado</strong> asigne el evaluador; <strong>no registró jurado sugerido</strong>. Asigne evaluador y fecha en los campos de abajo.</p>';
+      return;
+    }
+    const jur = p.juradosSugeridosDiplomado || [];
+    if (jur.length === 0) {
+      el.innerHTML = '<p style="margin:0;color:rgba(252,211,77,.85)">No hay datos de jurado sugerido en la radicación.</p>';
+      return;
+    }
+    const j0 = jur[0];
+    let html = '<div style="line-height:1.55;color:rgba(255,255,255,.9)">';
+    html += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.4);margin-bottom:6px">Sugerencia en radicación (tutor / estudiante)</div>';
+    html += '<strong style="color:#c4b5fd">' + esc(j0.nombre || '—') + '</strong>';
+    if (j0.especialidad) html += '<br><span style="color:rgba(255,255,255,.48)">Especialidad o área:</span> ' + esc(j0.especialidad);
+    if (j0.email) html += '<br><span style="color:rgba(255,255,255,.48)">Correo:</span> ' + esc(j0.email);
+    if (j0.telefono) html += '<br><span style="color:rgba(255,255,255,.48)">Teléfono:</span> ' + esc(j0.telefono);
+    if (j0.aceptaPropuesta) html += '<br><span style="color:rgba(255,255,255,.48)">Aceptación ante propuesta:</span> ' + esc(j0.aceptaPropuesta);
+    html += '</div>';
+    if (jur.length > 1) {
+      html += '<p style="margin:10px 0 0;font-size:12px;color:rgba(255,255,255,.45)">En radicación constan también <strong>' + (jur.length - 1) + '</strong> jurado(s) adicional(es); para comité cuenta la persona que asigne usted abajo.</p>';
+    }
+    el.innerHTML = html;
+    return;
+  }
+  el.innerHTML = '<p style="margin:0;line-height:1.55;color:rgba(255,255,255,.72)">En modalidades distintas a <strong>Diplomado</strong> no se guarda en la radicación un evaluador sugerido. Use el siguiente campo para indicar quién evaluará en el comité.</p>';
+}
+
+function correoRadicacionPareceValidoCliente(em) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(em || '').trim());
+}
+
 function abrirModalProtocolo(rowIndex, accion, numero) {
   const p = protocolos.find(x => x.rowIndex === rowIndex);
   if (!p) return;
 
-  protocoloActual = { rowIndex, accion, esDiplomado: !!p.esDiplomado };
+  protocoloActual = { rowIndex, accion, esDiplomado: !!p.esDiplomado, protocoloRef: p };
   const nomProt = nombreEstudianteDesdeRad(p);
   const estProtTxt = (nomProt && nomProt !== '—') ? nomProt + ' · ' + (p.emailEstudiante || '') : (p.emailEstudiante || '—');
   aplicarHtmlProtocoloInfo(p, numero, estProtTxt);
 
-  // Pre-llenar decisión
   document.getElementById('pDecision').value = accion === 'aprobar' ? 'aprobar' : 'rechazar';
   document.getElementById('pMotivo').value = '';
   document.getElementById('pObservaciones').value = '';
 
-  // Diplomado: siempre requiere comité, ocultar opción de aprobación directa
   const optNO = document.querySelector('#pRequiereComite option[value="no"]');
   if (optNO) optNO.style.display = p.esDiplomado ? 'none' : '';
   if (p.esDiplomado && accion === 'aprobar') {
     document.getElementById('pRequiereComite').value = 'si';
-    mostrarComite();
   } else {
     document.getElementById('pRequiereComite').value = '';
     document.getElementById('seccionComite').style.display = 'none';
@@ -2202,8 +2259,8 @@ function abrirModalProtocolo(rowIndex, accion, numero) {
   mostrarOpciones();
 
   if (accion === 'aprobar') {
-    cargarEvaluadoresProtocolo();
     cargarFechasComiteProtocolo();
+    mostrarComite();
   }
 
   document.getElementById('modalProtocolo').classList.add('open');
@@ -2217,9 +2274,18 @@ function mostrarOpciones() {
 function mostrarComite() {
   const req = document.getElementById('pRequiereComite').value;
   document.getElementById('seccionComite').style.display = req === 'si' ? 'block' : 'none';
+  if (req === 'si' && protocoloActual && protocoloActual.protocoloRef) {
+    rellenarBloqueEvaluadorSugerido(protocoloActual.protocoloRef);
+    cargarEvaluadoresProtocolo(protocoloActual.protocoloRef);
+  }
 }
 
-function cargarEvaluadoresProtocolo() {
+function cargarEvaluadoresProtocolo(p) {
+  const select = document.getElementById('pEvaluador');
+  select.innerHTML = '<option value="">— Selecciona evaluador —</option>';
+  document.getElementById('pEmailEval').value = '';
+  const sug = primeraSugerenciaEvaluadorRadicacion(p);
+
   fetch(URL_APP, {
     method: 'POST',
     body: JSON.stringify({ action: 'getEvaluadores', token: coordToken() })
@@ -2227,15 +2293,54 @@ function cargarEvaluadoresProtocolo() {
   .then(r => r.json())
   .then(data => {
     if (data.success && data.evaluadores) {
-      const select = document.getElementById('pEvaluador');
-      select.innerHTML = '<option value="">— Selecciona evaluador —</option>';
       data.evaluadores.forEach(ev => {
         const opt = document.createElement('option');
         opt.value = ev.nombre + '|' + ev.email;
-        opt.textContent = ev.nombre + ' (' + ev.especialidad + ')';
+        const esp = ev.especialidad ? String(ev.especialidad).trim() : '';
+        opt.textContent = esp ? ev.nombre + ' (' + esp + ')' : ev.nombre;
         select.appendChild(opt);
       });
     }
+
+    if (sug && sug.nombre && sug.email && correoRadicacionPareceValidoCliente(sug.email)) {
+      const em = sug.email.trim().toLowerCase();
+      const yaEnLista = Array.from(select.options).some(o => {
+        if (!o.value || o.value.indexOf('|') === -1) return false;
+        const mailPart = o.value.split('|').pop();
+        return (mailPart || '').trim().toLowerCase() === em;
+      });
+      if (!yaEnLista) {
+        const opt = document.createElement('option');
+        opt.value = sug.nombre + '|' + sug.email;
+        opt.textContent = 'Sugerencia del estudiante: ' + sug.nombre + ' (' + sug.email + ')';
+        select.insertBefore(opt, select.options[1] || null);
+      }
+    }
+
+    if (sug && sug.email && correoRadicacionPareceValidoCliente(sug.email)) {
+      const em = sug.email.trim().toLowerCase();
+      for (let i = 0; i < select.options.length; i++) {
+        const v = select.options[i].value;
+        if (!v || v.indexOf('|') === -1) continue;
+        const mail = v.split('|').pop().trim().toLowerCase();
+        if (mail === em) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+    } else if (sug && sug.nombre) {
+      const nom = sug.nombre.trim().toLowerCase();
+      for (let i = 0; i < select.options.length; i++) {
+        const v = select.options[i].value;
+        if (!v || v.indexOf('|') === -1) continue;
+        const n = v.split('|')[0].trim().toLowerCase();
+        if (n === nom) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+    }
+    cargarEmailEval();
   })
   .catch(e => console.error('Error cargando evaluadores:', e));
 }
@@ -2263,12 +2368,12 @@ function cargarFechasComiteProtocolo() {
 
 function cargarEmailEval() {
   const sel = document.getElementById('pEvaluador').value;
-  if (sel) {
-    const [nombre, email] = sel.split('|');
-    document.getElementById('pEmailEval').value = email;
-  } else {
+  if (!sel) {
     document.getElementById('pEmailEval').value = '';
+    return;
   }
+  const ix = sel.lastIndexOf('|');
+  document.getElementById('pEmailEval').value = ix >= 0 ? sel.slice(ix + 1).trim() : '';
 }
 
 async function guardarAvaloProtocolo() {
@@ -2307,7 +2412,7 @@ async function guardarAvaloProtocolo() {
     } else if (decision === 'aprobar') {
       if (requiere === 'si') {
         estado = 'Pendiente Comité';
-        evalNombre = evaluador.split('|')[0];
+        evalNombre = evaluador.indexOf('|') === -1 ? evaluador : evaluador.slice(0, evaluador.lastIndexOf('|')).trim();
       } else {
         estado = 'Aprobado Directo';
       }
