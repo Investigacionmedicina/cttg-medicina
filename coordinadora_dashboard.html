@@ -151,18 +151,8 @@
   .ph-title{font-size:11px;color:#fcd34d;text-transform:uppercase;letter-spacing:.75px;font-family:'DM Mono',monospace;font-weight:700}
   .ph-count{font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace}
   .pend-home-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto;max-height:310px;margin-bottom:20px}
-  .pend-home-wrap table{min-width:760px;width:100%;border-collapse:collapse}
+  .pend-home-wrap table{min-width:600px;width:100%;border-collapse:collapse}
   .pend-home-wrap thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
-  .dash-shortcuts{margin-bottom:18px;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:6px 12px 12px;background:rgba(255,255,255,.02)}
-  .dash-shortcuts summary{cursor:pointer;font-size:12px;color:rgba(255,255,255,.55);padding:10px 4px;user-select:none;list-style:none}
-  .dash-shortcuts summary::-webkit-details-marker{display:none}
-  .dash-shortcuts[open] summary{margin-bottom:10px;color:rgba(255,255,255,.7)}
-  .home-comite-hint{font-size:12px;color:rgba(252,211,77,.85);margin:0 0 14px;line-height:1.45}
-  .panel-strip{margin-bottom:12px;padding:10px 12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:12px;color:rgba(255,255,255,.78);line-height:1.55}
-  .panel-strip .strip-tip{font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;display:block}
-  .strip-chip{display:inline-block;margin:3px 8px 3px 0;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
-  .strip-chip b{color:#e2e8f0;font-size:13px;margin-right:4px;font-weight:700;font-family:'DM Serif Display',serif}
-
 </style>
 </head>
 <body>
@@ -179,16 +169,13 @@
 </header>
 
 <main>
-    <div class="metrics-caption">Resumen principal</div>
+    <div class="metrics-caption">Resumen rápido</div>
     <div class="metrics">
-    <div class="mc c1"><div class="ml">Trabajos · Fase 1</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en la hoja principal</div></div>
-    <div class="mc c4"><div class="ml">Pendiente de tu gestión</div><div class="mv" id="mPendGestionHero">—</div><div class="mh">Donde debes responder tú · rad nueva, revisión coord., actas, solicitud F2 o aval de protocolo · no cuenta devolución al estudiante ni «solo CT»</div></div>
-    <div class="mc c3 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⚠ Alertas · plazo</div><div class="mv" id="mCritico">—</div><div class="mh">&gt;60% plazo sin cierre · pestaña Alertas</div></div>
+    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en Fase 1</div></div>
+    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div><div class="mh">Sin aval de tutor/diplomado aún</div></div>
+    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⏰ Plazo crítico</div><div class="mv" id="mCritico">—</div><div class="mh">Clic: abrir tab Alertas (&gt;60% tiempo de avance sin cierre)</div></div>
    </div>
-    <div id="homeComiteHint" class="home-comite-hint" style="display:none"></div>
-    <details class="dash-shortcuts">
-      <summary>Ver indicadores por flujo y atajos…</summary>
-    <div class="metrics-caption" style="margin-top:6px">Atajos · Clic en la tarjeta</div>
+    <div class="metrics-caption">¿A qué parte del panel ir? · Clic en la tarjeta</div>
     <div class="metrics">
     <div class="mc c6 mc-go" id="metricGoAvTutor" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true});}"><div class="ml">Validar tutores</div><div class="mv" id="mAvTutor">—</div><div class="mh">Radicadas sin Diplomado · tab Radicaciones (lista filtrada)</div></div>
     <div class="mc c5 mc-go" id="metricGoAvDip" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'});}"><div class="ml">Aval Diplomado</div><div class="mv" id="mAvDip">—</div><div class="mh">Diplomado en Radicado · tab Radicaciones</div></div>
@@ -201,35 +188,31 @@
     <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto'});}"><div class="ml">Devolución coord.</div><div class="mv" id="mDev">—</div><div class="mh">Devuelto por coordinación · tab Radicaciones</div></div>
     <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}"><div class="ml">En revisión</div><div class="mv" id="mRev">—</div><div class="mh">Estado Revisión · tab Radicaciones</div></div>
    </div>
-    </details>
 
     <!-- ── SECCIÓN: POR MODALIDAD ─────────────────────────── -->
-    <div class="metrics-caption">Por modalidad · Clic para filtrar en Radicaciones</div>
+    <div class="metrics-caption">Por Modalidad · Clic para filtrar</div>
     <div id="modGridWrap" class="metrics" style="min-height:64px"></div>
 
-    <!-- ── SECCIÓN: Pendiente de tu gestión (acciones coordinadora) ────────────────── -->
+    <!-- ── SECCIÓN: PENDIENTES DE REVISIÓN ────────────────── -->
     <div class="pend-home-hdr">
-      <span class="ph-title">📌 Pendiente de tu gestión</span>
+      <span class="ph-title">🔔 Pendientes de revisión</span>
       <span class="ph-count" id="pendHomeTot"></span>
-      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn bl" style="font-size:11px;padding:3px 10px" onclick="irTodasRad()">Radicaciones →</button>
-        <button class="btn bl" style="font-size:11px;padding:3px 10px" onclick="var t=document.getElementById('tabActas');if(t)switchPanel('actas',t);">Actas →</button>
-        <button class="btn bl" style="font-size:11px;padding:3px 10px" onclick="var t=document.getElementById('tabProtocolo');if(t)switchPanel('protocolo',t);">Protocolo →</button>
-      </div>
+      <button class="btn bl" style="margin-left:auto;font-size:11px;padding:3px 10px" onclick="irTodasRad()">Ver todas en Radicaciones →</button>
     </div>
     <div class="pend-home-wrap">
       <table>
         <thead><tr>
-          <th>Tipo</th><th>N° Radicación</th><th>Estudiante(s)</th><th>Detalle</th><th>Estado</th><th>Fecha</th><th>Acción rápida</th>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Modalidad</th><th>Estado</th><th>F. Radicación</th><th>Acción rápida</th>
         </tr></thead>
         <tbody id="tbodyPendHome">
-          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+          <tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
     </div>
 
  <div class="main-tabs">
     <button class="main-tab on" id="tabRad" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
+    <button class="main-tab" id="tabSolModRad" onclick="switchPanel('solmod', this)">✏️ Cambios F1 <span class="badge-count" id="badgeSolModRad" style="display:none">0</span></button>
     <button class="main-tab" id="tabActas" onclick="switchPanel('actas', this)">📄 Actas de Asesoría</button>
     <button class="main-tab" id="tabTutores" onclick="switchPanel('tutores', this)">👨‍🏫 Tutores</button>
     <button class="main-tab" id="tabAlertas" onclick="switchPanel('alertas', this)">🚨 Alertas <span class="badge-count" style="display:none"></span></button>
@@ -243,7 +226,6 @@
 
   <!-- PANEL RADICACIONES -->
   <div class="panel on" id="pan-rad">
-    <div id="stripRad" class="panel-strip" aria-live="polite"><span style="opacity:.55">Resumen Radicaciones…</span></div>
     <div class="filters">
       <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="limpiarFiltroMetrica();renderTabla()">
       <select id="fEstRad" onchange="limpiarFiltroMetrica();renderTabla()">
@@ -275,9 +257,24 @@
     </div>
   </div>
 
+  <div class="panel" id="pan-solmod">
+    <div class="filters">
+      <span class="solicitud-badge">Solicitudes de corrección sobre radicaciones (Fase 1)</span>
+      <button class="btn" onclick="cargar()" style="margin-left:auto">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Fecha</th><th>N° Rad.</th><th>Estudiante</th><th>Estado</th><th>Campos</th><th></th>
+        </tr></thead>
+        <tbody id="tbodySolModRad"><tr><td colspan="6" class="empty">Sincronizando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+
   <!-- PANEL ACTAS -->
   <div class="panel" id="pan-actas">
-    <div id="stripActas" class="panel-strip" aria-live="polite"><span style="opacity:.55">Abre la pestaña para cargar estadísticas de actas.</span></div>
     <div class="filters">
       <input id="searchActas" placeholder="🔍 Buscar por número, estudiante..." oninput="renderActas()">
       <select id="fEstActas" onchange="renderActas()">
@@ -302,7 +299,6 @@
   </div>
  <!-- PANEL TUTORES -->
   <div class="panel" id="pan-tutores">
-    <div id="stripTutores" class="panel-strip" aria-live="polite"><span style="opacity:.55">Abre la pestaña para cargar estadísticas de tutores.</span></div>
     <div class="filters">
       <input id="searchTutores" placeholder="🔍 Buscar tutor..." oninput="renderTutores()">
       <select id="fEstadoTutor" onchange="renderTutores()">
@@ -379,7 +375,6 @@
 
   <!-- PANEL PROTOCOLO -->
   <div class="panel" id="pan-protocolo">
-    <div id="stripProtocolo" class="panel-strip" aria-live="polite"><span style="opacity:.55">Abre la pestaña para cargar estadísticas.</span></div>
     <div class="filters">
       <input id="searchProtocolo" placeholder="🔍 Buscar por número, estudiante..." oninput="renderProtocolo()">
       <select id="fEstProtocolo" onchange="renderProtocolo()">
@@ -517,7 +512,6 @@
   </div>
  <!-- PANEL COMITÉ TÉCNICO -->
   <div class="panel" id="pan-comite">
-    <div id="stripComite" class="panel-strip" aria-live="polite"></div>
     <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
     <a href="comite_tecnico.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:14px;text-decoration:none;color:#fff;transition:background .2s" onmouseover="this.style.background='rgba(102,126,234,.2)'" onmouseout="this.style.background='rgba(102,126,234,.1)'">
       <span style="font-size:32px">📅</span>
@@ -531,7 +525,6 @@
 
   <!-- PANEL SUSTENTACIÓN -->
   <div class="panel" id="pan-fase3">
-    <div id="stripFase3" class="panel-strip" aria-live="polite"></div>
     <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">🎓 Sustentación</h2>
     <a href="coordinadora_fase3.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.3);border-radius:14px;text-decoration:none;color:#fff;transition:background .2s" onmouseover="this.style.background='rgba(5,150,105,.2)'" onmouseout="this.style.background='rgba(5,150,105,.1)'">
       <span style="font-size:32px">🎓</span>
@@ -794,12 +787,31 @@
   </div>
 </div>
 
+<!-- MODAL SOL MOD RAD -->
+<div class="modal-bg" id="modalSolModRad">
+  <div class="modal wide">
+    <div class="modal-hdr">
+      <h3>Resolver cambios radicación</h3>
+      <button type="button" class="btn" onclick="closeModal('modalSolModRad')">✕</button>
+    </div>
+    <div id="modalSolModRadInfo" style="font-size:12px;margin-bottom:12px;color:rgba(255,255,255,.55)"></div>
+    <div class="mfg"><label>Observaciones — obligatorio al devolver</label><textarea id="solModObs"></textarea></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:10px">
+      <button type="button" class="btn rd" onclick="confirmarResolucionSolModRad('devolver')">Devolver</button>
+      <button type="button" class="btn bl" onclick="confirmarResolucionSolModRad('aprobar_directo')">Aplicar hoja</button>
+      <button type="button" class="btn gr" onclick="confirmarResolucionSolModRad('derivar_ct')">Aplicar + Comité técnico</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
-let radicaciones = [], actas = [], protocolos = [], admin = null;
+let radicaciones = [], actas = [], admin = null;
+let solicitudesModRadPendientes = [];
+var solModRadActual = null;
 /** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
 let filtroDashboardMetrica = null;
 let solicitudActual = null;
@@ -830,6 +842,7 @@ function switchPanel(name, btn) {
   else if (name === 'alertas') cargarAlertas();
   else if (name === 'protocolo') cargarProtocolo();
   else if (name === 'seguimiento') cargarSeguimiento();
+  else if (name === 'solmod') renderTablaSolModRad();
   else if (name === 'informes') {
     poblarFiltroTutoresInforme();
     poblarFiltroEstadosInforme();
@@ -841,8 +854,6 @@ function switchPanel(name, btn) {
       renderFiltros();
     })();
   }
-  var stripTabs = { rad: 'rad', actas: 'actas', tutores: 'tutores', protocolo: 'protocolo', comite: 'comite', fase3: 'fase3' };
-  if (stripTabs[name]) refreshPanelStrips(stripTabs[name]);
 }
 
 function setSyncState(s) {
@@ -944,241 +955,18 @@ function irMetricaRuta(pan, opts) {
   renderTabla();
 }
 
-// Escritorio coord.: ítems donde la coordinadora debe actuar (ver también getItemsGestionCoord)
-const GEST_HOME_RAD_ESTADOS = ['Radicado', 'Revisión', 'Devuelto por Comité Técnico'];
-const GEST_HOME_RAD_PRIO = { 'Radicado': 1, 'Revisión': 2, 'Devuelto por Comité Técnico': 3 };
-const PEND_HOME_MAX = 8;
-
-function stripChipHtml(label, value) {
-  return '<span class="strip-chip"><span style="opacity:.72">' + esc(label) + '</span> <b>' + esc(String(value)) + '</b></span>';
-}
-
-function actaRequiereGestionCoord(a) {
-  if (!a) return false;
-  if (a.estado === 'Solicitud Fase 2') return true;
-  if (a.estado === 'Pendiente revisión' && String(a.nombreArchivo || '') !== 'Solicitud activación Fase 2') return true;
-  return false;
-}
-
-function protocoloRequiereGestionCoord(p) {
-  return !!(p && (p.estado === 'Cargado' || p.estado === 'Enviado'));
-}
-
-function badgeGestionEstado(kind, estado) {
-  if (kind === 'rad') return badgeEst(estado);
-  if (kind === 'acta') {
-    var map = { 'Pendiente revisión': 'b-pend', 'Solicitud Fase 2': 'b-solicitud' };
-    var cls = map[estado] || 'b-pend';
-    return '<span class="badge ' + cls + '">' + esc(estado) + '</span>';
-  }
-  return '<span class="badge b-radicado">' + esc(estado) + '</span>';
-}
-
-function getItemsGestionCoord() {
-  var items = [];
-  radicaciones.forEach(function(r) {
-    var estado = r.estado || 'Radicado';
-    if (GEST_HOME_RAD_ESTADOS.indexOf(estado) === -1) return;
-    var nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—';
-    items.push({
-      kind: 'rad',
-      pri: GEST_HOME_RAD_PRIO[estado] || 9,
-      fechaSort: r.fechaRadicacion || '',
-      numero: r.numero,
-      detalle: r.modalidad || '—',
-      estadoLabel: estado,
-      rowIndex: r.rowIndex,
-      nombres: nombres
-    });
-  });
-  actas.forEach(function(a) {
-    if (!actaRequiereGestionCoord(a)) return;
-    var rad = radicaciones.find(function(rr) { return String(rr.numero || '') === String(a.numero || ''); });
-    var nombres = rad ? [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ') || '—' : (a.emailEstudiante || '—');
-    var isSol = a.estado === 'Solicitud Fase 2';
-    items.push({
-      kind: 'acta',
-      pri: 4,
-      fechaSort: a.fechaCarga || '',
-      numero: a.numero,
-      detalle: a.nombreArchivo || 'Acta',
-      estadoLabel: isSol ? 'Solicitud Fase 2' : 'Pendiente revisión',
-      rowIndex: a.rowIndex,
-      nombres: nombres
-    });
-  });
-  protocolos.forEach(function(p) {
-    if (!protocoloRequiereGestionCoord(p)) return;
-    items.push({
-      kind: 'protocolo',
-      pri: 4,
-      fechaSort: p.fechaCarga || '',
-      numero: p.numero,
-      detalle: 'Protocolo (Fase 2)',
-      estadoLabel: p.estado || 'Cargado',
-      rowIndex: p.rowIndex,
-      nombres: nombreEstudianteDesdeRad(p)
-    });
-  });
-  items.sort(function(a, b) {
-    if (a.pri !== b.pri) return a.pri - b.pri;
-    return String(a.fechaSort || '').localeCompare(String(b.fechaSort || ''));
-  });
-  return items;
-}
-
-function contarItemsGestionCoord() {
-  return getItemsGestionCoord().length;
-}
-
-function refreshPanelStrips(which) {
-  function setInner(id, html) {
-    var el = document.getElementById(id);
-    if (el) el.innerHTML = html;
-  }
-  if (!which || which === 'rad') {
-    var sr = '';
-    sr += stripChipHtml('Fase 1 cargados', radicaciones.length);
-    sr += stripChipHtml('Tu gestión pendiente', contarItemsGestionCoord());
-    var nm = {};
-    radicaciones.forEach(function(r) {
-      var e = r.estado || 'Radicado';
-      nm[e] = (nm[e] || 0) + 1;
-    });
-    ['Radicado', 'Revisión', 'Devuelto por Comité Técnico'].forEach(function(st) {
-      if (nm[st]) sr += stripChipHtml(st, nm[st]);
-    });
-    var pc = (nm['Pendiente Comité Técnico'] || 0) + (nm['Pendiente Comité'] || 0);
-    if (pc) sr += stripChipHtml('Solo esperando CT', pc);
-    sr += '<span class="strip-tip">Totales globales; filtros de abajo acotan la tabla.</span>';
-    setInner('stripRad', sr);
-  }
-  if (!which || which === 'actas') {
-    var elA = document.getElementById('stripActas');
-    if (!elA) {}
-    else if (!actas.length) {
-      elA.innerHTML = '<span style="opacity:.55">Abre esta pestaña para cargar actas.</span>';
-    } else {
-      var pr = actas.filter(function(a) { return a.estado === 'Pendiente revisión'; }).length;
-      var sf = actas.filter(function(a) { return a.estado === 'Solicitud Fase 2'; }).length;
-      var ap = actas.filter(function(a) { return a.estado === 'Aprobada'; }).length;
-      var rc = actas.filter(function(a) { return a.estado === 'Rechazada'; }).length;
-      var htmlA = stripChipHtml('Total actas', actas.length) + stripChipHtml('Pend. tu revisión', pr);
-      htmlA += stripChipHtml('Solicitud Fase 2', sf) + stripChipHtml('Aprobadas', ap) + stripChipHtml('Rechazadas', rc);
-      htmlA += '<span class="strip-tip">Resumen de todo lo cargado de actas.</span>';
-      elA.innerHTML = htmlA;
-    }
-  }
-  if (!which || which === 'tutores') {
-    var elT = document.getElementById('stripTutores');
-    if (!elT) {}
-    else if (!tutores.length) {
-      elT.innerHTML = '<span style="opacity:.55">Abre esta pestaña para cargar tutores.</span>';
-    } else {
-      var sumT = 0, radR = 0, fase2 = 0, apr = 0, pend = 0;
-      tutores.forEach(function(tc) {
-        sumT += Number(tc.totalTrabajos || 0);
-        radR += Number(tc.enRadicacion || 0);
-        fase2 += Number(tc.enFase2 || 0);
-        apr += Number(tc.aprobados || 0);
-        pend += Number(tc.pendientes || 0);
-      });
-      var htmlT = stripChipHtml('Registros tutores', tutores.length) + stripChipHtml('Trabajos reportados', sumT);
-      htmlT += stripChipHtml('En radicación', radR) + stripChipHtml('En Fase 2', fase2) + stripChipHtml('Pendientes', pend) + stripChipHtml('Aprobados', apr);
-      htmlT += '<span class="strip-tip">Puede haber deduplicación al unir nombres.</span>';
-      elT.innerHTML = htmlT;
-    }
-  }
-  if (!which || which === 'protocolo') {
-    var elP = document.getElementById('stripProtocolo');
-    if (!elP) {}
-    else if (!protocolos.length) {
-      elP.innerHTML = '<span style="opacity:.55">Abre esta pestaña para protocolos Fase 2.</span>';
-    } else {
-      var by = {};
-      protocolos.forEach(function(z) {
-        var e = z.estado || '—';
-        by[e] = (by[e] || 0) + 1;
-      });
-      var pendEnv = (by.Cargado || 0) + (by.Enviado || 0);
-      var htmlP = stripChipHtml('Total protocolos', protocolos.length) + stripChipHtml('Pend. aval / envío', pendEnv);
-      Object.keys(by).sort().forEach(function(k) {
-        if (by[k]) htmlP += stripChipHtml(k, by[k]);
-      });
-      htmlP += '<span class="strip-tip">Enlazamos con radicación por N° o correo.</span>';
-      elP.innerHTML = htmlP;
-    }
-  }
-  if (!which || which === 'comite') {
-    var nct = radicaciones.filter(function(r) {
-      var e = r.estado || '';
-      return e === 'Pendiente Comité' || e === 'Pendiente Comité Técnico';
-    }).length;
-    var nd = radicaciones.filter(function(r) { return (r.estado || '') === 'Devuelto por Comité Técnico'; }).length;
-    var na = radicaciones.filter(function(r) { return (r.estado || '') === 'Aprobado'; }).length;
-    setInner('stripComite',
-      stripChipHtml('Rad. esperando CT', nct) + stripChipHtml('Dev. CT (corregir)', nd) + stripChipHtml('Aprobadas comité', na) +
-      '<span class="strip-tip">Este enlace lleva a la agenda del CT.</span>');
-  }
-  if (!which || which === 'fase3') {
-    var nf = radicaciones.filter(function(r) {
-      var el = String(r.estado || '').toLowerCase();
-      return el.indexOf('sustentado') !== -1 || el.indexOf('reprobado') !== -1 || el.indexOf('fase 3') !== -1 || el.indexOf('sustentaci') !== -1;
-    }).length;
-    var conSol = radicaciones.filter(function(r) { return String(r.sustentacionEstado || '').trim(); }).length;
-    setInner('stripFase3',
-      stripChipHtml('En cierre / Fase 3 (~)', nf) + stripChipHtml('Con dato solicitud/jur.', conSol) +
-      '<span class="strip-tip">Figuras y devoluciones también en Seguimiento.</span>');
-  }
-}
-
-function updateActasTabBadge() {
-  var pendientes = actas.filter(function(a) {
-    return a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2';
-  }).length;
-  var tabActas = document.getElementById('tabActas');
-  if (!tabActas) return;
-  var existing = tabActas.querySelector('.badge-count');
-  if (existing) existing.remove();
-  if (pendientes > 0) {
-    var span = document.createElement('span');
-    span.className = 'badge-count';
-    span.textContent = pendientes;
-    tabActas.appendChild(span);
-  }
-}
-
-async function cargarAuxiliaresGestión() {
-  try {
-    var pair = await Promise.all([
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: coordToken() }) }),
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: coordToken() }) })
-    ]);
-    var resActas = pair[0], resProt = pair[1];
-    var dActas = await resActas.json();
-    var dProt = await resProt.json();
-    if (dActas.success) {
-      actas = dActas.actas || [];
-      updateActasTabBadge();
-      var panActas = document.getElementById('pan-actas');
-      if (panActas && panActas.classList.contains('on')) renderActas();
-    }
-    if (dProt.success) {
-      protocolos = dProt.protocolos || [];
-      var panProt = document.getElementById('pan-protocolo');
-      if (panProt && panProt.classList.contains('on')) renderProtocolo();
-    }
-  } catch (e) {
-    console.error('cargarAuxiliaresGestión:', e);
-  }
-}
-
 // ── RADICACIONES ─────────────────────────────────────────────
 async function cargar() {
   setSyncState('loading');
   try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1', token: coordToken() }) });
-    const d = await res.json();
+    const [resSol, resF1] = await Promise.all([
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getSolicitudesModRadPendientes', token: coordToken() }) }),
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1', token: coordToken() }) }),
+    ]);
+    const dSol = await resSol.json();
+    const d = await resF1.json();
+    solicitudesModRadPendientes = (dSol.success && Array.isArray(dSol.solicitudes)) ? dSol.solicitudes : [];
+    badgeSolModActualizar();
     if (d.success) {
       radicaciones = (d.radicaciones || []).map(r => ({
         ...r,
@@ -1187,15 +975,91 @@ async function cargar() {
         fechaRadicacion: parsearFecha(r.fechaRadicacion),
         fechaAprobacion: parsearFecha(r.fechaAprobacion)
       }));
-      await cargarAuxiliaresGestión();
      actualizarMetricas();
       contarVencimientos();
       poblarFiltroMod();
       renderTabla();
+      if (document.getElementById('pan-solmod')?.classList.contains('on')) renderTablaSolModRad();
       if (document.getElementById('pan-informes')?.classList.contains('on')) renderInformes();
       setSyncState('ok');
      } else throw new Error(d.error);
   } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
+}
+
+function badgeSolModActualizar() {
+  const b = document.getElementById('badgeSolModRad');
+  const n = (solicitudesModRadPendientes || []).length;
+  if (!b) return;
+  b.textContent = String(n > 99 ? '99+' : n);
+  b.style.display = n > 0 ? 'inline-flex' : 'none';
+}
+
+function renderTablaSolModRad() {
+  const tbody = document.getElementById('tbodySolModRad');
+  if (!tbody) return;
+  const list = solicitudesModRadPendientes || [];
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay solicitudes pendientes.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(function(s, idx) {
+    let keys = '';
+    try { keys = s.cambios && typeof s.cambios === 'object' ? Object.keys(s.cambios).join(', ') : ''; } catch (eK) { keys = ''; }
+    const email = esc(String(s.emailEstudiante||'')).slice(0, 40);
+    return '<tr>'
+      + '<td style="font-size:11px;font-family:DM Mono,monospace">' + esc(String(s.tsCreacion||'')) + '</td>'
+      + '<td class="num-rad">' + esc(s.numero||'') + '</td>'
+      + '<td>' + email + '</td>'
+      + '<td><span class="badge b-solicitud">' + esc(s.estado||'') + '</span></td>'
+      + '<td style="max-width:240px;font-size:11px;word-break:break-word">' + esc(keys.slice(0,220)) + (keys.length>220?'…':'') + '</td>'
+      + '<td><button type="button" class="btn gr" data-solmod-idx="' + idx + '">Revisar</button></td>'
+      + '</tr>';
+  }).join('');
+  tbody.querySelectorAll('button[data-solmod-idx]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const i = parseInt(btn.getAttribute('data-solmod-idx'), 10);
+      abrirModalSolModRad(list[i]);
+    });
+  });
+}
+
+function abrirModalSolModRad(s) {
+  solModRadActual = s;
+  document.getElementById('solModObs').value = '';
+  const info = document.getElementById('modalSolModRadInfo');
+  const parts = [];
+  try {
+    parts.push('<div><strong>Fila solicitud:</strong> ' + esc(String(s.rowSol||'')) + ' · <strong>Fase 1 fila:</strong> ' + esc(String(s.rowFase1||'')) + '</div>');
+    parts.push('<div style="margin-top:10px"><strong>Motivo:</strong><br>' + esc(String(s.motivoEstudiante||'')) + '</div>');
+    if (s.cambios) parts.push('<pre style="margin-top:10px;white-space:pre-wrap;font-size:11px;background:rgba(0,0,0,.2);padding:10px;border-radius:8px;max-height:200px;overflow:auto">' + esc(JSON.stringify(s.cambios,null,2)) + '</pre>');
+  } catch (ez) {}
+  info.innerHTML = parts.join('');
+  document.getElementById('modalSolModRad').classList.add('open');
+}
+
+async function confirmarResolucionSolModRad(decision) {
+  if (!solModRadActual || !solModRadActual.rowSol) { toast('Sin solicitud seleccionada', 'err'); return; }
+  const obs = String(document.getElementById('solModObs').value || '').trim();
+  if (decision === 'devolver' && obs.length < 12) { toast('Indique motivo de devolución (mín. 12 caracteres).', 'warn'); return; }
+  try {
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'resolverSolicitudModRad',
+        token: coordToken(),
+        rowSol: solModRadActual.rowSol,
+        decision: decision,
+        observacionesCoord: obs,
+        emailCoord: (admin && admin.email) || ''
+      })
+    });
+    const out = await res.json();
+    if (!out.success) { toast(out.error || 'No se procesó.', 'err'); return; }
+    toast('Resolución registrada.', 'ok');
+    closeModal('modalSolModRad');
+    solModRadActual = null;
+    await cargar();
+  } catch (eX) { toast('Error: ' + eX.message, 'err'); }
 }
     
 function actualizarMetricas() {
@@ -1246,7 +1110,6 @@ function actualizarMetricas() {
   }
 
   setTxt('mTot', s.total);
-  setTxt('mPendGestionHero', contarItemsGestionCoord());
   setTxt('mRad', s.radicado);
   setTxt('mCritico', s.critico);
   setTxt('mAvTutor', s.avTutor);
@@ -1276,27 +1139,9 @@ function actualizarMetricas() {
   dimCard('mDev', s.devCoord);
   dimCard('mRev', s.revision);
 
-  dimCard('mPendGestionHero', contarItemsGestionCoord());
-
-  var hintEl = document.getElementById('homeComiteHint');
-  if (hintEl) {
-    if (s.pendienteComite > 0) {
-      hintEl.style.display = '';
-      hintEl.innerHTML = 'Hay <strong>' + s.pendienteComite + '</strong> trabajo(s) en <strong>Pendiente Comité Técnico</strong> '
-        + '(el siguiente actor es el comité; no entran en tu escritorio de acción). '
-        + '<button type="button" class="btn bl" style="margin-top:8px;font-size:11px" onclick="'
-        + "var b=document.getElementById('tabComite');if(b)switchPanel('comite',b);"
-        + '">Ir a pestaña Comité →</button>';
-    } else {
-      hintEl.style.display = 'none';
-      hintEl.innerHTML = '';
-    }
-  }
+  // Secciones nuevas en pantalla principal
   renderModalidadGrid();
   renderPendientesHome();
-  refreshPanelStrips('rad');
-  refreshPanelStrips('comite');
-  refreshPanelStrips('fase3');
 }
 function poblarFiltroMod() {
   const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
@@ -1359,50 +1204,58 @@ function irTodasRad() {
   renderTabla();
 }
 
-function renderPendientesHome() {
-  var items = getItemsGestionCoord();
-  var tot = items.length;
-  var totEl = document.getElementById('pendHomeTot');
-  if (totEl) {
-    totEl.textContent = tot
-      ? tot + ' ítem(s) donde debes actuar · rad., actas, solicitud Fase 2 o protocolo'
-      : '· Nada espera tu respuesta ahora ✅';
-  }
+// ── PENDIENTES EN PANTALLA PRINCIPAL ──────────────────────────
+const PEND_HOME_ESTADOS = ['Radicado','Revisión','Pendiente Comité Técnico','Devuelto','Devuelto por Comité Técnico'];
+const PEND_HOME_PRIO = { 'Radicado': 1, 'Revisión': 2, 'Devuelto': 3, 'Devuelto por Comité Técnico': 4, 'Pendiente Comité Técnico': 5 };
+const PEND_HOME_MAX = 8;
 
-  var tbody = document.getElementById('tbodyPendHome');
+function renderPendientesHome() {
+  const pend = radicaciones
+    .filter(r => PEND_HOME_ESTADOS.includes(r.estado || 'Radicado'))
+    .sort((a, b) => {
+      const pa = PEND_HOME_PRIO[a.estado || 'Radicado'] || 99;
+      const pb = PEND_HOME_PRIO[b.estado || 'Radicado'] || 99;
+      if (pa !== pb) return pa - pb;
+      return (a.fechaRadicacion || '').localeCompare(b.fechaRadicacion || '');
+    });
+
+  const tot = pend.length;
+  const totEl = document.getElementById('pendHomeTot');
+  if (totEl) totEl.textContent = tot
+    ? `${tot} solicitud${tot !== 1 ? 'es' : ''} requieren atención`
+    : '· Todo al día ✅';
+
+  const tbody = document.getElementById('tbodyPendHome');
   if (!tbody) return;
 
-  if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty" style="padding:24px">✅ No hay pendientes donde deba responder la coordinadora (ej. «Devuelto» al estudiante o «Pendiente CT» no aparecen aquí).</td></tr>';
+  if (!pend.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty" style="padding:24px">✅ No hay solicitudes pendientes de revisión</td></tr>';
     return;
   }
 
-  var shown = items.slice(0, PEND_HOME_MAX);
-  tbody.innerHTML = shown.map(function(it) {
-    var tipo = it.kind === 'rad' ? '📋 Radicación' : it.kind === 'acta' ? '📄 Acta' : '📖 Protocolo';
-    var acciones = '';
-    if (it.kind === 'rad') {
-      acciones = '<button class="btn bl" onclick="verDetalle(' + it.rowIndex + ')">👁 Ver</button>'
-        + '<button class="btn am" onclick="abrirModalEst(' + it.rowIndex + ',\'' + escAttr(it.numero || '') + '\',\'' + escAttr(it.estadoLabel) + '\')">✎ Estado</button>';
-    } else if (it.kind === 'acta') {
-      acciones = '<button class="btn bl" onclick="var t=document.getElementById(\'tabActas\');if(t)switchPanel(\'actas\',t);">→ Actas</button>';
-    } else {
-      acciones = '<button class="btn bl" onclick="var t=document.getElementById(\'tabProtocolo\');if(t)switchPanel(\'protocolo\',t);">→ Protocolo</button>';
-    }
-    return '<tr>'
-      + '<td style="font-size:11px;color:rgba(255,255,255,.65);white-space:nowrap">' + tipo + '</td>'
-      + '<td><div class="num-rad">' + esc(it.numero || '') + '</div></td>'
-      + '<td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escAttr(it.nombres) + '">' + esc(it.nombres) + '</td>'
-      + '<td style="font-size:11px;color:rgba(255,255,255,.5);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escAttr(it.detalle) + '">' + esc(it.detalle) + '</td>'
-      + '<td>' + badgeGestionEstado(it.kind, it.estadoLabel) + '</td>'
-      + '<td style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,.4)">' + fmtFecha(it.fechaSort) + '</td>'
-      + '<td><div class="act">' + acciones + '</div></td>'
-      + '</tr>';
+  const shown = pend.slice(0, PEND_HOME_MAX);
+  tbody.innerHTML = shown.map(r => {
+    const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—';
+    const estado  = r.estado || 'Radicado';
+    return `<tr>
+      <td><div class="num-rad">${esc(r.numero || '')}</div></td>
+      <td style="font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(nombres)}">${esc(nombres)}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.5);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(r.modalidad||'')}">${esc(r.modalidad||'—')}</td>
+      <td>${badgeEst(estado)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
+      <td><div class="act">
+        <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
+        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${escAttr(r.numero||'')}','${escAttr(estado)}')">✎ Estado</button>
+      </div></td>
+    </tr>`;
   }).join('');
 
   if (tot > PEND_HOME_MAX) {
-    tbody.innerHTML += '<tr><td colspan="7" style="text-align:center;padding:10px"><span style="font-size:12px;color:rgba(255,255,255,.45)">'
-      + 'Hay ' + (tot - PEND_HOME_MAX) + ' ítem(s) más · abre Radicaciones, Actas o Protocolo.</span></td></tr>';
+    tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;padding:10px">
+      <button class="btn bl" onclick="irTodasRad()" style="font-size:12px">
+        Ver ${tot - PEND_HOME_MAX} solicitud${(tot - PEND_HOME_MAX) !== 1 ? 'es' : ''} más en Radicaciones →
+      </button>
+    </td></tr>`;
   }
 }
 
@@ -1557,9 +1410,20 @@ async function cargarActas() {
     const d = await res.json();
     if (!d.success) throw new Error(d.error);
     actas = d.actas || [];
-    updateActasTabBadge();
+
+    // contar pendientes para badge
+    const pendientes = actas.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2').length;
+    const tabActas = document.getElementById('tabActas');
+    const existing = tabActas.querySelector('.badge-count');
+    if (existing) existing.remove();
+    if (pendientes > 0) {
+      const span = document.createElement('span');
+      span.className = 'badge-count';
+      span.textContent = pendientes;
+      tabActas.appendChild(span);
+    }
+
     renderActas();
-    renderPendientesHome();
   } catch(e) {
     tbody.innerHTML = '<tr><td colspan="8" class="empty">Error al cargar actas.</td></tr>';
   }
@@ -1598,7 +1462,7 @@ function renderActas() {
     return (!q || txt.includes(q)) && (!fE || a.estado === fE);
   });
   const tbody = document.getElementById('tbodyActas');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin actas que coincidan.</td></tr>'; refreshPanelStrips('actas'); return; }
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin actas que coincidan.</td></tr>'; return; }
 
   tbody.innerHTML = filtered.map(a => {
     const badgeActa = {
@@ -1634,7 +1498,6 @@ const esPendiente = a.estado === 'Pendiente revisión' && !esSolicitud;
       </div></td>
     </tr>`;
   }).join('');
-  refreshPanelStrips('actas');
 }
 
 function abrirModalActa(ri, email, accion, numero, archivo) {
@@ -1892,7 +1755,7 @@ function renderTutores() {
     return (!q || txt.includes(q)) && (!fE || t.estado === fE);
   });
   const tbody = document.getElementById('tbodyTutores');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin tutores.</td></tr>'; refreshPanelStrips('tutores'); return; }
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin tutores.</td></tr>'; return; }
   tbody.innerHTML = filtered.map(t => `<tr>
     <td style="font-weight:600">
       ${esc(t.nombre||'—')}
@@ -2175,6 +2038,7 @@ function renderAlertas() {
 // ════════════════════════════════════════════════════════════
 // TAB 5: PROTOCOLO FASE 2
 // ════════════════════════════════════════════════════════════
+let protocolos = [];
 async function cargarProtocolo() {
   try {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getFase2', token: coordToken() }) });
@@ -2182,7 +2046,6 @@ async function cargarProtocolo() {
     if (d.success) {
       protocolos = d.protocolos || [];
       renderProtocolo();
-      renderPendientesHome();
     } else throw new Error(d.error);
   } catch(e) { toast('Error cargando protocolos: ' + e.message, 'err'); }
 }
@@ -2208,7 +2071,7 @@ function renderProtocolo() {
     return (!q || txt.includes(q)) && (!fE || p.estado === fE);
   });
   const tbody = document.getElementById('tbodyProtocolo');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos.</td></tr>'; refreshPanelStrips('protocolo'); return; }
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos.</td></tr>'; return; }
   tbody.innerHTML = filtered.map(p => {
     const estadoBadge = {
       'Cargado':'b-radicado','Enviado':'b-radicado','Revisado':'b-revisado','En Solicitud':'b-ensolicitud',
@@ -2235,7 +2098,6 @@ function renderProtocolo() {
       </div></td>
     </tr>`;
   }).join('');
-  refreshPanelStrips('protocolo');
 }
  let protocoloActual = null;
 
@@ -2520,74 +2382,6 @@ function renderSeguimiento() {
   }).join('');
 }
 
-
-function bloqueCardSustentacionRadSeg(rad) {
-  var est = String(rad.sustentacionEstado || '').trim();
-  var j1 = String(rad.f3Jurado1Nombre || '').trim();
-  var j2 = String(rad.f3Jurado2Nombre || '').trim();
-  if (!est && !j1 && !j2 && !rad.f3FechaSustentacion && !rad.f3FechaAsignada) return '';
-  return '<div class="seg-card"><div class="k">Estado solicitud sustentación</div><div class="v">' + esc(est || 'Sin registro') + '</div></div>'
-    + '<div class="seg-card"><div class="k">Jurado sustentación 1</div><div class="v" style="font-weight:500;font-size:12px;line-height:1.35">' + esc(j1 || '—')
-    + (rad.f3Jurado1Email ? '<div class="seg-sub">' + esc(rad.f3Jurado1Email) + '</div>' : '') + '</div></div>'
-    + '<div class="seg-card"><div class="k">Jurado sustentación 2</div><div class="v" style="font-weight:500;font-size:12px;line-height:1.35">' + esc(j2 || '—')
-    + (rad.f3Jurado2Email ? '<div class="seg-sub">' + esc(rad.f3Jurado2Email) + '</div>' : '') + '</div></div>'
-    + '<div class="seg-card"><div class="k">Fecha sustentación</div><div class="v">' + esc(fmtFecha(rad.f3FechaSustentacion) || '—') + '</div></div>'
-    + '<div class="seg-card"><div class="k">Fecha asignación</div><div class="v">' + esc(fmtFecha(rad.f3FechaAsignada) || '—') + '</div></div>';
-}
-
-function eventoEsDevolucionSeg(s) {
-  var acc = String(s.accion || '').toUpperCase();
-  if (acc !== 'ACTUALIZAR_ESTADO') return false;
-  var det = String(s.detalle || '');
-  return /→\s*Devuelto/i.test(det) || /Devuelto\s+por/i.test(det);
-}
-
-function htmlListaDevolucionesSeg(registrosAsc) {
-  var devs = registrosAsc.filter(eventoEsDevolucionSeg);
-  if (!devs.length) return '';
-  var items = devs.map(function(ev) {
-    return '<div class="seg-event" style="margin-bottom:8px;background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.22)">' +
-      '<div class="date">' + esc(fmtFechaHoraSeguimiento(ev.timestamp)) + ' · ' + esc(ev.email || '—') + '</div>' +
-      '<div class="detail" style="margin-top:6px">' + htmlDetalleSeguimientoCell(ev) + '</div></div>';
-  }).join('');
-  return '<div class="timeline-title" style="margin-top:4px;color:#fca5a5">Devoluciones · cuándo y motivo (detalle)</div><div>' + items + '</div>';
-}
-
-function htmlFigurasAcademicasSeg(rad) {
-  if (!rad) {
-    return '<div class="seg-help">Busca por número de radicación para enlazar tutor, diplomado y jurados de sustentación.</div>';
-  }
-  if (esModalidadDiplomadoDash(rad)) {
-    var modo = String(rad.diplomadoJuradoModo || '').trim().toLowerCase();
-    var modoLabel = modo === 'cttg_asigna' ? 'Comité CTTG asigna evaluador' : modo === 'tutor_sugiere' ? 'Tutor sugirió jurado' : (modo || '—');
-    var jTxt;
-    if (modo === 'cttg_asigna') jTxt = 'El Comité CTTG asignará evaluador.';
-    else {
-      var bits = [];
-      if (rad.dipJurado1Nombre) bits.push('J1: ' + rad.dipJurado1Nombre + (rad.dipJurado1Email ? ' · ' + rad.dipJurado1Email : ''));
-      if (rad.dipJurado2Nombre) bits.push('J2: ' + rad.dipJurado2Nombre + (rad.dipJurado2Email ? ' · ' + rad.dipJurado2Email : ''));
-      if (rad.dipJurado3Nombre) bits.push('J3: ' + rad.dipJurado3Nombre + (rad.dipJurado3Email ? ' · ' + rad.dipJurado3Email : ''));
-      jTxt = bits.length ? bits.join(String.fromCharCode(10)) : '—';
-    }
-    return '<div class="timeline-title">Figuras · Diplomado</div><div class="seg-grid">'
-      + '<div class="seg-card"><div class="k">Tutores clásicos</div><div class="v">No aplica</div></div>'
-      + '<div class="seg-card"><div class="k">Esquema jurado</div><div class="v">' + esc(modoLabel) + '</div></div>'
-      + '<div class="seg-card"><div class="k">Evaluadores</div><div class="v" style="font-weight:500;font-size:12px;line-height:1.4;white-space:pre-wrap">' + esc(jTxt) + '</div></div>'
-      + bloqueCardSustentacionRadSeg(rad)
-      + '</div>';
-  }
-  var t1 = rad.tutor1Nombre ? rad.tutor1Nombre + (rad.tutor1Relacion ? ' (' + rad.tutor1Relacion + ')' : '') : '';
-  var t2 = rad.tutor2Nombre ? rad.tutor2Nombre + (rad.tutor2Relacion ? ' (' + rad.tutor2Relacion + ')' : '') : '';
-  return '<div class="timeline-title">Figuras · Tutoría y sustentación</div><div class="seg-grid">'
-    + '<div class="seg-card"><div class="k">Tutor 1</div><div class="v" style="font-weight:500;font-size:12px">' + esc(t1 || '—')
-    + (rad.tutor1Email ? '<div class="seg-sub">' + esc(rad.tutor1Email) + '</div>' : '') + '</div></div>'
-    + '<div class="seg-card"><div class="k">Tutor 2</div><div class="v" style="font-weight:500;font-size:12px">' + esc(t2 || '—')
-    + (rad.tutor2Email ? '<div class="seg-sub">' + esc(rad.tutor2Email) + '</div>' : '') + '</div></div>'
-    + bloqueCardSustentacionRadSeg(rad)
-    + '</div>';
-}
-
-
 function renderResumenTimeline(registros) {
   const box = document.getElementById('timelineResumen');
   const numeroBuscado = (document.getElementById('searchSeguimiento').value || '').trim().toUpperCase();
@@ -2640,12 +2434,13 @@ function renderResumenTimeline(registros) {
       <div class="what">${esc(hito.texto)}</div>
       <div class="seg-event-body">${cuerpoDet}</div>
       <div class="detail">Quién registró (cuenta): ${esc(r.email || '—')}</div>
+      <div class="state">Estado global del trabajo en Fase 1: ${esc(estadoVisible)}</div>
     </div>`;
   }).join('') : `<div class="seg-event">
       <div class="date">Sin fecha registrada</div>
       <div class="what">Trabajo encontrado</div>
-      <div class="detail">No hay movimientos guardados; el estado actual en Fase&nbsp;1 está en las tarjetas superiores.</div>
-      <div class="state">${esc(estadoVisible)} · vigente tras última sincronización</div>
+      <div class="detail">No hay movimientos de trazabilidad guardados para esta radicación, pero el estado actual del trabajo está disponible.</div>
+      <div class="state">Estado global del trabajo en Fase 1: ${esc(estadoVisible)}</div>
     </div>`;
   const rows = orden.map(function(step, i){
     const donePorRegistro = step.keys.some(k => acciones.indexOf(k) !== -1);
@@ -2843,15 +2638,11 @@ function describirHitoSeguimiento(s) {
   if (accion === 'UPDATE_FASE3_ESTADO') return { texto: 'Fase 3: actualización de estado de la solicitud', clase: 'b-comite' };
   if (accion === 'ASIGNAR_JURADOS') return { texto: 'Sustentación: fecha, lugar y jurados asignados', clase: 'b-aprobado' };
   if (accion === 'COMPLETAR_FASE3') return { texto: 'Sustentación cerrada (resultado final)', clase: 'b-aprobado' };
-  if (accion === 'ACTUALIZAR_ESTADO') {
-    var parts = partesDetalleSeguimiento(s.detalle);
-    var flecha = parts.find(function(p) { return /→/.test(p); }) || '';
-    var motivoPart = parts.find(function(p) { return /^Motivo\/notas/i.test(p); }) || '';
-    var extra = flecha ? flecha.trim() : (motivoPart ? motivoPart : '');
-    var txtBase = extra ? ('Fase 1 · ' + extra.slice(0, 220)) : 'Cambio de estado en Fase 1';
-    var cls = (/Devuelto/i.test(txtBase)) ? 'b-devuelto' : 'b-revision';
-    return { texto: txtBase.length > 120 ? txtBase.slice(0, 117) + '…' : txtBase, clase: cls };
-  }
+  if (accion === 'ACTUALIZAR_ESTADO') return { texto: 'Cambio de estado en Fase 1', clase: 'b-revision' };
+  if (accion === 'SOLICITUD_MOD_RAD_CREAR') return { texto: 'Solicitud de cambio datos Fase 1 (estudiante)', clase: 'b-solicitud' };
+  if (accion === 'RESOLVER_SOL_MOD_DEVOLVER') return { texto: 'Solicitud de cambio devuelta', clase: 'b-devuelto' };
+  if (accion === 'RESOLVER_SOL_MOD_APROBAR') return { texto: 'Cambios en radicación aplicados', clase: 'b-aprobado' };
+  if (accion === 'RESOLVER_SOL_MOD_DER_CT') return { texto: 'Cambios aplicados + Pendiente CT', clase: 'b-comite' };
   if (accion === 'LOGIN') return { texto: 'Ingreso al sistema', clase: 'b-pend' };
   if (accion === 'LOGIN_FAIL') return { texto: 'Intento de ingreso fallido', clase: 'b-devuelto' };
   if (modulo === 'SISTEMA' || accion === 'ERROR') return { texto: 'Evento de sistema / error', clase: 'b-devuelto' };

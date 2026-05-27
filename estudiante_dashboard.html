@@ -172,6 +172,7 @@
   <div id="alertasTiempo" class="alert-wrap" style="display:none"></div>
    <div class="tabs">
     <button class="tab on" id="tabMisRad" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
+    <button class="tab" id="tabModRad" onclick="switchTab('mod-rad',this)">✏️ Cambios radicación</button>
     <button class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
   </div>
 
@@ -262,6 +263,87 @@
 
   <div class="panel on" id="pan-mis-rad">
     <div id="misRadWrap"><div class="empty">Cargando...</div></div>
+  </div>
+
+
+
+  <div class="panel" id="pan-mod-rad">
+    <div class="form-card">
+      <h3><span class="dot"></span>Solicitar ajustes en Fase 1</h3>
+      <p>Puedes pedir cambios en título, modalidad, área, tutores, datos de diplomado / jurados sugeridos o compañeros. La coordinación revisa cada solicitud y puede aplicarlas en la hoja, devolverlas con observaciones o aplicarlas y dejar el caso Pendiente Comité Técnico si corresponde.</p>
+      <div class="fg full" style="margin-bottom:12px">
+        <label>Radicación *</label>
+        <select id="sm_rowRad" onchange="smAlElegirRad()"><option value="">— Cargando… —</option></select>
+      </div>
+      <div id="sm_formWrap" style="display:none">
+        <div class="sec-label" style="grid-column:1/-1">📄 Proyecto</div>
+        <div class="form-grid">
+          <div class="fg full"><label>Título del trabajo</label><input id="sm_titulo" placeholder="Solo si desea cambiarlo"></div>
+          <div class="fg"><label>Modalidad</label>
+            <select id="sm_modalidad" onchange="smToggleSeccionDiplomado()">
+              <option value="">(sin cambio)</option><option>Diplomado</option><option>Trabajo de investigación</option><option>Monografia Revision sistematica</option><option>Monografia Reporte de caso</option><option>Monografia serie de casos</option><option>Monografia Metaanalisis</option><option>Monografia revision de alcance</option>
+            </select>
+          </div>
+          <div class="fg"><label>Área / Especialidad</label>
+            <select id="sm_area">
+              <option value="">(sin cambio)</option><option>Medicina Interna</option><option>Cirugía General</option><option>Pediatría</option><option>Ginecología y Obstetricia</option><option>Psiquiatría</option><option>Neurología</option><option>Cardiología</option><option>Oncología</option><option>Urgencias y Emergencias</option><option>Salud Pública</option><option>Epidemiología</option><option>Otra</option>
+            </select>
+          </div>
+        </div>
+        <div id="sm_secDiplomado" style="display:none;margin-top:12px">
+          <div class="form-grid">
+            <div class="sec-label" style="grid-column:1/-1">🎓 Diplomado</div>
+            <div class="fg"><label>Inicio diplomado</label><input type="date" id="sm_diplomadoFechaInicio"></div>
+            <div class="fg"><label>Fin diplomado</label><input type="date" id="sm_diplomadoFechaFin"></div>
+            <div class="fg full"><label>Modo jurado / evaluador</label>
+              <select id="sm_diplomadoJuradoModo" onchange="smToggleModoJuradoDiplo()"><option value="">(sin cambio)</option><option value="tutor_sugiere">Tutor sugiere jurado</option><option value="cttg_asigna">CTTG asigna evaluador</option></select>
+            </div>
+          </div>
+          <div id="sm_wrapJuradosDiplo" class="form-grid" style="display:none;margin-top:8px">
+            <div class="sec-label" style="grid-column:1/-1">👤 Jurado sugerido (tutor)</div>
+            <div class="fg"><label>J1 Nombre</label><input id="sm_dipJurado1Nombre"></div>
+            <div class="fg"><label>J1 Email</label><input type="email" id="sm_dipJurado1Email"></div>
+            <div class="fg"><label>J1 Teléfono</label><input id="sm_dipJurado1Telefono"></div>
+            <div class="fg"><label>J1 Especialidad</label><input id="sm_dipJurado1Especialidad"></div>
+            <div class="fg"><label>J1 ¿Acepta evaluar?</label>
+              <select id="sm_dipJurado1AceptaPropuesta"><option value="">—</option><option>Sí</option><option>No</option></select>
+            </div>
+            <div class="sec-label" style="grid-column:1/-1">Jurados opcionales 2–3</div>
+            <div class="fg"><label>J2 Nombre</label><input id="sm_dipJurado2Nombre"></div><div class="fg"><label>J2 Email</label><input id="sm_dipJurado2Email"></div><div class="fg"><label>J2 Tel</label><input id="sm_dipJurado2Telefono"></div>
+            <div class="fg"><label>J3 Nombre</label><input id="sm_dipJurado3Nombre"></div><div class="fg"><label>J3 Email</label><input id="sm_dipJurado3Email"></div><div class="fg"><label>J3 Tel</label><input id="sm_dipJurado3Telefono"></div>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:12px">
+          <div class="sec-label" style="grid-column:1/-1">👨‍🏫 Tutores</div>
+          <div class="fg"><label>Tutor 1 nombre</label><input id="sm_tutor1Nombre"></div>
+          <div class="fg"><label>Tutor 1 email</label><input type="email" id="sm_tutor1Email"></div>
+          <div class="fg"><label>Tutor 1 teléfono</label><input id="sm_tutor1Telefono"></div>
+          <div class="fg"><label>Tutor 1 vínculo</label>
+            <select id="sm_tutor1Relacion"><option value="">—</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
+          </div>
+          <div class="fg"><label>Tutor 2 nombre</label><input id="sm_tutor2Nombre"></div>
+          <div class="fg"><label>Tutor 2 email</label><input type="email" id="sm_tutor2Email"></div>
+          <div class="fg"><label>Tutor 2 teléfono</label><input id="sm_tutor2Telefono"></div>
+          <div class="fg"><label>Tutor 2 vínculo</label>
+            <select id="sm_tutor2Relacion"><option value="">—</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:12px">
+          <div class="sec-label" style="grid-column:1/-1">👥 Compañeros (si aplica)</div>
+          <div class="fg"><label>E2 Cédula</label><input id="sm_cedula2"></div><div class="fg"><label>E2 Nombre</label><input id="sm_nombre2"></div><div class="fg"><label>E2 Email</label><input id="sm_email2"></div>
+          <div class="fg"><label>E2 Tel</label><input id="sm_telefono2"></div><div class="fg"><label>E2 Semestre</label><input id="sm_semestre2" placeholder="ej. 8"></div><div class="fg"><label>E2 Semillero</label><input id="sm_semillero2"></div>
+          <div class="fg"><label>E3 Cédula</label><input id="sm_cedula3"></div><div class="fg"><label>E3 Nombre</label><input id="sm_nombre3"></div><div class="fg"><label>E3 Email</label><input id="sm_email3"></div>
+          <div class="fg"><label>E3 Tel</label><input id="sm_telefono3"></div><div class="fg"><label>E3 Semestre</label><input id="sm_semestre3"></div><div class="fg"><label>E3 Semillero</label><input id="sm_semillero3"></div>
+        </div>
+        <div class="fg full" style="margin-top:12px"><label>Motivo de los cambios *</label><textarea id="sm_motivo" placeholder="Explique por qué solicita estos ajustes (mínimo 12 caracteres)"></textarea></div>
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+          <button type="button" class="btn-rad" onclick="smEnviarSolicitud()" id="sm_btnEnv">📤 Enviar solicitud</button>
+          <button type="button" class="btn-sec" onclick="smLimpiarForm()">Limpiar campos</button>
+        </div>
+      </div>
+      <div id="sm_avisoSinRad" class="readonly-box" style="display:block;margin-top:12px;background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.25);color:#bfdbfe">Cargando sus radicaciones…</div>
+      <div style="margin-top:22px"><div class="sec-label" style="padding:0 0 8px;margin:0;color:rgba(255,255,255,.45)">Historial</div><div id="sm_hist" class="rad-card" style="font-size:12px;line-height:1.45;color:rgba(255,255,255,.82)"><div class="empty" style="padding:16px">Sin solicitudes aún.</div></div></div>
+    </div>
   </div>
 
   <div class="panel" id="pan-nueva">
@@ -417,6 +499,7 @@ let numEst = 1;
 let user = null;
 let bloquearNuevaRad = false;
 let misRadicaciones = [];
+let misSolicitudesModRad = [];
 
 (function(){
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
@@ -444,6 +527,7 @@ function switchTab(name, btn) {
   document.getElementById('pan-' + name).classList.add('on');
   btn.classList.add('on');
   if (name === 'mis-rad') cargarMisRad();
+  else if (name === 'mod-rad') refrescarTabModRad();
 }
  
 function setEst(n, btn) {
@@ -478,6 +562,201 @@ function redirigirSiSesionInvalida(resp) {
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function smPickRad() {
+  const v = parseInt(document.getElementById('sm_rowRad').value, 10);
+  if (!v) return null;
+  return (misRadicaciones || []).find(x => Number(x.rowIndex) === v) || null;
+}
+
+function smFormatFechaPortal(v) {
+  const s = String(v || '').trim();
+  if (!s) return '';
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : s;
+}
+
+function smAlElegirRad() {
+  const rad = smPickRad();
+  const fw = document.getElementById('sm_formWrap');
+  const av = document.getElementById('sm_avisoSinRad');
+  if (!rad) {
+    fw.style.display = 'none';
+    av.style.display = 'block'; av.textContent = 'Seleccione una radicación.';
+    return;
+  }
+  fw.style.display = 'block'; av.style.display = 'none';
+  document.getElementById('sm_titulo').value = rad.titulo || '';
+  document.getElementById('sm_modalidad').value = rad.modalidad || '';
+  document.getElementById('sm_area').value = rad.area || '';
+  document.getElementById('sm_tutor1Nombre').value = rad.tutor1Nombre || '';
+  document.getElementById('sm_tutor1Email').value = rad.tutor1Email || '';
+  document.getElementById('sm_tutor1Telefono').value = rad.tutor1Telefono || '';
+  document.getElementById('sm_tutor1Relacion').value = rad.tutor1Relacion || '';
+  document.getElementById('sm_tutor2Nombre').value = rad.tutor2Nombre || '';
+  document.getElementById('sm_tutor2Email').value = rad.tutor2Email || '';
+  document.getElementById('sm_tutor2Telefono').value = rad.tutor2Telefono || '';
+  document.getElementById('sm_tutor2Relacion').value = rad.tutor2Relacion || '';
+  document.getElementById('sm_cedula2').value = rad.cedula2 || ''; document.getElementById('sm_nombre2').value = rad.nombre2 || '';
+  document.getElementById('sm_email2').value = rad.email2 || ''; document.getElementById('sm_telefono2').value = rad.telefono2 || '';
+  document.getElementById('sm_semestre2').value = rad.semestre2 || ''; document.getElementById('sm_semillero2').value = rad.semillero2 || '';
+  document.getElementById('sm_cedula3').value = rad.cedula3 || ''; document.getElementById('sm_nombre3').value = rad.nombre3 || '';
+  document.getElementById('sm_email3').value = rad.email3 || ''; document.getElementById('sm_telefono3').value = rad.telefono3 || '';
+  document.getElementById('sm_semestre3').value = rad.semestre3 || ''; document.getElementById('sm_semillero3').value = rad.semillero3 || '';
+  document.getElementById('sm_diplomadoFechaInicio').value = smFormatFechaPortal(rad.diplomadoFechaInicio || '');
+  document.getElementById('sm_diplomadoFechaFin').value = smFormatFechaPortal(rad.diplomadoFechaFin || '');
+  document.getElementById('sm_diplomadoJuradoModo').value = String(rad.diplomadoJuradoModo || '').trim() || '';
+  document.getElementById('sm_dipJurado1Nombre').value = rad.dipJurado1Nombre || '';
+  document.getElementById('sm_dipJurado1Email').value = rad.dipJurado1Email || '';
+  document.getElementById('sm_dipJurado1Telefono').value = rad.dipJurado1Telefono || '';
+  document.getElementById('sm_dipJurado1Especialidad').value = rad.dipJurado1Especialidad || '';
+  document.getElementById('sm_dipJurado1AceptaPropuesta').value = rad.dipJurado1AceptaPropuesta || '';
+  document.getElementById('sm_dipJurado2Nombre').value = rad.dipJurado2Nombre || ''; document.getElementById('sm_dipJurado2Email').value = rad.dipJurado2Email || '';
+  document.getElementById('sm_dipJurado2Telefono').value = rad.dipJurado2Telefono || '';
+  document.getElementById('sm_dipJurado3Nombre').value = rad.dipJurado3Nombre || ''; document.getElementById('sm_dipJurado3Email').value = rad.dipJurado3Email || '';
+  document.getElementById('sm_dipJurado3Telefono').value = rad.dipJurado3Telefono || '';
+  smToggleSeccionDiplomado();
+}
+
+function smToggleSeccionDiplomado() {
+  const sel = document.getElementById('sm_modalidad');
+  const show = sel && sel.value ? esModalidadDiplomado(sel.value) : (() => {
+    const r = smPickRad(); return !!(r && esModalidadDiplomado(r.modalidad));
+  })();
+  const sec = document.getElementById('sm_secDiplomado');
+  if (!sec) return;
+  sec.style.display = show ? '' : 'none';
+  smToggleModoJuradoDiplo();
+}
+
+function smToggleModoJuradoDiplo() {
+  const m = document.getElementById('sm_diplomadoJuradoModo').value || '';
+  const w = document.getElementById('sm_wrapJuradosDiplo');
+  if (!w) return;
+  w.style.display = (m === 'tutor_sugiere') ? '' : 'none';
+}
+
+function smPoblarSelectYHist() {
+  const sel = document.getElementById('sm_rowRad');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Elija radicación —</option>';
+  (misRadicaciones || []).forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = String(r.rowIndex);
+    opt.textContent = `${r.numero || 'Sin #'} · ${(r.modalidad||'').slice(0,24)}`;
+    sel.appendChild(opt);
+  });
+  sel.value = cur;
+  smAlElegirRad();
+}
+
+function renderSmHistorial() {
+  const el = document.getElementById('sm_hist'); if (!el) return;
+  const list = misSolicitudesModRad || [];
+  if (!list.length) { el.innerHTML = '<div class="empty" style="padding:16px">Sin solicitudes aún.</div>'; return; }
+  function prettyRes(x) {
+    const r = String(x || '').trim();
+    if (r === 'devolver') return 'Devuelta por coordinación';
+    if (r === 'aprobar_directo') return 'Cambios aplicados (directo)';
+    if (r === 'derivar_ct') return 'Cambios aplicados + Pendiente Comité';
+    return r || '—';
+  }
+  el.innerHTML = list.map(function(s){
+    let keys = ''; try {
+      keys = typeof s.cambios === 'object' && s.cambios ? Object.keys(s.cambios).slice(0, 12).join(', ') + (Object.keys(s.cambios).length > 12 ? '…' : '') : '';
+    } catch (_) { keys = ''; }
+    const estado = esc((s.estado || '').trim());
+    const res = esc(prettyRes(s.resultado || ''));
+    return `<div style="margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:4px"><span style="font-weight:600;color:#a5b4fc">${esc(s.numero || '')}</span>
+      <span class="badge b-revision">${estado}</span>${s.resultado ? `<span class="badge b-aprobado">${res}</span>` : ''}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.45)">${esc(String(s.tsCreacion||'').slice(0,19))}</div>
+      <div style="margin-top:6px">${esc(String(s.motivoEstudiante||'').slice(0, 360))}${String(s.motivoEstudiante||'').length>360?'…':''}</div>
+      ${keys ? `<div style="margin-top:6px;color:#93c5fd;font-family:DM Mono,monospace;font-size:10px">${esc(keys)}</div>` : ''}
+      ${s.obsCoord ? `<div style="margin-top:8px;background:rgba(245,158,11,.09);padding:8px;border-radius:8px;color:#fcd34d">Coord.: ${esc(s.obsCoord.slice(0,400))}${s.obsCoord.length>400?'…':''}</div>` : ''}</div>`;
+  }).join('');
+}
+
+function refrescarTabModRad() {
+  smPoblarSelectYHist();
+  renderSmHistorial();
+}
+
+function smLimpiarForm() { smAlElegirRad(); document.getElementById('sm_motivo').value = ''; toast('Campos cargados desde la radicación.', 'warn'); }
+
+function smSame(a, b) { return String(a == null ? '' : a).trim() === String(b == null ? '' : b).trim(); }
+
+async function smEnviarSolicitud() {
+  const rad = smPickRad();
+  if (!rad) { toast('Seleccione una radicación.', 'warn'); return; }
+  const motivo = (document.getElementById('sm_motivo').value || '').trim();
+  if (motivo.length < 12) { toast('Motivo demasiado corto.', 'warn'); return; }
+  const modSel = document.getElementById('sm_modalidad').value;
+  const effMod = modSel !== '' ? modSel : rad.modalidad;
+  const cambios = {};
+  const put = function(k,v,cur){ if (!smSame(v,cur)) cambios[k] = String(v||'').trim(); };
+  put('titulo', document.getElementById('sm_titulo').value, rad.titulo);
+  if (document.getElementById('sm_modalidad').value !== '')
+    put('modalidad', document.getElementById('sm_modalidad').value, rad.modalidad);
+  if (document.getElementById('sm_area').value !== '')
+    put('area', document.getElementById('sm_area').value, rad.area);
+  put('tutor1Nombre', document.getElementById('sm_tutor1Nombre').value, rad.tutor1Nombre);
+  put('tutor1Email', document.getElementById('sm_tutor1Email').value, rad.tutor1Email);
+  put('tutor1Telefono', document.getElementById('sm_tutor1Telefono').value, rad.tutor1Telefono);
+  if (document.getElementById('sm_tutor1Relacion').value !== '')
+    put('tutor1Relacion', document.getElementById('sm_tutor1Relacion').value, rad.tutor1Relacion);
+  put('tutor2Nombre', document.getElementById('sm_tutor2Nombre').value, rad.tutor2Nombre);
+  put('tutor2Email', document.getElementById('sm_tutor2Email').value, rad.tutor2Email);
+  put('tutor2Telefono', document.getElementById('sm_tutor2Telefono').value, rad.tutor2Telefono);
+  if (document.getElementById('sm_tutor2Relacion').value !== '')
+    put('tutor2Relacion', document.getElementById('sm_tutor2Relacion').value, rad.tutor2Relacion);
+  ['cedula2','nombre2','email2','telefono2','semestre2','semillero2','cedula3','nombre3','email3','telefono3','semestre3','semillero3'].forEach(function(f){
+    const elId = 'sm_' + f; const el = document.getElementById(elId); if(!el)return;
+    put(f, el.value, rad[f]);
+  });
+  if (esModalidadDiplomado(effMod)) {
+    put('diplomadoFechaInicio', document.getElementById('sm_diplomadoFechaInicio').value, smFormatFechaPortal(rad.diplomadoFechaInicio));
+    put('diplomadoFechaFin', document.getElementById('sm_diplomadoFechaFin').value, smFormatFechaPortal(rad.diplomadoFechaFin));
+    if (document.getElementById('sm_diplomadoJuradoModo').value !== '')
+      put('diplomadoJuradoModo', document.getElementById('sm_diplomadoJuradoModo').value, rad.diplomadoJuradoModo);
+    if (document.getElementById('sm_diplomadoJuradoModo').value === 'tutor_sugiere') {
+      put('dipJurado1Nombre', document.getElementById('sm_dipJurado1Nombre').value, rad.dipJurado1Nombre);
+      put('dipJurado1Email', document.getElementById('sm_dipJurado1Email').value, rad.dipJurado1Email);
+      put('dipJurado1Telefono', document.getElementById('sm_dipJurado1Telefono').value, rad.dipJurado1Telefono);
+      put('dipJurado1Especialidad', document.getElementById('sm_dipJurado1Especialidad').value, rad.dipJurado1Especialidad);
+      if (document.getElementById('sm_dipJurado1AceptaPropuesta').value !== '')
+        put('dipJurado1AceptaPropuesta', document.getElementById('sm_dipJurado1AceptaPropuesta').value, rad.dipJurado1AceptaPropuesta);
+    }
+    put('dipJurado2Nombre', document.getElementById('sm_dipJurado2Nombre').value, rad.dipJurado2Nombre);
+    put('dipJurado2Email', document.getElementById('sm_dipJurado2Email').value, rad.dipJurado2Email);
+    put('dipJurado2Telefono', document.getElementById('sm_dipJurado2Telefono').value, rad.dipJurado2Telefono);
+    put('dipJurado3Nombre', document.getElementById('sm_dipJurado3Nombre').value, rad.dipJurado3Nombre);
+    put('dipJurado3Email', document.getElementById('sm_dipJurado3Email').value, rad.dipJurado3Email);
+    put('dipJurado3Telefono', document.getElementById('sm_dipJurado3Telefono').value, rad.dipJurado3Telefono);
+  }
+  const kc = Object.keys(cambios);
+  if (!kc.length) { toast('No marcó diferencias respecto al registro actual.', 'warn'); return; }
+
+  document.getElementById('sm_btnEnv').disabled = true;
+  try {
+    const res = await fetch(URL_APP, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'crearSolicitudModificarRad',
+        token: TOKEN,
+        rowIndexFase1: rad.rowIndex,
+        cambios,
+        motivoEstudiante: motivo
+      }),
+    });
+    const out = await res.json();
+    if (redirigirSiSesionInvalida(out)) return;
+    if (!out.success) { toast(out.error || 'No se envió.', 'err'); }
+    else { toast('Solicitud enviada.', 'ok'); document.getElementById('sm_motivo').value = ''; cargarMisRad(); }
+  } finally { document.getElementById('sm_btnEnv').disabled = false; }
+}
+
 
 /** Diplomados suelen omitir valoración formal de protocolo (Fase 2); tratamos ese flujo aparte si la modalidad en Fase 1 contiene «diplomado». */
 function esModalidadDiplomado(mod) {
@@ -715,8 +994,17 @@ async function cargarMisRad() {
   const wrap = document.getElementById('misRadWrap');
   wrap.innerHTML = '<div class="empty">Cargando...</div>';
   try {
-    const res  = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN }) });
+    const [res, sl] = await Promise.all([
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN }) }),
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getMisSolicitudesModRad', token: TOKEN }) })
+    ]);
     const data = await res.json();
+    try {
+      const sd = await sl.json();
+      if (sd && sd.success && Array.isArray(sd.solicitudes)) misSolicitudesModRad = sd.solicitudes;
+      else misSolicitudesModRad = [];
+    } catch (__) { misSolicitudesModRad = []; }
+    const _pm = document.getElementById('pan-mod-rad'); if (_pm && _pm.classList.contains('on')) { smPoblarSelectYHist(); renderSmHistorial(); }
     if (!data.success) {
       const err = String(data.error || '');
       if (mensajeEsSesionInvalidaBackend(err)) {
@@ -752,7 +1040,7 @@ async function cargarMisRad() {
         bloqueo.style.display  = 'block';
         bloqueo.innerHTML      = '🚫 Ya tienes una radicación sin respuesta. Debes esperar respuesta del comité para crear una nueva.';
         readonly.style.display = 'block';
-        readonly.innerHTML     = '👁 Tu radicación está en trámite y no puede modificarse.';
+        readonly.innerHTML     = '👁 Para corregir título, tutores u otros datos de una radicación ya enviada use la pestaña «Cambios radicación»; desde aquí sólo puede crear una radicación nueva cuando no exista ninguna pendiente.';
         tabNueva.style.opacity = '.55';
         setFormularioSoloLectura(true);
       } else {
@@ -785,6 +1073,14 @@ async function cargarMisRad() {
       document.getElementById('readonlyRad').style.display = 'none';
       document.getElementById('tabNueva').style.opacity    = '1';
       setFormularioSoloLectura(false);
+      if (document.getElementById('sm_rowRad')) {
+        document.getElementById('sm_rowRad').innerHTML = '<option value="">Sin radicaciones cargadas</option>';
+      }
+      if (document.getElementById('sm_avisoSinRad')) {
+        document.getElementById('sm_avisoSinRad').style.display = 'block';
+        document.getElementById('sm_avisoSinRad').textContent = 'Primero debe crear una radicación en «Nueva radicación».';
+      }
+      if (document.getElementById('sm_formWrap')) document.getElementById('sm_formWrap').style.display = 'none';
       wrap.innerHTML = `<div class="empty">
         <div style="font-size:32px;margin-bottom:12px">📭</div>
         <div>No tienes radicaciones registradas aún.</div>

@@ -30,7 +30,7 @@ function handleRequest(e, body) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1'];
+    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1','resolverSolicitudModRad'];
 
     if (accionesCoord.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
@@ -38,7 +38,7 @@ function handleRequest(e, body) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    var accionesSoloCoordLectura = ['getFase1','getTutores','getEvaluadores','getFechasComite','getEstadisticasTutores','getAlertasCriticas','getTrazabilidad'];
+    var accionesSoloCoordLectura = ['getFase1','getTutores','getEvaluadores','getFechasComite','getEstadisticasTutores','getAlertasCriticas','getTrazabilidad','getSolicitudesModRadPendientes'];
     if (accionesSoloCoordLectura.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
         .createTextOutput(JSON.stringify({ success: false, error: "No autorizado" }))
@@ -81,6 +81,10 @@ function handleRequest(e, body) {
       case "updateFase3Asignacion": result = updateFase3Asignacion(body.rowIndex, body.fechaSustentacion, body.horaSustentacion, body.lugar, body.jurado1, body.jurado2, body.emailCoord); break;
       case "completarFase3":       result = completarFase3(body.rowIndex, body.nota, body.numeroActa, body.producto, body.descripcion, body.emailCoord); break;
       case "repararEstadosFase1":  result = repararEstadosFase1(); break;
+      case "crearSolicitudModificarRad": result = crearSolicitudModificarRad(sesion, body); break;
+      case "getMisSolicitudesModRad": result = getMisSolicitudesModRad(sesion); break;
+      case "getSolicitudesModRadPendientes": result = getSolicitudesModRadPendientes(sesion); break;
+      case "resolverSolicitudModRad": result = resolverSolicitudModRad(sesion, body); break;
       case "logout": cerrarSesion(body.token); result = { success: true }; break;
       default: result = { success: false, error: "Acción no reconocida: " + action };
     }
@@ -284,6 +288,7 @@ function registrarAuditoria(email, accion, detalle) {
 function inferirModuloTrazabilidad(accion) {
   var a = String(accion || "").toUpperCase();
   if (a.indexOf("LOGIN") !== -1 || a.indexOf("SESION") !== -1 || a.indexOf("LOGOUT") !== -1) return "AUTH";
+  if (a.indexOf("SOL_MOD") !== -1 || a.indexOf("SOLICITUD_MOD") !== -1 || a.indexOf("MOD_RAD") !== -1) return "FASE1";
   if (a.indexOf("RADICACION") !== -1 || a.indexOf("TUTORES") !== -1 || a.indexOf("FASE1") !== -1) return "FASE1";
   if (a.indexOf("PROTOCOLO") !== -1 || a.indexOf("COMITE") !== -1 || a.indexOf("FASE2") !== -1) return "FASE2";
   if (a.indexOf("ACTA") !== -1) return "ACTAS";
@@ -1108,23 +1113,9 @@ function obtenerFase1() {
   if (!sheet) return { success: false, error: "Hoja Fase1 no encontrada" };
   var data = sheet.getDataRange().getValues();
   var radicaciones = [];
-  var todasFase3 = listaFase3Completa();
   for (var i = 1; i < data.length; i++) {
     if (!data[i][0]) continue;
-    var rad = mapearFilaFase1(data[i], i + 1);
-    var sust = todasFase3.find(function(x) {
-      return String(x.numero || "").trim().toUpperCase() === String(rad.numero || "").trim().toUpperCase();
-    });
-    if (sust) {
-      rad.sustentacionEstado = String(sust.estadoSolicitud || sust.estado || "").trim();
-      rad.f3Jurado1Nombre = String(sust.jurado1Nombre || "").trim();
-      rad.f3Jurado1Email = String(sust.jurado1Email || "").trim();
-      rad.f3Jurado2Nombre = String(sust.jurado2Nombre || "").trim();
-      rad.f3Jurado2Email = String(sust.jurado2Email || "").trim();
-      rad.f3FechaSustentacion = sust.fechaSustentacion || "";
-      rad.f3FechaAsignada = sust.fechaAsignada || "";
-    }
-    radicaciones.push(rad);
+    radicaciones.push(mapearFilaFase1(data[i], i + 1));
   }
   return { success: true, radicaciones: radicaciones };
 }
@@ -1214,15 +1205,10 @@ function obtenerFase1PorEmail(email, sesion) {
       var fase3 = todasFase3;
       var sust = fase3.find(s => String(s.numero) === String(rad.numero));
       if (sust) {
-        rad.sustentacionEstado = String(sust.estadoSolicitud || sust.estado || "").trim();
-        rad.f3Jurado1Nombre = String(sust.jurado1Nombre || "").trim();
-        rad.f3Jurado1Email = String(sust.jurado1Email || "").trim();
-        rad.f3Jurado2Nombre = String(sust.jurado2Nombre || "").trim();
-        rad.f3Jurado2Email = String(sust.jurado2Email || "").trim();
-        rad.f3FechaSustentacion = sust.fechaSustentacion || "";
-        rad.f3FechaAsignada = sust.fechaAsignada || "";
+        rad.sustentacionEstado = sust.estado;
+        // Calcular 15 días desde que documentos se carguen
         var diasParaSustentacion = 15;
-        var diasRestantesSust = diasParaSustentacion;
+        var diasRestantesSust = diasParaSustentacion; // Placeholder
         rad.diasRestantesSustentacion = diasRestantesSust;
       }
       
@@ -1231,6 +1217,387 @@ function obtenerFase1PorEmail(email, sesion) {
   }
   return { success: true, radicaciones: radicaciones };
 }
+
+/** ── Solicitudes de modificación de datos de radicación (Fase 1), con aval de coordinación ── */
+var NOMBRE_HOJA_SOL_MOD_RAD = "Solicitudes_Mod_Radicacion";
+
+function asegurarHojaSolModRad() {
+  var sheet = getSheet(NOMBRE_HOJA_SOL_MOD_RAD);
+  if (sheet) return sheet;
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  sheet = ss.insertSheet(NOMBRE_HOJA_SOL_MOD_RAD);
+  sheet.appendRow([
+    "TsCreacion",
+    "EmailEstudiante",
+    "RowFase1",
+    "NumeroRad",
+    "EstadoSolicitud",
+    "Resultado",
+    "JsonCambios",
+    "MotivoEstudiante",
+    "JsonDelta",
+    "TsResolucion",
+    "EmailCoord",
+    "ObsCoord"
+  ]);
+  return sheet;
+}
+
+function emailEstudiantePerteneceFilaFase1(emailLower, dataRowJs) {
+  var emails = [
+    String(dataRowJs[2]  || "").toLowerCase(),
+    String(dataRowJs[5]  || "").toLowerCase(),
+    String(dataRowJs[11] || "").toLowerCase(),
+    String(dataRowJs[17] || "").toLowerCase()
+  ];
+  return emails.indexOf(String(emailLower || "").trim().toLowerCase()) !== -1;
+}
+
+function obtenerMapColumnasModRad() {
+  return {
+    titulo: 22,
+    modalidad: 23,
+    area: 24,
+    cedula2: 10,
+    nombre2: 11,
+    email2: 12,
+    telefono2: 13,
+    semestre2: 14,
+    semillero2: 15,
+    cedula3: 16,
+    nombre3: 17,
+    email3: 18,
+    telefono3: 19,
+    semestre3: 20,
+    semillero3: 21,
+    tutor1Nombre: 25,
+    tutor1Email: 26,
+    tutor1Telefono: 27,
+    tutor1Relacion: 28,
+    tutor2Nombre: 29,
+    tutor2Email: 30,
+    tutor2Telefono: 31,
+    tutor2Relacion: 32,
+    diplomadoFechaInicio: 39,
+    diplomadoFechaFin: 40,
+    dipJurado1Nombre: 41,
+    dipJurado1Email: 42,
+    dipJurado1Telefono: 43,
+    dipJurado2Nombre: 44,
+    dipJurado2Email: 45,
+    dipJurado2Telefono: 46,
+    dipJurado3Nombre: 47,
+    dipJurado3Email: 48,
+    dipJurado3Telefono: 49,
+    dipJurado1Especialidad: 50,
+    dipJurado1AceptaPropuesta: 51,
+    diplomadoJuradoModo: 52
+  };
+}
+
+function numeroRadCerroEtapaFinalFase3_(numeroRad) {
+  var n = String(numeroRad || "").trim();
+  if (!n) return false;
+  var todos = listaFase3TodasLasFilasSinDedupe();
+  for (var i = 0; i < todos.length; i++) {
+    if (String(todos[i].numero || "").trim() !== n) continue;
+    if (String(todos[i].nota || "").trim()) return true;
+    var es = String(todos[i].estadoSolicitud || "").toLowerCase();
+    if (es.indexOf("sustentado") !== -1 || es.indexOf("reprobado") !== -1) return true;
+  }
+  return false;
+}
+
+function haySolicitudModRadPendienteMismaFila_(sheetSol, rowF1) {
+  var data = sheetSol.getDataRange().getValues();
+  var rf = parseInt(rowF1, 10);
+  for (var i = 1; i < data.length; i++) {
+    if (parseInt(data[i][2], 10) !== rf) continue;
+    var est = String(data[i][4] || "").trim().toLowerCase();
+    if (est === "pendiente") return true;
+  }
+  return false;
+}
+
+function sanitizarYFiltrarCambiosModRad_(cambiosRaw, filaArr0) {
+  var mapCols = obtenerMapColumnasModRad();
+  var out = {};
+  if (!cambiosRaw || typeof cambiosRaw !== "object") return out;
+  var keys = Object.keys(cambiosRaw);
+  for (var ki = 0; ki < keys.length; ki++) {
+    var key = keys[ki];
+    var colNum = mapCols[key];
+    if (!colNum) continue;
+    var v = cambiosRaw[key];
+    var s = v === undefined || v === null ? "" : String(v).trim();
+    var curCell = filaArr0[colNum - 1];
+    var curStr = curCell === undefined || curCell === null ? "" : String(curCell).trim();
+    var sFmt = key.indexOf("diplomadoFecha") === 0 ? formatearFecha(s) : s;
+    var curFmt = key.indexOf("diplomadoFecha") === 0 ? formatearFecha(curCell) : curStr;
+    if (sFmt === curFmt) continue;
+    out[key] = sFmt || s;
+  }
+  return out;
+}
+
+function validarReglasDiplomadoModRad_(filaArr0, deltas) {
+  var modActual = String(filaArr0[22] || "").trim().toLowerCase();
+  var modNuevo = deltas.modalidad !== undefined ? String(deltas.modalidad || "").trim().toLowerCase() : modActual;
+  if (modNuevo !== "diplomado") return { ok: true };
+  var dipModo = String(deltas.diplomadoJuradoModo !== undefined ? deltas.diplomadoJuradoModo : (filaArr0[51] || "")).trim().toLowerCase();
+  if (dipModo !== "tutor_sugiere" && dipModo !== "cttg_asigna") {
+    return { ok: false, error: "Diplomado: indique tutor_sugiere o cttg_asigna en diplomadoJuradoModo." };
+  }
+  var ini = deltas.diplomadoFechaInicio !== undefined ? String(formatearFecha(deltas.diplomadoFechaInicio) || "").trim() : formatearFecha(filaArr0[38] || "");
+  var fin = deltas.diplomadoFechaFin !== undefined ? String(formatearFecha(deltas.diplomadoFechaFin) || "").trim() : formatearFecha(filaArr0[39] || "");
+  if (!ini || !fin) {
+    return { ok: false, error: "Diplomado: indique fecha inicio y fin del diplomado." };
+  }
+  if (dipModo === "tutor_sugiere") {
+    var jn = String(deltas.dipJurado1Nombre !== undefined ? deltas.dipJurado1Nombre : (filaArr0[40] || "")).trim();
+    var je = String(deltas.dipJurado1Email !== undefined ? deltas.dipJurado1Email : (filaArr0[41] || "")).trim();
+    var jt = String(deltas.dipJurado1Telefono !== undefined ? deltas.dipJurado1Telefono : (filaArr0[42] || "")).trim();
+    var jesp = String(deltas.dipJurado1Especialidad !== undefined ? deltas.dipJurado1Especialidad : (filaArr0[49] || "")).trim();
+    var jac = String(deltas.dipJurado1AceptaPropuesta !== undefined ? deltas.dipJurado1AceptaPropuesta : (filaArr0[50] || "")).trim();
+    if (!jn || !je || !jesp || !telefonoRadicacionLongitudOk(jt)) {
+      return { ok: false, error: "Diplomado (tutor sugiere): complete jurado sugerido: nombre, email, teléfono (≥7 dígitos), especialidad y Si/No de aceptación." };
+    }
+    if (!correoRadicacionPareceValido(je)) return { ok: false, error: "Diplomado: email del jurado sugerido no válido." };
+    if (jac !== "Sí" && jac !== "No") return { ok: false, error: "Diplomado: ¿El jurado acepta propuesta? Debe ser «Sí» o «No»." };
+  }
+  return { ok: true };
+}
+
+function aplicarDeltasAFase1_(sheetF1, rowIndex1, deltas) {
+  var mapCols = obtenerMapColumnasModRad();
+  var keys = Object.keys(deltas);
+  var antes = {};
+  var despues = {};
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    var col = mapCols[k];
+    if (!col) continue;
+    var nueva = deltas[k];
+    var prev = sheetF1.getRange(rowIndex1, col).getValue();
+    antes[k] = prev === undefined || prev === null ? "" : String(prev);
+    sheetF1.getRange(rowIndex1, col).setValue(nueva);
+    despues[k] = nueva === undefined || nueva === null ? "" : String(nueva);
+  }
+  return { antes: antes, despues: despues };
+}
+
+function filaSolModRadToObj_(r, sheetRowIdx) {
+  var cambiosStr = String(r[6] || "{}");
+  var deltaStr = String(r[8] || "{}");
+  var cambios = {};
+  var delta = {};
+  try { cambios = JSON.parse(cambiosStr); } catch(e1) { cambios = {}; }
+  try { delta = JSON.parse(deltaStr); } catch(e2) { delta = {}; }
+  return {
+    rowSol: sheetRowIdx,
+    tsCreacion: String(r[0] || ""),
+    emailEstudiante: String(r[1] || ""),
+    rowFase1: parseInt(r[2], 10),
+    numero: String(r[3] || ""),
+    estado: String(r[4] || ""),
+    resultado: String(r[5] || ""),
+    cambios: cambios,
+    motivoEstudiante: String(r[7] || ""),
+    deltaResolucion: delta,
+    tsResolucion: String(r[9] || ""),
+    emailCoord: String(r[10] || ""),
+    obsCoord: String(r[11] || "")
+  };
+}
+
+function crearSolicitudModificarRad(sesion, body) {
+  if (!sesion || sesion.rol !== "estudiante") return { success: false, error: "Solo estudiantes pueden crear esta solicitud." };
+  var emailEst = String(sesion.email || "").trim().toLowerCase();
+  var sheetF1 = getSheet("Fase1");
+  if (!sheetF1) return { success: false, error: "Hoja Fase1 no encontrada" };
+  var ri = parseInt(body && body.rowIndexFase1, 10);
+  if (!ri || ri < 2) return { success: false, error: "Fila Fase 1 inválida." };
+  var lastF1 = sheetF1.getLastRow();
+  if (ri > lastF1) return { success: false, error: "Fila Fase 1 fuera de rango." };
+  var rowVals = sheetF1.getRange(ri, 1, ri, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
+  if (!emailEstudiantePerteneceFilaFase1(emailEst, rowVals)) return { success: false, error: "No autorizado sobre esta radicación." };
+  var numero = String(rowVals[1] || "").trim();
+  if (!numero) return { success: false, error: "Sin número de radicación." };
+  var estadoF1 = String(rowVals[32] || "").trim();
+  var elow = estadoF1.toLowerCase();
+  if (elow.indexOf("sustentado") !== -1 || elow.indexOf("reprobado") !== -1) {
+    return { success: false, error: "No se permite modificar una radicación ya cerrada con resultado final." };
+  }
+  if (numeroRadCerroEtapaFinalFase3_(numero)) return { success: false, error: "El trámite de sustentación ya tiene resultado final." };
+  var motivo = body && body.motivoEstudiante !== undefined ? String(body.motivoEstudiante || "").trim() : "";
+  if (motivo.length < 12) return { success: false, error: "Describa el motivo de los cambios (mínimo 12 caracteres)." };
+  var deltas = sanitizarYFiltrarCambiosModRad_(body && body.cambios ? body.cambios : {}, rowVals);
+  if (!Object.keys(deltas).length) return { success: false, error: "No hay cambios respecto a los datos actuales." };
+  var valDip = validarReglasDiplomadoModRad_(rowVals, deltas);
+  if (!valDip.ok) return { success: false, error: valDip.error };
+
+  var sheetSol = asegurarHojaSolModRad();
+  if (haySolicitudModRadPendienteMismaFila_(sheetSol, ri)) {
+    return { success: false, error: "Ya tienes una solicitud de cambios pendiente para esta radicación." };
+  }
+  var ts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  sheetSol.appendRow([
+    ts,
+    emailEst,
+    ri,
+    numero,
+    "pendiente",
+    "",
+    JSON.stringify(deltas),
+    motivo,
+    "",
+    "",
+    "",
+    ""
+  ]);
+  var detAudit = numero + " | fila " + ri + " | cambios:" + JSON.stringify(deltas).slice(0, 320);
+  registrarAuditoria(emailEst, "SOLICITUD_MOD_RAD_CREAR", detAudit);
+  return { success: true, numero: numero, rowSol: sheetSol.getLastRow() };
+}
+
+function getMisSolicitudesModRad(sesion) {
+  if (!sesion || sesion.rol !== "estudiante") return { success: false, error: "No autorizado" };
+  var em = String(sesion.email || "").trim().toLowerCase();
+  var sheet = getSheet(NOMBRE_HOJA_SOL_MOD_RAD);
+  if (!sheet) return { success: true, solicitudes: [] };
+  var data = sheet.getDataRange().getValues();
+  var lista = [];
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][1] || "").trim().toLowerCase() !== em) continue;
+    lista.push(filaSolModRadToObj_(data[i], i + 1));
+  }
+  return { success: true, solicitudes: lista };
+}
+
+function getSolicitudesModRadPendientes(sesion) {
+  if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
+  var sheet = getSheet(NOMBRE_HOJA_SOL_MOD_RAD);
+  if (!sheet) return { success: true, solicitudes: [], totalPendientes: 0 };
+  var data = sheet.getDataRange().getValues();
+  var lista = [];
+  for (var i = 1; i < data.length; i++) {
+    var est = String(data[i][4] || "").trim().toLowerCase();
+    if (est !== "pendiente") continue;
+    lista.push(filaSolModRadToObj_(data[i], i + 1));
+  }
+  return { success: true, solicitudes: lista, totalPendientes: lista.length };
+}
+
+function resolverSolicitudModRad(sesion, body) {
+  if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
+  var sheet = getSheet(NOMBRE_HOJA_SOL_MOD_RAD);
+  if (!sheet) return { success: false, error: "Hoja solicitudes no disponible." };
+  var rs = parseInt(body && body.rowSol, 10);
+  var decision = String(body && body.decision || "").trim().toLowerCase();
+  var obsCoord = body && body.observacionesCoord !== undefined ? String(body.observacionesCoord || "").trim() : "";
+  if (!rs || rs < 2) return { success: false, error: "Fila de solicitud inválida." };
+  var last = sheet.getLastRow();
+  if (rs > last) return { success: false, error: "Solicitud no encontrada." };
+
+  var r = sheet.getRange(rs, 1, rs, 12).getValues()[0];
+  var estSol = String(r[4] || "").trim().toLowerCase();
+  if (estSol !== "pendiente") return { success: false, error: "Esta solicitud ya fue resuelta." };
+  var emailCoord = String(sesion.email || "").trim();
+
+  var rowF1 = parseInt(r[2], 10);
+  var numero = String(r[3] || "").trim();
+  var cambiosJson = String(r[6] || "{}");
+  var deltas = {};
+  try { deltas = JSON.parse(cambiosJson); } catch (ex) {
+    return { success: false, error: "JSON de cambios inválido." };
+  }
+
+  if (decision === "devolver") {
+    if (obsCoord.length < 12) return { success: false, error: "Indique el motivo de devolución (mín. 12 caracteres)." };
+    var tsDv = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+    sheet.getRange(rs, 5).setValue("resuelta");
+    sheet.getRange(rs, 6).setValue("devolver");
+    sheet.getRange(rs, 9).setValue("{}");
+    sheet.getRange(rs, 10).setValue(tsDv);
+    sheet.getRange(rs, 11).setValue(emailCoord);
+    sheet.getRange(rs, 12).setValue(obsCoord);
+    registrarAuditoria(emailCoord, "RESOLVER_SOL_MOD_DEVOLVER", numero + " | sol fila " + rs + " | " + obsCoord.slice(0, 200));
+    try {
+      var sf1Dv = getSheet("Fase1");
+      var emailEs = sf1Dv ? String(sf1Dv.getRange(rowF1, 3).getValue() || "").trim() : "";
+      var subjDv = "[CTTG] Devolución de solicitud de cambios · " + numero;
+      var bodyDv = "La coordinación devolvió su solicitud de modificación de datos de la radicación " + numero + ".\n\nMotivo:\n" + obsCoord + "\n\nRevise los datos indicados en el Portal y puede enviar una nueva solicitud si corresponde.";
+      if (emailEs) MailApp.sendEmail(emailEs, subjDv, bodyDv);
+    } catch(eM) {}
+    return { success: true, resultado: "devolver" };
+  }
+
+  if (decision !== "aprobar_directo" && decision !== "derivar_ct") {
+    return { success: false, error: "Decisión inválida. Use «devolver», «aprobar_directo» o «derivar_ct»." };
+  }
+
+  var sheetF1 = getSheet("Fase1");
+  if (!sheetF1) return { success: false, error: "Fase 1 no encontrada" };
+  asegurarColumnasFase1DiplomadoJurados(sheetF1);
+  var rowVals = sheetF1.getRange(rowF1, 1, rowF1, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
+  var deltasFinales = sanitizarYFiltrarCambiosModRad_(deltas, rowVals);
+  if (!Object.keys(deltasFinales).length) {
+    return { success: false, error: "Los datos ya coinciden con la hoja (nada que aplicar). Devuelva la solicitud con una nota aclaratoria si es necesario." };
+  }
+  var valDip2 = validarReglasDiplomadoModRad_(rowVals, deltasFinales);
+  if (!valDip2.ok) return { success: false, error: valDip2.error };
+
+  if (deltasFinales.diplomadoJuradoModo === "cttg_asigna") {
+    deltasFinales.dipJurado1Nombre = "";
+    deltasFinales.dipJurado1Email = "";
+    deltasFinales.dipJurado1Telefono = "";
+    deltasFinales.dipJurado1Especialidad = "";
+    deltasFinales.dipJurado1AceptaPropuesta = "";
+  }
+
+  var applied = aplicarDeltasAFase1_(sheetF1, rowF1, deltasFinales);
+  var tsOk = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  var deltaPayload = {
+    antes: applied.antes || {},
+    despues: applied.despues || {},
+    decision: decision,
+    observacionesCoord: obsCoord
+  };
+  var deltaStrRes = JSON.stringify(deltaPayload);
+
+  sheet.getRange(rs, 5).setValue("resuelta");
+  sheet.getRange(rs, 6).setValue(decision);
+  sheet.getRange(rs, 10).setValue(tsOk);
+  sheet.getRange(rs, 11).setValue(emailCoord);
+  sheet.getRange(rs, 12).setValue(obsCoord);
+
+  sheet.getRange(rs, 9).setValue(deltaStrRes.length <= 48000 ? deltaStrRes : deltaStrRes.substring(0, 48000));
+
+  var estadoAnterior = String(rowVals[32] || "").trim();
+  if (decision === "derivar_ct") {
+    sheetF1.getRange(rowF1, 33).setValue("Pendiente Comité Técnico");
+    notificarCambioEstado(rowF1, "Pendiente Comité Técnico", { notas: obsCoord });
+  }
+
+  registrarAuditoria(
+    emailCoord,
+    decision === "derivar_ct" ? "RESOLVER_SOL_MOD_DER_CT" : "RESOLVER_SOL_MOD_APROBAR",
+    numero + " | F1 row " + rowF1 + " | Δ " + JSON.stringify(applied.despues || {}).slice(0, 400)
+  );
+
+  try {
+    var emailEst2 = String(sheetF1.getRange(rowF1, 3).getValue() || "").trim();
+    var txtDec = decision === "derivar_ct"
+      ? "Se aplicaron los cambios en su radicación y quedó en estado Pendiente Comité Técnico para revisión."
+      : "Se aplicaron los cambios solicitados en Fase 1. El estado administrativo («" + estadoAnterior + "») no fue modificado por este trámite, salvo lo que se reflejó en los campos actualizados.";
+    var subjOk = "[CTTG] Cambios en radicación · " + numero;
+    var bodyOk = numero + "\n\n" + txtDec + (obsCoord ? "\n\nNota coordinación:\n" + obsCoord : "");
+    if (emailEst2) MailApp.sendEmail(emailEst2, subjOk, bodyOk);
+  } catch(eM2) {}
+
+  return { success: true, resultado: decision };
+}
+
 function actualizarEstado(rowIndex, estado, notas, emailCoord) {
   var sheet = getSheet("Fase1");
   var ri    = parseInt(rowIndex);
@@ -1255,13 +1622,7 @@ function actualizarEstado(rowIndex, estado, notas, emailCoord) {
 
  
  notificarCambioEstado(ri, estado, { notas: notas });
-  var detAudit = numeroRad + " | Fila " + rowIndex + " → " + estado;
-  if (notas) {
-    var nt = String(notas).replace(/\s+/g, " ").trim();
-    if (nt.length > 500) nt = nt.substring(0, 497) + "...";
-    detAudit += " | Motivo/notas: " + nt;
-  }
-  registrarAuditoria(emailCoord, "ACTUALIZAR_ESTADO", detAudit);
+  registrarAuditoria(emailCoord, "ACTUALIZAR_ESTADO", numeroRad + " | Fila " + rowIndex + " → " + estado);
   try { verificarVencimientosYAlertar(ri); } catch(e) { Logger.log("Error alertas: " + e); }
   return { success: true };
 }
