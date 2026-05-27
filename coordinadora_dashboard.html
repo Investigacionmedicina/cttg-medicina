@@ -146,13 +146,17 @@
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}  .toast.info{background:rgba(59,130,246,.9);color:#fff}
   @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
-  /* PENDIENTES HOME */
-  .pend-home-hdr{display:flex;align-items:center;gap:10px;margin:14px 0 8px;flex-wrap:wrap}
-  .ph-title{font-size:11px;color:#fcd34d;text-transform:uppercase;letter-spacing:.75px;font-family:'DM Mono',monospace;font-weight:700}
-  .ph-count{font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace}
-  .pend-home-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto;max-height:310px;margin-bottom:20px}
-  .pend-home-wrap table{min-width:600px;width:100%;border-collapse:collapse}
-  .pend-home-wrap thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
+  /* COLA GESTIONES COORDINACIÓN (hero) */
+  .gestiones-hero{background:linear-gradient(145deg,rgba(6,78,59,.35),rgba(15,23,42,.92));border:1px solid rgba(45,212,191,.28);border-radius:16px;padding:18px 20px 20px;margin-bottom:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+  .gestiones-hero-hdr{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .gh-title{font-size:13px;color:#fcd34d;text-transform:uppercase;letter-spacing:.8px;font-family:'DM Mono',monospace;font-weight:700}
+  .gh-count{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace;margin-top:2px}
+  .gh-help{font-size:11px;color:rgba(255,255,255,.42);line-height:1.45;max-width:820px;margin-top:6px}
+  .gestiones-hero-wrap{background:rgba(0,0,0,.12);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto;max-height:min(52vh,480px)}
+  .gestiones-hero-wrap table{min-width:720px;width:100%;border-collapse:collapse}
+  .gestiones-hero-wrap thead tr{background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.09)}
+  .gh-gestion{font-size:12px;font-weight:600;color:#e2e8f0;line-height:1.35;max-width:220px}
+  .gh-sub{font-size:10px;color:rgba(255,255,255,.38);font-weight:400;margin-top:3px}
 </style>
 </head>
 <body>
@@ -169,6 +173,28 @@
 </header>
 
 <main>
+    <!-- ── GESTIONES INSTITUCIONALES (prioridad coordinación) ── -->
+    <div class="gestiones-hero" id="bloqueGestionesCoord">
+      <div class="gestiones-hero-hdr">
+        <div style="flex:1;min-width:200px">
+          <div class="gh-title">📌 Gestiones pendientes para coordinación</div>
+          <div class="gh-count" id="pendHomeTot">—</div>
+          <p class="gh-help">Incluye Fase 1 en trámite (sin devoluciones al estudiante), actas por revisar o solicitud Fase 2, y protocolo con aval o comité pendiente. No lista estados «Devuelto» ni «Devuelto por Comité Técnico» (turno del estudiante).</p>
+        </div>
+        <button class="btn bl" style="font-size:12px;padding:8px 14px;align-self:center" onclick="irTodasRad()">Ir a Radicaciones →</button>
+      </div>
+      <div class="gestiones-hero-wrap">
+        <table>
+          <thead><tr>
+            <th>Gestión</th><th>N° Radicación</th><th>Estudiante(s)</th><th>Modalidad / contexto</th><th>Estado</th><th>Fecha ref.</th><th>Acción rápida</th>
+          </tr></thead>
+          <tbody id="tbodyPendHome">
+            <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando cola de gestiones...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="metrics-caption">Resumen rápido</div>
     <div class="metrics">
     <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en Fase 1</div></div>
@@ -192,23 +218,6 @@
     <!-- ── SECCIÓN: POR MODALIDAD ─────────────────────────── -->
     <div class="metrics-caption">Por Modalidad · Clic para filtrar</div>
     <div id="modGridWrap" class="metrics" style="min-height:64px"></div>
-
-    <!-- ── SECCIÓN: PENDIENTES DE REVISIÓN ────────────────── -->
-    <div class="pend-home-hdr">
-      <span class="ph-title">🔔 Pendientes de revisión</span>
-      <span class="ph-count" id="pendHomeTot"></span>
-      <button class="btn bl" style="margin-left:auto;font-size:11px;padding:3px 10px" onclick="irTodasRad()">Ver todas en Radicaciones →</button>
-    </div>
-    <div class="pend-home-wrap">
-      <table>
-        <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Modalidad</th><th>Estado</th><th>F. Radicación</th><th>Acción rápida</th>
-        </tr></thead>
-        <tbody id="tbodyPendHome">
-          <tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando...</td></tr>
-        </tbody>
-      </table>
-    </div>
 
  <div class="main-tabs">
     <button class="main-tab on" id="tabRad" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
@@ -775,7 +784,7 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
-let radicaciones = [], actas = [], admin = null;
+let radicaciones = [], actas = [], protocolos = [], admin = null;
 /** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
 let filtroDashboardMetrica = null;
 let solicitudActual = null;
@@ -918,6 +927,118 @@ function irMetricaRuta(pan, opts) {
   renderTabla();
 }
 
+/** Actas + protocolo en paralelo: cola hero, vencimientos, badge actas. Errores ignorados. */
+async function precargarColaCoordinacion() {
+  const [resAct, resProt] = await Promise.all([
+    fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: coordToken() }) }),
+    fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: coordToken() }) })
+  ]);
+  const [da, dp] = await Promise.all([resAct.json(), resProt.json()]);
+  if (da.success) actas = da.actas || [];
+  if (dp.success) protocolos = dp.protocolos || [];
+  actualizarBadgeTabActas();
+}
+
+function actualizarBadgeTabActas() {
+  const pendientes = actas.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2').length;
+  const tabActas = document.getElementById('tabActas');
+  if (!tabActas) return;
+  const existing = tabActas.querySelector('.badge-count');
+  if (existing) existing.remove();
+  if (pendientes > 0) {
+    const span = document.createElement('span');
+    span.className = 'badge-count';
+    span.textContent = pendientes;
+    tabActas.appendChild(span);
+  }
+}
+
+function nombreEstudiantesPorNumeroOEmail(num, email) {
+  const em = String(email || '').trim().toLowerCase();
+  const rad = radicaciones.find(r =>
+    String(r.numero || '').trim() === String(num || '').trim() ||
+    [r.email1, r.email2, r.email3, r.emailEstudiante].some(e => String(e || '').toLowerCase() === em));
+  if (!rad) return '—';
+  const n = [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ');
+  return n || rad.email1 || rad.emailEstudiante || em || '—';
+}
+
+function fechaRefColaGestión(val) {
+  const raw = parsearFecha(val) || String(val || '');
+  const t = new Date(raw);
+  return isNaN(t.getTime()) ? 0 : t.getTime();
+}
+
+function badgeProtocoloEstCola(est) {
+  const map = {
+    'Cargado':'b-radicado','Enviado':'b-radicado','Revisado':'b-revisado','En Solicitud':'b-ensolicitud',
+    'Pendiente Comité':'b-comite','En Evaluación':'b-evaluacion','Aprobado':'b-aprobado','Rechazado':'b-devuelto',
+    'Devuelto por Comité Técnico':'b-devuelto','Aprobado Directo':'b-aprobado','Aprobado Comité':'b-aprobadocomite'
+  };
+  const cls = map[est] || 'b-radicado';
+  return `<span class="badge ${cls}">${esc(est || '—')}</span>`;
+}
+
+function irColaActasNumero(num) {
+  const tab = document.getElementById('tabActas');
+  if (!tab) return;
+  switchPanel('actas', tab);
+  const s = document.getElementById('searchActas');
+  const fe = document.getElementById('fEstActas');
+  if (fe) fe.value = '';
+  if (s) s.value = String(num || '').trim();
+  cargarActas();
+}
+
+function irColaProtocoloProt(pIdx, numero, abrirModal) {
+  const tab = document.getElementById('tabProtocolo');
+  if (!tab) return;
+  switchPanel('protocolo', tab);
+  const sq = document.getElementById('searchProtocolo');
+  const fq = document.getElementById('fEstProtocolo');
+  if (fq) fq.value = '';
+  if (sq) sq.value = String(numero || '').trim();
+  cargarProtocolo().then(() => {
+    const p = protocolos.find(x => x.rowIndex === pIdx) || protocolos.find(x => String(x.numero || '') === String(numero || ''));
+    if (abrirModal && p && (p.estado === 'Cargado' || p.estado === 'Enviado')) {
+      abrirModalProtocolo(p.rowIndex, 'aprobar', p.numero || numero);
+    } else renderProtocolo();
+  }).catch(() => {});
+}
+
+function htmlBloqueDiplomadoEnProtocoloInfo(numeroRad) {
+  const nr = String(numeroRad || '').trim();
+  const rad = radicaciones.find(r => String(r.numero || '').trim() === nr);
+  if (!rad || !esModalidadDiplomadoDash(rad)) return '';
+  const ini = fmtFecha(rad.diplomadoFechaInicio);
+  const fin = fmtFecha(rad.diplomadoFechaFin);
+  const periodo = [ini, fin].filter(x => x && x !== '—').join(' → ') || '—';
+  const modo = String(rad.diplomadoJuradoModo || '').trim().toLowerCase();
+  const modoLabel = modo === 'cttg_asigna' ? 'CTTG asigna jurados' : (modo === 'tutor_sugiere' ? 'Tutor propone jurados' : (modo || '—'));
+  const jur = [rad.dipJurado1Nombre, rad.dipJurado2Nombre, rad.dipJurado3Nombre].map(String).map(s => s.trim()).filter(Boolean);
+  const jurHtml = jur.length
+    ? '<div style="margin-top:8px;font-size:12px;color:rgba(226,232,240,.82)">' + jur.map(function(j, i) {
+      return '<div>Jurado ' + (i + 1) + ': ' + esc(j) + '</div>';
+    }).join('') + '</div>'
+    : '';
+  return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)">'
+    + '<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(167,139,250,.9);margin-bottom:6px">Diplomado (Fase 1)</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.75)">Periodo: <strong style="color:#e2e8f0">' + esc(periodo) + '</strong></div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:4px">Modo jurado: ' + esc(modoLabel) + '</div>'
+    + jurHtml
+    + '</div>';
+}
+
+function aplicarHtmlProtocoloInfo(p, numeroVisible, textoEstudiante) {
+  const box = document.getElementById('protocoloInfo');
+  if (!box) return;
+  box.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,.55)">'
+    + 'Radicación: <strong style="color:#a78bfa" id="pNum">' + esc(numeroVisible || '') + '</strong>'
+    + ' · Estudiante / correo: <strong style="color:#a78bfa" id="pEst">' + esc(textoEstudiante || '—') + '</strong>'
+    + '</div>'
+    + htmlBloqueDiplomadoEnProtocoloInfo(numeroVisible || (p && p.numero));
+}
+
 // ── RADICACIONES ─────────────────────────────────────────────
 async function cargar() {
   setSyncState('loading');
@@ -932,6 +1053,7 @@ async function cargar() {
         fechaRadicacion: parsearFecha(r.fechaRadicacion),
         fechaAprobacion: parsearFecha(r.fechaAprobacion)
       }));
+      try { await precargarColaCoordinacion(); } catch (e) {}
      actualizarMetricas();
       contarVencimientos();
       poblarFiltroMod();
@@ -1021,7 +1143,7 @@ function actualizarMetricas() {
 
   // Secciones nuevas en pantalla principal
   renderModalidadGrid();
-  renderPendientesHome();
+  renderColaGestionesCoord();
 }
 function poblarFiltroMod() {
   const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
@@ -1082,61 +1204,6 @@ function irTodasRad() {
   if (q)  q.value  = '';
   switchPanel('rad', document.getElementById('tabRad'));
   renderTabla();
-}
-
-// ── PENDIENTES EN PANTALLA PRINCIPAL ──────────────────────────
-const PEND_HOME_ESTADOS = ['Radicado','Revisión','Pendiente Comité Técnico','Devuelto','Devuelto por Comité Técnico'];
-const PEND_HOME_PRIO = { 'Radicado': 1, 'Revisión': 2, 'Devuelto': 3, 'Devuelto por Comité Técnico': 4, 'Pendiente Comité Técnico': 5 };
-const PEND_HOME_MAX = 8;
-
-function renderPendientesHome() {
-  const pend = radicaciones
-    .filter(r => PEND_HOME_ESTADOS.includes(r.estado || 'Radicado'))
-    .sort((a, b) => {
-      const pa = PEND_HOME_PRIO[a.estado || 'Radicado'] || 99;
-      const pb = PEND_HOME_PRIO[b.estado || 'Radicado'] || 99;
-      if (pa !== pb) return pa - pb;
-      return (a.fechaRadicacion || '').localeCompare(b.fechaRadicacion || '');
-    });
-
-  const tot = pend.length;
-  const totEl = document.getElementById('pendHomeTot');
-  if (totEl) totEl.textContent = tot
-    ? `${tot} solicitud${tot !== 1 ? 'es' : ''} requieren atención`
-    : '· Todo al día ✅';
-
-  const tbody = document.getElementById('tbodyPendHome');
-  if (!tbody) return;
-
-  if (!pend.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty" style="padding:24px">✅ No hay solicitudes pendientes de revisión</td></tr>';
-    return;
-  }
-
-  const shown = pend.slice(0, PEND_HOME_MAX);
-  tbody.innerHTML = shown.map(r => {
-    const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—';
-    const estado  = r.estado || 'Radicado';
-    return `<tr>
-      <td><div class="num-rad">${esc(r.numero || '')}</div></td>
-      <td style="font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(nombres)}">${esc(nombres)}</td>
-      <td style="font-size:11px;color:rgba(255,255,255,.5);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(r.modalidad||'')}">${esc(r.modalidad||'—')}</td>
-      <td>${badgeEst(estado)}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
-      <td><div class="act">
-        <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
-        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${escAttr(r.numero||'')}','${escAttr(estado)}')">✎ Estado</button>
-      </div></td>
-    </tr>`;
-  }).join('');
-
-  if (tot > PEND_HOME_MAX) {
-    tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;padding:10px">
-      <button class="btn bl" onclick="irTodasRad()" style="font-size:12px">
-        Ver ${tot - PEND_HOME_MAX} solicitud${(tot - PEND_HOME_MAX) !== 1 ? 'es' : ''} más en Radicaciones →
-      </button>
-    </td></tr>`;
-  }
 }
 
 function badgeEst(est) {
@@ -1291,17 +1358,7 @@ async function cargarActas() {
     if (!d.success) throw new Error(d.error);
     actas = d.actas || [];
 
-    // contar pendientes para badge
-    const pendientes = actas.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2').length;
-    const tabActas = document.getElementById('tabActas');
-    const existing = tabActas.querySelector('.badge-count');
-    if (existing) existing.remove();
-    if (pendientes > 0) {
-      const span = document.createElement('span');
-      span.className = 'badge-count';
-      span.textContent = pendientes;
-      tabActas.appendChild(span);
-    }
+    actualizarBadgeTabActas();
 
     renderActas();
   } catch(e) {
@@ -1918,7 +1975,6 @@ function renderAlertas() {
 // ════════════════════════════════════════════════════════════
 // TAB 5: PROTOCOLO FASE 2
 // ════════════════════════════════════════════════════════════
-let protocolos = [];
 async function cargarProtocolo() {
   try {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getFase2', token: coordToken() }) });
@@ -1940,6 +1996,143 @@ function nombreEstudianteDesdeRad(p) {
   if (!rad) return '—';
   const n = [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ');
   return n || rad.email1 || em || '—';
+}
+
+function construirFilasColaGestionesCoord() {
+  const rows = [];
+  const F1_COORD = ['Radicado', 'Revisión', 'Pendiente Comité Técnico'];
+  radicaciones.forEach(r => {
+    const est = r.estado || 'Radicado';
+    if (!F1_COORD.includes(est)) return;
+    const prio = est === 'Radicado' ? 30 : est === 'Revisión' ? 42 : 62;
+    const gestionTit =
+      est === 'Radicado' ? (esModalidadDiplomadoDash(r) ? 'Fase 1 · Aval diplomado' : 'Fase 1 · Validar tutores') :
+      est === 'Revisión' ? 'Fase 1 · Radicación en revisión' :
+      'Fase 1 · Pendiente decisión comité técnico';
+    rows.push({
+      kind: 'rad', prio,
+      ts: fechaRefColaGestión(r.fechaRadicacion),
+      numero: r.numero || '',
+      estudiantes: [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—',
+      contexto: r.modalidad || '—',
+      badge: badgeEst(est),
+      gestionTit: gestionTit, sub: '',
+      rowIndexRad: r.rowIndex
+    });
+  });
+
+  actas.forEach(a => {
+    const est = a.estado || '';
+    if (est !== 'Pendiente revisión' && est !== 'Solicitud Fase 2') return;
+    const prio = est === 'Pendiente revisión' ? 12 : 38;
+    const nomArch = String(a.nombreArchivo || '');
+    rows.push({
+      kind: 'acta', prio,
+      ts: fechaRefColaGestión(a.fechaCarga),
+      numero: a.numero || '—',
+      estudiantes: nombreEstudiantesPorNumeroOEmail(a.numero, a.emailEstudiante),
+      contexto: nomArch ? esc(nomArch.substring(0, 48)) + (nomArch.length > 48 ? '…' : '') : 'Acta',
+      badge: est === 'Pendiente revisión'
+        ? '<span class="badge b-pend">Pendiente revisión</span>'
+        : '<span class="badge b-solicitud">Solicitud Fase 2</span>',
+      gestionTit: est === 'Pendiente revisión' ? 'Acta · Revisión coordinación' : 'Acta · Solicitud paso a Fase 2',
+      sub: '',
+      fechaActaRef: a.fechaCarga
+    });
+  });
+
+  const PROT_TRAM_COORD = ['Cargado', 'Enviado', 'Revisado', 'En Solicitud', 'Pendiente Comité', 'En Evaluación'];
+  protocolos.forEach(p => {
+    const est = p.estado || '';
+    if (!PROT_TRAM_COORD.includes(est)) return;
+    const prio =
+      (est === 'Cargado' || est === 'Enviado') ? 15 :
+      est === 'En Solicitud' ? 41 :
+      (est === 'Pendiente Comité' || est === 'En Evaluación') ? 55 : 50;
+    const ev = p.evaluador ? 'Eval.: ' + String(p.evaluador).substring(0, 36) : '';
+    const ax = p.anexoCambio ? 'Anexo: ' + String(p.anexoCambio).substring(0, 36) : '';
+    const ctx = [ax, ev].filter(Boolean).join(' · ') || '—';
+    rows.push({
+      kind: 'prot', prio,
+      ts: fechaRefColaGestión(p.fechaCarga || p.fechaComite),
+      numero: p.numero || '',
+      estudiantes: nombreEstudianteDesdeRad(p),
+      contexto: ctx,
+      badge: badgeProtocoloEstCola(est),
+      gestionTit: 'Protocolo · ' + (est === 'Cargado' || est === 'Enviado' ? 'Aval / envío pendiente' : est),
+      sub: p.esDiplomado ? 'Diplomado' : '',
+      protRowIndex: p.rowIndex,
+      protEstado: est,
+      fechaProtRef: p.fechaCarga || p.fechaComite
+    });
+  });
+
+  rows.sort((a, b) => (a.prio !== b.prio ? a.prio - b.prio : a.ts - b.ts));
+  return rows;
+}
+
+const COLA_GESTIONES_MAX = 28;
+
+function renderColaGestionesCoord() {
+  const items = construirFilasColaGestionesCoord();
+  const tot = items.length;
+  const totEl = document.getElementById('pendHomeTot');
+  if (totEl) {
+    totEl.textContent = tot
+      ? `${tot} ítem${tot !== 1 ? 's' : ''} en cola institucional`
+      : '· Cola vacía — sin trámites urgentes ✅';
+  }
+  const tbody = document.getElementById('tbodyPendHome');
+  if (!tbody) return;
+
+  if (!tot) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty" style="padding:28px">✅ No hay gestiones pendientes en esta cola (Fase 1 en trámite, actas o protocolos visibles cuando apliquen).</td></tr>';
+    return;
+  }
+
+  const shown = items.slice(0, COLA_GESTIONES_MAX);
+  tbody.innerHTML = shown.map(it => {
+    const sub = it.sub ? `<div class="gh-sub">${esc(it.sub)}</div>` : '';
+    let fechaRef = '—';
+    if (it.kind === 'rad') {
+      const r = radicaciones.find(x => x.rowIndex === it.rowIndexRad);
+      fechaRef = fmtFecha(r && r.fechaRadicacion);
+    } else if (it.kind === 'acta') {
+      fechaRef = fmtFecha(it.fechaActaRef);
+    } else {
+      fechaRef = fmtFecha(it.fechaProtRef);
+    }
+
+    let acciones = '';
+    if (it.kind === 'rad') {
+      const r0 = radicaciones.find(x => x.rowIndex === it.rowIndexRad) || {};
+      acciones = `<button class="btn bl" onclick="verDetalle(${it.rowIndexRad})">👁 Ver</button>
+        <button class="btn am" onclick="abrirModalEst(${it.rowIndexRad},'${escAttr(it.numero)}','${escAttr(r0.estado || 'Radicado')}')">✎ Estado</button>`;
+    } else if (it.kind === 'acta') {
+      acciones = `<button class="btn bl" onclick="irColaActasNumero('${escAttr(it.numero)}')">📄 Actas</button>`;
+    } else {
+      const abrir = (it.protEstado === 'Cargado' || it.protEstado === 'Enviado') ? 'true' : 'false';
+      acciones = `<button class="btn bl" onclick="irColaProtocoloProt(${it.protRowIndex},'${escAttr(it.numero)}',${abrir})">📖 Protocolo</button>`;
+    }
+
+    const ctxHtml = it.kind === 'acta' ? it.contexto : esc(it.contexto);
+
+    return `<tr>
+      <td class="gh-gestion"><div>${esc(it.gestionTit)}</div>${sub}</td>
+      <td><div class="num-rad">${esc(it.numero || '')}</div></td>
+      <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(it.estudiantes)}">${esc(it.estudiantes)}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.5);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(it.contexto)}">${ctxHtml}</td>
+      <td>${it.badge}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fechaRef}</td>
+      <td><div class="act">${acciones}</div></td>
+    </tr>`;
+  }).join('');
+
+  if (tot > COLA_GESTIONES_MAX) {
+    tbody.innerHTML += `<tr><td colspan="7" style="text-align:center;padding:12px;font-size:12px;color:rgba(255,255,255,.45)">
+      Mostrando ${COLA_GESTIONES_MAX} de ${tot}. Usa las pestañas <strong>Radicaciones</strong>, <strong>Actas</strong> y <strong>Protocolo</strong> para el detalle completo.
+    </td></tr>`;
+  }
 }
 
 function renderProtocolo() {
@@ -1986,8 +2179,9 @@ function abrirModalProtocolo(rowIndex, accion, numero) {
   if (!p) return;
 
   protocoloActual = { rowIndex, accion, esDiplomado: !!p.esDiplomado };
-  document.getElementById('pNum').textContent = numero;
-  document.getElementById('pEst').textContent = p.emailEstudiante || '—';
+  const nomProt = nombreEstudianteDesdeRad(p);
+  const estProtTxt = (nomProt && nomProt !== '—') ? nomProt + ' · ' + (p.emailEstudiante || '') : (p.emailEstudiante || '—');
+  aplicarHtmlProtocoloInfo(p, numero, estProtTxt);
 
   // Pre-llenar decisión
   document.getElementById('pDecision').value = accion === 'aprobar' ? 'aprobar' : 'rechazar';
@@ -2477,6 +2671,24 @@ function partesDetalleSeguimiento(detalle) {
   return d.split(/\s*\|\s*/).map(function(p) { return p.trim(); }).filter(Boolean);
 }
 
+function extraerExtractoPersonasSeguimiento(detalle) {
+  const parts = partesDetalleSeguimiento(detalle);
+  const pick = parts.filter(function(p) {
+    return /^(Tutor|Tutores|Evaluador|Email evaluador|Jurado|Jurados|Nombre jurado|Sustentación|Secretari|President)/i.test(p.trim());
+  });
+  if (!pick.length) return '';
+  return pick.slice(0, 4).join(' · ');
+}
+
+function aplicarExtractoSiUtil(hit, detalle, accion) {
+  if (!hit || typeof hit.texto !== 'string') return hit || { texto: 'Evento', clase: 'b-pend' };
+  const a = String(accion || '').toUpperCase();
+  if (a.indexOf('NOTIFICACION_') === 0 || a === 'LOGIN' || a === 'LOGIN_FAIL') return hit;
+  const ex = extraerExtractoPersonasSeguimiento(detalle);
+  if (!ex) return hit;
+  return { texto: hit.texto + ' · ' + ex, clase: hit.clase };
+}
+
 function htmlDetalleSeguimientoCell(s) {
   const parts = partesDetalleSeguimiento(s.detalle);
   if (!parts.length) return '<span class="seg-det-empty">Sin texto de detalle en este registro.</span>';
@@ -2488,7 +2700,7 @@ function resumenDetalleParaTimeline(s) {
   const parts = partesDetalleSeguimiento(s.detalle);
   if (!parts.length) return '';
   const pref = parts.filter(function(p) {
-    return /^(Resultado|Estado protocolo|Estado asignado|Nuevo estado|Tipo:|Documento|Evaluó|Evaluador|Email evaluador|Decisión|Motivo|N° acta|Aval CCEB|Fecha|Observación|protocolo|Archivo|Jurado)/i.test(p);
+    return /^(Resultado|Estado protocolo|Estado asignado|Nuevo estado|Tipo:|Documento|Evaluó|Evaluador|Email evaluador|Decisión|Motivo|N° acta|Aval CCEB|Fecha|Observación|protocolo|Archivo|Jurado|Tutor|Tutores|President|Secretari|Sustentaci)/i.test(p);
   });
   const use = pref.length ? pref : parts;
   return use.slice(0, 5).join(' · ');
@@ -2503,27 +2715,29 @@ function etiquetaModuloSeguimiento(mod) {
 function describirHitoSeguimiento(s) {
   const accion = String(s.accion || '').toUpperCase();
   const modulo = String(s.modulo || '').toUpperCase();
-  if (accion.indexOf('NOTIFICACION_') === 0) return { texto: 'Correo automático · ' + accion.replace(/^NOTIFICACION_/, '').replace(/_/g, ' '), clase: 'b-pend' };
-  if (accion === 'CREAR_RADICACION') return { texto: 'Radicado por estudiante', clase: 'b-radicado' };
-  if (accion === 'VALIDAR_TUTORES') return { texto: 'Tutores autorizados por coordinadora', clase: 'b-tutores' };
-  if (accion === 'VALIDAR_OPCION_DIPLOMADO') return { texto: 'Aval opción Diplomado (sin tutores)', clase: 'b-comite' };
-  if (accion === 'CREAR_ACTA') return { texto: 'Acta cargada por estudiante', clase: 'b-revision' };
-  if (accion === 'APROBAR_ACTA') return { texto: 'Coordinación: acta aprobada', clase: 'b-aprobado' };
-  if (accion === 'RECHAZAR_ACTA') return { texto: 'Coordinación: acta rechazada', clase: 'b-devuelto' };
-  if (accion === 'CREAR_PROTOCOLO') return { texto: 'Protocolo cargado (ingreso a valoración)', clase: 'b-comite' };
-  if (accion === 'AVALAR_PROTOCOLO_FASE2') return { texto: 'Coordinación: aval y envío / devolución antes del comité', clase: 'b-comite' };
-  if (accion === 'ACTUALIZAR_PROTOCOLO') return { texto: 'Coordinación: actualización de protocolo (evaluador, fecha, etc.)', clase: 'b-comite' };
-  if (accion === 'REGISTRAR_DECISION_COMITE') return { texto: 'Comité técnico: decisión registrada (aprobado / devolución)', clase: 'b-comite' };
-  if (accion === 'CREAR_FASE3') return { texto: 'Solicitud de sustentación creada', clase: 'b-solicitud' };
-  if (accion === 'APROBAR_JURADOS_FASE3') return { texto: 'Fase 3: solicitud con jurados aprobada', clase: 'b-aprobado' };
-  if (accion === 'UPDATE_FASE3_ESTADO') return { texto: 'Fase 3: actualización de estado de la solicitud', clase: 'b-comite' };
-  if (accion === 'ASIGNAR_JURADOS') return { texto: 'Sustentación: fecha, lugar y jurados asignados', clase: 'b-aprobado' };
-  if (accion === 'COMPLETAR_FASE3') return { texto: 'Sustentación cerrada (resultado final)', clase: 'b-aprobado' };
-  if (accion === 'ACTUALIZAR_ESTADO') return { texto: 'Cambio de estado en Fase 1', clase: 'b-revision' };
-  if (accion === 'LOGIN') return { texto: 'Ingreso al sistema', clase: 'b-pend' };
-  if (accion === 'LOGIN_FAIL') return { texto: 'Intento de ingreso fallido', clase: 'b-devuelto' };
-  if (modulo === 'SISTEMA' || accion === 'ERROR') return { texto: 'Evento de sistema / error', clase: 'b-devuelto' };
-  return { texto: (s.accion || 'Evento') , clase: 'b-pend' };
+  let hit;
+  if (accion.indexOf('NOTIFICACION_') === 0) hit = { texto: 'Correo automático · ' + accion.replace(/^NOTIFICACION_/, '').replace(/_/g, ' '), clase: 'b-pend' };
+  else if (accion === 'CREAR_RADICACION') hit = { texto: 'Radicado por estudiante', clase: 'b-radicado' };
+  else if (accion === 'VALIDAR_TUTORES') hit = { texto: 'Tutores autorizados por coordinadora', clase: 'b-tutores' };
+  else if (accion === 'VALIDAR_OPCION_DIPLOMADO') hit = { texto: 'Aval opción Diplomado (sin tutores)', clase: 'b-comite' };
+  else if (accion === 'CREAR_ACTA') hit = { texto: 'Acta cargada por estudiante', clase: 'b-revision' };
+  else if (accion === 'APROBAR_ACTA') hit = { texto: 'Coordinación: acta aprobada', clase: 'b-aprobado' };
+  else if (accion === 'RECHAZAR_ACTA') hit = { texto: 'Coordinación: acta rechazada', clase: 'b-devuelto' };
+  else if (accion === 'CREAR_PROTOCOLO') hit = { texto: 'Protocolo cargado (ingreso a valoración)', clase: 'b-comite' };
+  else if (accion === 'AVALAR_PROTOCOLO_FASE2') hit = { texto: 'Coordinación: aval y envío / devolución antes del comité', clase: 'b-comite' };
+  else if (accion === 'ACTUALIZAR_PROTOCOLO') hit = { texto: 'Coordinación: actualización de protocolo (evaluador, fecha, etc.)', clase: 'b-comite' };
+  else if (accion === 'REGISTRAR_DECISION_COMITE') hit = { texto: 'Comité técnico: decisión registrada (aprobado / devolución)', clase: 'b-comite' };
+  else if (accion === 'CREAR_FASE3') hit = { texto: 'Solicitud de sustentación creada', clase: 'b-solicitud' };
+  else if (accion === 'APROBAR_JURADOS_FASE3') hit = { texto: 'Fase 3: solicitud con jurados aprobada', clase: 'b-aprobado' };
+  else if (accion === 'UPDATE_FASE3_ESTADO') hit = { texto: 'Fase 3: actualización de estado de la solicitud', clase: 'b-comite' };
+  else if (accion === 'ASIGNAR_JURADOS') hit = { texto: 'Sustentación: fecha, lugar y jurados asignados', clase: 'b-aprobado' };
+  else if (accion === 'COMPLETAR_FASE3') hit = { texto: 'Sustentación cerrada (resultado final)', clase: 'b-aprobado' };
+  else if (accion === 'ACTUALIZAR_ESTADO') hit = { texto: 'Cambio de estado en Fase 1', clase: 'b-revision' };
+  else if (accion === 'LOGIN') hit = { texto: 'Ingreso al sistema', clase: 'b-pend' };
+  else if (accion === 'LOGIN_FAIL') hit = { texto: 'Intento de ingreso fallido', clase: 'b-devuelto' };
+  else if (modulo === 'SISTEMA' || accion === 'ERROR') hit = { texto: 'Evento de sistema / error', clase: 'b-devuelto' };
+  else hit = { texto: (s.accion || 'Evento'), clase: 'b-pend' };
+  return aplicarExtractoSiUtil(hit, s.detalle, accion);
 }
 
 // ════════════════════════════════════════════════════════════
