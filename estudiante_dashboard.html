@@ -43,11 +43,15 @@
   .alert-card p{font-size:13px;color:#e0ecff;line-height:1.45}
   .readonly-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.32);border-radius:10px;padding:12px 14px;font-size:12px;color:#bbf7d0;margin-bottom:12px;display:none}
   .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
-  .btn-det{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);color:#a5b4fc;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:10px}
+  .btn-det{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);color:#a5b4fc;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
   .btn-det:hover{background:rgba(102,126,234,.25)}
+  .rad-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .btn-traza{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#6ee7b7;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
+  .btn-traza:hover{background:rgba(52,211,153,.2)}
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
   .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+  .modal.modal-wide{max-width:640px}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
   .btn-close{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:4px 10px;border-radius:7px;cursor:pointer;font-size:13px}
@@ -83,6 +87,12 @@
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
+  .traza-est-item{border-bottom:1px solid rgba(255,255,255,.06);padding:12px 0}
+  .traza-est-item:last-child{border-bottom:none}
+  .traza-est-meta{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:6px}
+  .traza-est-tit{font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:6px}
+  .seg-det-list{margin:6px 0 0;padding-left:18px;color:rgba(255,255,255,.78);font-size:12px;line-height:1.45}
+  .seg-det-plain{font-size:12px;color:rgba(255,255,255,.72);margin-top:4px;line-height:1.45}
   @media(max-width:600px){main{padding:16px}.form-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -481,12 +491,23 @@
 </main>
 
 <div class="modal-bg" id="modalDet">
-  <div class="modal">
+  <div class="modal modal-wide">
     <div class="modal-hdr">
       <h3>Detalle de Radicación</h3>
       <button class="btn-close" onclick="document.getElementById('modalDet').classList.remove('open')">✕ Cerrar</button>
     </div>
     <div id="modalDetBody"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalTrazaEst">
+  <div class="modal modal-wide">
+    <div class="modal-hdr">
+      <h3>Movimientos del trámite</h3>
+      <button type="button" class="btn-close" onclick="document.getElementById('modalTrazaEst').classList.remove('open')">✕ Cerrar</button>
+    </div>
+    <p style="font-size:12px;color:rgba(255,255,255,.45);margin:-8px 0 12px" id="trazaEstNum">—</p>
+    <div id="trazaEstBody" style="min-height:120px;font-size:13px;color:#e2e8f0">Cargando…</div>
   </div>
 </div>
 
@@ -960,11 +981,141 @@ function renderAlertasSuperiores(radicaciones) {
     </div>`;
 }
 
+function etiquetaModuloTrazaEst(mod) {
+  const x = String(mod || '').toUpperCase();
+  const map = { FASE1:'Fase 1', FASE2:'Fase 2 / Comité', ACTAS:'Actas', SUSTENTACION:'Sustentación', AUTH:'Accesos', SISTEMA:'Sistema', GENERAL:'General' };
+  return map[x] || (mod || '—');
+}
+
+function textoModoJuradoDiplomado(m) {
+  const v = String(m || '').trim().toLowerCase();
+  if (v === 'tutor_sugiere') return 'Tutor sugiere jurado evaluador';
+  if (v === 'cttg_asigna') return 'CTTG / coordinación asignan evaluador';
+  return String(m || '').trim() || '—';
+}
+
+function fmtFechaHoraTrazaEst(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return String(s);
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() + ' '
+    + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function partesDetalleTrazaEst(detalle) {
+  const d = String(detalle || '').trim();
+  if (!d) return [];
+  return d.split(/\s*\|\s*/).map(pt => pt.trim()).filter(Boolean);
+}
+
+function htmlDetalleTrazaEst(detalle) {
+  const parts = partesDetalleTrazaEst(detalle);
+  if (!parts.length) return '<div class="seg-det-plain">Sin texto de detalle en este movimiento.</div>';
+  if (parts.length === 1) return '<div class="seg-det-plain">' + esc(parts[0]) + '</div>';
+  return '<ul class="seg-det-list">' + parts.map(pt => '<li>' + esc(pt) + '</li>').join('') + '</ul>';
+}
+
+function tituloEventoTrazaEst(s) {
+  const accion = String(s.accion || '').toUpperCase();
+  const modulo = String(s.modulo || '').toUpperCase();
+  if (accion.indexOf('NOTIFICACION_') === 0) return 'Correo · ' + accion.replace(/^NOTIFICACION_/, '').replace(/_/g, ' ');
+  if (accion === 'CREAR_RADICACION') return 'Radicación registrada';
+  if (accion === 'VALIDAR_TUTORES') return 'Coordinación: tutores autorizados';
+  if (accion === 'VALIDAR_OPCION_DIPLOMADO' || accion === 'VALIDAR_OPCION_DIPLOMADO_F1') return 'Coordinación: aval opción diplomado';
+  if (accion === 'CREAR_ACTA') return 'Acta de asesoría cargada';
+  if (accion === 'APROBAR_ACTA') return 'Coordinación: acta aprobada';
+  if (accion === 'RECHAZAR_ACTA') return 'Coordinación: acta devuelta / rechazada';
+  if (accion === 'CREAR_PROTOCOLO') return 'Documento cargado para valoración (Fase 2)';
+  if (accion === 'AVALAR_PROTOCOLO_FASE2') return 'Coordinación: revisión antes del comité (protocolo o producto)';
+  if (accion === 'ACTUALIZAR_PROTOCOLO') return 'Actualización protocolo / evaluador asignado';
+  if (accion === 'REGISTRAR_DECISION_COMITE') return 'Comité técnico: decisión registrada';
+  if (accion === 'CREAR_FASE3') return 'Solicitud de sustentación enviada';
+  if (accion === 'ASIGNAR_JURADOS') return 'Sustentación: fecha y jurados asignados';
+  if (accion === 'UPDATE_FASE3_ESTADO') return 'Actualización estado sustentación';
+  if (accion === 'COMPLETAR_FASE3') return 'Sustentación cerrada · resultado';
+  if (accion === 'ACTUALIZAR_ESTADO') return 'Cambio de estado (Fase 1)';
+  if (modulo === 'SISTEMA' || accion === 'ERROR') return 'Evento de sistema';
+  return s.accion || 'Evento';
+}
+
+async function abrirTrazaEstudiante(numRad) {
+  const n = String(numRad || '').trim();
+  const modal = document.getElementById('modalTrazaEst');
+  const body = document.getElementById('trazaEstBody');
+  const lbl = document.getElementById('trazaEstNum');
+  if (!n) { toast('No hay número de radicación para consultar.', 'warn'); return; }
+  lbl.textContent = 'Radicación: ' + n;
+  body.innerHTML = '<div class="empty" style="padding:20px">Cargando movimientos…</div>';
+  modal.classList.add('open');
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
+      action: 'getTrazabilidad', numeroRadicacion: n, limit: 300, token: TOKEN
+    })});
+    const d = await res.json();
+    if (redirigirSiSesionInvalida(d)) { modal.classList.remove('open'); return; }
+    if (!d.success) {
+      body.innerHTML = `<div class="empty" style="padding:16px;color:#fecaca">${esc(d.error || 'No se pudieron cargar los movimientos')}</div>`;
+      toast(d.error || 'Sin trazabilidad', 'warn');
+      return;
+    }
+    const regs = d.registros || [];
+    if (!regs.length) {
+      body.innerHTML = '<div class="empty" style="padding:16px">Aún no hay movimientos registrados para esta radicación.</div>';
+      return;
+    }
+    const ordenados = [...regs].sort((a,b) => {
+      const ta = new Date(a.timestamp||0).getTime();
+      const tb = new Date(b.timestamp||0).getTime();
+      return (isNaN(ta)?0:ta) - (isNaN(tb)?0:tb);
+    });
+    body.innerHTML = ordenados.map(s =>
+      `<div class="traza-est-item">`
+      + `<div class="traza-est-meta">${esc(fmtFechaHoraTrazaEst(s.timestamp))} · ${esc(etiquetaModuloTrazaEst(s.modulo))}</div>`
+      + `<div class="traza-est-tit">${esc(tituloEventoTrazaEst(s))}<span style="opacity:.65;font-weight:500;font-size:11px"> · ${esc(String(s.accion||'').replace(/_/g,'·'))}</span></div>`
+      + htmlDetalleTrazaEst(s.detalle)
+      + `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">Registrado por cuenta: ${esc(s.email||'—')}</div>`
+      + `</div>`).join('');
+  } catch (e) {
+    body.innerHTML = '<div class="empty" style="padding:16px;color:#fecaca">Error de conexión al cargar movimientos.</div>';
+    toast('Error al cargar trazabilidad', 'err');
+  }
+}
+
+function htmlBloqueDiplomadoDetalle(r) {
+  if (!esModalidadDiplomado(r.modalidad || '')) return '';
+  const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val" style="white-space:pre-wrap">${esc(val)}</span></div>` : '';
+  const modo = String(r.diplomadoJuradoModo || '').trim().toLowerCase();
+  let juradosHtml = '';
+  const j1 = [r.dipJurado1Nombre, r.dipJurado1Email, r.dipJurado1Telefono].map(x => String(x||'').trim()).filter(Boolean);
+  const j2 = [r.dipJurado2Nombre, r.dipJurado2Email, r.dipJurado2Telefono].map(x => String(x||'').trim()).filter(Boolean);
+  const j3 = [r.dipJurado3Nombre, r.dipJurado3Email, r.dipJurado3Telefono].map(x => String(x||'').trim()).filter(Boolean);
+  if (modo === 'cttg_asigna') {
+    juradosHtml = fila('Evaluador en radicación', 'Indicaste que CTTG/coordinación asignará evaluador. No registraste jurado sugerido en este paso.');
+  } else {
+    if (j1.length) {
+      juradosHtml += fila('Jurado sugerido 1', j1.join(' · ')
+        + (String(r.dipJurado1Especialidad||'').trim() ? ' · Esp.: ' + String(r.dipJurado1Especialidad).trim() : '')
+        + (String(r.dipJurado1AceptaPropuesta||'').trim() ? ' · Acepta propuesta: ' + String(r.dipJurado1AceptaPropuesta).trim() : ''));
+    }
+    if (j2.length) juradosHtml += fila('Jurado sugerido 2', j2.join(' · '));
+    if (j3.length) juradosHtml += fila('Jurado sugerido 3', j3.join(' · '));
+    if (!juradosHtml) juradosHtml = fila('Jurados sugeridos', 'Sin datos — revisa con coordinación.');
+  }
+  return `
+    <div class="det-sec">Modalidad Diplomado</div>
+    ${fila('Fecha inicio diplomado', r.diplomadoFechaInicio ? fmtFecha(r.diplomadoFechaInicio) : '')}
+    ${fila('Fecha fin diplomado', r.diplomadoFechaFin ? fmtFecha(r.diplomadoFechaFin) : '')}
+    ${fila('Quién propone evaluador', textoModoJuradoDiplomado(r.diplomadoJuradoModo))}
+    ${juradosHtml}`;
+}
+
 function verDetalle(rowIndex) {
   const r = misRadicaciones.find(x => x.rowIndex === rowIndex);
   if (!r) return;
   const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val">${esc(val)}</span></div>` : '';
   const notas = limpiarNotas(r.notas);
+  const dipBlock = htmlBloqueDiplomadoDetalle(r);
+  const numJson = JSON.stringify(String(r.numero || ''));
   document.getElementById('modalDetBody').innerHTML = `
     <div style="margin-bottom:14px">
       <div style="font-size:13px;color:#a78bfa;font-weight:600;margin-bottom:4px">${esc(r.numero)}</div>
@@ -976,16 +1127,24 @@ function verDetalle(rowIndex) {
     ${fila('Área', r.area)}
     ${fila('F. Radicación', fmtFecha(r.fechaRadicacion))}
     ${fila('F. Aprobación', fmtFecha(r.fechaAprobacion))}
+    ${dipBlock}
     <div class="det-sec">Estudiantes</div>
     ${fila('Estudiante 1', r.nombre1 ? r.nombre1+' · Ced: '+r.cedula1+' · Sem. '+r.semestre1 : '')}
     ${fila('Email 1', r.email1)}
     ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
+    ${fila('Email 2', r.email2)}
     ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
+    ${fila('Email 3', r.email3)}
     <div class="det-sec">Tutores</div>
     ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
     ${fila('Email T1', r.tutor1Email)}
     ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
+    ${fila('Email T2', r.tutor2Email)}
     ${notas ? `<div class="notas-box" style="margin-top:14px">📝 ${esc(notas)}</div>` : ''}
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+      <button type="button" class="btn-traza" onclick="document.getElementById('modalDet').classList.remove('open'); void abrirTrazaEstudiante(${numJson})">📜 Ver movimientos del trámite</button>
+      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.4">Consulta aquí aval de tutores, evaluador o jurados, decisiones de comité u otros registros cuando consten en la bitácora.</div>
+    </div>
   `;
   document.getElementById('modalDet').classList.add('open');
 }
@@ -1051,6 +1210,7 @@ async function cargarMisRad() {
       }
       wrap.innerHTML = misRadicaciones.map(r => {
         const notasLimpias = limpiarNotas(r.notas);
+        const numQ = JSON.stringify(String(r.numero || ''));
         return `<div class="rad-card">
           <div class="num">📋 ${esc(r.numero)}</div>
           <div class="titulo">${esc(r.titulo||'Sin título')}</div>
@@ -1062,7 +1222,10 @@ async function cargarMisRad() {
           </div>
           ${construirCajaTiempos(r)}
           ${notasLimpias ? `<div class="notas-box">📝 ${esc(notasLimpias)}</div>` : ''}
-          <button class="btn-det" onclick="verDetalle(${r.rowIndex})">👁 Ver detalle</button>
+          <div class="rad-card-actions">
+            <button type="button" class="btn-det" onclick="verDetalle(${r.rowIndex})">👁 Ver detalle</button>
+            <button type="button" class="btn-traza" onclick="void abrirTrazaEstudiante(${numQ})">📜 Movimientos</button>
+          </div>
         </div>`;
       }).join('');
     } else {
@@ -1404,9 +1567,12 @@ function actualizarContadorGeneral(radicacion) {
 }
 
 
-document.getElementById('modalDet').addEventListener('click', e => {
-  if (e.target === document.getElementById('modalDet')) document.getElementById('modalDet').classList.remove('open');
-});
+(function trapRadEstModales() {
+  const md = document.getElementById('modalDet');
+  if (md) md.addEventListener('click', function(e){ if (e.target === md) md.classList.remove('open'); });
+  const mz = document.getElementById('modalTrazaEst');
+  if (mz) mz.addEventListener('click', function(e){ if (e.target === mz) mz.classList.remove('open'); });
+})();
 </script>
 </body>
 </html>
