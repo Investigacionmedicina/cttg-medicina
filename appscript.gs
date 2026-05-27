@@ -38,7 +38,8 @@ function handleRequest(e, body) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    var accionesSoloCoordLectura = ['getFase1','getTutores','getEvaluadores','getFechasComite','getEstadisticasTutores','getAlertasCriticas','getTrazabilidad','getSolicitudesModRadPendientes'];
+    /** getTrazabilidad también la usa el estudiante (solo su radicación); ver obtenerTrazabilidad. */
+    var accionesSoloCoordLectura = ['getFase1','getTutores','getEvaluadores','getFechasComite','getEstadisticasTutores','getAlertasCriticas','getSolicitudesModRadPendientes'];
     if (accionesSoloCoordLectura.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
         .createTextOutput(JSON.stringify({ success: false, error: "No autorizado" }))
@@ -328,17 +329,56 @@ function registrarTrazabilidadGlobal(email, accion, detalle) {
   }
 }
 
-function obtenerTrazabilidad(sesion, numeroRadicacion, limit) {
-  if (!sesion || !sesionEsCoordinadoraOAsistente(sesion)) {
-    return { success: false, error: "No autorizado" };
-  }
-  var sheet = getSheet("Trazabilidad");
-  if (!sheet) return { success: true, registros: [] };
+function estudiantePuedeVerRadicacionPorNumero(emailEstudiante, numeroRadicacion) {
+  var emailLower = String(emailEstudiante || "").trim().toLowerCase();
+  var numero = String(numeroRadicacion || "").trim().toUpperCase();
+  if (!emailLower || !numero) return false;
+  var sheet = getSheet("Fase1");
+  if (!sheet) return false;
   var data = sheet.getDataRange().getValues();
+  var i;
+  for (i = 1; i < data.length; i++) {
+    var row = data[i];
+    if (!row[0]) continue;
+    var n = String(row[1] || "").trim().toUpperCase();
+    if (n !== numero) continue;
+    var emails = [
+      String(row[2] || "").trim().toLowerCase(),
+      String(row[5] || "").trim().toLowerCase(),
+      String(row[11] || "").trim().toLowerCase(),
+      String(row[17] || "").trim().toLowerCase()
+    ];
+    var j;
+    for (j = 0; j < emails.length; j++) {
+      if (emails[j] && emails[j] === emailLower) return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+function obtenerTrazabilidad(sesion, numeroRadicacion, limit) {
+  if (!sesion) return { success: false, error: "No autorizado" };
+
   var max = parseInt(limit, 10);
   if (isNaN(max) || max <= 0) max = 200;
   if (max > 1000) max = 1000;
+
+  var esStaff = sesionEsCoordinadoraOAsistente(sesion);
   var numeroFiltro = String(numeroRadicacion || "").trim().toUpperCase();
+
+  if (!esStaff) {
+    var rolEst = String(sesion.rol || "").trim().toLowerCase();
+    if (rolEst !== "estudiante") return { success: false, error: "No autorizado" };
+    if (!numeroFiltro) return { success: false, error: "Indica el número de radicación para ver movimientos" };
+    if (!estudiantePuedeVerRadicacionPorNumero(sesion.email, numeroFiltro)) {
+      return { success: false, error: "No autorizado para esta radicación" };
+    }
+  }
+
+  var sheet = getSheet("Trazabilidad");
+  if (!sheet) return { success: true, registros: [] };
+  var data = sheet.getDataRange().getValues();
   var registros = [];
   for (var i = data.length - 1; i >= 1; i--) {
     var r = data[i];
