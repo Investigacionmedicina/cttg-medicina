@@ -151,7 +151,7 @@
   .ph-title{font-size:11px;color:#fcd34d;text-transform:uppercase;letter-spacing:.75px;font-family:'DM Mono',monospace;font-weight:700}
   .ph-count{font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace}
   .pend-home-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto;max-height:310px;margin-bottom:20px}
-  .pend-home-wrap table{min-width:600px;width:100%;border-collapse:collapse}
+  .pend-home-wrap table{min-width:760px;width:100%;border-collapse:collapse}
   .pend-home-wrap thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
   .dash-shortcuts{margin-bottom:18px;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:6px 12px 12px;background:rgba(255,255,255,.02)}
   .dash-shortcuts summary{cursor:pointer;font-size:12px;color:rgba(255,255,255,.55);padding:10px 4px;user-select:none;list-style:none}
@@ -182,7 +182,7 @@
     <div class="metrics-caption">Resumen principal</div>
     <div class="metrics">
     <div class="mc c1"><div class="ml">Trabajos · Fase 1</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en la hoja principal</div></div>
-    <div class="mc c4"><div class="ml">Tu gestión pendiente</div><div class="mv" id="mPendGestionHero">—</div><div class="mh">Radicación, revisión coord. o devoluciones donde sueles intervenir primero</div></div>
+    <div class="mc c4"><div class="ml">Pendiente de tu gestión</div><div class="mv" id="mPendGestionHero">—</div><div class="mh">Donde debes responder tú · rad nueva, revisión coord., actas, solicitud F2 o aval de protocolo · no cuenta devolución al estudiante ni «solo CT»</div></div>
     <div class="mc c3 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⚠ Alertas · plazo</div><div class="mv" id="mCritico">—</div><div class="mh">&gt;60% plazo sin cierre · pestaña Alertas</div></div>
    </div>
     <div id="homeComiteHint" class="home-comite-hint" style="display:none"></div>
@@ -207,19 +207,23 @@
     <div class="metrics-caption">Por modalidad · Clic para filtrar en Radicaciones</div>
     <div id="modGridWrap" class="metrics" style="min-height:64px"></div>
 
-    <!-- ── SECCIÓN: PENDIENTES DE REVISIÓN ────────────────── -->
+    <!-- ── SECCIÓN: Pendiente de tu gestión (acciones coordinadora) ────────────────── -->
     <div class="pend-home-hdr">
-      <span class="ph-title">🔔 Tu escritorio (Radicación / revisión)</span>
+      <span class="ph-title">📌 Pendiente de tu gestión</span>
       <span class="ph-count" id="pendHomeTot"></span>
-      <button class="btn bl" style="margin-left:auto;font-size:11px;padding:3px 10px" onclick="irTodasRad()">Ver todas en Radicaciones →</button>
+      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn bl" style="font-size:11px;padding:3px 10px" onclick="irTodasRad()">Radicaciones →</button>
+        <button class="btn bl" style="font-size:11px;padding:3px 10px" onclick="var t=document.getElementById('tabActas');if(t)switchPanel('actas',t);">Actas →</button>
+        <button class="btn bl" style="font-size:11px;padding:3px 10px" onclick="var t=document.getElementById('tabProtocolo');if(t)switchPanel('protocolo',t);">Protocolo →</button>
+      </div>
     </div>
     <div class="pend-home-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Modalidad</th><th>Estado</th><th>F. Radicación</th><th>Acción rápida</th>
+          <th>Tipo</th><th>N° Radicación</th><th>Estudiante(s)</th><th>Detalle</th><th>Estado</th><th>Fecha</th><th>Acción rápida</th>
         </tr></thead>
         <tbody id="tbodyPendHome">
-          <tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+          <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -795,7 +799,7 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
-let radicaciones = [], actas = [], admin = null;
+let radicaciones = [], actas = [], protocolos = [], admin = null;
 /** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
 let filtroDashboardMetrica = null;
 let solicitudActual = null;
@@ -940,17 +944,91 @@ function irMetricaRuta(pan, opts) {
   renderTabla();
 }
 
-// Escritorio coord. (sin filas que sólo esperan al Comité Técnico)
-const PEND_COORD_ESTADOS = ['Radicado', 'Revisión', 'Devuelto', 'Devuelto por Comité Técnico'];
-const PEND_COORD_PRIO = { Radicado: 1, Revisión: 2, Devuelto: 3, 'Devuelto por Comité Técnico': 4 };
+// Escritorio coord.: ítems donde la coordinadora debe actuar (ver también getItemsGestionCoord)
+const GEST_HOME_RAD_ESTADOS = ['Radicado', 'Revisión', 'Devuelto por Comité Técnico'];
+const GEST_HOME_RAD_PRIO = { 'Radicado': 1, 'Revisión': 2, 'Devuelto por Comité Técnico': 3 };
 const PEND_HOME_MAX = 8;
 
 function stripChipHtml(label, value) {
   return '<span class="strip-chip"><span style="opacity:.72">' + esc(label) + '</span> <b>' + esc(String(value)) + '</b></span>';
 }
 
-function cuentaRadPendGestCoord() {
-  return radicaciones.filter(function(r) { return PEND_COORD_ESTADOS.includes(r.estado || 'Radicado'); }).length;
+function actaRequiereGestionCoord(a) {
+  if (!a) return false;
+  if (a.estado === 'Solicitud Fase 2') return true;
+  if (a.estado === 'Pendiente revisión' && String(a.nombreArchivo || '') !== 'Solicitud activación Fase 2') return true;
+  return false;
+}
+
+function protocoloRequiereGestionCoord(p) {
+  return !!(p && (p.estado === 'Cargado' || p.estado === 'Enviado'));
+}
+
+function badgeGestionEstado(kind, estado) {
+  if (kind === 'rad') return badgeEst(estado);
+  if (kind === 'acta') {
+    var map = { 'Pendiente revisión': 'b-pend', 'Solicitud Fase 2': 'b-solicitud' };
+    var cls = map[estado] || 'b-pend';
+    return '<span class="badge ' + cls + '">' + esc(estado) + '</span>';
+  }
+  return '<span class="badge b-radicado">' + esc(estado) + '</span>';
+}
+
+function getItemsGestionCoord() {
+  var items = [];
+  radicaciones.forEach(function(r) {
+    var estado = r.estado || 'Radicado';
+    if (GEST_HOME_RAD_ESTADOS.indexOf(estado) === -1) return;
+    var nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—';
+    items.push({
+      kind: 'rad',
+      pri: GEST_HOME_RAD_PRIO[estado] || 9,
+      fechaSort: r.fechaRadicacion || '',
+      numero: r.numero,
+      detalle: r.modalidad || '—',
+      estadoLabel: estado,
+      rowIndex: r.rowIndex,
+      nombres: nombres
+    });
+  });
+  actas.forEach(function(a) {
+    if (!actaRequiereGestionCoord(a)) return;
+    var rad = radicaciones.find(function(rr) { return String(rr.numero || '') === String(a.numero || ''); });
+    var nombres = rad ? [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ') || '—' : (a.emailEstudiante || '—');
+    var isSol = a.estado === 'Solicitud Fase 2';
+    items.push({
+      kind: 'acta',
+      pri: 4,
+      fechaSort: a.fechaCarga || '',
+      numero: a.numero,
+      detalle: a.nombreArchivo || 'Acta',
+      estadoLabel: isSol ? 'Solicitud Fase 2' : 'Pendiente revisión',
+      rowIndex: a.rowIndex,
+      nombres: nombres
+    });
+  });
+  protocolos.forEach(function(p) {
+    if (!protocoloRequiereGestionCoord(p)) return;
+    items.push({
+      kind: 'protocolo',
+      pri: 4,
+      fechaSort: p.fechaCarga || '',
+      numero: p.numero,
+      detalle: 'Protocolo (Fase 2)',
+      estadoLabel: p.estado || 'Cargado',
+      rowIndex: p.rowIndex,
+      nombres: nombreEstudianteDesdeRad(p)
+    });
+  });
+  items.sort(function(a, b) {
+    if (a.pri !== b.pri) return a.pri - b.pri;
+    return String(a.fechaSort || '').localeCompare(String(b.fechaSort || ''));
+  });
+  return items;
+}
+
+function contarItemsGestionCoord() {
+  return getItemsGestionCoord().length;
 }
 
 function refreshPanelStrips(which) {
@@ -961,13 +1039,13 @@ function refreshPanelStrips(which) {
   if (!which || which === 'rad') {
     var sr = '';
     sr += stripChipHtml('Fase 1 cargados', radicaciones.length);
-    sr += stripChipHtml('Tu gestión pendiente', cuentaRadPendGestCoord());
+    sr += stripChipHtml('Tu gestión pendiente', contarItemsGestionCoord());
     var nm = {};
     radicaciones.forEach(function(r) {
       var e = r.estado || 'Radicado';
       nm[e] = (nm[e] || 0) + 1;
     });
-    ['Radicado', 'Revisión', 'Devuelto', 'Devuelto por Comité Técnico'].forEach(function(st) {
+    ['Radicado', 'Revisión', 'Devuelto por Comité Técnico'].forEach(function(st) {
       if (nm[st]) sr += stripChipHtml(st, nm[st]);
     });
     var pc = (nm['Pendiente Comité Técnico'] || 0) + (nm['Pendiente Comité'] || 0);
@@ -1054,6 +1132,47 @@ function refreshPanelStrips(which) {
   }
 }
 
+function updateActasTabBadge() {
+  var pendientes = actas.filter(function(a) {
+    return a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2';
+  }).length;
+  var tabActas = document.getElementById('tabActas');
+  if (!tabActas) return;
+  var existing = tabActas.querySelector('.badge-count');
+  if (existing) existing.remove();
+  if (pendientes > 0) {
+    var span = document.createElement('span');
+    span.className = 'badge-count';
+    span.textContent = pendientes;
+    tabActas.appendChild(span);
+  }
+}
+
+async function cargarAuxiliaresGestión() {
+  try {
+    var pair = await Promise.all([
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: coordToken() }) }),
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: coordToken() }) })
+    ]);
+    var resActas = pair[0], resProt = pair[1];
+    var dActas = await resActas.json();
+    var dProt = await resProt.json();
+    if (dActas.success) {
+      actas = dActas.actas || [];
+      updateActasTabBadge();
+      var panActas = document.getElementById('pan-actas');
+      if (panActas && panActas.classList.contains('on')) renderActas();
+    }
+    if (dProt.success) {
+      protocolos = dProt.protocolos || [];
+      var panProt = document.getElementById('pan-protocolo');
+      if (panProt && panProt.classList.contains('on')) renderProtocolo();
+    }
+  } catch (e) {
+    console.error('cargarAuxiliaresGestión:', e);
+  }
+}
+
 // ── RADICACIONES ─────────────────────────────────────────────
 async function cargar() {
   setSyncState('loading');
@@ -1068,6 +1187,7 @@ async function cargar() {
         fechaRadicacion: parsearFecha(r.fechaRadicacion),
         fechaAprobacion: parsearFecha(r.fechaAprobacion)
       }));
+      await cargarAuxiliaresGestión();
      actualizarMetricas();
       contarVencimientos();
       poblarFiltroMod();
@@ -1126,7 +1246,7 @@ function actualizarMetricas() {
   }
 
   setTxt('mTot', s.total);
-  setTxt('mPendGestionHero', cuentaRadPendGestCoord());
+  setTxt('mPendGestionHero', contarItemsGestionCoord());
   setTxt('mRad', s.radicado);
   setTxt('mCritico', s.critico);
   setTxt('mAvTutor', s.avTutor);
@@ -1155,6 +1275,8 @@ function actualizarMetricas() {
   dimCard('mEnSust', s.enSustCierre);
   dimCard('mDev', s.devCoord);
   dimCard('mRev', s.revision);
+
+  dimCard('mPendGestionHero', contarItemsGestionCoord());
 
   var hintEl = document.getElementById('homeComiteHint');
   if (hintEl) {
@@ -1237,55 +1359,50 @@ function irTodasRad() {
   renderTabla();
 }
 
-// ── Escritorio coord. (usa PEND_COORD_* cerca de cargar) ──────────────────────────
-
 function renderPendientesHome() {
-  const pend = radicaciones
-    .filter(r => PEND_COORD_ESTADOS.includes(r.estado || 'Radicado'))
-    .sort((a, b) => {
-      const pa = PEND_COORD_PRIO[a.estado || 'Radicado'] || 99;
-      const pb = PEND_COORD_PRIO[b.estado || 'Radicado'] || 99;
-      if (pa !== pb) return pa - pb;
-      return (a.fechaRadicacion || '').localeCompare(b.fechaRadicacion || '');
-    });
+  var items = getItemsGestionCoord();
+  var tot = items.length;
+  var totEl = document.getElementById('pendHomeTot');
+  if (totEl) {
+    totEl.textContent = tot
+      ? tot + ' ítem(s) donde debes actuar · rad., actas, solicitud Fase 2 o protocolo'
+      : '· Nada espera tu respuesta ahora ✅';
+  }
 
-  const tot = pend.length;
-  const totEl = document.getElementById('pendHomeTot');
-  if (totEl) totEl.textContent = tot
-    ? `${tot} ítem(s) donde corresponde tu gestión (no incluye sólo “Pendiente CT”)`
-    : '· Nada urgente en estos estados por tu lado ✅';
-
-  const tbody = document.getElementById('tbodyPendHome');
+  var tbody = document.getElementById('tbodyPendHome');
   if (!tbody) return;
 
-  if (!pend.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty" style="padding:24px">✅ No hay registros en Radicado, Revisión, Devuelto ni Dev. CT que requieran tu gestión aquí</td></tr>';
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty" style="padding:24px">✅ No hay pendientes donde deba responder la coordinadora (ej. «Devuelto» al estudiante o «Pendiente CT» no aparecen aquí).</td></tr>';
     return;
   }
 
-  const shown = pend.slice(0, PEND_HOME_MAX);
-  tbody.innerHTML = shown.map(r => {
-    const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—';
-    const estado  = r.estado || 'Radicado';
-    return `<tr>
-      <td><div class="num-rad">${esc(r.numero || '')}</div></td>
-      <td style="font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(nombres)}">${esc(nombres)}</td>
-      <td style="font-size:11px;color:rgba(255,255,255,.5);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(r.modalidad||'')}">${esc(r.modalidad||'—')}</td>
-      <td>${badgeEst(estado)}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
-      <td><div class="act">
-        <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
-        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${escAttr(r.numero||'')}','${escAttr(estado)}')">✎ Estado</button>
-      </div></td>
-    </tr>`;
+  var shown = items.slice(0, PEND_HOME_MAX);
+  tbody.innerHTML = shown.map(function(it) {
+    var tipo = it.kind === 'rad' ? '📋 Radicación' : it.kind === 'acta' ? '📄 Acta' : '📖 Protocolo';
+    var acciones = '';
+    if (it.kind === 'rad') {
+      acciones = '<button class="btn bl" onclick="verDetalle(' + it.rowIndex + ')">👁 Ver</button>'
+        + '<button class="btn am" onclick="abrirModalEst(' + it.rowIndex + ',\'' + escAttr(it.numero || '') + '\',\'' + escAttr(it.estadoLabel) + '\')">✎ Estado</button>';
+    } else if (it.kind === 'acta') {
+      acciones = '<button class="btn bl" onclick="var t=document.getElementById(\'tabActas\');if(t)switchPanel(\'actas\',t);">→ Actas</button>';
+    } else {
+      acciones = '<button class="btn bl" onclick="var t=document.getElementById(\'tabProtocolo\');if(t)switchPanel(\'protocolo\',t);">→ Protocolo</button>';
+    }
+    return '<tr>'
+      + '<td style="font-size:11px;color:rgba(255,255,255,.65);white-space:nowrap">' + tipo + '</td>'
+      + '<td><div class="num-rad">' + esc(it.numero || '') + '</div></td>'
+      + '<td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escAttr(it.nombres) + '">' + esc(it.nombres) + '</td>'
+      + '<td style="font-size:11px;color:rgba(255,255,255,.5);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escAttr(it.detalle) + '">' + esc(it.detalle) + '</td>'
+      + '<td>' + badgeGestionEstado(it.kind, it.estadoLabel) + '</td>'
+      + '<td style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,.4)">' + fmtFecha(it.fechaSort) + '</td>'
+      + '<td><div class="act">' + acciones + '</div></td>'
+      + '</tr>';
   }).join('');
 
   if (tot > PEND_HOME_MAX) {
-    tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;padding:10px">
-      <button class="btn bl" onclick="irTodasRad()" style="font-size:12px">
-        Ver ${tot - PEND_HOME_MAX} solicitud${(tot - PEND_HOME_MAX) !== 1 ? 'es' : ''} más en Radicaciones →
-      </button>
-    </td></tr>`;
+    tbody.innerHTML += '<tr><td colspan="7" style="text-align:center;padding:10px"><span style="font-size:12px;color:rgba(255,255,255,.45)">'
+      + 'Hay ' + (tot - PEND_HOME_MAX) + ' ítem(s) más · abre Radicaciones, Actas o Protocolo.</span></td></tr>';
   }
 }
 
@@ -1440,20 +1557,9 @@ async function cargarActas() {
     const d = await res.json();
     if (!d.success) throw new Error(d.error);
     actas = d.actas || [];
-
-    // contar pendientes para badge
-    const pendientes = actas.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2').length;
-    const tabActas = document.getElementById('tabActas');
-    const existing = tabActas.querySelector('.badge-count');
-    if (existing) existing.remove();
-    if (pendientes > 0) {
-      const span = document.createElement('span');
-      span.className = 'badge-count';
-      span.textContent = pendientes;
-      tabActas.appendChild(span);
-    }
-
+    updateActasTabBadge();
     renderActas();
+    renderPendientesHome();
   } catch(e) {
     tbody.innerHTML = '<tr><td colspan="8" class="empty">Error al cargar actas.</td></tr>';
   }
@@ -2069,7 +2175,6 @@ function renderAlertas() {
 // ════════════════════════════════════════════════════════════
 // TAB 5: PROTOCOLO FASE 2
 // ════════════════════════════════════════════════════════════
-let protocolos = [];
 async function cargarProtocolo() {
   try {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getFase2', token: coordToken() }) });
@@ -2077,6 +2182,7 @@ async function cargarProtocolo() {
     if (d.success) {
       protocolos = d.protocolos || [];
       renderProtocolo();
+      renderPendientesHome();
     } else throw new Error(d.error);
   } catch(e) { toast('Error cargando protocolos: ' + e.message, 'err'); }
 }
