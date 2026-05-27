@@ -1108,23 +1108,9 @@ function obtenerFase1() {
   if (!sheet) return { success: false, error: "Hoja Fase1 no encontrada" };
   var data = sheet.getDataRange().getValues();
   var radicaciones = [];
-  var todasFase3 = listaFase3Completa();
   for (var i = 1; i < data.length; i++) {
     if (!data[i][0]) continue;
-    var rad = mapearFilaFase1(data[i], i + 1);
-    var sust = todasFase3.find(function(x) {
-      return String(x.numero || "").trim().toUpperCase() === String(rad.numero || "").trim().toUpperCase();
-    });
-    if (sust) {
-      rad.sustentacionEstado = String(sust.estadoSolicitud || sust.estado || "").trim();
-      rad.f3Jurado1Nombre = String(sust.jurado1Nombre || "").trim();
-      rad.f3Jurado1Email = String(sust.jurado1Email || "").trim();
-      rad.f3Jurado2Nombre = String(sust.jurado2Nombre || "").trim();
-      rad.f3Jurado2Email = String(sust.jurado2Email || "").trim();
-      rad.f3FechaSustentacion = sust.fechaSustentacion || "";
-      rad.f3FechaAsignada = sust.fechaAsignada || "";
-    }
-    radicaciones.push(rad);
+    radicaciones.push(mapearFilaFase1(data[i], i + 1));
   }
   return { success: true, radicaciones: radicaciones };
 }
@@ -1214,15 +1200,10 @@ function obtenerFase1PorEmail(email, sesion) {
       var fase3 = todasFase3;
       var sust = fase3.find(s => String(s.numero) === String(rad.numero));
       if (sust) {
-        rad.sustentacionEstado = String(sust.estadoSolicitud || sust.estado || "").trim();
-        rad.f3Jurado1Nombre = String(sust.jurado1Nombre || "").trim();
-        rad.f3Jurado1Email = String(sust.jurado1Email || "").trim();
-        rad.f3Jurado2Nombre = String(sust.jurado2Nombre || "").trim();
-        rad.f3Jurado2Email = String(sust.jurado2Email || "").trim();
-        rad.f3FechaSustentacion = sust.fechaSustentacion || "";
-        rad.f3FechaAsignada = sust.fechaAsignada || "";
+        rad.sustentacionEstado = sust.estado;
+        // Calcular 15 días desde que documentos se carguen
         var diasParaSustentacion = 15;
-        var diasRestantesSust = diasParaSustentacion;
+        var diasRestantesSust = diasParaSustentacion; // Placeholder
         rad.diasRestantesSustentacion = diasRestantesSust;
       }
       
@@ -1255,13 +1236,7 @@ function actualizarEstado(rowIndex, estado, notas, emailCoord) {
 
  
  notificarCambioEstado(ri, estado, { notas: notas });
-  var detAudit = numeroRad + " | Fila " + rowIndex + " → " + estado;
-  if (notas) {
-    var nt = String(notas).replace(/\s+/g, " ").trim();
-    if (nt.length > 500) nt = nt.substring(0, 497) + "...";
-    detAudit += " | Motivo/notas: " + nt;
-  }
-  registrarAuditoria(emailCoord, "ACTUALIZAR_ESTADO", detAudit);
+  registrarAuditoria(emailCoord, "ACTUALIZAR_ESTADO", numeroRad + " | Fila " + rowIndex + " → " + estado);
   try { verificarVencimientosYAlertar(ri); } catch(e) { Logger.log("Error alertas: " + e); }
   return { success: true };
 }
@@ -1655,14 +1630,8 @@ function actualizarEstadoProtocolo(rowIndex, estado, evaluador, emailEvaluador, 
   sheet.getRange(ri, 14).setValue(emailCoord || "");
 
   var numRad = String(sheet.getRange(ri, 2).getValue());
-  var estadoFase1;
-  if (estado === "Aprobado" || estado === "Aprobado Directo") {
-    estadoFase1 = "Aprobado";
-  } else if (estado === "Devuelto" || estado === "Devuelto por Comité Técnico") {
-    estadoFase1 = "Devuelto por Comité Técnico";
-  } else {
-    estadoFase1 = "Pendiente Comité Técnico";
-  }
+  var aprobado = (estado === "Aprobado" || estado === "Pendiente Comité");
+  var estadoFase1 = (estado === "Devuelto") ? "Devuelto" : "Aprobado";
 
   var sheetF1 = getSheet("Fase1");
   var dataF1 = sheetF1.getDataRange().getValues();
@@ -2515,28 +2484,11 @@ function avalarProtocoloFase2(rowIndex, estado, motivo, evaluador, emailEvaluado
   if (!sheet) {
     return { success: false, error: "Hoja Fase2 no encontrada" };
   }
-
+ 
   if (rowIndex < 2) {
     return { success: false, error: "Índice de fila inválido" };
   }
-
-  // Diplomado siempre requiere comité — bloquear aprobación directa
-  if (estado === "Aprobado Directo") {
-    var numRadDip = String(sheet.getRange(rowIndex, 2).getValue() || "").trim();
-    var sheetF1Dip = getSheet("Fase1");
-    if (sheetF1Dip && numRadDip) {
-      var dataF1Dip = sheetF1Dip.getDataRange().getValues();
-      for (var k = 1; k < dataF1Dip.length; k++) {
-        if (String(dataF1Dip[k][1] || "").trim() === numRadDip) {
-          if (String(dataF1Dip[k][22] || "").trim().toLowerCase() === "diplomado") {
-            return { success: false, error: "El diplomado debe ser avalado por el Comité Técnico de Trabajos de Grado. No se permite aprobación directa." };
-          }
-          break;
-        }
-      }
-    }
-  }
-
+ 
   var ri = rowIndex;
   var hoy_str = hoy();
  
