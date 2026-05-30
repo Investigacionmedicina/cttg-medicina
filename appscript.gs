@@ -30,7 +30,7 @@ function handleRequest(e, body) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1','resolverSolicitudModRad'];
+    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1','resolverSolicitudModRad','resolverSolicitudModRadComite'];
 
     if (accionesCoord.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
@@ -39,7 +39,7 @@ function handleRequest(e, body) {
     }
 
     /** getTrazabilidad también la usa el estudiante (solo su radicación); ver obtenerTrazabilidad. */
-    var accionesSoloCoordLectura = ['getFase1','getTutores','getEvaluadores','getFechasComite','getEstadisticasTutores','getAlertasCriticas','getSolicitudesModRadPendientes'];
+    var accionesSoloCoordLectura = ['getFase1','getTutores','getEvaluadores','getFechasComite','getEstadisticasTutores','getAlertasCriticas','getSolicitudesModRadPendientes','getSolicitudesModRadComite'];
     if (accionesSoloCoordLectura.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
         .createTextOutput(JSON.stringify({ success: false, error: "No autorizado" }))
@@ -86,6 +86,8 @@ function handleRequest(e, body) {
       case "getMisSolicitudesModRad": result = getMisSolicitudesModRad(sesion); break;
       case "getSolicitudesModRadPendientes": result = getSolicitudesModRadPendientes(sesion); break;
       case "resolverSolicitudModRad": result = resolverSolicitudModRad(sesion, body); break;
+      case "getSolicitudesModRadComite": result = getSolicitudesModRadComite(sesion); break;
+      case "resolverSolicitudModRadComite": result = resolverSolicitudModRadComite(sesion, body); break;
       case "logout": cerrarSesion(body.token); result = { success: true }; break;
       default: result = { success: false, error: "Acción no reconocida: " + action };
     }
@@ -1354,7 +1356,7 @@ function haySolicitudModRadPendienteMismaFila_(sheetSol, rowF1) {
   for (var i = 1; i < data.length; i++) {
     if (parseInt(data[i][2], 10) !== rf) continue;
     var est = String(data[i][4] || "").trim().toLowerCase();
-    if (est === "pendiente") return true;
+    if (est === "pendiente" || est === "pendiente_comite") return true;
   }
   return false;
 }
@@ -1576,6 +1578,27 @@ function resolverSolicitudModRad(sesion, body) {
     return { success: false, error: "Decisión inválida. Use «devolver», «aprobar_directo» o «derivar_ct»." };
   }
 
+  // Para derivar a comité: solo se cambia el estado de la solicitud; NO se aplican cambios todavía.
+  if (decision === "derivar_ct") {
+    var tsDer = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+    sheet.getRange(rs, 5).setValue("pendiente_comite");
+    sheet.getRange(rs, 6).setValue("derivar_ct");
+    sheet.getRange(rs, 10).setValue(tsDer);
+    sheet.getRange(rs, 11).setValue(emailCoord);
+    sheet.getRange(rs, 12).setValue(obsCoord);
+    registrarAuditoria(emailCoord, "RESOLVER_SOL_MOD_DER_CT", numero + " | sol fila " + rs + " | derivada a comité");
+    try {
+      var sheetF1Der = getSheet("Fase1");
+      var emailEstDer = sheetF1Der ? String(sheetF1Der.getRange(rowF1, 3).getValue() || "").trim() : "";
+      if (emailEstDer) MailApp.sendEmail(emailEstDer, "[CTTG] Solicitud de cambios en revisión por comité · " + numero,
+        "Su solicitud de modificación de la radicación " + numero + " fue recibida por la coordinación y derivada al Comité Técnico para su evaluación.\n\n" +
+        (obsCoord ? "Nota coordinación:\n" + obsCoord + "\n\n" : "") +
+        "Recibirá un correo con la decisión del comité una vez sea resuelta.");
+    } catch(eDer) {}
+    return { success: true, resultado: "derivar_ct" };
+  }
+
+  // Aprobar directo: aplicar cambios inmediatamente.
   var sheetF1 = getSheet("Fase1");
   if (!sheetF1) return { success: false, error: "Fase 1 no encontrada" };
   asegurarColumnasFase1DiplomadoJurados(sheetF1);
@@ -1597,45 +1620,122 @@ function resolverSolicitudModRad(sesion, body) {
 
   var applied = aplicarDeltasAFase1_(sheetF1, rowF1, deltasFinales);
   var tsOk = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
-  var deltaPayload = {
-    antes: applied.antes || {},
-    despues: applied.despues || {},
-    decision: decision,
-    observacionesCoord: obsCoord
-  };
+  var deltaPayload = { antes: applied.antes || {}, despues: applied.despues || {}, decision: decision, observacionesCoord: obsCoord };
   var deltaStrRes = JSON.stringify(deltaPayload);
 
   sheet.getRange(rs, 5).setValue("resuelta");
-  sheet.getRange(rs, 6).setValue(decision);
+  sheet.getRange(rs, 6).setValue("aprobado_directo");
+  sheet.getRange(rs, 9).setValue(deltaStrRes.length <= 48000 ? deltaStrRes : deltaStrRes.substring(0, 48000));
   sheet.getRange(rs, 10).setValue(tsOk);
   sheet.getRange(rs, 11).setValue(emailCoord);
   sheet.getRange(rs, 12).setValue(obsCoord);
 
-  sheet.getRange(rs, 9).setValue(deltaStrRes.length <= 48000 ? deltaStrRes : deltaStrRes.substring(0, 48000));
-
-  var estadoAnterior = String(rowVals[32] || "").trim();
-  if (decision === "derivar_ct") {
-    sheetF1.getRange(rowF1, 33).setValue("Pendiente Comité Técnico");
-    notificarCambioEstado(rowF1, "Pendiente Comité Técnico", { notas: obsCoord });
-  }
-
-  registrarAuditoria(
-    emailCoord,
-    decision === "derivar_ct" ? "RESOLVER_SOL_MOD_DER_CT" : "RESOLVER_SOL_MOD_APROBAR",
-    numero + " | F1 row " + rowF1 + " | Δ " + JSON.stringify(applied.despues || {}).slice(0, 400)
-  );
+  registrarAuditoria(emailCoord, "RESOLVER_SOL_MOD_APROBAR", numero + " | F1 row " + rowF1 + " | Δ " + JSON.stringify(applied.despues || {}).slice(0, 400));
 
   try {
     var emailEst2 = String(sheetF1.getRange(rowF1, 3).getValue() || "").trim();
-    var txtDec = decision === "derivar_ct"
-      ? "Se aplicaron los cambios en su radicación y quedó en estado Pendiente Comité Técnico para revisión."
-      : "Se aplicaron los cambios solicitados en Fase 1. El estado administrativo («" + estadoAnterior + "») no fue modificado por este trámite, salvo lo que se reflejó en los campos actualizados.";
-    var subjOk = "[CTTG] Cambios en radicación · " + numero;
-    var bodyOk = numero + "\n\n" + txtDec + (obsCoord ? "\n\nNota coordinación:\n" + obsCoord : "");
+    var estadoAnterior = String(rowVals[32] || "").trim();
+    var subjOk = "[CTTG] Cambios aprobados en radicación · " + numero;
+    var bodyOk = numero + "\n\nSe aplicaron los cambios solicitados en su radicación. El estado administrativo («" + estadoAnterior + "») no fue modificado por este trámite." + (obsCoord ? "\n\nNota coordinación:\n" + obsCoord : "");
     if (emailEst2) MailApp.sendEmail(emailEst2, subjOk, bodyOk);
   } catch(eM2) {}
 
-  return { success: true, resultado: decision };
+  return { success: true, resultado: "aprobado_directo" };
+}
+
+function getSolicitudesModRadComite(sesion) {
+  if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
+  var sheet = getSheet(NOMBRE_HOJA_SOL_MOD_RAD);
+  if (!sheet) return { success: true, solicitudes: [], total: 0 };
+  var data = sheet.getDataRange().getValues();
+  var lista = [];
+  for (var i = 1; i < data.length; i++) {
+    var est = String(data[i][4] || "").trim().toLowerCase();
+    if (est !== "pendiente_comite") continue;
+    lista.push(filaSolModRadToObj_(data[i], i + 1));
+  }
+  return { success: true, solicitudes: lista, total: lista.length };
+}
+
+function resolverSolicitudModRadComite(sesion, body) {
+  if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
+  var sheet = getSheet(NOMBRE_HOJA_SOL_MOD_RAD);
+  if (!sheet) return { success: false, error: "Hoja solicitudes no disponible." };
+  var rs = parseInt(body && body.rowSol, 10);
+  var decision = String(body && body.decision || "").trim().toLowerCase();
+  var obsComite = body && body.observacionesComite !== undefined ? String(body.observacionesComite || "").trim() : "";
+  if (!rs || rs < 2) return { success: false, error: "Fila de solicitud inválida." };
+  if (rs > sheet.getLastRow()) return { success: false, error: "Solicitud no encontrada." };
+
+  var r = sheet.getRange(rs, 1, rs, 12).getValues()[0];
+  if (String(r[4] || "").trim().toLowerCase() !== "pendiente_comite") return { success: false, error: "Esta solicitud no está en estado pendiente de comité." };
+
+  var emailCoord = String(sesion.email || "").trim();
+  var rowF1 = parseInt(r[2], 10);
+  var numero = String(r[3] || "").trim();
+  var deltas = {};
+  try { deltas = JSON.parse(String(r[6] || "{}")); } catch(ex) { return { success: false, error: "JSON de cambios inválido." }; }
+
+  if (decision === "rechazar") {
+    if (obsComite.length < 12) return { success: false, error: "Indique el motivo del rechazo (mín. 12 caracteres)." };
+    var tsRech = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+    sheet.getRange(rs, 5).setValue("resuelta");
+    sheet.getRange(rs, 6).setValue("rechazado_comite");
+    sheet.getRange(rs, 10).setValue(tsRech);
+    sheet.getRange(rs, 11).setValue(emailCoord);
+    sheet.getRange(rs, 12).setValue(obsComite);
+    registrarAuditoria(emailCoord, "COMITE_SOL_MOD_RECHAZAR", numero + " | sol fila " + rs + " | " + obsComite.slice(0, 200));
+    try {
+      var sheetF1R = getSheet("Fase1");
+      var emailEstR = sheetF1R ? String(sheetF1R.getRange(rowF1, 3).getValue() || "").trim() : "";
+      if (emailEstR) MailApp.sendEmail(emailEstR, "[CTTG] Solicitud de cambios rechazada por comité · " + numero,
+        "El Comité Técnico revisó su solicitud de modificación de la radicación " + numero + " y decidió NO aprobar los cambios solicitados.\n\nMotivo:\n" + obsComite + "\n\nPuede contactar a la coordinación para más información.");
+    } catch(eR) {}
+    return { success: true, resultado: "rechazado_comite" };
+  }
+
+  if (decision !== "aprobar") return { success: false, error: "Decisión inválida. Use «aprobar» o «rechazar»." };
+
+  var sheetF1 = getSheet("Fase1");
+  if (!sheetF1) return { success: false, error: "Fase 1 no encontrada" };
+  asegurarColumnasFase1DiplomadoJurados(sheetF1);
+  var rowVals = sheetF1.getRange(rowF1, 1, rowF1, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
+  var deltasFinales = sanitizarYFiltrarCambiosModRad_(deltas, rowVals);
+  if (!Object.keys(deltasFinales).length) {
+    return { success: false, error: "Los datos ya coinciden con la hoja. Rechace la solicitud con una nota aclaratoria." };
+  }
+  var valDip = validarReglasDiplomadoModRad_(rowVals, deltasFinales);
+  if (!valDip.ok) return { success: false, error: valDip.error };
+
+  if (deltasFinales.diplomadoJuradoModo === "cttg_asigna") {
+    deltasFinales.dipJurado1Nombre = "";
+    deltasFinales.dipJurado1Email = "";
+    deltasFinales.dipJurado1Telefono = "";
+    deltasFinales.dipJurado1Especialidad = "";
+    deltasFinales.dipJurado1AceptaPropuesta = "";
+  }
+
+  var applied = aplicarDeltasAFase1_(sheetF1, rowF1, deltasFinales);
+  var tsApr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  var deltaPayload = { antes: applied.antes || {}, despues: applied.despues || {}, decision: "aprobado_comite", observacionesComite: obsComite };
+  var deltaStrRes = JSON.stringify(deltaPayload);
+
+  sheet.getRange(rs, 5).setValue("resuelta");
+  sheet.getRange(rs, 6).setValue("aprobado_comite");
+  sheet.getRange(rs, 9).setValue(deltaStrRes.length <= 48000 ? deltaStrRes : deltaStrRes.substring(0, 48000));
+  sheet.getRange(rs, 10).setValue(tsApr);
+  sheet.getRange(rs, 11).setValue(emailCoord);
+  sheet.getRange(rs, 12).setValue(obsComite);
+
+  registrarAuditoria(emailCoord, "COMITE_SOL_MOD_APROBAR", numero + " | F1 row " + rowF1 + " | Δ " + JSON.stringify(applied.despues || {}).slice(0, 400));
+
+  try {
+    var emailEst3 = String(sheetF1.getRange(rowF1, 3).getValue() || "").trim();
+    if (emailEst3) MailApp.sendEmail(emailEst3, "[CTTG] Cambios aprobados por Comité Técnico · " + numero,
+      "El Comité Técnico aprobó los cambios solicitados en su radicación " + numero + " y fueron aplicados.\n" + (obsComite ? "\nNota comité:\n" + obsComite : ""));
+  } catch(eA) {}
+
+  return { success: true, resultado: "aprobado_comite" };
 }
 
 function actualizarEstado(rowIndex, estado, notas, emailCoord) {
