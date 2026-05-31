@@ -89,6 +89,7 @@
   <div class="tabs">
     <button class="tab on" onclick="switchTab('reuniones',this)">📅 Reuniones del Comité</button>
     <button class="tab" onclick="switchTab('mis-decisiones',this)">✅ Mis Decisiones</button>
+    <button class="tab" id="tabSolCambio" onclick="switchTab('sol-cambio',this)">✏️ Cambios de Radicación <span id="badgeSolCambioComite" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;margin-left:4px"></span></button>
   </div>
 
   <!-- REUNIONES DEL COMITÉ -->
@@ -161,6 +162,38 @@
           </table>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- SOLICITUDES DE CAMBIO DERIVADAS A COMITÉ -->
+  <div class="panel" id="pan-sol-cambio">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <div>
+        <h2 style="font-size:18px;font-weight:600;color:#fff">Solicitudes de Cambio derivadas al Comité</h2>
+        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">Estas solicitudes fueron enviadas por coordinación para que el Comité las revise y decida.</div>
+      </div>
+      <button type="button" class="btn gr" onclick="cargarSolCambioComite()">↻ Actualizar</button>
+    </div>
+    <div id="sc_comite_lista"><div style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">Cargando…</div></div>
+  </div>
+
+  <!-- MODAL RESOLVER SOLICITUD (COMITÉ) -->
+  <div class="modal-bg" id="modalSolCambioComite" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;overflow-y:auto;padding:20px">
+    <div style="background:#1a1f2e;border:1px solid rgba(255,255,255,.12);border-radius:16px;max-width:620px;margin:40px auto;padding:28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:600;color:#fff">Decisión del Comité Técnico</div>
+        <button onclick="cerrarModalSolCambioComite()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
+      </div>
+      <div id="sc_comite_modal_detalle" style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:20px"></div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Observaciones del comité</label>
+        <textarea id="sc_comite_obs" rows="3" placeholder="Obligatorio si rechaza. Opcional si aprueba." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" style="background:linear-gradient(135deg,#059669,#10b981);flex:1;min-width:140px" onclick="resolverSolCambioComite('aprobar')">Aprobar cambios</button>
+        <button class="btn" style="background:linear-gradient(135deg,#dc2626,#ef4444);flex:1;min-width:140px" onclick="resolverSolCambioComite('rechazar')">Rechazar cambios</button>
+      </div>
+      <div id="sc_comite_modal_error" style="margin-top:12px;color:#f87171;font-size:13px;display:none"></div>
     </div>
   </div>
 
@@ -296,6 +329,7 @@ function switchTab(name, btn) {
   document.getElementById('pan-' + name).classList.add('on');
   btn.classList.add('on');
   if (name === 'mis-decisiones') cargarDecisiones();
+  else if (name === 'sol-cambio') cargarSolCambioComite();
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -688,6 +722,113 @@ async function guardarDecision() {
     btn.innerHTML = 'Guardar decisión';
   }
 }
+
+// ── SOLICITUDES DE CAMBIO (COMITÉ TÉCNICO) ───────────────────
+const LABELS_CAMPO_CT = {
+  titulo:'Título del trabajo', modalidad:'Modalidad', area:'Área',
+  nombre2:'Nombre estudiante 2', cedula2:'Cédula est. 2', email2:'Email est. 2', telefono2:'Tel. est. 2', semestre2:'Semestre est. 2', semillero2:'Semillero est. 2',
+  nombre3:'Nombre estudiante 3', cedula3:'Cédula est. 3', email3:'Email est. 3', telefono3:'Tel. est. 3', semestre3:'Semestre est. 3', semillero3:'Semillero est. 3',
+  tutor1Nombre:'Nombre tutor 1', tutor1Email:'Email tutor 1', tutor1Telefono:'Tel. tutor 1', tutor1Relacion:'Relación tutor 1',
+  tutor2Nombre:'Nombre tutor 2', tutor2Email:'Email tutor 2', tutor2Telefono:'Tel. tutor 2', tutor2Relacion:'Relación tutor 2',
+  diplomadoFechaInicio:'Fecha inicio diplomado', diplomadoFechaFin:'Fecha fin diplomado',
+  dipJurado1Nombre:'Nombre jurado sugerido', dipJurado1Email:'Email jurado sugerido', dipJurado1Telefono:'Tel. jurado sugerido',
+  dipJurado1Especialidad:'Especialidad jurado', dipJurado1AceptaPropuesta:'Jurado acepta', diplomadoJuradoModo:'Modo asignación jurado'
+};
+
+let solCambioComiteActual = null;
+
+async function cargarSolCambioComite() {
+  document.getElementById('sc_comite_lista').innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">Cargando…</div>';
+  try {
+    const res = await fetch(URL_APP, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'getSolicitudesModRadComite', token: localStorage.getItem('cttg_token')||'' }) });
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error || 'Error');
+    const lista = d.solicitudes || [];
+    const badge = document.getElementById('badgeSolCambioComite');
+    if (lista.length > 0) { badge.textContent = lista.length; badge.style.display = 'inline'; }
+    else badge.style.display = 'none';
+    if (!lista.length) {
+      document.getElementById('sc_comite_lista').innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,.3)">No hay solicitudes pendientes de revisión por el Comité.</div>';
+      return;
+    }
+    document.getElementById('sc_comite_lista').innerHTML = lista.map(s => {
+      const cambios = s.cambios || {};
+      const resumen = Object.keys(cambios).map(k => LABELS_CAMPO_CT[k] || k).join(', ') || 'Sin detalle';
+      return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(124,58,237,.3);border-radius:12px;padding:16px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:14px">${esc(s.numero)}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">${esc(s.emailEstudiante)} · Enviado por coordinación: ${esc(s.tsResolucion||s.tsCreacion)}</div>
+          </div>
+          <button class="btn" style="font-size:12px;padding:6px 14px;background:linear-gradient(135deg,#7c3aed,#8b5cf6)" onclick="abrirModalSolCambioComite(${s.rowSol})">Revisar y decidir</button>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.7)"><strong>Campos a cambiar:</strong> ${esc(resumen)}</div>
+        <div style="margin-top:4px;font-size:12px;color:rgba(255,255,255,.5)"><strong>Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
+        ${s.obsCoord ? `<div style="margin-top:4px;font-size:12px;color:rgba(167,139,250,.8)"><strong>Nota coordinación:</strong> ${esc(s.obsCoord)}</div>` : ''}
+      </div>`;
+    }).join('');
+    window._scComiteLista = lista;
+  } catch(e) {
+    document.getElementById('sc_comite_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+function abrirModalSolCambioComite(rowSol) {
+  const lista = window._scComiteLista || [];
+  const s = lista.find(x => x.rowSol === rowSol);
+  if (!s) return;
+  solCambioComiteActual = s;
+  const cambios = s.cambios || {};
+  const filas = Object.entries(cambios).map(([k, v]) =>
+    `<tr><td style="padding:4px 8px;color:rgba(255,255,255,.5);white-space:nowrap">${esc(LABELS_CAMPO_CT[k]||k)}</td><td style="padding:4px 8px;color:#fff">${esc(String(v))}</td></tr>`
+  ).join('');
+  document.getElementById('sc_comite_modal_detalle').innerHTML = `
+    <div style="margin-bottom:12px"><strong style="color:rgba(255,255,255,.5)">Radicación:</strong> ${esc(s.numero)}<br>
+    <strong style="color:rgba(255,255,255,.5)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
+    <strong style="color:rgba(255,255,255,.5)">Motivo:</strong> ${esc(s.motivoEstudiante)}${s.obsCoord ? `<br><strong style="color:rgba(167,139,250,.8)">Nota coordinación:</strong> ${esc(s.obsCoord)}` : ''}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Cambios solicitados</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;background:rgba(255,255,255,.03);border-radius:8px;overflow:hidden">${filas}</table>`;
+  document.getElementById('sc_comite_obs').value = '';
+  document.getElementById('sc_comite_modal_error').style.display = 'none';
+  document.getElementById('modalSolCambioComite').style.display = 'block';
+}
+
+function cerrarModalSolCambioComite() {
+  document.getElementById('modalSolCambioComite').style.display = 'none';
+  solCambioComiteActual = null;
+}
+
+async function resolverSolCambioComite(decision) {
+  if (!solCambioComiteActual) return;
+  const obs = document.getElementById('sc_comite_obs').value.trim();
+  const errEl = document.getElementById('sc_comite_modal_error');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch(URL_APP, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'resolverSolicitudModRadComite', token: localStorage.getItem('cttg_token')||'',
+        rowSol: solCambioComiteActual.rowSol, decision, observacionesComite: obs }) });
+    const d = await res.json();
+    if (!d.success) { errEl.textContent = d.error || 'Error'; errEl.style.display = 'block'; return; }
+    cerrarModalSolCambioComite();
+    toast(decision === 'aprobar' ? 'Cambios aprobados y aplicados.' : 'Solicitud rechazada. El estudiante fue notificado.', 'ok');
+    await cargarSolCambioComite();
+  } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+}
+
+// Badge inicial al cargar
+(async () => {
+  try {
+    const res = await fetch(URL_APP, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'getSolicitudesModRadComite', token: localStorage.getItem('cttg_token')||'' }) });
+    const d = await res.json();
+    if (d.success && d.total > 0) {
+      const badge = document.getElementById('badgeSolCambioComite');
+      badge.textContent = d.total; badge.style.display = 'inline';
+    }
+  } catch(e) {}
+})();
+
 </script>
 </body>
 </html>

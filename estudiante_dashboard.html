@@ -606,7 +606,23 @@ function smAlElegirRad() {
     av.style.display = 'block'; av.textContent = 'Seleccione una radicación.';
     return;
   }
-  fw.style.display = 'block'; av.style.display = 'none';
+  // Bloquear formulario si hay solicitud pendiente o en revisión de comité para esta radicación
+  const solPendiente = (misSolicitudesModRad || []).find(s =>
+    s.rowSol && (s.estado === 'pendiente' || s.estado === 'pendiente_comite') &&
+    String(s.numero || '') === String(rad.numero || '')
+  );
+  const btnEnv = document.getElementById('sm_btnEnv');
+  if (solPendiente) {
+    fw.style.display = 'block'; av.style.display = 'block';
+    av.textContent = solPendiente.estado === 'pendiente_comite'
+      ? 'Tu solicitud está en revisión por el Comité Técnico. No puedes enviar otra hasta que sea resuelta.'
+      : 'Ya tienes una solicitud pendiente de revisión por coordinación.';
+    if (btnEnv) btnEnv.disabled = true;
+  } else {
+    av.style.display = 'none';
+    if (btnEnv) btnEnv.disabled = false;
+    fw.style.display = 'block';
+  }
   document.getElementById('sm_titulo').value = rad.titulo || '';
   document.getElementById('sm_modalidad').value = rad.modalidad || '';
   document.getElementById('sm_area').value = rad.area || '';
@@ -679,19 +695,29 @@ function renderSmHistorial() {
   function prettyRes(x) {
     const r = String(x || '').trim();
     if (r === 'devolver') return 'Devuelta por coordinación';
-    if (r === 'aprobar_directo') return 'Cambios aplicados (directo)';
-    if (r === 'derivar_ct') return 'Cambios aplicados + Pendiente Comité';
+    if (r === 'aprobar_directo' || r === 'aprobado_directo') return 'Aprobada por coordinación';
+    if (r === 'derivar_ct') return 'En revisión por Comité Técnico';
+    if (r === 'aprobado_comite') return 'Aprobada por Comité Técnico';
+    if (r === 'rechazado_comite') return 'Rechazada por Comité Técnico';
     return r || '—';
+  }
+  function prettyEstado(est) {
+    if (est === 'pendiente') return 'Pendiente revisión coordinación';
+    if (est === 'pendiente_comite') return 'En revisión por Comité Técnico';
+    if (est === 'resuelta') return 'Resuelta';
+    return est || '—';
   }
   el.innerHTML = list.map(function(s){
     let keys = ''; try {
       keys = typeof s.cambios === 'object' && s.cambios ? Object.keys(s.cambios).slice(0, 12).join(', ') + (Object.keys(s.cambios).length > 12 ? '…' : '') : '';
     } catch (_) { keys = ''; }
-    const estado = esc((s.estado || '').trim());
+    const estado = esc(prettyEstado(s.estado || ''));
     const res = esc(prettyRes(s.resultado || ''));
+    const esComite = (s.estado||'') === 'pendiente_comite';
+    const badgeColorEstado = esComite ? 'b-comite' : (s.estado === 'resuelta' ? 'b-aprobado' : 'b-revision');
     return `<div style="margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08)">
       <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:4px"><span style="font-weight:600;color:#a5b4fc">${esc(s.numero || '')}</span>
-      <span class="badge b-revision">${estado}</span>${s.resultado ? `<span class="badge b-aprobado">${res}</span>` : ''}</div>
+      <span class="badge ${badgeColorEstado}">${estado}</span>${s.resultado && s.estado === 'resuelta' ? `<span class="badge b-aprobado">${res}</span>` : ''}</div>
       <div style="font-size:11px;color:rgba(255,255,255,.45)">${esc(String(s.tsCreacion||'').slice(0,19))}</div>
       <div style="margin-top:6px">${esc(String(s.motivoEstudiante||'').slice(0, 360))}${String(s.motivoEstudiante||'').length>360?'…':''}</div>
       ${keys ? `<div style="margin-top:6px;color:#93c5fd;font-family:DM Mono,monospace;font-size:10px">${esc(keys)}</div>` : ''}
