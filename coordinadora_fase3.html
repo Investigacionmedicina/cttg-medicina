@@ -199,22 +199,15 @@
   </div>
 </main>
 
-<!-- MODAL ASIGNAR JURADOS -->
+<!-- MODAL APROBAR / ASIGNAR JURADOS -->
 <div class="modal-bg" id="modalAsignar">
   <div class="modal">
     <div class="modal-hdr">
-      <h3>📅 Asignar Fecha y Jurados</h3>
+      <h3>👥 Aprobar / Asignar Jurados</h3>
       <button class="btn" onclick="closeModal('modalAsignar')">✕</button>
     </div>
     <p id="mAsignarInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
 
-    <div class="msec">Fecha y hora</div>
-<div class="mgrid" style="margin-bottom:14px">
-  <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
-  <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
-</div>
-<div class="mfg" style="margin-bottom:14px"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
-   
     <div class="msec">Jurado 1</div>
     <div class="hint-j" id="hintJ1"></div>
     <div class="mfg">
@@ -225,10 +218,7 @@
         <option value="rechazar">Rechazar sugerencia — asignar otro (campos en blanco)</option>
       </select>
     </div>
-    <div class="mgrid" style="margin-bottom:4px">
-      <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Cédula</label><input id="mJ1Cedula" placeholder="Número ID"></div>
-    </div>
+    <div class="mfg"><label>Nombre *</label><input id="mJ1Nombre" placeholder="Dr./Dra."></div>
     <div class="mfg"><label>Email *</label><input type="email" id="mJ1Email" placeholder="jurado@usc.edu.co"></div>
     <div class="mfg"><label>Teléfono</label><input type="tel" id="mJ1Tel" placeholder="300 000 0000"></div>
 
@@ -242,17 +232,35 @@
         <option value="rechazar">Rechazar sugerencia — asignar otro (campos en blanco)</option>
       </select>
     </div>
-    <div class="mgrid" style="margin-bottom:4px">
-      <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
-      <div class="mfg"><label>Cédula</label><input id="mJ2Cedula" placeholder="Número ID"></div>
-    </div>
+    <div class="mfg"><label>Nombre *</label><input id="mJ2Nombre" placeholder="Dr./Dra."></div>
     <div class="mfg"><label>Email *</label><input type="email" id="mJ2Email" placeholder="jurado@usc.edu.co"></div>
     <div class="mfg"><label>Teléfono</label><input type="tel" id="mJ2Tel" placeholder="300 000 0000"></div>
 
     <input type="hidden" id="mAsignarRow">
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
       <button class="btn" onclick="closeModal('modalAsignar')">Cancelar</button>
-      <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">📅 Asignar y notificar</button>
+      <button class="btn-action" id="btnAsignar" onclick="asignarJurados()">👥 Aprobar jurados</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ASIGNAR FECHA Y HORA -->
+<div class="modal-bg" id="modalFecha">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>📅 Asignar Fecha y Hora de Sustentación</h3>
+      <button class="btn" onclick="closeModal('modalFecha')">✕</button>
+    </div>
+    <p id="mFechaInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
+    <div class="mgrid" style="margin-bottom:14px">
+      <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
+      <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
+    </div>
+    <div class="mfg" style="margin-bottom:14px"><label>Lugar *</label><input id="mLugar" placeholder="Ej: Auditorio principal, Sala 201..."></div>
+    <input type="hidden" id="mFechaRow">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalFecha')">Cancelar</button>
+      <button class="btn-action" id="btnFecha" onclick="asignarFecha()">📅 Confirmar fecha</button>
     </div>
   </div>
 </div>
@@ -769,6 +777,10 @@ function aplicarDecisionJurado(i) {
   }
 }
 
+function tieneJuradosAsignados(r) {
+  return !!(String(r.jurado1Nombre || '').trim() && String(r.jurado2Nombre || '').trim());
+}
+
 function toggleDesc() {
   document.getElementById('descDiv').style.display = document.getElementById('mProducto').value === 'SÍ' ? 'block' : 'none';
 }
@@ -933,7 +945,11 @@ function renderTablas() {
       <td><div class="act">
         <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisada</button>
         <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
-        <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>📅 Asignar</button>
+        ${tieneJuradosAsignados(r)
+          ? `<span style="display:inline-block;padding:2px 8px;border-radius:5px;background:rgba(52,211,153,.18);border:1px solid rgba(52,211,153,.38);color:#86efac;font-size:11px;font-weight:700;white-space:nowrap">✓ Jurados aprobados</span>`
+          : `<button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>👥 Aprobar jurados</button>`
+        }
+        <button class="btn am" onclick="abrirFecha(${r.rowIndex})" ${estaDevuelta || !tieneJuradosAsignados(r) ? 'disabled' : ''} title="${!tieneJuradosAsignados(r) ? 'Primero aprueba los jurados' : 'Asignar fecha y hora'}">📅 Asignar fecha</button>
       </div></td>
      </tr>`;
     }).join('');
@@ -1003,25 +1019,38 @@ function abrirAsignar(rowIndex) {
   document.getElementById('mAsignarRow').value = rowIndex;
   let infoHtml = `<span>Radicación: <strong>${esc(r.numero)}</strong></span>`;
   const mod = modalidadDeNumeroFase1(r.numero);
-    if (mod) {
+  if (mod) {
     infoHtml += `<br/><span style="color:rgba(203,213,225,.93)">Modalidad Fase 1: ${esc(mod)}</span>`;
     if (esModalidadDiplomadoTxt(mod)) {
-      infoHtml += `<div style="margin-top:8px;font-size:11px;line-height:1.45;color:rgba(251,191,129,.9)">Diplomado: antes de asignar puede usar <strong>📋 Ver solicitud</strong> para revisar lo que cargó el estudiante (incl. jurados sugeridos).</div>`;
+      infoHtml += `<div style="margin-top:8px;font-size:11px;line-height:1.45;color:rgba(251,191,129,.9)">Diplomado: antes de aprobar puede usar <strong>📋 Ver solicitud</strong> para revisar lo que cargó el estudiante (incl. jurados sugeridos).</div>`;
     }
   }
   document.getElementById('mAsignarInfo').innerHTML = infoHtml;
-  document.getElementById('mFecha').value = '';
-  document.getElementById('mHora').value = '';
- document.getElementById('mLugar').value = '';
   document.getElementById('decisionJ1').value = 'aceptar';
   document.getElementById('decisionJ2').value = 'aceptar';
   document.getElementById('hintJ1').textContent = hintLineaSugerido(r, 1);
   document.getElementById('hintJ2').textContent = hintLineaSugerido(r, 2);
   aplicarDecisionJurado(1);
   aplicarDecisionJurado(2);
-  document.getElementById('mJ1Cedula').value = r.jurado1Cedula || '';
-  document.getElementById('mJ2Cedula').value = r.jurado2Cedula || '';
   document.getElementById('modalAsignar').classList.add('open');
+}
+
+function abrirFecha(rowIndex) {
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  if (!tieneJuradosAsignados(r)) {
+    toast('Primero aprueba los jurados antes de asignar la fecha', 'warn');
+    return;
+  }
+  document.getElementById('mFechaRow').value = rowIndex;
+  let infoHtml = `<span>Radicación: <strong>${esc(r.numero)}</strong></span>`;
+  if (r.jurado1Nombre) infoHtml += `<br/><span style="color:rgba(134,239,172,.9)">Jurado 1: ${esc(r.jurado1Nombre)}</span>`;
+  if (r.jurado2Nombre) infoHtml += `<br/><span style="color:rgba(134,239,172,.9)">Jurado 2: ${esc(r.jurado2Nombre)}</span>`;
+  document.getElementById('mFechaInfo').innerHTML = infoHtml;
+  document.getElementById('mFecha').value = '';
+  document.getElementById('mHora').value = '';
+  document.getElementById('mLugar').value = '';
+  document.getElementById('modalFecha').classList.add('open');
 }
 
 function abrirDevolver(rowIndex) {
@@ -1086,31 +1115,30 @@ async function devolverSolicitud() {
 
 async function asignarJurados() {
   const rowIndex = parseInt(document.getElementById('mAsignarRow').value);
-  const fecha    = document.getElementById('mFecha').value;
-  const hora     = document.getElementById('mHora').value;
- const lugar = document.getElementById('mLugar').value.trim(); 
- const j1n      = document.getElementById('mJ1Nombre').value.trim();
-  const j1e      = document.getElementById('mJ1Email').value.trim();
-  const j2n      = document.getElementById('mJ2Nombre').value.trim();
-  const j2e      = document.getElementById('mJ2Email').value.trim();
+  const j1n = document.getElementById('mJ1Nombre').value.trim();
+  const j1e = document.getElementById('mJ1Email').value.trim();
+  const j2n = document.getElementById('mJ2Nombre').value.trim();
+  const j2e = document.getElementById('mJ2Email').value.trim();
 
-  if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
-  if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
- if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
   if (!j1n || !j1e) { toast('Completa los datos del Jurado 1', 'warn'); return; }
   if (!j2n || !j2e) { toast('Completa los datos del Jurado 2', 'warn'); return; }
 
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  const fechaExistente = (r && r.fechaSustentacion) ? r.fechaSustentacion : '';
+  const horaExistente  = (r && r.horaSustentacion)  ? r.horaSustentacion  : '';
+  const lugarExistente = (r && r.lugar)             ? r.lugar             : '';
+
   const btn = document.getElementById('btnAsignar');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Asignando...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Aprobando...';
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'updateFase3Asignacion',
       rowIndex,
-      fechaSustentacion: fecha,
-      horaSustentacion: hora,
-     lugar: lugar,
-      jurado1: { nombre: j1n, cedula: document.getElementById('mJ1Cedula').value.trim(), email: j1e, telefono: document.getElementById('mJ1Tel').value.trim() },
-      jurado2: { nombre: j2n, cedula: document.getElementById('mJ2Cedula').value.trim(), email: j2e, telefono: document.getElementById('mJ2Tel').value.trim() },
+      fechaSustentacion: fechaExistente,
+      horaSustentacion: horaExistente,
+      lugar: lugarExistente,
+      jurado1: { nombre: j1n, email: j1e, telefono: document.getElementById('mJ1Tel').value.trim() },
+      jurado2: { nombre: j2n, email: j2e, telefono: document.getElementById('mJ2Tel').value.trim() },
       emailCoord: admin.email,
       token: coordToken()
     })});
@@ -1118,10 +1146,45 @@ async function asignarJurados() {
     if (d.success) {
       closeModal('modalAsignar');
       await cargar();
-      toast('Jurados asignados. Notificaciones enviadas ✓', 'ok');
+      toast('Jurados aprobados ✓', 'ok');
     } else throw new Error(d.error);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
-  finally { btn.disabled = false; btn.innerHTML = '📅 Asignar y notificar'; }
+  finally { btn.disabled = false; btn.innerHTML = '👥 Aprobar jurados'; }
+}
+
+async function asignarFecha() {
+  const rowIndex = parseInt(document.getElementById('mFechaRow').value);
+  const fecha = document.getElementById('mFecha').value;
+  const hora  = document.getElementById('mHora').value;
+  const lugar = document.getElementById('mLugar').value.trim();
+
+  if (!fecha) { toast('Selecciona la fecha de sustentación', 'warn'); return; }
+  if (!hora)  { toast('Selecciona la hora de sustentación', 'warn'); return; }
+  if (!lugar) { toast('Ingresa el lugar de sustentación', 'warn'); return; }
+
+  const r = fase3.find(x => x.rowIndex === rowIndex);
+  const btn = document.getElementById('btnFecha');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'updateFase3Asignacion',
+      rowIndex,
+      fechaSustentacion: fecha,
+      horaSustentacion: hora,
+      lugar: lugar,
+      jurado1: { nombre: r ? (r.jurado1Nombre || '') : '', email: r ? (r.jurado1Email || '') : '', telefono: r ? (r.jurado1Telefono || '') : '' },
+      jurado2: { nombre: r ? (r.jurado2Nombre || '') : '', email: r ? (r.jurado2Email || '') : '', telefono: r ? (r.jurado2Telefono || '') : '' },
+      emailCoord: admin.email,
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalFecha');
+      await cargar();
+      toast('Fecha de sustentación asignada. Estudiante notificado ✓', 'ok');
+    } else throw new Error(d.error);
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '📅 Confirmar fecha'; }
 }
 
 async function guardarResultado() {
@@ -1158,7 +1221,7 @@ async function guardarResultado() {
   finally { btn.disabled = false; btn.innerHTML = '✅ Guardar y cerrar'; }
 }
 
-['modalAsignar','modalDevolver','modalResultado'].forEach(id => {
+['modalAsignar','modalFecha','modalDevolver','modalResultado'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => { if (e.target === document.getElementById(id)) closeModal(id); });
 });
 </script>
