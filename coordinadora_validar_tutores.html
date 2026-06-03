@@ -191,7 +191,8 @@ let catalogoTutores = [];
 function salir() { localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token'); window.location.href = 'index.html'; }
 
 function esModalidadDiplomadoCoord(m) {
-  return String(m || '').trim().toLowerCase() === 'diplomado';
+  const s = String(m || '').trim().toLowerCase();
+  return s.includes('diplomado') || s.includes('diplom');
 }
 
 function fmtFechaCoord(s) {

@@ -907,7 +907,8 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 function escAttr(s) { return esc(s).replace(/"/g,'&quot;'); }
 
 function esModalidadDiplomadoDash(r) {
-  return String((r && r.modalidad) || '').trim().toLowerCase() === 'diplomado';
+  const s = String((r && r.modalidad) || '').trim().toLowerCase();
+  return s.includes('diplomado') || s.includes('diplom');
 }
 function textoCeldaTutorDashboard(r) {
   if (!r) return '—';
