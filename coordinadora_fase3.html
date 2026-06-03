@@ -946,7 +946,7 @@ function renderTablas() {
         <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisada</button>
         <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
         ${tieneJuradosAsignados(r)
-          ? `<span style="display:inline-block;padding:2px 8px;border-radius:5px;background:rgba(52,211,153,.18);border:1px solid rgba(52,211,153,.38);color:#86efac;font-size:11px;font-weight:700;white-space:nowrap">✓ Jurados aprobados</span>`
+          ? `<button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" title="Jurados ya aprobados — clic para editar">✓ Jurados aprobados</button>`
           : `<button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>👥 Aprobar jurados</button>`
         }
         <button class="btn am" onclick="abrirFecha(${r.rowIndex})" ${estaDevuelta || !tieneJuradosAsignados(r) ? 'disabled' : ''} title="${!tieneJuradosAsignados(r) ? 'Primero aprueba los jurados' : 'Asignar fecha y hora'}">📅 Asignar fecha</button>
@@ -1025,13 +1025,33 @@ function abrirAsignar(rowIndex) {
       infoHtml += `<div style="margin-top:8px;font-size:11px;line-height:1.45;color:rgba(251,191,129,.9)">Diplomado: antes de aprobar puede usar <strong>📋 Ver solicitud</strong> para revisar lo que cargó el estudiante (incl. jurados sugeridos).</div>`;
     }
   }
+  const yaAprobados = tieneJuradosAsignados(r);
+  if (yaAprobados) {
+    infoHtml += `<div style="margin-top:6px;font-size:11px;color:rgba(134,239,172,.85)">✓ Jurados ya aprobados — puedes editar y guardar de nuevo.</div>`;
+  }
   document.getElementById('mAsignarInfo').innerHTML = infoHtml;
-  document.getElementById('decisionJ1').value = 'aceptar';
-  document.getElementById('decisionJ2').value = 'aceptar';
   document.getElementById('hintJ1').textContent = hintLineaSugerido(r, 1);
   document.getElementById('hintJ2').textContent = hintLineaSugerido(r, 2);
-  aplicarDecisionJurado(1);
-  aplicarDecisionJurado(2);
+  if (yaAprobados) {
+    // Pre-llenar con los jurados ya guardados para edición
+    document.getElementById('decisionJ1').value = 'reemplazar';
+    document.getElementById('decisionJ2').value = 'reemplazar';
+    document.getElementById('mJ1Nombre').value = r.jurado1Nombre || '';
+    document.getElementById('mJ1Email').value  = r.jurado1Email  || '';
+    document.getElementById('mJ1Tel').value    = valorTelEditable(r.jurado1Telefono);
+    document.getElementById('mJ2Nombre').value = r.jurado2Nombre || '';
+    document.getElementById('mJ2Email').value  = r.jurado2Email  || '';
+    document.getElementById('mJ2Tel').value    = valorTelEditable(r.jurado2Telefono);
+    ['mJ1Nombre','mJ1Email','mJ1Tel','mJ2Nombre','mJ2Email','mJ2Tel'].forEach(id => {
+      const el = document.getElementById(id);
+      el.readOnly = false; el.classList.remove('ro-lock');
+    });
+  } else {
+    document.getElementById('decisionJ1').value = 'aceptar';
+    document.getElementById('decisionJ2').value = 'aceptar';
+    aplicarDecisionJurado(1);
+    aplicarDecisionJurado(2);
+  }
   document.getElementById('modalAsignar').classList.add('open');
 }
 
