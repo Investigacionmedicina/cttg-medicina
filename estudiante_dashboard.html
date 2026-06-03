@@ -323,7 +323,7 @@
             <div class="fg"><label>J3 Nombre</label><input id="sm_dipJurado3Nombre"></div><div class="fg"><label>J3 Email</label><input id="sm_dipJurado3Email"></div><div class="fg"><label>J3 Tel</label><input id="sm_dipJurado3Telefono"></div>
           </div>
         </div>
-        <div class="form-grid" style="margin-top:12px">
+        <div id="sm_secTutores" class="form-grid" style="margin-top:12px">
           <div class="sec-label" style="grid-column:1/-1">👨‍🏫 Tutores</div>
           <div class="fg"><label>Tutor 1 nombre</label><input id="sm_tutor1Nombre"></div>
           <div class="fg"><label>Tutor 1 email</label><input type="email" id="sm_tutor1Email"></div>
@@ -661,8 +661,9 @@ function smToggleSeccionDiplomado() {
     const r = smPickRad(); return !!(r && esModalidadDiplomado(r.modalidad));
   })();
   const sec = document.getElementById('sm_secDiplomado');
-  if (!sec) return;
-  sec.style.display = show ? '' : 'none';
+  if (sec) sec.style.display = show ? '' : 'none';
+  const secTutores = document.getElementById('sm_secTutores');
+  if (secTutores) secTutores.style.display = show ? 'none' : '';
   smToggleModoJuradoDiplo();
 }
 
@@ -1347,7 +1348,7 @@ let actasAprobadas = false;
     }
 
     const panelF3 = document.getElementById('panelFase3Estado');
-    if (dFase3.success) {
+    if (dFase3.success && !esModalidadDiplomado(radRef.modalidad || '')) {
       const miSolicitud = solicitudFase3ParaRadicacion(dFase3.fase3 || [], numRef, emEst);
       if (!miSolicitud) {
         if (panelF3) panelF3.style.display = 'none';
