@@ -976,8 +976,8 @@ function renderAlertasSuperiores(radicaciones) {
     const estado = String(r.estado || '');
     let msgDip = '';
     if (estado === 'Radicado') msgDip = 'Tu solicitud de diplomado está en revisión por la coordinación.';
-    else if (estado === 'Fase 2 Desbloqueada') msgDip = 'La coordinación avaló tu solicitud. Sube el producto final en Fase 2.';
-    else if (estado === 'Pendiente Comité Técnico') msgDip = 'Tu producto está en cola del Comité Técnico de Trabajos de Grado.';
+    else if (['Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada'].includes(estado)) msgDip = 'La coordinación avaló tu solicitud. Sube el producto final en Fase 2.';
+    else if (estado === 'Pendiente Comité Técnico') msgDip = 'Tu producto está en revisión por el Comité Técnico de Trabajos de Grado.';
     else if (estado === 'Devuelto por Comité Técnico') msgDip = 'El Comité Técnico devolvió tu producto. Realiza los ajustes y vuelve a subirlo.';
     if (msgDip) {
       wrap.style.display = 'block';
@@ -1394,7 +1394,7 @@ let actasAprobadas = false;
   if (btnFase2) {
     const esDipFase2 = esModalidadDiplomado(radRef.modalidad || '');
     const diplomadoFase2Habilitado = esDipFase2 &&
-      ['Fase 2 Desbloqueada', 'Devuelto por Comité Técnico', 'Devuelto'].includes(estadoActual);
+      ['Tutores Avalados', 'Tutores avalados', 'Fase 2 Desbloqueada', 'Pendiente Comité Técnico', 'Devuelto por Comité Técnico', 'Devuelto'].includes(estadoActual);
     btnFase2.style.display = 'flex';
     if (actasAprobadas || diplomadoFase2Habilitado) {
       btnFase2.style.opacity = '1';
