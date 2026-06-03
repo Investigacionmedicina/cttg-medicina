@@ -1359,7 +1359,7 @@ let actasAprobadas = false;
         document.getElementById('f3Turnitin').textContent = (miSolicitud.pctTurnitin || '—') + '%';
         document.getElementById('f3Fecha').textContent = fechaProg ? fmtFecha(fechaProg) : '—';
         document.getElementById('f3Hora').textContent = miSolicitud.horaSustentacion || '—';
-        const obsF3 = miSolicitud.motivoDevolucion || miSolicitud.observacionEstado || miSolicitud.observacionesEstado || (!fechaProg ? miSolicitud.observaciones : '');
+        const obsF3 = miSolicitud.motivoDevolucion || miSolicitud.observacionesEstado || (!fechaProg ? miSolicitud.observaciones : '');
         const obsBox = document.getElementById('f3Observaciones');
         if (obsF3) {
           obsBox.style.display = 'block';

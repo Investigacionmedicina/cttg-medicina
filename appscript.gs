@@ -2633,7 +2633,7 @@ function listaFase3TodasLasFilasSinDedupe() {
       observaciones:     String(r[27] || ""),
       estadoSolicitud:   String(r[28] || "Solicitud sustentación radicada"),
       observacionesEstado: String(r[29] || ""),
-      motivoDevolucion:  String(r[28] || "") === "Solicitud sustentación devuelta" ? String(r[29] || "") : ""
+      motivoDevolucion:  (function(){ var st = String(r[28] || "").toLowerCase(); return (st.indexOf("devuelta") !== -1 || st.indexOf("devolver") !== -1 || st.indexOf("devolucion") !== -1 || st.indexOf("devolución") !== -1) ? String(r[29] || "") : ""; })()
     });
   }
   return fase3;
