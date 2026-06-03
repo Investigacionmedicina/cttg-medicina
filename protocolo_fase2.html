@@ -257,7 +257,23 @@ let user = null;
 let protocoloActual = null;
 
 function esDiplomadoFase2() {
-  return String(window.radModalidad || '').trim().toLowerCase() === 'diplomado';
+  const s = String(window.radModalidad || '').trim().toLowerCase();
+  return s.includes('diplomado') || s.includes('diplom');
+}
+
+function radicacionRefFase2(rads) {
+  if (!rads || !rads.length) return null;
+  const newer = (a, b) => {
+    const ta = new Date(String(a.fechaRadicacion || a.fechaCarga || '')).getTime() || 0;
+    const tb = new Date(String(b.fechaRadicacion || b.fechaCarga || '')).getTime() || 0;
+    return ta >= tb ? a : b;
+  };
+  const diplos = rads.filter(r => {
+    const s = String(r.modalidad || '').toLowerCase();
+    return s.includes('diplomado') || s.includes('diplom');
+  });
+  if (diplos.length) return diplos.reduce(newer);
+  return rads.reduce(newer);
 }
 
 function aplicarEtiquetasModalidadFase2() {
@@ -403,12 +419,11 @@ async function cargarRadicacion() {
     if (redirigirSiSesionInvalida(d)) return;
     const ban = document.getElementById('bannerDiplomado');
     if (d.success && (d.radicaciones || []).length > 0) {
-      const rad = d.radicaciones[0];
+      const rad = radicacionRefFase2(d.radicaciones);
       window.numeroRadicacion = rad.numero || '';
       window.radModalidad = rad.modalidad || '';
       if (ban) {
-        const dip = String(rad.modalidad || '').trim().toLowerCase() === 'diplomado';
-        ban.style.display = dip ? 'block' : 'none';
+        ban.style.display = esDiplomadoFase2() ? 'block' : 'none';
       }
     } else {
       if (ban) ban.style.display = 'none';
