@@ -1359,38 +1359,45 @@ async function abrirHistorialRadicacion(numero) {
     const eventos = d.eventos || [];
     if (!eventos.length) {
       document.getElementById('modalHistorialBody').innerHTML =
-        '<div class="hist-empty">Sin eventos de historial registrados.<br><small>Los eventos se registran a partir de que se active la nueva versión del sistema.</small></div>';
+        '<div class="hist-empty">Sin eventos registrados para esta radicación.</div>';
       return;
     }
     const faseLabelMap = {
-      FASE1: 'Fase 1 · Radicación',
-      FASE2: 'Fase 2 · Protocolo',
-      ACTAS: 'Actas de asesoría',
-      FASE3: 'Fase 3 · Sustentación'
+      FASE1:'Fase 1 · Radicación', FASE2:'Fase 2 · Protocolo',
+      ACTAS:'Actas de asesoría',   FASE3:'Fase 3 · Sustentación'
     };
     const accionLabelMap = {
-      ACTUALIZAR_ESTADO: 'Actualizar estado',
-      VALIDAR_TUTORES: 'Validar tutores',
-      CREAR_PROTOCOLO: 'Protocolo cargado',
-      ACTUALIZAR_PROTOCOLO: 'Protocolo actualizado',
-      AVALAR_PROTOCOLO_FASE2: 'Evaluación protocolo',
-      REGISTRAR_DECISION_COMITE: 'Decisión comité',
-      CREAR_ACTA: 'Acta cargada',
-      APROBAR_ACTA: 'Acta aprobada',
-      RECHAZAR_ACTA: 'Acta rechazada',
-      CREAR_FASE3: 'Solicitud sustentación',
-      ASIGNAR_JURADOS: 'Jurados asignados',
-      UPDATE_FASE3_ESTADO: 'Estado sustentación',
-      COMPLETAR_FASE3: 'Sustentación completada',
-      SOL_MOD_DEVOLVER: 'Sol. cambios devuelta',
-      SOL_MOD_DERIVAR_CT: 'Sol. cambios → comité',
-      SOL_MOD_APROBAR_DIRECTO: 'Sol. cambios aprobada',
-      SOL_MOD_COMITE_RECHAZAR: 'Sol. cambios rechazada',
-      SOL_MOD_COMITE_APROBAR: 'Sol. cambios aprobada (comité)'
+      RADICACION:'Radicación inicial', ACTUALIZAR_ESTADO:'Actualizar estado',
+      VALIDAR_TUTORES:'Validar tutores', CREAR_PROTOCOLO:'Protocolo cargado',
+      ACTUALIZAR_PROTOCOLO:'Protocolo evaluado', AVALAR_PROTOCOLO_FASE2:'Evaluación protocolo (coord.)',
+      REGISTRAR_DECISION_COMITE:'Decisión comité técnico', CREAR_ACTA:'Acta de asesoría cargada',
+      APROBAR_ACTA:'Acta aprobada', RECHAZAR_ACTA:'Acta rechazada',
+      CREAR_FASE3:'Solicitud de sustentación', ASIGNAR_JURADOS:'Fecha y jurados asignados',
+      UPDATE_FASE3_ESTADO:'Estado sustentación actualizado', COMPLETAR_FASE3:'Sustentación completada',
+      SOL_MOD_DEVOLVER:'Sol. cambios devuelta', SOL_MOD_DERIVAR_CT:'Sol. cambios → comité',
+      SOL_MOD_APROBAR_DIRECTO:'Cambios aprobados directamente', SOL_MOD_COMITE_RECHAZAR:'Cambios rechazados (comité)',
+      SOL_MOD_COMITE_APROBAR:'Cambios aprobados (comité)'
     };
-    document.getElementById('modalHistorialBody').innerHTML = eventos.map(ev => {
+    // Botón exportar + contador
+    const realesCount = eventos.filter(e => !e.reconstruido).length;
+    const reconstrCount = eventos.filter(e => e.reconstruido).length;
+    // Guardar en panel para exportar desde modal (reutiliza la misma función que Seguimiento)
+    const histPanel = document.getElementById('historialSegPanel');
+    if (histPanel && !histPanel._lastRHist) histPanel._lastRHist = d;
+    // Forzar datos disponibles para exportarInformeRadicacion
+    window._lastHistorialExport = { numero, d };
+
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <span style="font-size:11px;color:rgba(255,255,255,.35)">
+        ${eventos.length} eventos · ${realesCount > 0 ? realesCount + ' registros exactos · ' : ''}${reconstrCount > 0 ? reconstrCount + ' inferidos desde hojas' : ''}
+      </span>
+      <button onclick="exportarInformeModal('${esc(numero)}')" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">📥 Exportar PDF</button>
+    </div>`;
+
+    html += eventos.map(ev => {
       const faseLabel = faseLabelMap[ev.fase] || ev.fase || '—';
       const accionLabel = accionLabelMap[ev.accion] || String(ev.accion || '').replace(/_/g, ' ').toLowerCase();
+      const reconBadge = ev.reconstruido ? ' <span style="font-size:9px;color:rgba(251,191,36,.5)" title="Inferido desde estado actual">≈</span>' : '';
       const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
         <div class="hist-states">
           ${ev.estadoAnterior ? `<span class="hist-state-old">${esc(ev.estadoAnterior)}</span><span class="hist-arrow">→</span>` : ''}
@@ -1402,18 +1409,28 @@ async function abrirHistorialRadicacion(numero) {
           <span class="hist-fase-tag">${esc(faseLabel)}</span>
         </div>
         <div>
-          <div class="hist-accion">${esc(accionLabel)}</div>
+          <div class="hist-accion">${esc(accionLabel)}${reconBadge}</div>
           ${stateChange}
           ${ev.motivo ? `<div class="hist-motivo">💬 ${esc(ev.motivo)}</div>` : ''}
           ${ev.detalle ? `<div class="hist-detail">📋 ${esc(ev.detalle)}</div>` : ''}
-          <div class="hist-actor">Actor: ${esc(ev.actor || '—')}</div>
+          ${ev.actor ? `<div class="hist-actor">👤 ${esc(ev.actor)}</div>` : ''}
         </div>
       </div>`;
     }).join('');
+    document.getElementById('modalHistorialBody').innerHTML = html;
   } catch(e) {
     document.getElementById('modalHistorialBody').innerHTML =
       `<div class="hist-empty">Error al cargar historial: ${esc(e.message)}</div>`;
   }
+}
+
+function exportarInformeModal(numero) {
+  const data = window._lastHistorialExport;
+  if (!data || data.numero !== numero) { toast('Abre el historial primero.', 'err'); return; }
+  // Inyectar temporalmente en histPanel para reutilizar exportarInformeRadicacion
+  const histPanel = document.getElementById('historialSegPanel');
+  if (histPanel) { histPanel._lastRHist = data.d; histPanel._lastNumero = numero; }
+  exportarInformeRadicacion(numero, null);
 }
 
 function abrirModalEst(ri, numero, estadoActual) {
@@ -2712,69 +2729,152 @@ function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
   const titulo = rad ? esc(rad.titulo || '—') : '';
   const nombre = rad ? esc([rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ')) : '';
   const estado = rad ? esc(rad.estado || '') : '';
+  const modalidad = rad ? esc(rad.modalidad || '') : '';
+  const area = rad ? esc(rad.area || '') : '';
 
   let html = `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;margin-bottom:18px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-family:monospace;font-size:13px;color:#a78bfa;font-weight:700;margin-bottom:4px">${esc(numero)}</div>
         <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px">${titulo}</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.5)">${nombre}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">${nombre}</div>
+        ${modalidad ? `<div style="font-size:11px;color:rgba(255,255,255,.35)">Modalidad: ${modalidad}${area ? ' · Área: '+area : ''}</div>` : ''}
       </div>
-      <div style="text-align:right">
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
         <span style="background:rgba(167,139,250,.15);color:#c4b5fd;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600">${estado}</span>
+        <button onclick="exportarInformeRadicacion('${esc(numero)}', event)" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">📥 Exportar informe PDF</button>
       </div>
     </div>
   </div>`;
 
-  if (!eventos.length && !trazas.length) {
+  if (!eventos.length) {
     html += `<div style="padding:40px;text-align:center;color:rgba(255,255,255,.35);font-size:13px">
-      Aún no hay eventos registrados en el historial para esta radicación.<br>
-      <small style="font-size:11px;margin-top:6px;display:block">Los eventos se registran a partir de la versión actual del sistema (junio 2026).</small>
+      No se encontraron eventos para esta radicación. Puede que el estudiante aún no haya hecho ninguna acción.
     </div>`;
     panel.innerHTML = html;
     return;
   }
 
-  if (eventos.length) {
-    html += `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:12px;font-weight:700">📋 Historial de decisiones (${eventos.length} eventos)</div>`;
-    html += eventos.map(ev => {
-      const fc = faseColorMap[ev.fase] || { bg:'rgba(255,255,255,.08)', color:'rgba(255,255,255,.6)' };
-      const accionLabel = accionLabelMap[ev.accion] || String(ev.accion||'').replace(/_/g,' ').toLowerCase();
-      const faseLabel = faseLabelMap[ev.fase] || ev.fase || '';
-      const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
-        <div style="display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap">
-          ${ev.estadoAnterior ? `<span style="background:rgba(239,68,68,.15);color:#fca5a5;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoAnterior)}</span><span style="color:rgba(255,255,255,.3);font-size:14px">→</span>` : ''}
-          ${ev.estadoNuevo ? `<span style="background:rgba(16,185,129,.15);color:#6ee7b7;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoNuevo)}</span>` : ''}
-        </div>` : '';
-      const motivoHtml = ev.motivo ? `<div style="background:rgba(251,191,36,.08);border-left:3px solid rgba(251,191,36,.4);padding:8px 12px;border-radius:0 6px 6px 0;margin-top:6px;font-size:12px;color:#fde68a;line-height:1.5"><strong>💬 Motivo / Observación:</strong><br>${esc(ev.motivo)}</div>` : '';
-      const detalleHtml = ev.detalle ? `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:5px;font-family:monospace">📋 ${esc(ev.detalle)}</div>` : '';
-      return `<div style="display:grid;grid-template-columns:180px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div>
-          <div style="font-family:monospace;font-size:11px;color:rgba(255,255,255,.5);line-height:1.6">${esc(ev.timestamp||'—')}</div>
-          <span style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${fc.bg};color:${fc.color};margin-top:4px">${esc(faseLabel)}</span>
-        </div>
-        <div>
-          <div style="font-weight:700;color:#e2e8f0;font-size:13px;margin-bottom:3px">${esc(accionLabel)}</div>
-          ${stateChange}
-          ${motivoHtml}
-          ${detalleHtml}
-          <div style="font-size:10px;color:rgba(255,255,255,.3);font-family:monospace;margin-top:6px">👤 Actor: ${esc(ev.actor||'—')}</div>
-        </div>
-      </div>`;
-    }).join('');
-  }
+  const realesCount = eventos.filter(e => !e.reconstruido).length;
+  const reconstrCount = eventos.filter(e => e.reconstruido).length;
+  html += `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:12px;font-weight:700">
+    📋 Historial de decisiones · ${eventos.length} eventos
+    ${realesCount > 0 ? `<span style="color:rgba(167,139,250,.7);margin-left:8px">${realesCount} registros exactos</span>` : ''}
+    ${reconstrCount > 0 ? `<span style="color:rgba(251,191,36,.5);margin-left:8px">${reconstrCount} inferidos desde hojas</span>` : ''}
+  </div>`;
 
-  // Trazabilidad del sistema como respaldo
+  html += eventos.map(ev => {
+    const fc = faseColorMap[ev.fase] || { bg:'rgba(255,255,255,.08)', color:'rgba(255,255,255,.6)' };
+    const accionLabel = accionLabelMap[ev.accion] || String(ev.accion||'').replace(/_/g,' ').toLowerCase();
+    const faseLabel = faseLabelMap[ev.fase] || ev.fase || '';
+    const reconBadge = ev.reconstruido ? `<span style="font-size:9px;color:rgba(251,191,36,.5);margin-left:6px;vertical-align:middle" title="Inferido desde el estado actual del registro">≈</span>` : '';
+    const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
+      <div style="display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap">
+        ${ev.estadoAnterior ? `<span style="background:rgba(239,68,68,.15);color:#fca5a5;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoAnterior)}</span><span style="color:rgba(255,255,255,.3);font-size:14px">→</span>` : ''}
+        ${ev.estadoNuevo ? `<span style="background:rgba(16,185,129,.15);color:#6ee7b7;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoNuevo)}</span>` : ''}
+      </div>` : '';
+    const motivoHtml = ev.motivo ? `<div style="background:rgba(251,191,36,.08);border-left:3px solid rgba(251,191,36,.5);padding:8px 12px;border-radius:0 6px 6px 0;margin-top:6px;font-size:12px;color:#fde68a;line-height:1.5"><strong>💬 Motivo / Observación:</strong><br>${esc(ev.motivo)}</div>` : '';
+    const detalleHtml = ev.detalle ? `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:5px;font-family:monospace">📋 ${esc(ev.detalle)}</div>` : '';
+    const actorHtml = ev.actor ? `<div style="font-size:10px;color:rgba(255,255,255,.3);font-family:monospace;margin-top:6px">👤 ${esc(ev.actor)}</div>` : '';
+    return `<div style="display:grid;grid-template-columns:185px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:rgba(255,255,255,.5);line-height:1.6">${esc(ev.timestamp||'—')}</div>
+        <span style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${fc.bg};color:${fc.color};margin-top:4px">${esc(faseLabel)}</span>
+      </div>
+      <div>
+        <div style="font-weight:700;color:#e2e8f0;font-size:13px;margin-bottom:3px">${esc(accionLabel)}${reconBadge}</div>
+        ${stateChange}
+        ${motivoHtml}
+        ${detalleHtml}
+        ${actorHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Trazabilidad del sistema como respaldo colapsable
   if (trazas.length && !fFase) {
-    html += `<details style="margin-top:20px;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px">
-      <summary style="cursor:pointer;font-size:11px;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:1px">🗂 Registro del sistema (${trazas.length} entradas)</summary>
-      <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.5)">
-        ${trazas.slice(0,50).map(s => `<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-family:monospace;color:rgba(255,255,255,.35)">${esc(String(s.timestamp||'').slice(0,16))}</span> · <strong>${esc(s.accion||'')}</strong> · ${esc(s.detalle||'')}</div>`).join('')}
+    html += `<details style="margin-top:20px;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px">
+      <summary style="cursor:pointer;font-size:11px;color:rgba(255,255,255,.3);font-weight:600;text-transform:uppercase;letter-spacing:1px">🗂 Registro del sistema (${trazas.length} entradas — autenticaciones, notificaciones)</summary>
+      <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.4)">
+        ${trazas.slice(0,50).map(s => `<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-family:monospace;color:rgba(255,255,255,.25)">${esc(String(s.timestamp||'').slice(0,16))}</span> · <strong>${esc(s.accion||'')}</strong> · ${esc(s.detalle||'')}</div>`).join('')}
       </div>
     </details>`;
   }
 
   panel.innerHTML = html;
+}
+
+function exportarInformeRadicacion(numero, evt) {
+  if (evt) evt.stopPropagation();
+  // Buscar datos de la radicación
+  const rad = radicaciones.find(r => String(r.numero||'').trim().toUpperCase() === String(numero||'').trim().toUpperCase());
+  const histPanel = document.getElementById('historialSegPanel');
+  const rHist = histPanel ? histPanel._lastRHist : null;
+  if (!rHist || !rHist.success) { toast('Carga primero el historial buscando la radicación en Seguimiento.', 'err'); return; }
+  const eventos = rHist.eventos || [];
+  const titulo  = rad ? (rad.titulo || '—') : numero;
+  const nombres = rad ? [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ') : '';
+  const estado  = rad ? (rad.estado || '') : '';
+  const modalidad = rad ? (rad.modalidad || '') : '';
+  const area = rad ? (rad.area || '') : '';
+  const accionLabelMap = {
+    RADICACION:'Radicación inicial', ACTUALIZAR_ESTADO:'Actualización de estado', VALIDAR_TUTORES:'Validación de tutores',
+    CREAR_PROTOCOLO:'Protocolo cargado', ACTUALIZAR_PROTOCOLO:'Protocolo evaluado', AVALAR_PROTOCOLO_FASE2:'Evaluación protocolo (coordinadora)',
+    REGISTRAR_DECISION_COMITE:'Decisión comité técnico', CREAR_ACTA:'Acta de asesoría cargada', APROBAR_ACTA:'Acta aprobada',
+    RECHAZAR_ACTA:'Acta rechazada', CREAR_FASE3:'Solicitud de sustentación', ASIGNAR_JURADOS:'Fecha y jurados asignados',
+    UPDATE_FASE3_ESTADO:'Estado sustentación actualizado', COMPLETAR_FASE3:'Sustentación completada',
+    SOL_MOD_DEVOLVER:'Solicitud de cambios devuelta', SOL_MOD_DERIVAR_CT:'Solicitud derivada a comité',
+    SOL_MOD_APROBAR_DIRECTO:'Cambios de datos aprobados', SOL_MOD_COMITE_RECHAZAR:'Cambios rechazados (comité)', SOL_MOD_COMITE_APROBAR:'Cambios aprobados (comité)'
+  };
+  const faseLabelMap = { FASE1:'Fase 1 · Radicación', FASE2:'Fase 2 · Protocolo', ACTAS:'Actas de asesoría', FASE3:'Fase 3 · Sustentación' };
+  const faseColorPrint = { FASE1:'#7c3aed', FASE2:'#1d4ed8', ACTAS:'#065f46', FASE3:'#92400e' };
+  const rows = eventos.map(ev => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#555;white-space:nowrap">${esc(ev.timestamp||'—')}</td>
+      <td><span style="background:${faseColorPrint[ev.fase]||'#333'};color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${esc(faseLabelMap[ev.fase]||ev.fase||'')}</span></td>
+      <td style="font-weight:600">${esc(accionLabelMap[ev.accion]||String(ev.accion||'').replace(/_/g,' '))}</td>
+      <td style="font-size:11px;color:#333">${ev.estadoAnterior?`<span style="color:#c00">${esc(ev.estadoAnterior)}</span> → `:''}<span style="color:#16a34a;font-weight:600">${esc(ev.estadoNuevo||'')}</span></td>
+      <td style="font-size:11px;color:#333">${ev.motivo ? `<em style="color:#7c4f00">${esc(ev.motivo)}</em>` : ''}</td>
+      <td style="font-size:10px;color:#666;font-family:monospace">${esc(ev.actor||'')}</td>
+      <td style="font-size:10px;color:#888">${esc(ev.detalle||'')}</td>
+    </tr>`).join('');
+  const fechaHoy = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+  const w = window.open('', '_blank', 'width=1100,height=800');
+  w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+    <title>Informe de trazabilidad · ${esc(numero)}</title>
+    <style>
+      body{font-family:Arial,sans-serif;margin:30px;color:#1a1a1a;font-size:13px}
+      h1{font-size:18px;margin:0 0 4px}
+      h2{font-size:13px;font-weight:normal;color:#555;margin:0 0 20px}
+      .meta{background:#f4f4f8;border-left:4px solid #7c3aed;padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:24px}
+      .meta strong{display:block;font-size:15px;margin-bottom:4px}
+      .meta span{font-size:11px;color:#555;display:block;margin-top:2px}
+      table{width:100%;border-collapse:collapse;font-size:12px}
+      th{background:#1e1e2e;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+      td{padding:8px 10px;border-bottom:1px solid #e5e7eb;vertical-align:top}
+      tr:nth-child(even) td{background:#f9f9fb}
+      .footer{margin-top:30px;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:12px}
+      @media print{body{margin:15px}button{display:none}}
+    </style>
+  </head><body>
+    <h1>Informe de Trazabilidad · ${esc(numero)}</h1>
+    <h2>Generado el ${fechaHoy}</h2>
+    <div class="meta">
+      <strong>${esc(titulo)}</strong>
+      <span>Estudiante(s): ${esc(nombres)}</span>
+      ${modalidad ? `<span>Modalidad: ${esc(modalidad)}${area?' · Área: '+esc(area):''}</span>` : ''}
+      <span>Estado actual: <strong>${esc(estado)}</strong></span>
+    </div>
+    <table>
+      <thead><tr><th>Fecha y hora</th><th>Fase</th><th>Evento</th><th>Estado</th><th>Motivo / Observación</th><th>Actor</th><th>Detalle</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="footer">
+      CTTG Medicina · Sistema de Gestión de Trabajos de Grado · ${esc(numero)} · ${eventos.length} eventos registrados
+    </div>
+    <br><button onclick="window.print()" style="background:#7c3aed;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:13px;margin-bottom:20px">🖨️ Imprimir / Guardar PDF</button>
+  </body></html>`);
+  w.document.close();
 }
 
 function renderSeguimiento() {

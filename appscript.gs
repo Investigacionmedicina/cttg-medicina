@@ -371,26 +371,243 @@ function getHistorialRadicacion(numeroRadicacion, sesion) {
     if (!estudiantePuedeVerRadicacionPorNumero(sesion.email, numero))
       return { success: false, error: "No autorizado para esta radicación" };
   }
+  // Eventos reales de la hoja Historial
   var sheet = getSheet("Historial");
-  if (!sheet) return { success: true, eventos: [] };
-  var data = sheet.getDataRange().getValues();
-  var eventos = [];
-  for (var i = 1; i < data.length; i++) {
-    var r = data[i];
-    if (String(r[1] || "").trim().toUpperCase() !== numero) continue;
-    eventos.push({
-      timestamp:      String(r[0] || ""),
-      fase:           String(r[2] || ""),
-      accion:         String(r[3] || ""),
-      estadoAnterior: String(r[4] || ""),
-      estadoNuevo:    String(r[5] || ""),
-      actor:          String(r[6] || ""),
-      motivo:         String(r[7] || ""),
-      detalle:        String(r[8] || "")
-    });
+  var eventosReales = [];
+  if (sheet) {
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      var r = data[i];
+      if (String(r[1] || "").trim().toUpperCase() !== numero) continue;
+      eventosReales.push({
+        timestamp:      String(r[0] || ""),
+        fase:           String(r[2] || ""),
+        accion:         String(r[3] || ""),
+        estadoAnterior: String(r[4] || ""),
+        estadoNuevo:    String(r[5] || ""),
+        actor:          String(r[6] || ""),
+        motivo:         String(r[7] || ""),
+        detalle:        String(r[8] || ""),
+        reconstruido:   false
+      });
+    }
   }
-  eventos.sort(function(a, b) { return String(a.timestamp).localeCompare(String(b.timestamp)); });
-  return { success: true, numeroRadicacion: numero, eventos: eventos };
+  // Reconstruir desde hojas para radicaciones existentes (llena los huecos)
+  var reconstruidos = reconstruirHistorialDesdeSheets(numero);
+  // Agregar reconstruidos solo si no hay un evento real con la misma accion+fase+estadoNuevo
+  var llaves = {};
+  eventosReales.forEach(function(e) { llaves[e.fase + "|" + e.accion + "|" + e.estadoNuevo] = true; });
+  reconstruidos.forEach(function(ev) {
+    var k = ev.fase + "|" + ev.accion + "|" + ev.estadoNuevo;
+    if (!llaves[k]) { llaves[k] = true; eventosReales.push(ev); }
+  });
+  eventosReales.sort(function(a, b) {
+    var ta = String(a.timestamp || ""); var tb = String(b.timestamp || "");
+    if (ta === "—" || ta === "") return 1;
+    if (tb === "—" || tb === "") return -1;
+    return ta.localeCompare(tb);
+  });
+  return { success: true, numeroRadicacion: numero, eventos: eventosReales };
+}
+
+function reconstruirHistorialDesdeSheets(numero) {
+  var eventos = [];
+  var num = String(numero || "").trim().toUpperCase();
+  if (!num) return eventos;
+  var tz = Session.getScriptTimeZone();
+
+  function fmt(v) {
+    if (!v) return "";
+    try {
+      var d = new Date(v);
+      if (!isNaN(d.getTime())) return Utilities.formatDate(d, tz, "yyyy-MM-dd HH:mm:ss");
+    } catch(e) {}
+    return String(v);
+  }
+
+  // === FASE 1 ===
+  var shF1 = getSheet("Fase1");
+  if (shF1) {
+    var d1 = shF1.getDataRange().getValues();
+    for (var i = 1; i < d1.length; i++) {
+      var r = d1[i];
+      if (String(r[1] || "").trim().toUpperCase() !== num) continue;
+      var fechaRad = fmt(r[33]);
+      eventos.push({
+        timestamp: fechaRad || "—",
+        fase: "FASE1", accion: "RADICACION",
+        estadoAnterior: "", estadoNuevo: "Radicado",
+        actor: String(r[2] || ""),
+        motivo: String(r[35] || ""),
+        detalle: "Modalidad: " + String(r[22] || "") + " | Área: " + String(r[23] || "") +
+                 " | Tutor1: " + String(r[24] || "") + " | Tutor2: " + String(r[28] || ""),
+        reconstruido: true
+      });
+      var estadoActual = String(r[32] || "");
+      var aprobadoPor  = String(r[36] || "");
+      var fechaAprobF1 = fmt(r[34]);
+      if (estadoActual && estadoActual !== "Radicado") {
+        eventos.push({
+          timestamp: fechaAprobF1 || fechaRad || "—",
+          fase: "FASE1", accion: "ACTUALIZAR_ESTADO",
+          estadoAnterior: "Radicado", estadoNuevo: estadoActual,
+          actor: aprobadoPor,
+          motivo: String(r[35] || ""),
+          detalle: "Estado actual registrado en Fase1",
+          reconstruido: true
+        });
+      }
+      // Tutores: si hay tutor1Email y el estado menciona tutores
+      var tutor1Email = String(r[25] || "").trim();
+      var tutor2Email = String(r[29] || "").trim();
+      if (tutor1Email || tutor2Email) {
+        var estadoTutores = estadoActual.toLowerCase();
+        if (estadoTutores.indexOf("tutor") !== -1 || estadoTutores.indexOf("aval") !== -1) {
+          eventos.push({
+            timestamp: fechaAprobF1 || fechaRad || "—",
+            fase: "FASE1", accion: "VALIDAR_TUTORES",
+            estadoAnterior: "Radicado", estadoNuevo: estadoActual,
+            actor: aprobadoPor,
+            motivo: "",
+            detalle: "T1: " + String(r[24] || "") + " (" + tutor1Email + ") | T2: " + String(r[28] || "") + " (" + tutor2Email + ")",
+            reconstruido: true
+          });
+        }
+      }
+      break;
+    }
+  }
+
+  // === FASE 2 — todas las filas (sin deduplicar) ===
+  var shF2 = getSheet("Fase2");
+  if (shF2) {
+    var d2 = shF2.getDataRange().getValues();
+    for (var i = 1; i < d2.length; i++) {
+      var r = d2[i];
+      if (!r[0]) continue;
+      if (String(r[1] || "").trim().toUpperCase() !== num) continue;
+      var fSol = fmt(r[3]);
+      var fAprobP = fmt(r[9]);
+      var estadoP = String(r[8] || "Cargado");
+      var evaluador = String(r[6] || "");
+      var observP = String(r[10] || "");
+      eventos.push({
+        timestamp: fSol || "—",
+        fase: "FASE2", accion: "CREAR_PROTOCOLO",
+        estadoAnterior: "", estadoNuevo: "Cargado",
+        actor: String(r[2] || r[13] || ""),
+        motivo: "",
+        detalle: "Archivo: " + String(r[5] || ""),
+        reconstruido: true
+      });
+      if (estadoP !== "Cargado") {
+        var accionP = estadoP.toLowerCase().indexOf("devuelt") !== -1 ? "ACTUALIZAR_PROTOCOLO" :
+                      estadoP.toLowerCase().indexOf("comit") !== -1 ? "REGISTRAR_DECISION_COMITE" :
+                      "AVALAR_PROTOCOLO_FASE2";
+        eventos.push({
+          timestamp: fAprobP || fSol || "—",
+          fase: "FASE2", accion: accionP,
+          estadoAnterior: "Cargado", estadoNuevo: estadoP,
+          actor: evaluador || String(r[13] || ""),
+          motivo: observP,
+          detalle: "Evaluador: " + evaluador + (r[16] ? " | Acta: " + String(r[16] || "") : "") + (r[17] ? " | Aval CCEB: " + String(r[17] || "") : ""),
+          reconstruido: true
+        });
+      }
+    }
+  }
+
+  // === ACTAS DE ASESORÍA ===
+  var shActas = getSheet("Acta asesoria");
+  if (shActas) {
+    var dA = shActas.getDataRange().getValues();
+    for (var i = 1; i < dA.length; i++) {
+      var r = dA[i];
+      if (!r[0]) continue;
+      if (String(r[1] || "").trim().toUpperCase() !== num) continue;
+      var fCargaA = fmt(r[5]);
+      var estadoA = String(r[6] || "Pendiente revisión");
+      var observA = String(r[7] || "");
+      eventos.push({
+        timestamp: fCargaA || "—",
+        fase: "ACTAS", accion: "CREAR_ACTA",
+        estadoAnterior: "", estadoNuevo: "Pendiente revisión",
+        actor: String(r[2] || ""),
+        motivo: "",
+        detalle: "Archivo: " + String(r[3] || ""),
+        reconstruido: true
+      });
+      if (estadoA !== "Pendiente revisión") {
+        eventos.push({
+          timestamp: fCargaA || "—",
+          fase: "ACTAS", accion: estadoA === "Rechazada" ? "RECHAZAR_ACTA" : "APROBAR_ACTA",
+          estadoAnterior: "Pendiente revisión", estadoNuevo: estadoA,
+          actor: "",
+          motivo: observA,
+          detalle: "Archivo: " + String(r[3] || ""),
+          reconstruido: true
+        });
+      }
+    }
+  }
+
+  // === FASE 3 ===
+  var shF3 = getSheetFase3();
+  if (shF3) {
+    try { asegurarColumnasEstadoFase3(shF3); } catch(e) {}
+    var d3 = shF3.getDataRange().getDisplayValues();
+    var carryN = "";
+    for (var i = 1; i < d3.length; i++) {
+      var r = d3[i];
+      var rawB = String(r[1] || "").trim();
+      var numF3 = (rawB ? (extraerNumeroRadicacion(rawB) || rawB) : carryN);
+      if (rawB) carryN = numF3;
+      if (!numF3) continue;
+      if (numF3.toUpperCase() !== num) continue;
+      var fCargaF3 = String(r[12] || "");
+      var fSustF3  = String(r[3] || "");
+      var estadoF3 = String(r[28] || "");
+      var j1 = String(r[13] || "");
+      var j2 = String(r[16] || "");
+      if (fCargaF3) {
+        eventos.push({
+          timestamp: fCargaF3,
+          fase: "FASE3", accion: "CREAR_FASE3",
+          estadoAnterior: "", estadoNuevo: "Solicitud sustentación radicada",
+          actor: String(r[2] || ""),
+          motivo: "",
+          detalle: "Turnitin: " + String(r[11] || "") + "% | J1 propuesto: " + j1,
+          reconstruido: true
+        });
+      }
+      if (fSustF3 && j1) {
+        eventos.push({
+          timestamp: fSustF3,
+          fase: "FASE3", accion: "ASIGNAR_JURADOS",
+          estadoAnterior: "Solicitud sustentación radicada", estadoNuevo: "Sustentación programada",
+          actor: "",
+          motivo: "",
+          detalle: "Fecha: " + fSustF3 + " | Hora: " + String(r[26] || "") + " | J1: " + j1 + " | J2: " + j2,
+          reconstruido: true
+        });
+      }
+      var estadoF3Low = estadoF3.toLowerCase();
+      if (estadoF3 && estadoF3Low !== "solicitud sustentación radicada" && estadoF3Low !== "sustentación programada" && estadoF3Low !== "solicitud sustentacion radicada" && estadoF3Low !== "sustentacion programada") {
+        eventos.push({
+          timestamp: fSustF3 || fCargaF3 || "—",
+          fase: "FASE3", accion: "COMPLETAR_FASE3",
+          estadoAnterior: "Sustentación programada", estadoNuevo: estadoF3,
+          actor: "",
+          motivo: String(r[29] || ""),
+          detalle: "Nota: " + String(r[22] || "") + " | Acta: " + String(r[21] || "") + " | Producto: " + String(r[23] || ""),
+          reconstruido: true
+        });
+      }
+      break;
+    }
+  }
+
+  return eventos;
 }
 
 function estudiantePuedeVerRadicacionPorNumero(emailEstudiante, numeroRadicacion) {
