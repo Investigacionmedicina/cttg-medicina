@@ -629,8 +629,8 @@ function juradoEfectivo(r, n) {
     }
     return { nombre: '', email: '', telefono: '' };
   }
-  if (n === 1) return { nombre: r.jurado1Nombre || '', email: r.jurado1Email || '', telefono: r.jurado1Telefono || '' };
-  if (n === 2) return { nombre: r.jurado2Nombre || '', email: r.jurado2Email || '', telefono: r.jurado2Telefono || '' };
+  if (n === 1) return { nombre: r.jurado1Nombre || '', email: r.jurado1Email || '', telefono: r.jurado1Telefono || '', especialidad: r.jurado1Especialidad || '' };
+  if (n === 2) return { nombre: r.jurado2Nombre || '', email: r.jurado2Email || '', telefono: r.jurado2Telefono || '', especialidad: r.jurado2Especialidad || '' };
   return { nombre: '', email: '', telefono: '' };
 }
 
@@ -712,11 +712,11 @@ function htmlDetalleCompletoEnvioF3(r) {
     h += bloqueKv('J1 · nombre', r.jurado1Nombre || '');
     h += bloqueKv('J1 · email', r.jurado1Email || '');
     h += bloqueKv('J1 · teléfono', fmtTelMostrar(r.jurado1Telefono));
-    h += bloqueKv('J1 · cédula', r.jurado1Cedula || '');
+    h += bloqueKv('J1 · especialidad', r.jurado1Especialidad || '');
     h += bloqueKv('J2 · nombre', r.jurado2Nombre || '');
     h += bloqueKv('J2 · email', r.jurado2Email || '');
     h += bloqueKv('J2 · teléfono', fmtTelMostrar(r.jurado2Telefono));
-    h += bloqueKv('J2 · cédula', r.jurado2Cedula || '');
+    h += bloqueKv('J2 · especialidad', r.jurado2Especialidad || '');
   }
   h += '<div class="msec">Coordinación en hoja</div>';
   h += bloqueKv('Estado solicitud', r.estadoSolicitud || '');
