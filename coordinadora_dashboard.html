@@ -495,25 +495,24 @@
   </div>
   <!-- PANEL SEGUIMIENTO -->
   <div class="panel" id="pan-seguimiento">
-    <div class="seg-help">Busca un trabajo y revisa la línea de tiempo: en cada evento verás <strong>módulo</strong>, <strong>fecha</strong>, <strong>responsable</strong> y un <strong>detalle estructurado</strong> (decisión del comité, evaluador, fecha de sesión, motivos, etc.) cuando el sistema los haya registrado. Los nuevos movimientos guardan más datos; los antiguos pueden mostrar solo texto breve.</div>
+    <div class="seg-help">Busca un trabajo por número de radicación, nombre del estudiante o correo. Verás <strong>cada decisión con fecha, estado anterior y nuevo, quién la tomó y el motivo</strong>.</div>
     <div class="filters">
-      <input id="searchSeguimiento" placeholder="🔍 Buscar trabajo: radicación, título, estudiante o correo..." oninput="prepararBusquedaSeguimiento()" onkeydown="if(event.key==='Enter') cargarSeguimiento()">
+      <input id="searchSeguimiento" placeholder="🔍 Radicación, estudiante o correo..." oninput="prepararBusquedaSeguimiento()" onkeydown="if(event.key==='Enter') cargarSeguimiento()">
       <select id="fFaseSeg" onchange="renderSeguimiento()">
-        <option value="">Todos los módulos</option>
-        <option value="AUTH">AUTH</option>
-        <option value="FASE1">FASE1</option>
-        <option value="ACTAS">ACTAS</option>
+        <option value="">Todas las fases</option>
+        <option value="FASE1">Fase 1 · Radicación</option>
+        <option value="ACTAS">Actas de asesoría</option>
         <option value="FASE2">FASE2</option>
-        <option value="SUSTENTACION">SUSTENTACIÓN</option>
-        <option value="SISTEMA">SISTEMA</option>
-        <option value="GENERAL">GENERAL</option>
+        <option value="FASE2">Fase 2 · Protocolo</option>
+        <option value="FASE3">Fase 3 · Sustentación</option>
       </select>
-      <button class="btn bl" onclick="cargarSeguimiento()">🔎 Buscar seguimiento</button>
+      <button class="btn bl" onclick="cargarSeguimiento()">🔎 Buscar</button>
       <button class="btn" onclick="cargarSeguimiento()">↻ Actualizar</button>
     </div>
     <div class="seg-search-info" id="segSearchInfo"></div>
     <div class="timeline-box" id="timelineResumen" style="display:none"></div>
-    <div class="tbl-wrap">
+    <div id="historialSegPanel" style="display:none"></div>
+    <div class="tbl-wrap" id="tblSeguimientoWrap">
       <table>
         <thead><tr>
           <th>Fecha/Hora</th><th>N° Radicación</th><th>Módulo</th><th>Hito</th><th>Responsable</th><th>Detalle del movimiento</th>
@@ -2633,56 +2632,158 @@ async function cargarSeguimiento() {
   const exacta = matches.find(r => String(r.numero || '').trim().toUpperCase() === q);
   const radMatch = exacta || (matches.length === 1 ? matches[0] : null);
   const tbody = document.getElementById('tbodySeguimiento');
+  const histPanel = document.getElementById('historialSegPanel');
+  const tblWrap = document.getElementById('tblSeguimientoWrap');
   seguimientoRadActual = radMatch || null;
+
   if (!qRaw) {
     document.getElementById('timelineResumen').style.display = 'none';
     document.getElementById('segSearchInfo').classList.remove('show');
-    tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando actividad reciente...</td></tr>';
-    try {
-      const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
-        action: 'getTrazabilidad', numeroRadicacion: '', limit: 100, token: coordToken()
-      })});
-      const d = await res.json();
-      if (d.success) { seguimientos = d.registros || []; renderSeguimiento(); }
-      else tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay registros de actividad aún.</td></tr>';
-    } catch(e) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty">Error cargando actividad reciente.</td></tr>';
-    }
+    if (histPanel) { histPanel.style.display = 'none'; histPanel.innerHTML = ''; }
+    if (tblWrap) tblWrap.style.display = '';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Escribe el número de radicación o nombre del estudiante para ver su historial completo.</td></tr>';
     return;
   }
   if (!radMatch && matches.length > 1) {
     renderSugerenciasSeguimiento(qRaw, true);
     document.getElementById('timelineResumen').style.display = 'none';
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Hay varios trabajos que coinciden. Selecciona uno para ver su seguimiento.</td></tr>';
+    if (histPanel) { histPanel.style.display = 'none'; histPanel.innerHTML = ''; }
+    if (tblWrap) tblWrap.style.display = '';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Hay varios trabajos que coinciden. Selecciona uno de la lista.</td></tr>';
     return;
   }
   if (!radMatch && !/^CTTG/i.test(q)) {
     document.getElementById('timelineResumen').style.display = 'none';
     renderSugerenciasSeguimiento(qRaw, true);
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">No encontré un trabajo con esa búsqueda. Prueba con el número de radicación.</td></tr>';
+    if (histPanel) { histPanel.style.display = 'none'; histPanel.innerHTML = ''; }
+    if (tblWrap) tblWrap.style.display = '';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No encontré ese trabajo. Prueba con el número de radicación.</td></tr>';
     return;
   }
   const numeroConsulta = radMatch ? (radMatch.numero || '') : q;
-  tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>';
+
+  // Mostrar historial enriquecido (nueva hoja Historial) + trazabilidad como respaldo
+  if (histPanel) {
+    histPanel.style.display = 'block';
+    histPanel.innerHTML = '<div style="padding:24px;text-align:center;color:rgba(255,255,255,.4)"><span class="spinner"></span> Cargando historial...</div>';
+  }
+  if (tblWrap) tblWrap.style.display = 'none';
+
   try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
-      action: 'getTrazabilidad',
-      numeroRadicacion: numeroConsulta || '',
-      limit: 300,
-      token: coordToken()
-    })});
-    const d = await res.json();
-    if (!d.success) throw new Error(d.error || 'No fue posible cargar trazabilidad');
-    seguimientos = d.registros || [];
+    const [rHist, rTraz] = await Promise.all([
+      fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getHistorialRadicacion', numeroRadicacion: numeroConsulta, token: coordToken() }) }).then(r=>r.json()),
+      fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getTrazabilidad', numeroRadicacion: numeroConsulta, limit:300, token: coordToken() }) }).then(r=>r.json())
+    ]);
     renderSugerenciasSeguimiento(qRaw);
-    renderSeguimiento();
+    renderHistorialSegPanel(histPanel, radMatch, numeroConsulta, rHist, rTraz);
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Error cargando trazabilidad.</td></tr>';
-    toast('Error cargando trazabilidad: ' + e.message, 'err');
+    if (histPanel) histPanel.innerHTML = `<div style="padding:24px;color:#fca5a5">Error cargando historial: ${esc(e.message)}</div>`;
+    toast('Error cargando historial: ' + e.message, 'err');
   }
 }
 
+function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
+  if (!panel) return;
+  // Guardar para re-render al cambiar filtro
+  panel._lastRad = rad; panel._lastNumero = numero; panel._lastRHist = rHist; panel._lastRTraz = rTraz;
+  const fFase = document.getElementById('fFaseSeg').value;
+  const accionLabelMap = {
+    ACTUALIZAR_ESTADO:'Actualizar estado', VALIDAR_TUTORES:'Validar tutores',
+    CREAR_PROTOCOLO:'Protocolo cargado', ACTUALIZAR_PROTOCOLO:'Protocolo evaluado',
+    AVALAR_PROTOCOLO_FASE2:'Evaluación protocolo (coord.)', REGISTRAR_DECISION_COMITE:'Decisión comité técnico',
+    CREAR_ACTA:'Acta cargada', APROBAR_ACTA:'Acta aprobada', RECHAZAR_ACTA:'Acta rechazada',
+    CREAR_FASE3:'Solicitud sustentación', ASIGNAR_JURADOS:'Fecha y jurados asignados',
+    UPDATE_FASE3_ESTADO:'Estado sustentación actualizado', COMPLETAR_FASE3:'Sustentación completada',
+    SOL_MOD_DEVOLVER:'Sol. cambios devuelta', SOL_MOD_DERIVAR_CT:'Sol. cambios derivada a comité',
+    SOL_MOD_APROBAR_DIRECTO:'Cambios de datos aprobados', SOL_MOD_COMITE_RECHAZAR:'Cambios rechazados (comité)', SOL_MOD_COMITE_APROBAR:'Cambios aprobados (comité)'
+  };
+  const faseLabelMap = { FASE1:'Fase 1 · Radicación', FASE2:'Fase 2 · Protocolo', ACTAS:'Actas de asesoría', FASE3:'Fase 3 · Sustentación' };
+  const faseColorMap = {
+    FASE1: { bg:'rgba(167,139,250,.15)', color:'#c4b5fd' },
+    FASE2: { bg:'rgba(96,165,250,.15)', color:'#93c5fd' },
+    ACTAS: { bg:'rgba(52,211,153,.15)', color:'#6ee7b7' },
+    FASE3: { bg:'rgba(251,191,36,.15)', color:'#fcd34d' }
+  };
+
+  const eventos = (rHist && rHist.success ? rHist.eventos || [] : []).filter(ev => !fFase || ev.fase === fFase);
+  const trazas  = (rTraz && rTraz.success ? rTraz.registros || [] : []).filter(s => !fFase || String(s.modulo||'').toUpperCase() === fFase);
+
+  // Header con datos del trabajo
+  const titulo = rad ? esc(rad.titulo || '—') : '';
+  const nombre = rad ? esc([rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ')) : '';
+  const estado = rad ? esc(rad.estado || '') : '';
+
+  let html = `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:monospace;font-size:13px;color:#a78bfa;font-weight:700;margin-bottom:4px">${esc(numero)}</div>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px">${titulo}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5)">${nombre}</div>
+      </div>
+      <div style="text-align:right">
+        <span style="background:rgba(167,139,250,.15);color:#c4b5fd;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600">${estado}</span>
+      </div>
+    </div>
+  </div>`;
+
+  if (!eventos.length && !trazas.length) {
+    html += `<div style="padding:40px;text-align:center;color:rgba(255,255,255,.35);font-size:13px">
+      Aún no hay eventos registrados en el historial para esta radicación.<br>
+      <small style="font-size:11px;margin-top:6px;display:block">Los eventos se registran a partir de la versión actual del sistema (junio 2026).</small>
+    </div>`;
+    panel.innerHTML = html;
+    return;
+  }
+
+  if (eventos.length) {
+    html += `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:12px;font-weight:700">📋 Historial de decisiones (${eventos.length} eventos)</div>`;
+    html += eventos.map(ev => {
+      const fc = faseColorMap[ev.fase] || { bg:'rgba(255,255,255,.08)', color:'rgba(255,255,255,.6)' };
+      const accionLabel = accionLabelMap[ev.accion] || String(ev.accion||'').replace(/_/g,' ').toLowerCase();
+      const faseLabel = faseLabelMap[ev.fase] || ev.fase || '';
+      const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
+        <div style="display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap">
+          ${ev.estadoAnterior ? `<span style="background:rgba(239,68,68,.15);color:#fca5a5;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoAnterior)}</span><span style="color:rgba(255,255,255,.3);font-size:14px">→</span>` : ''}
+          ${ev.estadoNuevo ? `<span style="background:rgba(16,185,129,.15);color:#6ee7b7;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoNuevo)}</span>` : ''}
+        </div>` : '';
+      const motivoHtml = ev.motivo ? `<div style="background:rgba(251,191,36,.08);border-left:3px solid rgba(251,191,36,.4);padding:8px 12px;border-radius:0 6px 6px 0;margin-top:6px;font-size:12px;color:#fde68a;line-height:1.5"><strong>💬 Motivo / Observación:</strong><br>${esc(ev.motivo)}</div>` : '';
+      const detalleHtml = ev.detalle ? `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:5px;font-family:monospace">📋 ${esc(ev.detalle)}</div>` : '';
+      return `<div style="display:grid;grid-template-columns:180px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div>
+          <div style="font-family:monospace;font-size:11px;color:rgba(255,255,255,.5);line-height:1.6">${esc(ev.timestamp||'—')}</div>
+          <span style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${fc.bg};color:${fc.color};margin-top:4px">${esc(faseLabel)}</span>
+        </div>
+        <div>
+          <div style="font-weight:700;color:#e2e8f0;font-size:13px;margin-bottom:3px">${esc(accionLabel)}</div>
+          ${stateChange}
+          ${motivoHtml}
+          ${detalleHtml}
+          <div style="font-size:10px;color:rgba(255,255,255,.3);font-family:monospace;margin-top:6px">👤 Actor: ${esc(ev.actor||'—')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Trazabilidad del sistema como respaldo
+  if (trazas.length && !fFase) {
+    html += `<details style="margin-top:20px;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px">
+      <summary style="cursor:pointer;font-size:11px;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:1px">🗂 Registro del sistema (${trazas.length} entradas)</summary>
+      <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.5)">
+        ${trazas.slice(0,50).map(s => `<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-family:monospace;color:rgba(255,255,255,.35)">${esc(String(s.timestamp||'').slice(0,16))}</span> · <strong>${esc(s.accion||'')}</strong> · ${esc(s.detalle||'')}</div>`).join('')}
+      </div>
+    </details>`;
+  }
+
+  panel.innerHTML = html;
+}
+
 function renderSeguimiento() {
+  // Si el historial panel está activo (búsqueda específica), re-renderizarlo con nuevo filtro
+  const histPanel = document.getElementById('historialSegPanel');
+  if (histPanel && histPanel.style.display !== 'none' && histPanel._lastRHist) {
+    renderHistorialSegPanel(histPanel, histPanel._lastRad, histPanel._lastNumero, histPanel._lastRHist, histPanel._lastRTraz);
+    return;
+  }
   const q  = (document.getElementById('searchSeguimiento').value || '').toLowerCase();
   const fF = document.getElementById('fFaseSeg').value;
   const filtered = seguimientos.filter(s => {
