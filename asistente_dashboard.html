@@ -79,6 +79,19 @@
   .btn-action:hover{transform:translateY(-1px)}
   .btn-action:disabled{opacity:.6;transform:none;cursor:not-allowed}
   .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
+  .hist-event{display:grid;grid-template-columns:160px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}
+  .hist-event:last-child{border-bottom:none}
+  .hist-ts{font-family:monospace;font-size:10px;color:rgba(255,255,255,.4);line-height:1.6}
+  .hist-fase-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(96,165,250,.15);color:#93c5fd;margin-top:3px;letter-spacing:.4px}
+  .hist-accion{font-weight:600;color:#e2e8f0;margin-bottom:5px;font-size:13px;text-transform:capitalize}
+  .hist-states{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+  .hist-state-old{background:rgba(239,68,68,.12);color:#fca5a5;border-radius:4px;padding:2px 7px;font-size:11px}
+  .hist-state-new{background:rgba(16,185,129,.12);color:#6ee7b7;border-radius:4px;padding:2px 7px;font-size:11px}
+  .hist-arrow{color:rgba(255,255,255,.3)}
+  .hist-motivo{color:rgba(255,255,255,.6);font-size:11px;font-style:italic;margin-top:3px}
+  .hist-detail{color:rgba(255,255,255,.35);font-size:10px;font-family:monospace;margin-top:3px}
+  .hist-actor{color:rgba(255,255,255,.3);font-size:10px;font-family:monospace;margin-top:4px}
+  .hist-empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
   .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -824,11 +837,37 @@
   </div>
 </div>
 
+<!-- MODAL HISTORIAL COMPLETO -->
+<div class="modal-bg" id="modalHistorial">
+  <div class="modal wide">
+    <div class="modal-hdr">
+      <h3>📜 Historial · <span id="modalHistorialNum" style="font-family:monospace;color:#a78bfa"></span></h3>
+      <button class="btn" onclick="closeModal('modalHistorial')">✕</button>
+    </div>
+    <div id="modalHistorialBody" style="max-height:68vh;overflow-y:auto;padding-top:8px"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
+
+async function leerRespuestaApp(res) {
+  const raw = await res.text();
+  try {
+    const d = raw ? JSON.parse(raw) : null;
+    if (!d || typeof d !== 'object') throw new Error('Respuesta vacía del servidor');
+    return d;
+  } catch (e) {
+    if (/^\s*</.test(raw)) {
+      throw new Error('El servidor no devolvió JSON. Verifique que la Web App de Apps Script esté desplegada y accesible.');
+    }
+    if (e.message && e.message !== 'Respuesta vacía del servidor') throw e;
+    throw new Error('Respuesta del servidor ilegible');
+  }
+}
 let radicaciones = [], actas = [], admin = null;
 /** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
 let filtroDashboardMetrica = null;
@@ -1118,9 +1157,84 @@ function renderTabla() {
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
         <button class="${btnAvalCls}" title="${esModalidadDiplomadoDash(r) ? 'Abrir aval de Diplomado (sin tutores/actas)' : 'Validar tutores'}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${btnAvalTxt}</button>
         <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
+        <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
       </div></td>
     </tr>`;
   }).join('');
+}
+
+async function abrirHistorialRadicacion(numero) {
+  if (!numero) return;
+  document.getElementById('modalHistorialNum').textContent = numero;
+  document.getElementById('modalHistorialBody').innerHTML =
+    '<div class="hist-empty"><span class="spinner"></span> Cargando historial...</div>';
+  document.getElementById('modalHistorial').classList.add('open');
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'getHistorialRadicacion',
+      numeroRadicacion: numero,
+      token: coordToken()
+    })});
+    const d = await leerRespuestaApp(res);
+    if (!d.success) throw new Error(d.error || 'Error');
+    const eventos = d.eventos || [];
+    if (!eventos.length) {
+      document.getElementById('modalHistorialBody').innerHTML =
+        '<div class="hist-empty">Sin eventos de historial registrados.<br><small>Los eventos se registran a partir de que se active la nueva versión del sistema.</small></div>';
+      return;
+    }
+    const faseLabelMap = {
+      FASE1: 'Fase 1 · Radicación',
+      FASE2: 'Fase 2 · Protocolo',
+      ACTAS: 'Actas de asesoría',
+      FASE3: 'Fase 3 · Sustentación'
+    };
+    const accionLabelMap = {
+      ACTUALIZAR_ESTADO: 'Actualizar estado',
+      VALIDAR_TUTORES: 'Validar tutores',
+      CREAR_PROTOCOLO: 'Protocolo cargado',
+      ACTUALIZAR_PROTOCOLO: 'Protocolo actualizado',
+      AVALAR_PROTOCOLO_FASE2: 'Evaluación protocolo',
+      REGISTRAR_DECISION_COMITE: 'Decisión comité',
+      CREAR_ACTA: 'Acta cargada',
+      APROBAR_ACTA: 'Acta aprobada',
+      RECHAZAR_ACTA: 'Acta rechazada',
+      CREAR_FASE3: 'Solicitud sustentación',
+      ASIGNAR_JURADOS: 'Jurados asignados',
+      UPDATE_FASE3_ESTADO: 'Estado sustentación',
+      COMPLETAR_FASE3: 'Sustentación completada',
+      SOL_MOD_DEVOLVER: 'Sol. cambios devuelta',
+      SOL_MOD_DERIVAR_CT: 'Sol. cambios → comité',
+      SOL_MOD_APROBAR_DIRECTO: 'Sol. cambios aprobada',
+      SOL_MOD_COMITE_RECHAZAR: 'Sol. cambios rechazada',
+      SOL_MOD_COMITE_APROBAR: 'Sol. cambios aprobada (comité)'
+    };
+    document.getElementById('modalHistorialBody').innerHTML = eventos.map(ev => {
+      const faseLabel = faseLabelMap[ev.fase] || ev.fase || '—';
+      const accionLabel = accionLabelMap[ev.accion] || String(ev.accion || '').replace(/_/g, ' ').toLowerCase();
+      const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
+        <div class="hist-states">
+          ${ev.estadoAnterior ? `<span class="hist-state-old">${esc(ev.estadoAnterior)}</span><span class="hist-arrow">→</span>` : ''}
+          ${ev.estadoNuevo ? `<span class="hist-state-new">${esc(ev.estadoNuevo)}</span>` : ''}
+        </div>` : '';
+      return `<div class="hist-event">
+        <div>
+          <div class="hist-ts">${esc(ev.timestamp || '—')}</div>
+          <span class="hist-fase-tag">${esc(faseLabel)}</span>
+        </div>
+        <div>
+          <div class="hist-accion">${esc(accionLabel)}</div>
+          ${stateChange}
+          ${ev.motivo ? `<div class="hist-motivo">💬 ${esc(ev.motivo)}</div>` : ''}
+          ${ev.detalle ? `<div class="hist-detail">📋 ${esc(ev.detalle)}</div>` : ''}
+          <div class="hist-actor">Actor: ${esc(ev.actor || '—')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('modalHistorialBody').innerHTML =
+      `<div class="hist-empty">Error al cargar historial: ${esc(e.message)}</div>`;
+  }
 }
 
 function abrirSeguimientoRad(numero) {
@@ -1193,6 +1307,7 @@ function verDetalle(ri) {
       <button class="btn am" onclick="closeModal('modalDet');abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Cambiar estado</button>
       <button class="${avalCls}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${avalLbl}</button>
       <button class="btn bl" onclick="closeModal('modalDet');abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Ver trazabilidad</button>
+      <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="closeModal('modalDet');abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial completo</button>
     </div>`;
   document.getElementById('modalDet').classList.add('open');
 }

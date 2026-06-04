@@ -850,6 +850,21 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
+
+async function leerRespuestaApp(res) {
+  const raw = await res.text();
+  try {
+    const d = raw ? JSON.parse(raw) : null;
+    if (!d || typeof d !== 'object') throw new Error('Respuesta vacía del servidor');
+    return d;
+  } catch (e) {
+    if (/^\s*</.test(raw)) {
+      throw new Error('El servidor no devolvió JSON. Verifique que la Web App de Apps Script esté desplegada y accesible.');
+    }
+    if (e.message && e.message !== 'Respuesta vacía del servidor') throw e;
+    throw new Error('Respuesta del servidor ilegible');
+  }
+}
 let radicaciones = [], actas = [], protocolos = [], admin = null;
 /** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
 let filtroDashboardMetrica = null;
@@ -1340,7 +1355,7 @@ async function abrirHistorialRadicacion(numero) {
       numeroRadicacion: numero,
       token: coordToken()
     })});
-    const d = await res.json();
+    const d = await leerRespuestaApp(res);
     if (!d.success) throw new Error(d.error || 'Error');
     const eventos = d.eventos || [];
     if (!eventos.length) {

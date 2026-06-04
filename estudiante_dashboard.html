@@ -527,6 +527,21 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 const TOKEN = localStorage.getItem('cttg_token') || '';
+
+async function leerRespuestaApp(res) {
+  const raw = await res.text();
+  try {
+    const d = raw ? JSON.parse(raw) : null;
+    if (!d || typeof d !== 'object') throw new Error('Respuesta vacía del servidor');
+    return d;
+  } catch (e) {
+    if (/^\s*</.test(raw)) {
+      throw new Error('El servidor no devolvió JSON. Verifique que la Web App de Apps Script esté desplegada y accesible.');
+    }
+    if (e.message && e.message !== 'Respuesta vacía del servidor') throw e;
+    throw new Error('Respuesta del servidor ilegible');
+  }
+}
 let numEst = 1;
 let user = null;
 let bloquearNuevaRad = false;
@@ -1132,7 +1147,7 @@ async function abrirHistorialEstudiante(numRad) {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'getHistorialRadicacion', numeroRadicacion: n, token: TOKEN
     })});
-    const d = await res.json();
+    const d = await leerRespuestaApp(res);
     if (redirigirSiSesionInvalida(d)) { modal.classList.remove('open'); return; }
     if (!d.success) {
       body.innerHTML = `<div class="empty" style="padding:16px;color:#fecaca">${esc(d.error||'Error')}</div>`;
