@@ -192,6 +192,7 @@
       <div style="flex:1">
         <div style="font-weight:600;font-size:14px">Actas de Asesoría</div>
         <div id="btnActasSub" style="font-size:12px;color:rgba(255,255,255,.5)">Cargar actas firmadas por tu tutor</div>
+        <div id="btnActasMotivo" style="display:none;margin-top:6px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:7px 10px;font-size:11px;color:#fecaca;line-height:1.4"></div>
       </div>
       <span>→</span>
     </a>
@@ -200,6 +201,7 @@
       <div style="flex:1">
         <div style="font-weight:600;font-size:14px">Fase 2: Protocolo</div>
         <div id="btnFase2Sub" style="font-size:12px;color:rgba(255,255,255,.5)">Pendiente: aprobación de actas</div>
+        <div id="btnFase2Motivo" style="display:none;margin-top:6px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:7px 10px;font-size:11px;color:#fecaca;line-height:1.4"></div>
       </div>
       <span>→</span>
     </a>
@@ -1238,7 +1240,7 @@ function verDetalle(rowIndex) {
     ${fila('Email T1', r.tutor1Email)}
     ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
     ${fila('Email T2', r.tutor2Email)}
-    ${notas ? `<div class="notas-box" style="margin-top:14px">📝 ${esc(notas)}</div>` : ''}
+    ${(()=>{ const est = String(r.estado||'').toLowerCase(); const devuelto = est.includes('devuelt') || est.includes('rechaz'); return devuelto && notas ? `<div style="margin-top:12px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:12px;color:#fecaca;font-size:12px;line-height:1.5"><strong>🔄 Motivo de devolución:</strong><br>${esc(notas)}</div>` : (notas ? `<div class="notas-box" style="margin-top:14px">📝 ${esc(notas)}</div>` : ''); })()}
     <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
       <button type="button" class="btn-traza" onclick="document.getElementById('modalDet').classList.remove('open'); void abrirTrazaEstudiante(${numJson})">📜 Ver movimientos del trámite</button>
       <button type="button" class="btn-traza" style="margin-top:8px;background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3);color:#c4b5fd" onclick="document.getElementById('modalDet').classList.remove('open'); void abrirHistorialEstudiante(${numJson})">📋 Historial completo con fechas y motivos</button>
@@ -1320,7 +1322,7 @@ async function cargarMisRad() {
             ${r.fechaAprobacion ? `<span class="date-info">✅ ${fmtFecha(r.fechaAprobacion)}</span>` : ''}
           </div>
           ${construirCajaTiempos(r)}
-          ${notasLimpias ? `<div class="notas-box">📝 ${esc(notasLimpias)}</div>` : ''}
+          ${(()=>{ const est = String(r.estado||'').toLowerCase(); const devuelto = est.includes('devuelt') || est.includes('rechaz'); return devuelto && notasLimpias ? `<div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 12px;font-size:12px;color:#fecaca;line-height:1.4;margin-top:8px"><strong>🔄 Motivo:</strong> ${esc(notasLimpias)}</div>` : (notasLimpias ? `<div class="notas-box">📝 ${esc(notasLimpias)}</div>` : ''); })()}
           <div class="rad-card-actions">
             <button type="button" class="btn-det" onclick="verDetalle(${r.rowIndex})">👁 Ver detalle</button>
             <button type="button" class="btn-traza" onclick="void abrirTrazaEstudiante(${numQ})">📜 Movimientos</button>
@@ -1400,6 +1402,9 @@ let actasAprobadas = false;
     const numRef = radRef.numero;
     const emEst = user.email;
 
+    const btnActasMotivo = document.getElementById('btnActasMotivo');
+    const btnFase2Motivo = document.getElementById('btnFase2Motivo');
+
     if (dActas.success) {
       const listaActas = dActas.actas || [];
       actasAprobadas = actasAprobadasParaRadicacion(listaActas, numRef, emEst);
@@ -1413,10 +1418,37 @@ let actasAprobadas = false;
         else if (pendientes > 0) btnActasSub.textContent = `⏳ ${pendientes} acta(s) en revisión`;
         else if (estadosConAcceso.includes(estadoActual)) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
       }
+      // Mostrar motivo del rechazo más reciente si existe
+      if (btnActasMotivo) {
+        const rechazadas = misActasRad.filter(a => String(a.estado || '').trim() === 'Rechazada' && a.observaciones);
+        const ultimaRechazada = rechazadas[rechazadas.length - 1];
+        if (ultimaRechazada && !actasAprobadas) {
+          btnActasMotivo.style.display = 'block';
+          btnActasMotivo.innerHTML = `<strong>❌ Acta rechazada · ${esc(ultimaRechazada.nombreArchivo || '')}:</strong><br>${esc(ultimaRechazada.observaciones)}`;
+        } else {
+          btnActasMotivo.style.display = 'none';
+        }
+      }
     }
 
     if (dF2.success) {
       fase2Aprobada = protocoloAprobadoParaRadicacion(dF2.protocolos || [], numRef, emEst);
+      // Mostrar motivo de devolución del protocolo si fue devuelto
+      if (btnFase2Motivo) {
+        const misProtocolos = (dF2.protocolos || []).filter(p =>
+          normNumRadEst(p.numero || p.numeroRadicacion || '') === normNumRadEst(numRef)
+        );
+        const devuelto = misProtocolos.find(p => {
+          const est = String(p.estado || '').toLowerCase();
+          return (est.includes('devuelto') || est.includes('devuelta')) && p.observaciones;
+        });
+        if (devuelto && !fase2Aprobada) {
+          btnFase2Motivo.style.display = 'block';
+          btnFase2Motivo.innerHTML = `<strong>🔄 Protocolo devuelto:</strong><br>${esc(devuelto.observaciones || devuelto.motivoUltimaDevolucion || '')}`;
+        } else {
+          btnFase2Motivo.style.display = 'none';
+        }
+      }
     }
 
     const panelF3 = document.getElementById('panelFase3Estado');
