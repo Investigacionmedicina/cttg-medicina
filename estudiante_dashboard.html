@@ -500,6 +500,17 @@
   </div>
 </div>
 
+<div class="modal-bg" id="modalHistorialEst">
+  <div class="modal modal-wide">
+    <div class="modal-hdr">
+      <h3>📜 Historial completo</h3>
+      <button type="button" class="btn-close" onclick="document.getElementById('modalHistorialEst').classList.remove('open')">✕ Cerrar</button>
+    </div>
+    <p style="font-size:12px;color:rgba(255,255,255,.45);margin:-8px 0 12px" id="historialEstNum">—</p>
+    <div id="historialEstBody" style="min-height:120px;max-height:65vh;overflow-y:auto;font-size:13px;color:#e2e8f0">Cargando…</div>
+  </div>
+</div>
+
 <div class="modal-bg" id="modalTrazaEst">
   <div class="modal modal-wide">
     <div class="modal-hdr">
@@ -1108,6 +1119,66 @@ async function abrirTrazaEstudiante(numRad) {
   }
 }
 
+async function abrirHistorialEstudiante(numRad) {
+  const n = String(numRad || '').trim();
+  if (!n) { toast('No hay número de radicación.', 'warn'); return; }
+  const modal = document.getElementById('modalHistorialEst');
+  const body = document.getElementById('historialEstBody');
+  if (!modal || !body) { toast('Modal de historial no disponible.', 'warn'); return; }
+  document.getElementById('historialEstNum').textContent = n;
+  body.innerHTML = '<div class="empty" style="padding:20px">Cargando historial completo…</div>';
+  modal.classList.add('open');
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'getHistorialRadicacion', numeroRadicacion: n, token: TOKEN
+    })});
+    const d = await res.json();
+    if (redirigirSiSesionInvalida(d)) { modal.classList.remove('open'); return; }
+    if (!d.success) {
+      body.innerHTML = `<div class="empty" style="padding:16px;color:#fecaca">${esc(d.error||'Error')}</div>`;
+      return;
+    }
+    const eventos = d.eventos || [];
+    if (!eventos.length) {
+      body.innerHTML = '<div class="empty" style="padding:16px">Aún no hay eventos de historial. Los eventos se registran a partir de la versión actual del sistema.</div>';
+      return;
+    }
+    const faseLabelMap = { FASE1:'Fase 1 · Radicación', FASE2:'Fase 2 · Protocolo', ACTAS:'Actas de asesoría', FASE3:'Fase 3 · Sustentación' };
+    const accionLabelMap = {
+      ACTUALIZAR_ESTADO:'Cambio de estado', VALIDAR_TUTORES:'Tutores validados', CREAR_PROTOCOLO:'Protocolo cargado',
+      ACTUALIZAR_PROTOCOLO:'Protocolo evaluado', AVALAR_PROTOCOLO_FASE2:'Evaluación protocolo',
+      REGISTRAR_DECISION_COMITE:'Decisión comité técnico', CREAR_ACTA:'Acta cargada',
+      APROBAR_ACTA:'Acta aprobada', RECHAZAR_ACTA:'Acta rechazada',
+      CREAR_FASE3:'Solicitud sustentación creada', ASIGNAR_JURADOS:'Fecha y jurados asignados',
+      UPDATE_FASE3_ESTADO:'Estado sustentación actualizado', COMPLETAR_FASE3:'Sustentación completada',
+      SOL_MOD_DEVOLVER:'Sol. cambios devuelta', SOL_MOD_DERIVAR_CT:'Sol. cambios → comité',
+      SOL_MOD_APROBAR_DIRECTO:'Cambios aplicados', SOL_MOD_COMITE_RECHAZAR:'Cambios rechazados', SOL_MOD_COMITE_APROBAR:'Cambios aprobados'
+    };
+    body.innerHTML = eventos.map(ev => {
+      const faseLabel = faseLabelMap[ev.fase] || ev.fase || '';
+      const accionLabel = accionLabelMap[ev.accion] || String(ev.accion||'').replace(/_/g,' ').toLowerCase();
+      const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ?
+        `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0">
+          ${ev.estadoAnterior ? `<span style="background:rgba(239,68,68,.12);color:#fca5a5;border-radius:4px;padding:2px 8px;font-size:11px">${esc(ev.estadoAnterior)}</span><span style="color:rgba(255,255,255,.3)">→</span>` : ''}
+          ${ev.estadoNuevo ? `<span style="background:rgba(16,185,129,.12);color:#6ee7b7;border-radius:4px;padding:2px 8px;font-size:11px">${esc(ev.estadoNuevo)}</span>` : ''}
+        </div>` : '';
+      return `<div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px">
+        <div>
+          <div style="font-family:monospace;font-size:10px;color:rgba(255,255,255,.4);line-height:1.6">${esc(ev.timestamp||'—')}</div>
+          <span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(96,165,250,.15);color:#93c5fd;margin-top:3px">${esc(faseLabel)}</span>
+        </div>
+        <div>
+          <div style="font-weight:600;color:#e2e8f0;margin-bottom:4px;font-size:13px">${esc(accionLabel)}</div>
+          ${stateChange}
+          ${ev.motivo ? `<div style="color:rgba(255,255,255,.65);font-size:11px;font-style:italic;margin-top:3px">💬 ${esc(ev.motivo)}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    body.innerHTML = `<div class="empty" style="padding:16px;color:#fecaca">Error: ${esc(e.message)}</div>`;
+  }
+}
+
 function htmlBloqueDiplomadoDetalle(r) {
   if (!esModalidadDiplomado(r.modalidad || '')) return '';
   const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val" style="white-space:pre-wrap">${esc(val)}</span></div>` : '';
@@ -1170,7 +1241,8 @@ function verDetalle(rowIndex) {
     ${notas ? `<div class="notas-box" style="margin-top:14px">📝 ${esc(notas)}</div>` : ''}
     <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
       <button type="button" class="btn-traza" onclick="document.getElementById('modalDet').classList.remove('open'); void abrirTrazaEstudiante(${numJson})">📜 Ver movimientos del trámite</button>
-      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.4">Consulta aquí aval de tutores, evaluador o jurados, decisiones de comité u otros registros cuando consten en la bitácora.</div>
+      <button type="button" class="btn-traza" style="margin-top:8px;background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3);color:#c4b5fd" onclick="document.getElementById('modalDet').classList.remove('open'); void abrirHistorialEstudiante(${numJson})">📋 Historial completo con fechas y motivos</button>
+      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.4">El historial completo muestra cada cambio de estado, fecha exacta y motivo de cada decisión.</div>
     </div>
   `;
   document.getElementById('modalDet').classList.add('open');
