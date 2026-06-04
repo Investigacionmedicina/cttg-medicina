@@ -88,6 +88,7 @@ function handleRequest(e, body) {
       case "resolverSolicitudModRad": result = resolverSolicitudModRad(sesion, body); break;
       case "getSolicitudesModRadComite": result = getSolicitudesModRadComite(sesion); break;
       case "resolverSolicitudModRadComite": result = resolverSolicitudModRadComite(sesion, body); break;
+      case "getHistorialRadicacion": result = getHistorialRadicacion(body.numeroRadicacion, sesion); break;
       case "logout": cerrarSesion(body.token); result = { success: true }; break;
       default: result = { success: false, error: "Acción no reconocida: " + action };
     }
@@ -329,6 +330,67 @@ function registrarTrazabilidadGlobal(email, accion, detalle) {
   } catch (e) {
     Logger.log("Error trazabilidad global: " + e);
   }
+}
+
+// ── HISTORIAL UNIFICADO DE NEGOCIO ──────────────────────────────────────────
+// Hoja "Historial": A=Timestamp | B=NumeroRadicacion | C=Fase | D=Accion
+//                   E=EstadoAnterior | F=EstadoNuevo | G=Actor | H=Motivo | I=Detalle
+function registrarHistorial(numeroRadicacion, fase, accion, estadoAnterior, estadoNuevo, actor, motivo, detalle) {
+  try {
+    var ss = SpreadsheetApp.openById(SHEET_ID);
+    var sheet = ss.getSheetByName("Historial");
+    if (!sheet) {
+      sheet = ss.insertSheet("Historial");
+      sheet.appendRow(["Timestamp","NumeroRadicacion","Fase","Accion","EstadoAnterior","EstadoNuevo","Actor","Motivo","Detalle"]);
+      sheet.setFrozenRows(1);
+    }
+    var timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+    sheet.appendRow([
+      timestamp,
+      String(numeroRadicacion || ""),
+      String(fase || ""),
+      String(accion || ""),
+      String(estadoAnterior || ""),
+      String(estadoNuevo || ""),
+      String(actor || ""),
+      String(motivo || ""),
+      String(detalle || "")
+    ]);
+  } catch(e) {
+    Logger.log("Error registrarHistorial: " + e);
+  }
+}
+
+function getHistorialRadicacion(numeroRadicacion, sesion) {
+  if (!sesion) return { success: false, error: "No autorizado" };
+  var numero = String(numeroRadicacion || "").trim().toUpperCase();
+  if (!numero) return { success: false, error: "Número de radicación requerido" };
+  if (!sesionEsCoordinadoraOAsistente(sesion)) {
+    if (String(sesion.rol || "").trim().toLowerCase() !== "estudiante")
+      return { success: false, error: "No autorizado" };
+    if (!estudiantePuedeVerRadicacionPorNumero(sesion.email, numero))
+      return { success: false, error: "No autorizado para esta radicación" };
+  }
+  var sheet = getSheet("Historial");
+  if (!sheet) return { success: true, eventos: [] };
+  var data = sheet.getDataRange().getValues();
+  var eventos = [];
+  for (var i = 1; i < data.length; i++) {
+    var r = data[i];
+    if (String(r[1] || "").trim().toUpperCase() !== numero) continue;
+    eventos.push({
+      timestamp:      String(r[0] || ""),
+      fase:           String(r[2] || ""),
+      accion:         String(r[3] || ""),
+      estadoAnterior: String(r[4] || ""),
+      estadoNuevo:    String(r[5] || ""),
+      actor:          String(r[6] || ""),
+      motivo:         String(r[7] || ""),
+      detalle:        String(r[8] || "")
+    });
+  }
+  eventos.sort(function(a, b) { return String(a.timestamp).localeCompare(String(b.timestamp)); });
+  return { success: true, numeroRadicacion: numero, eventos: eventos };
 }
 
 function estudiantePuedeVerRadicacionPorNumero(emailEstudiante, numeroRadicacion) {
@@ -1564,6 +1626,7 @@ function resolverSolicitudModRad(sesion, body) {
     sheet.getRange(rs, 11).setValue(emailCoord);
     sheet.getRange(rs, 12).setValue(obsCoord);
     registrarAuditoria(emailCoord, "RESOLVER_SOL_MOD_DEVOLVER", numero + " | sol fila " + rs + " | " + obsCoord.slice(0, 200));
+    registrarHistorial(numero, "FASE1", "SOL_MOD_DEVOLVER", "", "Devuelta", emailCoord, obsCoord, "Sol. fila " + rs);
     try {
       var sf1Dv = getSheet("Fase1");
       var emailEs = sf1Dv ? String(sf1Dv.getRange(rowF1, 3).getValue() || "").trim() : "";
@@ -1587,6 +1650,7 @@ function resolverSolicitudModRad(sesion, body) {
     sheet.getRange(rs, 11).setValue(emailCoord);
     sheet.getRange(rs, 12).setValue(obsCoord);
     registrarAuditoria(emailCoord, "RESOLVER_SOL_MOD_DER_CT", numero + " | sol fila " + rs + " | derivada a comité");
+    registrarHistorial(numero, "FASE1", "SOL_MOD_DERIVAR_CT", "", "Pendiente comité", emailCoord, obsCoord, "Sol. fila " + rs);
     try {
       var sheetF1Der = getSheet("Fase1");
       var emailEstDer = sheetF1Der ? String(sheetF1Der.getRange(rowF1, 3).getValue() || "").trim() : "";
@@ -1631,6 +1695,7 @@ function resolverSolicitudModRad(sesion, body) {
   sheet.getRange(rs, 12).setValue(obsCoord);
 
   registrarAuditoria(emailCoord, "RESOLVER_SOL_MOD_APROBAR", numero + " | F1 row " + rowF1 + " | Δ " + JSON.stringify(applied.despues || {}).slice(0, 400));
+  registrarHistorial(numero, "FASE1", "SOL_MOD_APROBAR_DIRECTO", JSON.stringify(applied.antes || {}).slice(0, 300), JSON.stringify(applied.despues || {}).slice(0, 300), emailCoord, obsCoord, "Sol. fila " + rs);
 
   try {
     var emailEst2 = String(sheetF1.getRange(rowF1, 3).getValue() || "").trim();
@@ -1685,6 +1750,7 @@ function resolverSolicitudModRadComite(sesion, body) {
     sheet.getRange(rs, 11).setValue(emailCoord);
     sheet.getRange(rs, 12).setValue(obsComite);
     registrarAuditoria(emailCoord, "COMITE_SOL_MOD_RECHAZAR", numero + " | sol fila " + rs + " | " + obsComite.slice(0, 200));
+    registrarHistorial(numero, "FASE1", "SOL_MOD_COMITE_RECHAZAR", "", "Rechazada por comité", emailCoord, obsComite, "Sol. fila " + rs);
     try {
       var sheetF1R = getSheet("Fase1");
       var emailEstR = sheetF1R ? String(sheetF1R.getRange(rowF1, 3).getValue() || "").trim() : "";
@@ -1728,6 +1794,7 @@ function resolverSolicitudModRadComite(sesion, body) {
   sheet.getRange(rs, 12).setValue(obsComite);
 
   registrarAuditoria(emailCoord, "COMITE_SOL_MOD_APROBAR", numero + " | F1 row " + rowF1 + " | Δ " + JSON.stringify(applied.despues || {}).slice(0, 400));
+  registrarHistorial(numero, "FASE1", "SOL_MOD_COMITE_APROBAR", JSON.stringify(applied.antes || {}).slice(0, 300), JSON.stringify(applied.despues || {}).slice(0, 300), emailCoord, obsComite, "Sol. fila " + rs);
 
   try {
     var emailEst3 = String(sheetF1.getRange(rowF1, 3).getValue() || "").trim();
@@ -1742,6 +1809,7 @@ function actualizarEstado(rowIndex, estado, notas, emailCoord) {
   var sheet = getSheet("Fase1");
   var ri    = parseInt(rowIndex);
   var numeroRad = String(sheet.getRange(ri, 2).getValue() || "").trim();
+  var estadoAnteriorF1 = String(sheet.getRange(ri, 33).getValue() || "");
   sheet.getRange(ri, 33).setValue(estado || "");
   if (notas) sheet.getRange(ri, 36).setValue(notas);
 
@@ -1763,6 +1831,7 @@ function actualizarEstado(rowIndex, estado, notas, emailCoord) {
  
  notificarCambioEstado(ri, estado, { notas: notas });
   registrarAuditoria(emailCoord, "ACTUALIZAR_ESTADO", numeroRad + " | Fila " + rowIndex + " → " + estado);
+  registrarHistorial(numeroRad, "FASE1", "ACTUALIZAR_ESTADO", estadoAnteriorF1, estado || "", emailCoord || "", notas || "", "Fila " + rowIndex);
   try { verificarVencimientosYAlertar(ri); } catch(e) { Logger.log("Error alertas: " + e); }
   return { success: true };
 }
@@ -1870,6 +1939,7 @@ function validarTutores(rowIndex, tutor1, tutor2, observaciones, emailCoord) {
   var sheet = getSheet("Fase1");
   var ri    = parseInt(rowIndex);
   var numeroRad = String(sheet.getRange(ri, 2).getValue() || "").trim();
+  var estadoAnteriorF1 = String(sheet.getRange(ri, 33).getValue() || "");
   if (tutor1) {
     sheet.getRange(ri, 25).setValue(tutor1.nombre   || "");
     sheet.getRange(ri, 26).setValue(tutor1.email    || "");
@@ -1890,6 +1960,8 @@ function validarTutores(rowIndex, tutor1, tutor2, observaciones, emailCoord) {
     notificarCambioEstado(ri, "Tutores Avalados", {});
   }
   registrarAuditoria(emailCoord, "VALIDAR_TUTORES", numeroRad + " | Fila " + rowIndex);
+  var estadoNuevoTutores = esDipl ? estadoAnteriorF1 : "Tutores Avalados";
+  registrarHistorial(numeroRad, "FASE1", "VALIDAR_TUTORES", estadoAnteriorF1, estadoNuevoTutores, emailCoord || "", observaciones || "", "T1: " + ((tutor1 && tutor1.nombre) || "") + " | T2: " + ((tutor2 && tutor2.nombre) || ""));
   return { success: true };
 }
 
@@ -2070,6 +2142,7 @@ function crearProtocolo(numeroRadicacion, emailEstudiante, nombreArchivo, urlArc
   }
 
   registrarAuditoria(emailEstudiante, "CREAR_PROTOCOLO", numeroRadicacion);
+  registrarHistorial(numeroRadicacion, "FASE2", "CREAR_PROTOCOLO", "", "Cargado", emailEstudiante || "", observaciones || "", "Archivo: " + (nombreArchivo || ""));
   return { success: true };
 }
 /** Lista completa de protocolos Fase 2 (sin filtrar por rol). Uso interno + API con sesión. */
@@ -2139,6 +2212,8 @@ function obtenerFase2(sesion) {
 function actualizarEstadoProtocolo(rowIndex, estado, evaluador, emailEvaluador, fechaReunion, decision, motivo, emailCoord) {
   var sheet = getSheet("Fase2");
   var ri = parseInt(rowIndex);
+  var estadoAnteriorF2 = String(sheet.getRange(ri, 9).getValue() || "");
+  var numRadProt = String(sheet.getRange(ri, 2).getValue() || "").trim();
 
   // Hoja real:
   // G=7 Evaluadores
@@ -2187,6 +2262,7 @@ function actualizarEstadoProtocolo(rowIndex, estado, evaluador, emailEvaluador, 
   }
 
   registrarAuditoria(emailCoord, "ACTUALIZAR_PROTOCOLO", numRad + " | Fila " + rowIndex + " → " + estado);
+  registrarHistorial(numRadProt, "FASE2", "ACTUALIZAR_PROTOCOLO", estadoAnteriorF2, estado || "", emailCoord || "", motivo || decision || "", "Evaluador: " + (evaluador || "") + " | Reunión: " + (fechaReunion || ""));
   return { success: true };
 }
 // ── ACTAS DE ASESORÍA ────────────────────────────────────────
@@ -2233,6 +2309,7 @@ function crearActasAsesoria(numeroRadicacion, emailEstudiante, nombreArchivo, ba
   } catch(e) { Logger.log("Error correo acta: " + e); }
 
   registrarAuditoria(emailEstudiante, "CREAR_ACTA", numeroRadicacion);
+  registrarHistorial(numeroRadicacion, "ACTAS", "CREAR_ACTA", "", "Pendiente revisión", emailEstudiante || "", observaciones || "", "Archivo: " + (nombreArchivo || ""));
   return { success: true };
 }
 
@@ -2280,6 +2357,7 @@ function aprobarActasAsesoria(rowIndex, emailEstudiante, emailCoord, rechazar, m
   var numeroRad  = String(sheetActas.getRange(ri, 2).getValue() || "").trim();
   var esSolicitudFase2 = nombreActa === "Solicitud activación Fase 2";
   var estado     = rechazar ? "Rechazada" : "Aprobada";
+  var estadoAnteriorActa = String(sheetActas.getRange(ri, 7).getValue() || "");
 
   sheetActas.getRange(ri, 7).setValue(estado);
   if (motivo) sheetActas.getRange(ri, 8).setValue(motivo);
@@ -2309,8 +2387,9 @@ function aprobarActasAsesoria(rowIndex, emailEstudiante, emailCoord, rechazar, m
   }
 
  registrarAuditoria(emailCoord, rechazar ? "RECHAZAR_ACTA" : "APROBAR_ACTA", numeroRad + " | Fila " + rowIndex);
+  registrarHistorial(numeroRad, "ACTAS", rechazar ? "RECHAZAR_ACTA" : "APROBAR_ACTA", estadoAnteriorActa, estado, emailCoord || "", motivo || "", "Acta: " + nombreActa + (esSolicitudFase2 ? " | Solicitud Fase 2" : ""));
   return { success: true };
-} 
+}
 // ── FASE 3: SUSTENTACIÓN ─────────────────────────────────────
 // Hoja Fase 3: tel jurado en O(15) y R(18); réplica en AE/AF; especialidad opcional en AG/AH (34 cols).
 
@@ -2412,6 +2491,7 @@ function crearFase3(numeroRadicacion, emailEstudiante, porcentajeTurnitin, jurad
     "Solicitud registrada. Turnitin: " + pct + "%"
   );
   registrarAuditoria(emailEstudiante, "CREAR_FASE3", numeroRadicacion);
+  registrarHistorial(numeroRadicacion, "FASE3", "CREAR_FASE3", "", "Solicitud sustentación radicada", emailEstudiante || "", "", "Turnitin: " + pct + "% | J1: " + (jurado1Nombre || "") + " | J2: " + (jurado2Nombre || ""));
   return { success: true, rowIndex: newRow };
 }
 
@@ -2735,6 +2815,7 @@ function updateFase3Asignacion(rowIndex, fechaSustentacion, horaSustentacion, lu
   }
 
   var numero = String(sheet.getRange(ri, 2).getValue() || "").trim();
+  var estadoAnteriorF3Asig = String(sheet.getRange(ri, 29).getValue() || "");
   sheet.getRange(ri, 4).setValue(fechaSustentacion  || "");  // col D = Fecha Sustentación
   sheet.getRange(ri, 21).setValue(fechaSustentacion || "");  // col U = Fecha Asignada
   sheet.getRange(ri, 27).setValue(horaSustentacion  || "");  // col AA = Hora
@@ -2791,6 +2872,7 @@ function updateFase3Asignacion(rowIndex, fechaSustentacion, horaSustentacion, lu
     "Fecha: " + (fechaSustentacion || "") + " | Hora: " + (horaSustentacion || "") + " | Lugar: " + (lugar || "Por confirmar")
   );
   registrarAuditoria(emailCoord, "ASIGNAR_JURADOS", numero + " | Fila " + rowIndex + " — " + fechaSustentacion);
+  registrarHistorial(numero, "FASE3", "ASIGNAR_JURADOS", estadoAnteriorF3Asig, "Sustentación programada", emailCoord || "", "", "Fecha: " + (fechaSustentacion || "") + " | Hora: " + (horaSustentacion || "") + " | Lugar: " + (lugar || ""));
   return { success: true };
 }
 
@@ -2815,6 +2897,7 @@ function updateFase3Estado(rowIndex, estado, observaciones, emailCoord) {
   }
 
   var numero = String(sheet.getRange(ri, 2).getValue() || "").trim();
+  var estadoAnteriorF3 = String(sheet.getRange(ri, 29).getValue() || "");
   var emailEst = String(sheet.getRange(ri, 3).getValue() || "").trim();
   var mensajeRevision = "Su solicitud de sustentación fue revisada. La documentación radicada se encuentra conforme y en los próximos días se asignarán los jurados.";
   if (estado === "Solicitud sustentación revisada" && !observaciones) {
@@ -2857,6 +2940,7 @@ function updateFase3Estado(rowIndex, estado, observaciones, emailCoord) {
     observaciones
   );
   registrarAuditoria(emailCoord, "UPDATE_FASE3_ESTADO", numero + " | " + estado);
+  registrarHistorial(numero, "FASE3", "UPDATE_FASE3_ESTADO", estadoAnteriorF3, estado, emailCoord || "", observaciones || "", "Fila " + rowIndex);
   return { success: true };
 }
 
@@ -3017,7 +3101,9 @@ function avalarProtocoloFase2(rowIndex, estado, motivo, evaluador, emailEvaluado
  
   var ri = rowIndex;
   var hoy_str = hoy();
- 
+  var estadoAnteriorF2 = String(sheet.getRange(ri, 9).getValue() || "");
+  var numRadAv = String(sheet.getRange(ri, 2).getValue() || "").trim();
+
   try {
     // Escribe en las COLUMNAS CORRECTAS
     sheet.getRange(ri, 7).setValue(evaluador || "");
@@ -3050,12 +3136,13 @@ function avalarProtocoloFase2(rowIndex, estado, motivo, evaluador, emailEvaluado
       }
     }
  
+    registrarHistorial(numRadAv, "FASE2", "AVALAR_PROTOCOLO_FASE2", estadoAnteriorF2, estado || "", emailCoord || "", motivo || observaciones || "", "Evaluador: " + (evaluador || "") + " | FechaComité: " + (fechaComite || ""));
     return { success: true, message: "Protocolo evaluado correctamente" };
   } catch (e) {
     return { success: false, error: "Error al guardar: " + e.message };
   }
-} 
- 
+}
+
 // ===== FUNCIONES AUXILIARES (déjalas igual si ya existen) =====
  
 function obtenerDatosEstudiante(emailEstudiante, sesion) {
@@ -3142,8 +3229,9 @@ function repararEstadosFase1() {
 function registrarDecisionComite(rowIndex, estado, motivo, emailEvaluador, evaluador, numeroActa, avalCCEB, observaciones) {
   var sheet = getSheet("Fase2");
   if (!sheet) return { success: false, error: "Hoja Fase2 no encontrada" };
-  
+
   var ri = parseInt(rowIndex);
+  var estadoAnteriorF2dc = String(sheet.getRange(ri, 9).getValue() || "");
   var estadoComite = (estado === "Devuelto") ? "Devuelto por Comité Técnico" : estado;
   var evaluadorFinal = String(evaluador || "").trim() || String(sheet.getRange(ri, 7).getValue() || "").trim();
   
@@ -3179,6 +3267,7 @@ function registrarDecisionComite(rowIndex, estado, motivo, emailEvaluador, evalu
       }
     }
   }
+  registrarHistorial(numRad, "FASE2", "REGISTRAR_DECISION_COMITE", estadoAnteriorF2dc, estadoComite || "", emailEvaluador || evaluadorFinal || "", motivo || observaciones || "", "Acta: " + (numeroActa || "") + " | AvalCCEB: " + (avalCCEB || ""));
   return { success: true, message: "Decisión registrada" };
 }
 
@@ -3230,6 +3319,7 @@ function completarFase3(rowIndex, nota, numeroActa, producto, descripcion, email
     "Nota: " + notaNum + " | Acta: " + (numeroActa || "") + " | Producto: " + (producto || "NO")
   );
   registrarAuditoria(emailCoord, "COMPLETAR_FASE3", numero + " | Nota: " + notaNum);
+  registrarHistorial(numero, "FASE3", "COMPLETAR_FASE3", "", estadoFinal, emailCoord || "", "", "Nota: " + notaNum + " | Acta: " + (numeroActa || "") + " | Producto: " + (producto || "NO"));
   return { success: true };
 }
 
