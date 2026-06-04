@@ -335,6 +335,21 @@
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 
+async function leerRespuestaApp(res) {
+  const raw = await res.text();
+  try {
+    const d = raw ? JSON.parse(raw) : null;
+    if (!d || typeof d !== 'object') throw new Error('Respuesta vacía del servidor');
+    return d;
+  } catch (e) {
+    if (/^\s*</.test(raw)) {
+      throw new Error('El servidor no devolvió JSON. Verifique que la Web App de Apps Script esté desplegada y accesible.');
+    }
+    if (e.message && e.message !== 'Respuesta vacía del servidor') throw e;
+    throw new Error('Respuesta del servidor ilegible');
+  }
+}
+
 function urlPanelStaff() {
   try {
     var u = JSON.parse(localStorage.getItem('cttg_admin') || '{}');
@@ -788,8 +803,8 @@ function toggleDesc() {
 async function cargar() {
   try {
     const sinDedupe = !!(document.getElementById('chkFase3SinDedupe') && document.getElementById('chkFase3SinDedupe').checked);
-    const reqF3 = fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe }) }).then(function(r){ return r.json(); });
-    const reqF1 = fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1', token: coordToken() }) }).then(function(r){ return r.json(); });
+    const reqF3 = fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe }) }).then(leerRespuestaApp);
+    const reqF1 = fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1', token: coordToken() }) }).then(leerRespuestaApp);
     const [d, dF1] = await Promise.all([reqF3, reqF1]);
     modalidadPorRad = {};
     if (dF1.success) {
@@ -836,7 +851,7 @@ async function diagnosticoFase3() {
   try {
     const sinDedupe = !!(document.getElementById('chkFase3SinDedupe') && document.getElementById('chkFase3SinDedupe').checked);
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe, debugFase3: true }) });
-    const d = await res.json();
+    const d = await leerRespuestaApp(res);
     if (!d.success) {
       if (esErrorSesionCoord(d.error)) {
         redirigirLoginCoordPorSesion(String(d.error || '') + ' — Ingrese de nuevo.');
@@ -1102,7 +1117,7 @@ async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
     emailCoord: admin.email,
     token: coordToken()
   })});
-  const d = await res.json();
+  const d = await leerRespuestaApp(res);
   if (!d.success) throw new Error(d.error);
 }
 
@@ -1162,7 +1177,7 @@ async function asignarJurados() {
       emailCoord: admin.email,
       token: coordToken()
     })});
-    const d = await res.json();
+    const d = await leerRespuestaApp(res);
     if (d.success) {
       closeModal('modalAsignar');
       await cargar();
@@ -1197,7 +1212,7 @@ async function asignarFecha() {
       emailCoord: admin.email,
       token: coordToken()
     })});
-    const d = await res.json();
+    const d = await leerRespuestaApp(res);
     if (d.success) {
       closeModal('modalFecha');
       await cargar();
@@ -1231,7 +1246,7 @@ async function guardarResultado() {
       emailCoord: admin.email,
       token: coordToken()
     })});
-    const d = await res.json();
+    const d = await leerRespuestaApp(res);
     if (d.success) {
       closeModal('modalResultado');
       await cargar();

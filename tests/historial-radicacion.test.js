@@ -49,4 +49,9 @@ describe('coordinadora_fase3 — campos jurado en detalle', () => {
     expect(fase3Html).toMatch(/jurado1Especialidad/);
     expect(fase3Html).toMatch(/jurado2Especialidad/);
   });
+
+  test('usa leerRespuestaApp en llamadas fetch (evita error JSON con HTML)', () => {
+    expect(fase3Html).toMatch(/function leerRespuestaApp/);
+    expect(fase3Html).not.toMatch(/return r\.json\(\)/);
+  });
 });
