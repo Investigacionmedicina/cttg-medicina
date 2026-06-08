@@ -3609,10 +3609,11 @@ async function cargarSolicitudesCambio() {
     solicitudesCambio = d.solicitudes || [];
     actualizarBadgeSolicitudesCambio();
     renderSolicitudesCambio();
-    renderColaGestionesCoord();
   } catch(e) {
     document.getElementById('sc_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${e.message}</div>`;
+    return;
   }
+  try { renderColaGestionesCoord(); } catch(e2) {}
 }
 
 function renderSolicitudesCambio() {
