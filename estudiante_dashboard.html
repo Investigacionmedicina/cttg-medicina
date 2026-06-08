@@ -1307,7 +1307,7 @@ async function cargarMisRad() {
       actualizarContadorGeneral(r);
       
       renderAlertasSuperiores(misRadicaciones);
-      bloquearNuevaRad = misRadicaciones.some(r => !['Aprobado','Devuelto'].includes(String(r.estado||'')));
+      bloquearNuevaRad = misRadicaciones.some(r => !['Aprobado','Devuelto','Cancelado'].includes(String(r.estado||'')));
       const bloqueo  = document.getElementById('bloqueoRad');
       const readonly = document.getElementById('readonlyRad');
       const tabNueva = document.getElementById('tabNueva');
@@ -1341,6 +1341,7 @@ async function cargarMisRad() {
           <div class="rad-card-actions">
             <button type="button" class="btn-det" onclick="verDetalle(${r.rowIndex})">👁 Ver detalle</button>
             <button type="button" class="btn-traza" onclick="void abrirTrazaEstudiante(${numQ})">📜 Movimientos</button>
+            ${(()=>{ const est = String(r.estado||'').toLowerCase(); const terminal = est==='sustentado'||est==='reprobado'||est==='cancelado'; return terminal ? '' : `<button type="button" class="btn-det" style="background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.35);color:#fca5a5" onclick="abrirModalCancelarRad(${r.rowIndex},${JSON.stringify(r.numero)})">🗑 Solicitar cancelación</button>`; })()}
           </div>
         </div>`;
       }).join('');
@@ -1719,6 +1720,70 @@ function actualizarContadorGeneral(radicacion) {
   const mz = document.getElementById('modalTrazaEst');
   if (mz) mz.addEventListener('click', function(e){ if (e.target === mz) mz.classList.remove('open'); });
 })();
+
+// ── CANCELACIÓN DE RADICACIÓN ────────────────────────────────
+let _cancelRowFase1 = null;
+let _cancelNumero   = null;
+
+function abrirModalCancelarRad(rowIndex, numero) {
+  _cancelRowFase1 = rowIndex;
+  _cancelNumero   = numero;
+  document.getElementById('cancelMotivo').value = '';
+  document.getElementById('cancelModalError').style.display = 'none';
+  document.getElementById('modalCancelarRad').style.display = 'flex';
+}
+
+function cerrarModalCancelarRad() {
+  document.getElementById('modalCancelarRad').style.display = 'none';
+  _cancelRowFase1 = null;
+  _cancelNumero   = null;
+}
+
+async function enviarSolicitudCancelacion() {
+  const motivo = document.getElementById('cancelMotivo').value.trim();
+  const errEl  = document.getElementById('cancelModalError');
+  errEl.style.display = 'none';
+  if (motivo.length < 12) { errEl.textContent = 'Describa el motivo (mínimo 12 caracteres).'; errEl.style.display = 'block'; return; }
+  const btn = document.getElementById('cancelBtnEnviar');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'crearSolicitudCancelarRad', token: TOKEN,
+      rowIndexFase1: _cancelRowFase1, motivoEstudiante: motivo
+    })});
+    const d = await res.json();
+    if (d.success) {
+      cerrarModalCancelarRad();
+      toast('Solicitud de cancelación enviada. La coordinación la revisará.', 'ok');
+      await cargarMisRad();
+    } else {
+      errEl.textContent = d.error || 'Error al enviar'; errEl.style.display = 'block';
+    }
+  } catch(e) { errEl.textContent = 'Error de conexión'; errEl.style.display = 'block'; }
+  finally { btn.disabled = false; btn.textContent = 'Enviar solicitud'; }
+}
 </script>
+
+<!-- MODAL CANCELAR RADICACIÓN -->
+<div id="modalCancelarRad" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#1a1f2e;border:1px solid rgba(239,68,68,.3);border-radius:16px;max-width:500px;width:100%;padding:28px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Solicitar cancelación de radicación</div>
+      <button onclick="cerrarModalCancelarRad()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:16px;line-height:1.6;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px">
+      ⚠️ Esta solicitud será revisada por la coordinación. Si es aprobada, su radicación quedará <strong>Cancelada</strong> y podrá crear una nueva. Esta acción no es automática.
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Motivo de la cancelación *</label>
+      <textarea id="cancelMotivo" rows="4" placeholder="Explique por qué desea cancelar esta radicación (mínimo 12 caracteres)…" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+    </div>
+    <div id="cancelModalError" style="color:#f87171;font-size:13px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:10px">
+      <button id="cancelBtnEnviar" onclick="enviarSolicitudCancelacion()" style="flex:1;background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:8px;padding:10px 18px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Enviar solicitud</button>
+      <button onclick="cerrarModalCancelarRad()" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 18px;color:rgba(255,255,255,.7);font-size:13px;cursor:pointer">Cancelar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

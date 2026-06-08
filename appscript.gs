@@ -30,7 +30,7 @@ function handleRequest(e, body) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1','resolverSolicitudModRad','resolverSolicitudModRadComite'];
+    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1','resolverSolicitudModRad','resolverSolicitudModRadComite','resolverSolicitudCancelarRad'];
 
     if (accionesCoord.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
@@ -39,7 +39,7 @@ function handleRequest(e, body) {
     }
 
     /** getTrazabilidad también la usa el estudiante (solo su radicación); ver obtenerTrazabilidad. */
-    var accionesSoloCoordLectura = ['getFase1','getTutores','getEvaluadores','getFechasComite','getEstadisticasTutores','getAlertasCriticas','getSolicitudesModRadPendientes','getSolicitudesModRadComite'];
+    var accionesSoloCoordLectura = ['getFase1','getTutores','getEvaluadores','getFechasComite','getEstadisticasTutores','getAlertasCriticas','getSolicitudesModRadPendientes','getSolicitudesModRadComite','getSolicitudesCancelarRadPendientes'];
     if (accionesSoloCoordLectura.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
         .createTextOutput(JSON.stringify({ success: false, error: "No autorizado" }))
@@ -88,6 +88,10 @@ function handleRequest(e, body) {
       case "resolverSolicitudModRad": result = resolverSolicitudModRad(sesion, body); break;
       case "getSolicitudesModRadComite": result = getSolicitudesModRadComite(sesion); break;
       case "resolverSolicitudModRadComite": result = resolverSolicitudModRadComite(sesion, body); break;
+      case "crearSolicitudCancelarRad": result = crearSolicitudCancelarRad(sesion, body); break;
+      case "getMisSolicitudesCancelarRad": result = getMisSolicitudesCancelarRad(sesion); break;
+      case "getSolicitudesCancelarRadPendientes": result = getSolicitudesCancelarRadPendientes(sesion); break;
+      case "resolverSolicitudCancelarRad": result = resolverSolicitudCancelarRad(sesion, body); break;
       case "getHistorialRadicacion": result = getHistorialRadicacion(body.numeroRadicacion, sesion); break;
       case "logout": cerrarSesion(body.token); result = { success: true }; break;
       default: result = { success: false, error: "Acción no reconocida: " + action };
@@ -2020,6 +2024,180 @@ function resolverSolicitudModRadComite(sesion, body) {
   } catch(eA) {}
 
   return { success: true, resultado: "aprobado_comite" };
+}
+
+// ── CANCELACIÓN DE RADICACIÓN ─────────────────────────────────
+
+var NOMBRE_HOJA_SOL_CANCEL_RAD = "Solicitudes_Cancelacion_Rad";
+
+function asegurarHojaSolCancelRad() {
+  var sheet = getSheet(NOMBRE_HOJA_SOL_CANCEL_RAD);
+  if (sheet) return sheet;
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  sheet = ss.insertSheet(NOMBRE_HOJA_SOL_CANCEL_RAD);
+  sheet.appendRow([
+    "TsCreacion",
+    "EmailEstudiante",
+    "RowFase1",
+    "NumeroRad",
+    "EstadoSolicitud",
+    "Resultado",
+    "MotivoEstudiante",
+    "TsResolucion",
+    "EmailCoord",
+    "ObsCoord"
+  ]);
+  return sheet;
+}
+
+function filaSolCancelRadToObj_(r, rowSol) {
+  return {
+    rowSol:          rowSol,
+    tsCreacion:      String(r[0] || ""),
+    emailEstudiante: String(r[1] || ""),
+    rowFase1:        parseInt(r[2], 10) || 0,
+    numero:          String(r[3] || ""),
+    estadoSolicitud: String(r[4] || ""),
+    resultado:       String(r[5] || ""),
+    motivoEstudiante: String(r[6] || ""),
+    tsResolucion:    String(r[7] || ""),
+    emailCoord:      String(r[8] || ""),
+    obsCoord:        String(r[9] || "")
+  };
+}
+
+function haySolCancelPendienteMismaFila_(sheet, rowFase1) {
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (parseInt(data[i][2], 10) === rowFase1 && String(data[i][4] || "").trim().toLowerCase() === "pendiente") {
+      return true;
+    }
+  }
+  return false;
+}
+
+function crearSolicitudCancelarRad(sesion, body) {
+  if (!sesion || sesion.rol !== "estudiante") return { success: false, error: "Solo estudiantes pueden crear esta solicitud." };
+  var emailEst = String(sesion.email || "").trim().toLowerCase();
+  var sheetF1 = getSheet("Fase1");
+  if (!sheetF1) return { success: false, error: "Hoja Fase1 no encontrada" };
+  var ri = parseInt(body && body.rowIndexFase1, 10);
+  if (!ri || ri < 2) return { success: false, error: "Fila Fase 1 inválida." };
+  if (ri > sheetF1.getLastRow()) return { success: false, error: "Fila Fase 1 fuera de rango." };
+  var rowVals = sheetF1.getRange(ri, 1, 1, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
+  if (!emailEstudiantePerteneceFilaFase1(emailEst, rowVals)) return { success: false, error: "No autorizado sobre esta radicación." };
+  var numero = String(rowVals[1] || "").trim();
+  if (!numero) return { success: false, error: "Sin número de radicación." };
+  var estadoF1 = String(rowVals[32] || "").trim().toLowerCase();
+  if (estadoF1 === "sustentado" || estadoF1 === "reprobado") {
+    return { success: false, error: "No se puede cancelar una radicación con resultado final (Sustentado/Reprobado)." };
+  }
+  if (estadoF1 === "cancelado") {
+    return { success: false, error: "Esta radicación ya está cancelada." };
+  }
+  if (numeroRadCerroEtapaFinalFase3_(numero)) return { success: false, error: "El trámite de sustentación ya tiene resultado final." };
+  var motivo = body && body.motivoEstudiante !== undefined ? String(body.motivoEstudiante || "").trim() : "";
+  if (motivo.length < 12) return { success: false, error: "Describa el motivo de la cancelación (mínimo 12 caracteres)." };
+  var sheetSol = asegurarHojaSolCancelRad();
+  if (haySolCancelPendienteMismaFila_(sheetSol, ri)) {
+    return { success: false, error: "Ya tienes una solicitud de cancelación pendiente para esta radicación." };
+  }
+  var ts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  sheetSol.appendRow([ts, emailEst, ri, numero, "pendiente", "", motivo, "", "", ""]);
+  registrarAuditoria(emailEst, "SOLICITUD_CANCEL_RAD_CREAR", numero + " | fila " + ri);
+  return { success: true, numero: numero, rowSol: sheetSol.getLastRow() };
+}
+
+function getMisSolicitudesCancelarRad(sesion) {
+  if (!sesion || sesion.rol !== "estudiante") return { success: false, error: "No autorizado" };
+  var em = String(sesion.email || "").trim().toLowerCase();
+  var sheet = getSheet(NOMBRE_HOJA_SOL_CANCEL_RAD);
+  if (!sheet) return { success: true, solicitudes: [] };
+  var data = sheet.getDataRange().getValues();
+  var lista = [];
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][1] || "").trim().toLowerCase() !== em) continue;
+    lista.push(filaSolCancelRadToObj_(data[i], i + 1));
+  }
+  return { success: true, solicitudes: lista };
+}
+
+function getSolicitudesCancelarRadPendientes(sesion) {
+  if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
+  var sheet = getSheet(NOMBRE_HOJA_SOL_CANCEL_RAD);
+  if (!sheet) return { success: true, solicitudes: [], totalPendientes: 0 };
+  var data = sheet.getDataRange().getValues();
+  var lista = [];
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][4] || "").trim().toLowerCase() !== "pendiente") continue;
+    lista.push(filaSolCancelRadToObj_(data[i], i + 1));
+  }
+  return { success: true, solicitudes: lista, totalPendientes: lista.length };
+}
+
+function resolverSolicitudCancelarRad(sesion, body) {
+  if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
+  var sheet = getSheet(NOMBRE_HOJA_SOL_CANCEL_RAD);
+  if (!sheet) return { success: false, error: "Hoja de solicitudes no disponible." };
+  var rs = parseInt(body && body.rowSol, 10);
+  var decision = String(body && body.decision || "").trim().toLowerCase();
+  var obsCoord = body && body.observacionesCoord !== undefined ? String(body.observacionesCoord || "").trim() : "";
+  if (!rs || rs < 2) return { success: false, error: "Fila de solicitud inválida." };
+  if (rs > sheet.getLastRow()) return { success: false, error: "Solicitud no encontrada." };
+  var r = sheet.getRange(rs, 1, 1, 10).getValues()[0];
+  if (String(r[4] || "").trim().toLowerCase() !== "pendiente") return { success: false, error: "Esta solicitud ya fue resuelta." };
+  var emailCoord = String(sesion.email || "").trim();
+  var rowF1 = parseInt(r[2], 10);
+  var numero = String(r[3] || "").trim();
+  var emailEst = String(r[1] || "").trim();
+  var ts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+
+  if (decision === "rechazar") {
+    if (obsCoord.length < 12) return { success: false, error: "Indique el motivo del rechazo (mín. 12 caracteres)." };
+    sheet.getRange(rs, 5).setValue("resuelta");
+    sheet.getRange(rs, 6).setValue("rechazada");
+    sheet.getRange(rs, 8).setValue(ts);
+    sheet.getRange(rs, 9).setValue(emailCoord);
+    sheet.getRange(rs, 10).setValue(obsCoord);
+    registrarAuditoria(emailCoord, "RESOLVER_SOL_CANCEL_RECHAZAR", numero + " | " + obsCoord.slice(0, 200));
+    registrarHistorial(numero, "FASE1", "SOL_CANCEL_RECHAZAR", "", "Rechazada", emailCoord, obsCoord, "Sol. fila " + rs);
+    try {
+      var subj = "[CTTG] Solicitud de cancelación rechazada · " + numero;
+      var bodyEmail = "La coordinación rechazó su solicitud de cancelación de la radicación " + numero + ".\n\nMotivo:\n" + obsCoord + "\n\nSu radicación continúa activa. Si tiene dudas, comuníquese con la coordinación.";
+      if (emailEst) MailApp.sendEmail(emailEst, subj, bodyEmail);
+    } catch(eM) {}
+    return { success: true, resultado: "rechazada" };
+  }
+
+  if (decision === "aprobar") {
+    var sheetF1 = getSheet("Fase1");
+    if (!sheetF1 || rowF1 < 2 || rowF1 > sheetF1.getLastRow()) {
+      return { success: false, error: "Fila de radicación inválida." };
+    }
+    var estadoActual = String(sheetF1.getRange(rowF1, 33).getValue() || "").trim();
+    if (estadoActual.toLowerCase() === "cancelado") {
+      return { success: false, error: "La radicación ya estaba cancelada." };
+    }
+    sheetF1.getRange(rowF1, 33).setValue("Cancelado");
+    sheetF1.getRange(rowF1, 36).setValue(obsCoord ? "[Cancelado] " + obsCoord : "[Cancelado por coordinación]");
+    sheet.getRange(rs, 5).setValue("resuelta");
+    sheet.getRange(rs, 6).setValue("aprobada");
+    sheet.getRange(rs, 8).setValue(ts);
+    sheet.getRange(rs, 9).setValue(emailCoord);
+    sheet.getRange(rs, 10).setValue(obsCoord);
+    registrarAuditoria(emailCoord, "RESOLVER_SOL_CANCEL_APROBAR", numero + " | fila " + rowF1);
+    registrarHistorial(numero, "FASE1", "SOL_CANCEL_APROBAR", estadoActual, "Cancelado", emailCoord, obsCoord, "Sol. fila " + rs);
+    try {
+      var subj2 = "[CTTG] Cancelación aprobada · " + numero;
+      var bodyEmail2 = "La coordinación aprobó la cancelación de su radicación " + numero + ".\n\n" +
+        (obsCoord ? "Nota de coordinación:\n" + obsCoord + "\n\n" : "") +
+        "Ya puede crear una nueva radicación ingresando al Portal.";
+      if (emailEst) MailApp.sendEmail(emailEst, subj2, bodyEmail2);
+    } catch(eM) {}
+    return { success: true, resultado: "aprobada" };
+  }
+
+  return { success: false, error: "Decisión no válida. Use 'aprobar' o 'rechazar'." };
 }
 
 function actualizarEstado(rowIndex, estado, notas, emailCoord) {
