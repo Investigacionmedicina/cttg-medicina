@@ -1011,14 +1011,24 @@ function irMetricaRuta(pan, opts) {
 
 /** Actas + protocolo en paralelo: cola hero, vencimientos, badge actas. Errores ignorados. */
 async function precargarColaCoordinacion() {
-  const [resAct, resProt] = await Promise.all([
+  const [resAct, resProt, resSol] = await Promise.all([
     fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: coordToken() }) }),
-    fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: coordToken() }) })
+    fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: coordToken() }) }),
+    fetch(URL_APP, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'getSolicitudesModRadPendientes', token: coordToken() }) })
   ]);
-  const [da, dp] = await Promise.all([resAct.json(), resProt.json()]);
+  const [da, dp, ds] = await Promise.all([resAct.json(), resProt.json(), resSol.json()]);
   if (da.success) actas = da.actas || [];
   if (dp.success) protocolos = dp.protocolos || [];
+  if (ds.success) solicitudesCambio = ds.solicitudes || [];
   actualizarBadgeTabActas();
+  actualizarBadgeSolicitudesCambio();
+}
+
+function actualizarBadgeSolicitudesCambio() {
+  const badge = document.getElementById('badgeSolicitudesCambio');
+  if (!badge) return;
+  if (solicitudesCambio.length > 0) { badge.textContent = solicitudesCambio.length; badge.style.display = 'flex'; }
+  else badge.style.display = 'none';
 }
 
 function actualizarBadgeTabActas() {
@@ -1059,6 +1069,12 @@ function badgeProtocoloEstCola(est) {
   };
   const cls = map[est] || 'b-radicado';
   return `<span class="badge ${cls}">${esc(est || '—')}</span>`;
+}
+
+function irACambiosYResolver(rowSol) {
+  const tab = document.getElementById('tabSolicitudesCambio');
+  if (tab) switchPanel('solicitudesCambio', tab);
+  abrirModalSolicitudCambio(rowSol);
 }
 
 function irColaActasNumero(num) {
@@ -2242,6 +2258,22 @@ function construirFilasColaGestionesCoord() {
     });
   });
 
+  solicitudesCambio.forEach(s => {
+    const cambiosKeys = Object.keys(s.cambios || {});
+    const resumen = cambiosKeys.map(k => LABELS_CAMPO[k] || k).join(', ') || 'Sin detalle';
+    rows.push({
+      kind: 'solicitud', prio: 20,
+      ts: fechaRefColaGestión(s.tsCreacion),
+      numero: s.numero || '',
+      estudiantes: s.emailEstudiante || '—',
+      contexto: resumen,
+      badge: '<span class="badge b-radicado">Cambio pendiente</span>',
+      gestionTit: 'Solicitud · Cambio de radicación',
+      sub: '',
+      rowSol: s.rowSol
+    });
+  });
+
   rows.sort((a, b) => (a.prio !== b.prio ? a.prio - b.prio : a.ts - b.ts));
   return rows;
 }
@@ -2274,6 +2306,8 @@ function renderColaGestionesCoord() {
       fechaRef = fmtFecha(r && r.fechaRadicacion);
     } else if (it.kind === 'acta') {
       fechaRef = fmtFecha(it.fechaActaRef);
+    } else if (it.kind === 'solicitud') {
+      fechaRef = fmtFecha(it.ts);
     } else {
       fechaRef = fmtFecha(it.fechaProtRef);
     }
@@ -2285,6 +2319,8 @@ function renderColaGestionesCoord() {
         <button class="btn am" onclick="abrirModalEst(${it.rowIndexRad},'${escAttr(it.numero)}','${escAttr(r0.estado || 'Radicado')}')">✎ Estado</button>`;
     } else if (it.kind === 'acta') {
       acciones = `<button class="btn bl" onclick="irColaActasNumero('${escAttr(it.numero)}')">📄 Actas</button>`;
+    } else if (it.kind === 'solicitud') {
+      acciones = `<button class="btn bl" onclick="irACambiosYResolver(${it.rowSol})">✏️ Resolver</button>`;
     } else {
       const abrir = (it.protEstado === 'Cargado' || it.protEstado === 'Enviado') ? 'true' : 'false';
       acciones = `<button class="btn bl" onclick="irColaProtocoloProt(${it.protRowIndex},'${escAttr(it.numero)}',${abrir})">📖 Protocolo</button>`;
@@ -3571,10 +3607,9 @@ async function cargarSolicitudesCambio() {
     const d = await res.json();
     if (!d.success) throw new Error(d.error || 'Error al cargar');
     solicitudesCambio = d.solicitudes || [];
-    const badge = document.getElementById('badgeSolicitudesCambio');
-    if (solicitudesCambio.length > 0) { badge.textContent = solicitudesCambio.length; badge.style.display = 'flex'; }
-    else badge.style.display = 'none';
+    actualizarBadgeSolicitudesCambio();
     renderSolicitudesCambio();
+    renderColaGestionesCoord();
   } catch(e) {
     document.getElementById('sc_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${e.message}</div>`;
   }
@@ -3645,18 +3680,6 @@ async function resolverSolicitudCambio(decision) {
   } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
 }
 
-// Cargar badge inicial al arrancar
-(async () => {
-  try {
-    const res = await fetch(URL_APP, { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'getSolicitudesModRadPendientes', token: localStorage.getItem('cttg_token')||'' }) });
-    const d = await res.json();
-    if (d.success && d.totalPendientes > 0) {
-      const badge = document.getElementById('badgeSolicitudesCambio');
-      badge.textContent = d.totalPendientes; badge.style.display = 'flex';
-    }
-  } catch(e) {}
-})();
 
 </script>
 </body>
