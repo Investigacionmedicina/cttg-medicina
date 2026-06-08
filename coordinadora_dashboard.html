@@ -1011,17 +1011,20 @@ function irMetricaRuta(pan, opts) {
 
 /** Actas + protocolo en paralelo: cola hero, vencimientos, badge actas. Errores ignorados. */
 async function precargarColaCoordinacion() {
-  const [resAct, resProt, resSol] = await Promise.all([
+  const [resAct, resProt] = await Promise.all([
     fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: coordToken() }) }),
-    fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: coordToken() }) }),
-    fetch(URL_APP, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'getSolicitudesModRadPendientes', token: coordToken() }) })
+    fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: coordToken() }) })
   ]);
-  const [da, dp, ds] = await Promise.all([resAct.json(), resProt.json(), resSol.json()]);
+  const [da, dp] = await Promise.all([resAct.json(), resProt.json()]);
   if (da.success) actas = da.actas || [];
   if (dp.success) protocolos = dp.protocolos || [];
-  if (ds.success) solicitudesCambio = ds.solicitudes || [];
   actualizarBadgeTabActas();
-  actualizarBadgeSolicitudesCambio();
+  try {
+    const resSol = await fetch(URL_APP, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'getSolicitudesModRadPendientes', token: coordToken() }) });
+    const ds = await resSol.json();
+    if (ds.success) solicitudesCambio = ds.solicitudes || [];
+    actualizarBadgeSolicitudesCambio();
+  } catch(eSol) {}
 }
 
 function actualizarBadgeSolicitudesCambio() {
@@ -3610,10 +3613,11 @@ async function cargarSolicitudesCambio() {
     actualizarBadgeSolicitudesCambio();
     renderSolicitudesCambio();
   } catch(e) {
-    document.getElementById('sc_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${e.message}</div>`;
+    console.error('[cargarSolicitudesCambio] Error:', e);
+    document.getElementById('sc_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${esc(e.message)}<br><small style="opacity:.6">${esc(e.stack||'')}</small></div>`;
     return;
   }
-  try { renderColaGestionesCoord(); } catch(e2) {}
+  try { renderColaGestionesCoord(); } catch(e2) { console.error('[renderColaGestionesCoord]', e2); }
 }
 
 function renderSolicitudesCambio() {
