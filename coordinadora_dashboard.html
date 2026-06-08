@@ -242,6 +242,7 @@
     <button class="main-tab" id="tabFase3" onclick="switchPanel('fase3', this)">🎓 Sustentación</button>
   <button class="main-tab" id="tabComite" onclick="switchPanel('comite', this)">📅 Comité Técnico</button>
   <button class="main-tab" id="tabSolicitudesCambio" onclick="switchPanel('solicitudesCambio', this)">✏️ Cambios <span class="badge-count" id="badgeSolicitudesCambio" style="display:none"></span></button>
+  <button class="main-tab" id="tabCancelaciones" onclick="switchPanel('cancelaciones', this)">🗑 Cancelaciones <span class="badge-count" id="badgeCancelaciones" style="display:none"></span></button>
   <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
     <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
     <button class="main-tab" id="tabInformes" onclick="switchPanel('informes', this)">📈 Informes</button>
@@ -660,6 +661,38 @@
     </div>
   </div>
 
+  <!-- PANEL CANCELACIONES DE RADICACIÓN -->
+  <div class="panel" id="pan-cancelaciones">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fff">Solicitudes de Cancelación de Radicación</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Los estudiantes pueden solicitar cancelar su radicación activa. Si aprueba, el estado cambia a <strong>Cancelado</strong> y el estudiante podrá crear una nueva radicación.</div>
+      </div>
+      <button class="btn" onclick="cargarSolicitudesCancelacion()">↺ Actualizar</button>
+    </div>
+    <div id="scc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
+  </div>
+
+  <!-- MODAL RESOLVER CANCELACIÓN -->
+  <div id="modalCancelacion" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;overflow-y:auto;padding:20px">
+    <div style="background:#1a1f2e;border:1px solid rgba(239,68,68,.25);border-radius:16px;max-width:560px;margin:40px auto;padding:28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Resolver solicitud de cancelación</div>
+        <button onclick="cerrarModalCancelacion()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
+      </div>
+      <div id="scc_modal_detalle" style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:20px"></div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Observaciones para el estudiante</label>
+        <textarea id="scc_obs" rows="3" placeholder="Obligatorio si rechaza (mín. 12 caracteres). Opcional si aprueba." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" style="background:linear-gradient(135deg,#dc2626,#ef4444);flex:1;min-width:140px" onclick="resolverCancelacion('aprobar')">✅ Aprobar cancelación</button>
+        <button class="btn" style="background:linear-gradient(135deg,#b45309,#d97706);flex:1;min-width:140px" onclick="resolverCancelacion('rechazar')">❌ Rechazar</button>
+      </div>
+      <div id="scc_modal_error" style="margin-top:12px;color:#f87171;font-size:13px;display:none"></div>
+    </div>
+  </div>
+
   <!-- PANEL INFORMES -->
   <div class="panel" id="pan-informes">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px">
@@ -901,6 +934,7 @@ function switchPanel(name, btn) {
     renderInformes();
   }
   else if (name === 'solicitudesCambio') cargarSolicitudesCambio();
+  else if (name === 'cancelaciones') cargarSolicitudesCancelacion();
   else if (name === 'filtros') {
     (async () => {
       try { if (!actas.length) await cargarActas(); } catch (e) {}
@@ -1025,6 +1059,12 @@ async function precargarColaCoordinacion() {
     if (ds.success) solicitudesCambio = ds.solicitudes || [];
     actualizarBadgeSolicitudesCambio();
   } catch(eSol) {}
+  try {
+    const resCancel = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getSolicitudesCancelarRadPendientes', token: coordToken() }) });
+    const dc = await resCancel.json();
+    if (dc.success) solicitudesCancelacion = dc.solicitudes || [];
+    actualizarBadgeCancelaciones();
+  } catch(eCancel) {}
 }
 
 function actualizarBadgeSolicitudesCambio() {
@@ -3682,6 +3722,90 @@ async function resolverSolicitudCambio(decision) {
     const msgs = { aprobar_directo:'Cambios aprobados y aplicados.', derivar_ct:'Solicitud enviada al Comité Técnico.', devolver:'Solicitud devuelta al estudiante.' };
     toast(msgs[decision] || 'Resuelto', 'ok');
     await cargarSolicitudesCambio();
+  } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+}
+
+// ── CANCELACIONES DE RADICACIÓN ──────────────────────────────
+let solicitudesCancelacion = [];
+let cancelacionActual = null;
+
+async function cargarSolicitudesCancelacion() {
+  document.getElementById('scc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando…</div>';
+  try {
+    const res = await fetch(URL_APP, { method:'POST',
+      body: JSON.stringify({ action:'getSolicitudesCancelarRadPendientes', token: localStorage.getItem('cttg_token')||'' }) });
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error || 'Error al cargar');
+    solicitudesCancelacion = d.solicitudes || [];
+    actualizarBadgeCancelaciones();
+    renderSolicitudesCancelacion();
+  } catch(e) {
+    document.getElementById('scc_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+function actualizarBadgeCancelaciones() {
+  const badge = document.getElementById('badgeCancelaciones');
+  if (!badge) return;
+  const n = solicitudesCancelacion.length;
+  badge.textContent = n;
+  badge.style.display = n > 0 ? 'inline-flex' : 'none';
+}
+
+function renderSolicitudesCancelacion() {
+  const el = document.getElementById('scc_lista');
+  if (!solicitudesCancelacion.length) {
+    el.innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">No hay solicitudes de cancelación pendientes.</div>';
+    return;
+  }
+  el.innerHTML = solicitudesCancelacion.map(s => `
+    <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-weight:600;color:#fca5a5;font-size:14px">${esc(s.numero)}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">${esc(s.emailEstudiante)} · ${esc(s.tsCreacion)}</div>
+        </div>
+        <button class="btn" style="font-size:12px;padding:6px 14px" onclick="abrirModalCancelacion(${s.rowSol})">Ver y resolver</button>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.7)"><strong>Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
+    </div>`).join('');
+}
+
+function abrirModalCancelacion(rowSol) {
+  const s = solicitudesCancelacion.find(x => x.rowSol === rowSol);
+  if (!s) return;
+  cancelacionActual = s;
+  document.getElementById('scc_modal_detalle').innerHTML = `
+    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px">
+      ⚠️ Si aprueba, la radicación <strong>${esc(s.numero)}</strong> quedará en estado <strong>Cancelado</strong> y el estudiante podrá crear una nueva radicación.
+    </div>
+    <strong style="color:rgba(255,255,255,.5)">Radicación:</strong> ${esc(s.numero)}<br>
+    <strong style="color:rgba(255,255,255,.5)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
+    <strong style="color:rgba(255,255,255,.5)">Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}`;
+  document.getElementById('scc_obs').value = '';
+  document.getElementById('scc_modal_error').style.display = 'none';
+  document.getElementById('modalCancelacion').style.display = 'block';
+}
+
+function cerrarModalCancelacion() {
+  document.getElementById('modalCancelacion').style.display = 'none';
+  cancelacionActual = null;
+}
+
+async function resolverCancelacion(decision) {
+  if (!cancelacionActual) return;
+  const obs = document.getElementById('scc_obs').value.trim();
+  const errEl = document.getElementById('scc_modal_error');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch(URL_APP, { method:'POST',
+      body: JSON.stringify({ action:'resolverSolicitudCancelarRad', token: localStorage.getItem('cttg_token')||'',
+        rowSol: cancelacionActual.rowSol, decision, observacionesCoord: obs }) });
+    const d = await res.json();
+    if (!d.success) { errEl.textContent = d.error || 'Error'; errEl.style.display = 'block'; return; }
+    cerrarModalCancelacion();
+    toast(decision === 'aprobar' ? 'Cancelación aprobada. El estudiante puede radicar nuevamente.' : 'Solicitud rechazada.', 'ok');
+    await cargarSolicitudesCancelacion();
   } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
 }
 
