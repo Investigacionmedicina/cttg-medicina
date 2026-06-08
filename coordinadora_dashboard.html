@@ -1020,7 +1020,7 @@ async function precargarColaCoordinacion() {
   if (dp.success) protocolos = dp.protocolos || [];
   actualizarBadgeTabActas();
   try {
-    const resSol = await fetch(URL_APP, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'getSolicitudesModRadPendientes', token: coordToken() }) });
+    const resSol = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getSolicitudesModRadPendientes', token: coordToken() }) });
     const ds = await resSol.json();
     if (ds.success) solicitudesCambio = ds.solicitudes || [];
     actualizarBadgeSolicitudesCambio();
@@ -3605,7 +3605,7 @@ const LABELS_CAMPO = {
 async function cargarSolicitudesCambio() {
   document.getElementById('sc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando…</div>';
   try {
-    const res = await fetch(URL_APP, { method:'POST', headers:{'Content-Type':'application/json'},
+    const res = await fetch(URL_APP, { method:'POST',
       body: JSON.stringify({ action:'getSolicitudesModRadPendientes', token: localStorage.getItem('cttg_token')||'' }) });
     const d = await res.json();
     if (!d.success) throw new Error(d.error || 'Error al cargar');
@@ -3673,7 +3673,7 @@ async function resolverSolicitudCambio(decision) {
   const errEl = document.getElementById('sc_modal_error');
   errEl.style.display = 'none';
   try {
-    const res = await fetch(URL_APP, { method:'POST', headers:{'Content-Type':'application/json'},
+    const res = await fetch(URL_APP, { method:'POST',
       body: JSON.stringify({ action:'resolverSolicitudModRad', token: localStorage.getItem('cttg_token')||'',
         rowSol: solicitudCambioActual.rowSol, decision, observacionesCoord: obs }) });
     const d = await res.json();
