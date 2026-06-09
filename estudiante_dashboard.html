@@ -910,7 +910,8 @@ function badgeEst(est) {
     'Devuelto por Comité Técnico':'b-devuelto',
     'Devuelto':                'b-devuelto',
     'Sustentado':              'b-aprobado',
-    'Reprobado':               'b-devuelto'
+    'Reprobado':               'b-devuelto',
+    'Cancelado':               'b-devuelto'
   };
   return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
 }
@@ -1326,7 +1327,7 @@ async function cargarMisRad() {
       }
       wrap.innerHTML = misRadicaciones.map(r => {
         const notasLimpias = limpiarNotas(r.notas);
-        const numQ = JSON.stringify(String(r.numero || ''));
+        const numSafe = String(r.numero || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         return `<div class="rad-card">
           <div class="num">📋 ${esc(r.numero)}</div>
           <div class="titulo">${esc(r.titulo||'Sin título')}</div>
@@ -1340,8 +1341,8 @@ async function cargarMisRad() {
           ${(()=>{ const est = String(r.estado||'').toLowerCase(); const devuelto = est.includes('devuelt') || est.includes('rechaz'); return devuelto && notasLimpias ? `<div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 12px;font-size:12px;color:#fecaca;line-height:1.4;margin-top:8px"><strong>🔄 Motivo:</strong> ${esc(notasLimpias)}</div>` : (notasLimpias ? `<div class="notas-box">📝 ${esc(notasLimpias)}</div>` : ''); })()}
           <div class="rad-card-actions">
             <button type="button" class="btn-det" onclick="verDetalle(${r.rowIndex})">👁 Ver detalle</button>
-            <button type="button" class="btn-traza" onclick="void abrirTrazaEstudiante(${numQ})">📜 Movimientos</button>
-            ${(()=>{ const est = String(r.estado||'').toLowerCase(); const terminal = est==='sustentado'||est==='reprobado'||est==='cancelado'; return terminal ? '' : `<button type="button" class="btn-det" style="background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.35);color:#fca5a5" onclick="abrirModalCancelarRad(${r.rowIndex},${JSON.stringify(r.numero)})">🗑 Solicitar cancelación</button>`; })()}
+            <button type="button" class="btn-traza" onclick="void abrirTrazaEstudiante('${numSafe}')">📜 Movimientos</button>
+            ${(()=>{ const est = String(r.estado||'').toLowerCase(); const terminal = est==='sustentado'||est==='reprobado'||est==='cancelado'; return terminal ? '' : `<button type="button" class="btn-det" style="background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.35);color:#fca5a5" onclick="abrirModalCancelarRad(${r.rowIndex},'${numSafe}')">🗑 Solicitar cancelación</button>`; })()}
           </div>
         </div>`;
       }).join('');
