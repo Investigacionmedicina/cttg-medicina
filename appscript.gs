@@ -733,21 +733,29 @@ function parseExpiracionSesion(val) {
 function crearSesion(email, rol) {
   var sheet = getSheetSesiones();
   if (!sheet) return null;
-  
-  // Invalidar sesiones anteriores del mismo usuario
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][2] || "").toLowerCase() === email.toLowerCase()) {
-      sheet.getRange(i + 1, 7).setValue("inactivo");
+
+  // Invalidar sesiones anteriores del mismo usuario — escritura en lote
+  var lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    var statusCol = sheet.getRange(2, 7, lastRow - 1, 1).getValues();
+    var emailCol  = sheet.getRange(2, 3, lastRow - 1, 1).getValues();
+    var emailLow  = email.toLowerCase();
+    var changed   = false;
+    for (var i = 0; i < emailCol.length; i++) {
+      if (String(emailCol[i][0] || "").toLowerCase() === emailLow) {
+        statusCol[i][0] = "inactivo";
+        changed = true;
+      }
     }
+    if (changed) sheet.getRange(2, 7, lastRow - 1, 1).setValues(statusCol);
   }
-  
+
   var token = generarToken();
   var ahora = new Date();
   var expiracion = new Date(ahora.getTime() + 72 * 60 * 60 * 1000); // 72 horas
-  
+
   sheet.appendRow([
-    sheet.getLastRow(),
+    lastRow,
     token,
     email,
     rol,
@@ -755,7 +763,7 @@ function crearSesion(email, rol) {
     Utilities.formatDate(expiracion, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss"),
     "activo"
   ]);
-  
+
   return token;
 }
 

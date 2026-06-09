@@ -21,8 +21,14 @@
   .user-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
   .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
   main{padding:24px 28px;max-width:1500px;margin:0 auto}
-  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+  .metrics-caption{font-size:11px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.75px;margin:14px 0 8px;font-family:'DM Mono',monospace}
+  .metrics-caption:first-of-type{margin-top:0}
   .mc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;position:relative;overflow:hidden}
+  .mc-go{cursor:pointer;transition:border-color .15s,background .15s}
+  .mc-go:hover{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.055)}
+  .mc-go:active{transform:scale(.985)}
+  .mc .mh{font-size:10px;color:rgba(255,255,255,.45);margin-top:10px;line-height:1.4;font-family:'Outfit',sans-serif;font-weight:400;text-transform:none;letter-spacing:0}
   .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
   .mc.c1::before{background:#3b82f6}.mc.c2::before{background:#10b981}.mc.c3::before{background:#f59e0b}.mc.c4::before{background:#ef4444}.mc.c5::before{background:#a78bfa}.mc.c6::before{background:#00c3a5}
   .mc .ml{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:6px;font-family:'DM Mono',monospace}
@@ -55,6 +61,8 @@
   .b-tutores{background:rgba(52,211,153,.2);color:#6ee7b7}
   .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
   .b-solicitud{background:rgba(59,130,246,.2);color:#93c5fd}
+  .pill-diplomado{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(167,139,250,.22);color:#c4b5fd;border:1px solid rgba(167,139,250,.35);line-height:1.35;max-width:160px}
+  .btn.dip-acc{color:#c4b5fd;border-color:rgba(167,139,250,.45)}.btn.dip-acc:hover{background:rgba(167,139,250,.12)}
   .act{display:flex;gap:4px;flex-wrap:wrap}
   .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
   .btn:hover{background:rgba(255,255,255,.07);color:#fff}
@@ -68,6 +76,20 @@
   .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
   .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
   @keyframes spin{to{transform:rotate(360deg)}}
+  /* ── TIMELINE HISTORIAL ── */
+  .hist-event{display:grid;grid-template-columns:160px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}
+  .hist-event:last-child{border-bottom:none}
+  .hist-ts{font-family:monospace;font-size:10px;color:rgba(255,255,255,.4);line-height:1.6}
+  .hist-fase-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(96,165,250,.15);color:#93c5fd;margin-top:3px;letter-spacing:.4px}
+  .hist-accion{font-weight:600;color:#e2e8f0;margin-bottom:5px;font-size:13px;text-transform:capitalize}
+  .hist-states{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+  .hist-state-old{background:rgba(239,68,68,.12);color:#fca5a5;border-radius:4px;padding:2px 7px;font-size:11px}
+  .hist-state-new{background:rgba(16,185,129,.12);color:#6ee7b7;border-radius:4px;padding:2px 7px;font-size:11px}
+  .hist-arrow{color:rgba(255,255,255,.3)}
+  .hist-motivo{color:rgba(255,255,255,.6);font-size:11px;font-style:italic;margin-top:3px}
+  .hist-detail{color:rgba(255,255,255,.35);font-size:10px;font-family:monospace;margin-top:3px}
+  .hist-actor{color:rgba(255,255,255,.3);font-size:10px;font-family:monospace;margin-top:4px}
+  .hist-empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
   .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
@@ -119,11 +141,36 @@
   .seg-event .date{font-family:'DM Mono',monospace;font-size:11px;color:#93c5fd;margin-bottom:4px}
   .seg-event .what{font-size:13px;color:#fff;font-weight:600}
   .seg-event .detail{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
+  .seg-event .state{font-size:11px;color:#bbf7d0;margin-top:6px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:7px;padding:6px 8px}
+  .seg-det-plain{font-size:12px;color:rgba(255,255,255,.72);line-height:1.45}
+  .seg-det-list{margin:8px 0 0 16px;padding:0;font-size:12px;color:rgba(255,255,255,.78);line-height:1.45}
+  .seg-det-list li{margin:4px 0}
+  .seg-det-empty{font-size:11px;color:rgba(255,255,255,.35);font-style:italic}
+  .seg-mod-tag{display:inline-block;font-size:9px;text-transform:uppercase;letter-spacing:.5px;background:rgba(167,139,250,.12);color:#c4b5fd;border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+  .seg-acc-tag{font-size:10px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace}
+  .seg-td-det{min-width:260px;max-width:400px;vertical-align:top!important}
   .seg-help{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#bfdbfe;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px}
+  .seg-search-info{display:none;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:12px}
+  .seg-search-info.show{display:block}
+  .seg-choice{display:flex;justify-content:space-between;gap:10px;align-items:center;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 10px;margin-top:8px}
+  .seg-choice .main{font-size:13px;color:#fff;font-weight:600}
+  .seg-choice .sub{font-size:11px;color:rgba(255,255,255,.48);margin-top:2px}
+  .seg-pill{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;background:rgba(96,165,250,.14);color:#93c5fd;border:1px solid rgba(96,165,250,.28);border-radius:99px;padding:3px 8px;margin-bottom:6px}
  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
   .toast.show{transform:translateY(0);opacity:1}
-  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.info{background:rgba(59,130,246,.9);color:#fff}
+  .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}  .toast.info{background:rgba(59,130,246,.9);color:#fff}
   @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
+  /* COLA GESTIONES COORDINACIÓN (hero) */
+  .gestiones-hero{background:linear-gradient(145deg,rgba(6,78,59,.35),rgba(15,23,42,.92));border:1px solid rgba(45,212,191,.28);border-radius:16px;padding:18px 20px 20px;margin-bottom:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+  .gestiones-hero-hdr{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .gh-title{font-size:13px;color:#fcd34d;text-transform:uppercase;letter-spacing:.8px;font-family:'DM Mono',monospace;font-weight:700}
+  .gh-count{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace;margin-top:2px}
+  .gh-help{font-size:11px;color:rgba(255,255,255,.42);line-height:1.45;max-width:820px;margin-top:6px}
+  .gestiones-hero-wrap{background:rgba(0,0,0,.12);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto;max-height:min(52vh,480px)}
+  .gestiones-hero-wrap table{min-width:720px;width:100%;border-collapse:collapse}
+  .gestiones-hero-wrap thead tr{background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.09)}
+  .gh-gestion{font-size:12px;font-weight:600;color:#e2e8f0;line-height:1.35;max-width:220px}
+  .gh-sub{font-size:10px;color:rgba(255,255,255,.38);font-weight:400;margin-top:3px}
 </style>
 </head>
 <body>
@@ -140,24 +187,62 @@
 </header>
 
 <main>
+    <!-- ── GESTIONES INSTITUCIONALES (prioridad coordinación) ── -->
+    <div class="gestiones-hero" id="bloqueGestionesCoord">
+      <div class="gestiones-hero-hdr">
+        <div style="flex:1;min-width:200px">
+          <div class="gh-title">📌 Gestiones pendientes para coordinación</div>
+          <div class="gh-count" id="pendHomeTot">—</div>
+          <p class="gh-help">Incluye Fase 1 en trámite (sin devoluciones al estudiante), actas por revisar o solicitud Fase 2, y protocolo con aval o comité pendiente. No lista estados «Devuelto» ni «Devuelto por Comité Técnico» (turno del estudiante).</p>
+        </div>
+        <button class="btn bl" style="font-size:12px;padding:8px 14px;align-self:center" onclick="irTodasRad()">Ir a Radicaciones →</button>
+      </div>
+      <div class="gestiones-hero-wrap">
+        <table>
+          <thead><tr>
+            <th>Gestión</th><th>N° Radicación</th><th>Estudiante(s)</th><th>Modalidad / contexto</th><th>Estado</th><th>Fecha ref.</th><th>Acción rápida</th>
+          </tr></thead>
+          <tbody id="tbodyPendHome">
+            <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando cola de gestiones...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="metrics-caption">Resumen rápido</div>
     <div class="metrics">
-    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div></div>
-    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div></div>
-    <div class="mc c6"><div class="ml">En Revisión</div><div class="mv" id="mRev">—</div></div>
-    <div class="mc c5"><div class="ml">Pend. Comité</div><div class="mv" id="mPend">—</div></div>
-    <div class="mc c2"><div class="ml">Aprobadas</div><div class="mv" id="mApro">—</div></div>
-    <div class="mc c4"><div class="ml">Devueltas</div><div class="mv" id="mDev">—</div></div>
-    <div class="mc c4"><div class="ml">⏰ Plazo Crítico</div><div class="mv" id="mCritico">—</div></div>
+    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en Fase 1</div></div>
+    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div><div class="mh">Sin aval de tutor/diplomado aún</div></div>
+    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⏰ Plazo crítico</div><div class="mv" id="mCritico">—</div><div class="mh">Clic: abrir tab Alertas (&gt;60% tiempo de avance sin cierre)</div></div>
+   </div>
+    <div class="metrics-caption">¿A qué parte del panel ir? · Clic en la tarjeta</div>
+    <div class="metrics">
+    <div class="mc c6 mc-go" id="metricGoAvTutor" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true});}"><div class="ml">Validar tutores</div><div class="mv" id="mAvTutor">—</div><div class="mh">Radicadas sin Diplomado · tab Radicaciones (lista filtrada)</div></div>
+    <div class="mc c5 mc-go" id="metricGoAvDip" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'});}"><div class="ml">Aval Diplomado</div><div class="mv" id="mAvDip">—</div><div class="mh">Diplomado en Radicado · tab Radicaciones</div></div>
+    <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('actas')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('actas');}"><div class="ml">Actas / Fase 1</div><div class="mv" id="mActasF1">—</div><div class="mh">Revisión o Tutores avalados · tab Actas de Asesoría</div></div>
+    <div class="mc c1 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('protocolo')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('protocolo');}"><div class="ml">Protocolo · Fase 2</div><div class="mv" id="mProtF2">—</div><div class="mh">«Fase 2 Desbloqueada» · tab Protocolo</div></div>
+    <div class="mc c5 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('comite')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('comite');}"><div class="ml">Pendiente comité</div><div class="mv" id="mPend">—</div><div class="mh">Decisión pendiente CT · tab Comité Técnico</div></div>
+    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'});}"><div class="ml">Dev. por comité</div><div class="mv" id="mDevComite">—</div><div class="mh">Corrección post CT · tab Radicaciones</div></div>
+    <div class="mc c2 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Aprobado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado'});}"><div class="ml">Aprobadas comité</div><div class="mv" id="mApro">—</div><div class="mh">Listas para tramitar sustentación · luego tab Sustentación</div></div>
+    <div class="mc c3 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('fase3')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('fase3');}"><div class="ml">En sustentación · cierre</div><div class="mv" id="mEnSust">—</div><div class="mh">Fase sustentación, sustentado o reprobado · tab Sustentación</div></div>
+    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto'});}"><div class="ml">Devolución coord.</div><div class="mv" id="mDev">—</div><div class="mh">Devuelto por coordinación · tab Radicaciones</div></div>
+    <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}"><div class="ml">En revisión</div><div class="mv" id="mRev">—</div><div class="mh">Estado Revisión · tab Radicaciones</div></div>
    </div>
 
+    <!-- ── SECCIÓN: POR MODALIDAD ─────────────────────────── -->
+    <div class="metrics-caption">Por Modalidad · Clic para filtrar</div>
+    <div id="modGridWrap" class="metrics" style="min-height:64px"></div>
+
  <div class="main-tabs">
-    <button class="main-tab on" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
+    <button class="main-tab on" id="tabRad" onclick="switchPanel('rad', this)">📋 Radicaciones</button>
     <button class="main-tab" id="tabActas" onclick="switchPanel('actas', this)">📄 Actas de Asesoría</button>
     <button class="main-tab" id="tabTutores" onclick="switchPanel('tutores', this)">👨‍🏫 Tutores</button>
     <button class="main-tab" id="tabAlertas" onclick="switchPanel('alertas', this)">🚨 Alertas <span class="badge-count" style="display:none"></span></button>
     <button class="main-tab" id="tabProtocolo" onclick="switchPanel('protocolo', this)">📖 Protocolo</button>
     <button class="main-tab" id="tabFase3" onclick="switchPanel('fase3', this)">🎓 Sustentación</button>
   <button class="main-tab" id="tabComite" onclick="switchPanel('comite', this)">📅 Comité Técnico</button>
+  <button class="main-tab" id="tabSolicitudesCambio" onclick="switchPanel('solicitudesCambio', this)">✏️ Cambios <span class="badge-count" id="badgeSolicitudesCambio" style="display:none"></span></button>
+  <button class="main-tab" id="tabCancelaciones" onclick="switchPanel('cancelaciones', this)">🗑 Cancelaciones <span class="badge-count" id="badgeCancelaciones" style="display:none"></span></button>
   <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
     <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
     <button class="main-tab" id="tabInformes" onclick="switchPanel('informes', this)">📈 Informes</button>
@@ -166,28 +251,29 @@
   <!-- PANEL RADICACIONES -->
   <div class="panel on" id="pan-rad">
     <div class="filters">
-      <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTabla()">
-      <select id="fEstRad" onchange="renderTabla()">
+      <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="limpiarFiltroMetrica();renderTabla()">
+      <select id="fEstRad" onchange="limpiarFiltroMetrica();renderTabla()">
   <option value="">Todos los estados</option>
   <option value="Radicado">Radicado</option>
   <option value="Revisión">En Revisión</option>
-  <option value="Tutores avalados">Tutores Avalados</option>
+  <option value="Tutores Avalados">Tutores Avalados</option>
+  <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
   <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
   <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico</option>
   <option value="Aprobado">Aprobado</option>
   <option value="Devuelto">Devuelto</option>
-  <option value="Cancelación solicitada">Cancelación solicitada</option>
-  <option value="Cancelada">Cancelada</option>
+  <option value="Sustentado">Sustentado</option>
+  <option value="Reprobado">Reprobado</option>
+  <option value="Cancelado">Cancelado</option>
 </select>
-      <select id="fMod" onchange="renderTabla()"><option value="">Todas las modalidades</option></select>
+      <select id="fMod" onchange="limpiarFiltroMetrica();renderTabla()"><option value="">Todas las modalidades</option></select>
       <button class="btn" onclick="cargar()">↻ Actualizar</button>
       <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
     </div>
-    <div id="avisoCancelPend" style="display:none;margin-bottom:12px;padding:12px 14px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);border-radius:10px;font-size:12px;color:#fcd34d"></div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor(es)</th><th>F. Radicación</th><th>Estado</th><th>Acciones</th>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor / Diplomado</th><th>F. Radicación</th><th>Estado</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbody">
           <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando registros...</td></tr>
@@ -269,9 +355,9 @@
    <!-- ALERTAS DE VENCIMIENTO POR FASE -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px">
           <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:12px">
-            <div style="font-size:10px;text-transform:uppercase;color:rgba(167,139,250,.5);margin-bottom:6px">⏱️ Tutores (15 días)</div>
+            <div style="font-size:10px;text-transform:uppercase;color:rgba(167,139,250,.5);margin-bottom:6px">⏱️ Coordinación (&gt;15 d. hábiles)</div>
             <div style="font-size:20px;font-weight:700;color:#c4b5fd" id="countVencTutores">0</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">validación tutores o aval diplomado</div>
           </div>
           <div style="background:rgba(252,211,77,.08);border:1px solid rgba(252,211,77,.2);border-radius:10px;padding:12px">
             <div style="font-size:10px;text-transform:uppercase;color:rgba(252,211,77,.5);margin-bottom:6px">📄 Actas (8 días)</div>
@@ -369,8 +455,15 @@
 
         <!-- Si requiere comité -->
         <div id="seccionComite" style="display:none">
+          <div class="mfg" style="margin-bottom:18px">
+            <label>Evaluador sugerido por el estudiante</label>
+            <div id="pEvalSugeridoContenido" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.22);border-radius:10px;padding:12px 14px;font-size:13px;color:rgba(255,255,255,.82)">
+              —
+            </div>
+          </div>
           <div class="mfg">
-            <label>Evaluador Asignado *</label>
+            <label>Evaluador asignado por coordinación *</label>
+            <div style="font-size:11px;color:rgba(255,255,255,.4);margin:-2px 0 6px">Puede ser la misma persona que figuró como sugerencia u otra de la lista (o la opción «Sugerencia del estudiante» si no está en el catálogo).</div>
             <select id="pEvaluador" onchange="cargarEmailEval()">
               <option value="">— Selecciona evaluador —</option>
             </select>
@@ -404,29 +497,30 @@
   </div>
   <!-- PANEL SEGUIMIENTO -->
   <div class="panel" id="pan-seguimiento">
-    <div class="seg-help">Usa este panel para responder “¿cómo va este trabajo?”: busca por número de radicación, título, estudiante o correo y verás el estado actual, qué pasó en cada fecha y cuál es el siguiente paso.</div>
+    <div class="seg-help">Busca un trabajo por número de radicación, nombre del estudiante o correo. Verás <strong>cada decisión con fecha, estado anterior y nuevo, quién la tomó y el motivo</strong>.</div>
     <div class="filters">
-      <input id="searchSeguimiento" placeholder="🔍 Buscar trabajo: radicación, título, estudiante o correo..." oninput="cargarSeguimiento()">
+      <input id="searchSeguimiento" placeholder="🔍 Radicación, estudiante o correo..." oninput="prepararBusquedaSeguimiento()" onkeydown="if(event.key==='Enter') cargarSeguimiento()">
       <select id="fFaseSeg" onchange="renderSeguimiento()">
-        <option value="">Todos los módulos</option>
-        <option value="AUTH">AUTH</option>
-        <option value="FASE1">FASE1</option>
-        <option value="ACTAS">ACTAS</option>
+        <option value="">Todas las fases</option>
+        <option value="FASE1">Fase 1 · Radicación</option>
+        <option value="ACTAS">Actas de asesoría</option>
         <option value="FASE2">FASE2</option>
-        <option value="SUSTENTACION">SUSTENTACIÓN</option>
-        <option value="SISTEMA">SISTEMA</option>
-        <option value="GENERAL">GENERAL</option>
+        <option value="FASE2">Fase 2 · Protocolo</option>
+        <option value="FASE3">Fase 3 · Sustentación</option>
       </select>
+      <button class="btn bl" onclick="cargarSeguimiento()">🔎 Buscar</button>
       <button class="btn" onclick="cargarSeguimiento()">↻ Actualizar</button>
     </div>
+    <div class="seg-search-info" id="segSearchInfo"></div>
     <div class="timeline-box" id="timelineResumen" style="display:none"></div>
-    <div class="tbl-wrap">
+    <div id="historialSegPanel" style="display:none"></div>
+    <div class="tbl-wrap" id="tblSeguimientoWrap">
       <table>
         <thead><tr>
-          <th>Fecha/Hora</th><th>N° Radicación</th><th>Hito de Proceso</th><th>Responsable</th><th>Detalle</th>
+          <th>Fecha/Hora</th><th>N° Radicación</th><th>Módulo</th><th>Hito</th><th>Responsable</th><th>Detalle del movimiento</th>
         </tr></thead>
         <tbody id="tbodySeguimiento">
-          <tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>
+          <tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>
         </tbody>
       </table>
     </div>
@@ -434,16 +528,27 @@
  <!-- PANEL COMITÉ TÉCNICO -->
   <div class="panel" id="pan-comite">
     <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
-    <iframe src="comite_tecnico.html" style="width:100%;height:800px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
+    <a href="comite_tecnico.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:14px;text-decoration:none;color:#fff;transition:background .2s" onmouseover="this.style.background='rgba(102,126,234,.2)'" onmouseout="this.style.background='rgba(102,126,234,.1)'">
+      <span style="font-size:32px">📅</span>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:600">Abrir Comité Técnico</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:3px">Gestionar sesiones de comité, registrar evaluaciones y resultados</div>
+      </div>
+      <span style="font-size:20px;color:rgba(255,255,255,.35)">→</span>
+    </a>
   </div>
 
-  <!-- PANEL SUSTENTACIÓN (iframe: el padre envía el token por postMessage; ver enviarTokenAlIframeFase3) -->
+  <!-- PANEL SUSTENTACIÓN -->
   <div class="panel" id="pan-fase3">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
-      <h2 style="font-size:18px;font-weight:600;color:#fff;margin:0">🎓 Sustentación</h2>
-      <a href="coordinadora_fase3.html" target="_blank" rel="noopener" style="font-size:12px;color:#6ee7b7;text-decoration:none">Abrir Fase 3 en pestaña nueva</a>
-    </div>
-    <iframe id="iframeFase3Coord" src="coordinadora_fase3.html" style="width:100%;height:900px;border:none;border-radius:10px;background:#0a0f1a" frameborder="0"></iframe>
+    <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">🎓 Sustentación</h2>
+    <a href="coordinadora_fase3.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.3);border-radius:14px;text-decoration:none;color:#fff;transition:background .2s" onmouseover="this.style.background='rgba(5,150,105,.2)'" onmouseout="this.style.background='rgba(5,150,105,.1)'">
+      <span style="font-size:32px">🎓</span>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:600">Abrir Gestión de Sustentaciones</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:3px">Revisar solicitudes, asignar jurados y registrar resultados de sustentación</div>
+      </div>
+      <span style="font-size:20px;color:rgba(255,255,255,.35)">→</span>
+    </a>
   </div>
 
   <!-- PANEL FILTROS DINÁMICOS -->
@@ -521,6 +626,71 @@
           <tr><td colspan="10" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- PANEL SOLICITUDES DE CAMBIO -->
+  <div class="panel" id="pan-solicitudesCambio">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fff">Solicitudes de Cambio de Radicación</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Los estudiantes pueden solicitar modificar datos de su radicación. Usted decide si aprueba directamente o lo eleva al Comité Técnico.</div>
+      </div>
+      <button class="btn" onclick="cargarSolicitudesCambio()">↺ Actualizar</button>
+    </div>
+    <div id="sc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
+  </div>
+
+  <!-- MODAL RESOLVER SOLICITUD DE CAMBIO -->
+  <div id="modalSolicitudCambio" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;overflow-y:auto;padding:20px">
+    <div style="background:#1a1f2e;border:1px solid rgba(255,255,255,.12);border-radius:16px;max-width:620px;margin:40px auto;padding:28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:600;color:#fff">Revisar solicitud de cambio</div>
+        <button onclick="cerrarModalSolicitudCambio()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
+      </div>
+      <div id="sc_modal_detalle" style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:20px"></div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Observaciones / nota para el estudiante</label>
+        <textarea id="sc_obs" rows="3" placeholder="Opcional para aprobación directa. Obligatorio si devuelve o envía a comité." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" style="background:linear-gradient(135deg,#059669,#10b981);flex:1;min-width:140px" onclick="resolverSolicitudCambio('aprobar_directo')">Aprobar directamente</button>
+        <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);flex:1;min-width:140px" onclick="resolverSolicitudCambio('derivar_ct')">Enviar a Comité Técnico</button>
+        <button class="btn" style="background:linear-gradient(135deg,#b45309,#d97706);flex:1;min-width:140px" onclick="resolverSolicitudCambio('devolver')">Devolver al estudiante</button>
+      </div>
+      <div id="sc_modal_error" style="margin-top:12px;color:#f87171;font-size:13px;display:none"></div>
+    </div>
+  </div>
+
+  <!-- PANEL CANCELACIONES DE RADICACIÓN -->
+  <div class="panel" id="pan-cancelaciones">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fff">Solicitudes de Cancelación de Radicación</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Los estudiantes pueden solicitar cancelar su radicación activa. Si aprueba, el estado cambia a <strong>Cancelado</strong> y el estudiante podrá crear una nueva radicación.</div>
+      </div>
+      <button class="btn" onclick="cargarSolicitudesCancelacion()">↺ Actualizar</button>
+    </div>
+    <div id="scc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
+  </div>
+
+  <!-- MODAL RESOLVER CANCELACIÓN -->
+  <div id="modalCancelacion" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;overflow-y:auto;padding:20px">
+    <div style="background:#1a1f2e;border:1px solid rgba(239,68,68,.25);border-radius:16px;max-width:560px;margin:40px auto;padding:28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Resolver solicitud de cancelación</div>
+        <button onclick="cerrarModalCancelacion()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
+      </div>
+      <div id="scc_modal_detalle" style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:20px"></div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Observaciones para el estudiante</label>
+        <textarea id="scc_obs" rows="3" placeholder="Obligatorio si rechaza (mín. 12 caracteres). Opcional si aprueba." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" style="background:linear-gradient(135deg,#dc2626,#ef4444);flex:1;min-width:140px" onclick="resolverCancelacion('aprobar')">✅ Aprobar cancelación</button>
+        <button class="btn" style="background:linear-gradient(135deg,#b45309,#d97706);flex:1;min-width:140px" onclick="resolverCancelacion('rechazar')">❌ Rechazar</button>
+      </div>
+      <div id="scc_modal_error" style="margin-top:12px;color:#f87171;font-size:13px;display:none"></div>
     </div>
   </div>
 
@@ -627,11 +797,14 @@
       <select id="mEstado">
         <option value="Radicado">Radicado</option>
         <option value="Revisión">En Revisión</option>
-        <option value="Pendiente Comité">Pendiente Comité</option>
+        <option value="Tutores Avalados">Tutores Avalados</option>
+        <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
+        <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
         <option value="Aprobado">Aprobado ✅</option>
         <option value="Devuelto">Devuelto ↩</option>
-        <option value="Cancelación solicitada">Cancelación solicitada</option>
-        <option value="Cancelada">Cancelada</option>
+        <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico ↩</option>
+        <option value="Sustentado">Sustentado 🎓</option>
+        <option value="Reprobado">Reprobado ❌</option>
       </select>
     </div>
     <div class="mfg">
@@ -642,27 +815,6 @@
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
       <button class="btn" onclick="closeModal('modalEst')">Cancelar</button>
       <button class="btn-action" id="btnGuardar" onclick="guardarEstado()">Guardar y notificar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL RESOLVER CANCELACIÓN -->
-<div class="modal-bg" id="modalCancelacion">
-  <div class="modal">
-    <div class="modal-hdr">
-      <h3>Cancelación solicitada</h3>
-      <button class="btn" onclick="closeModal('modalCancelacion')">✕</button>
-    </div>
-    <p id="mCancelLabel" style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px;line-height:1.45"></p>
-    <div class="mfg">
-      <label>Mensaje al estudiante (opcional)</label>
-      <textarea id="mCancelNotas" placeholder="Indicaciones o motivo de la decisión..."></textarea>
-    </div>
-    <input type="hidden" id="mCancelRowIndex">
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap">
-      <button class="btn" onclick="closeModal('modalCancelacion')">Cerrar</button>
-      <button class="btn rd" id="btnRechazarCancel" onclick="resolverCancelacion(false)">↩ Rechazar solicitud</button>
-      <button class="btn-action" id="btnAprobarCancel" onclick="resolverCancelacion(true)">✅ Avalar cancelación</button>
     </div>
   </div>
 </div>
@@ -715,52 +867,55 @@
   </div>
 </div>
 
+<!-- MODAL HISTORIAL COMPLETO -->
+<div class="modal-bg" id="modalHistorial">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-hdr">
+      <h3>📜 Historial · <span id="modalHistorialNum" style="font-family:monospace;color:#a78bfa"></span></h3>
+      <button class="btn" onclick="closeModal('modalHistorial')">✕</button>
+    </div>
+    <div id="modalHistorialBody" style="max-height:68vh;overflow-y:auto;padding-top:8px"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
-function coordToken() {
-  return localStorage.getItem('cttg_token_coord') || localStorage.getItem('cttg_token') || '';
-}
+const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
+function coordToken() { return localStorage.getItem('cttg_token') || ''; }
 
-/** El iframe de Fase 3 a veces no comparte localStorage con el panel; copiamos el token por postMessage. */
-function enviarTokenAlIframeFase3() {
-  const ifr = document.getElementById('iframeFase3Coord');
-  if (!ifr || !ifr.contentWindow) return;
-  const tok = coordToken();
-  if (!tok) return;
+async function leerRespuestaApp(res) {
+  const raw = await res.text();
   try {
-    ifr.contentWindow.postMessage({ type: 'CTTG_COORD_TOKEN', token: tok }, '*');
-  } catch (e) {}
+    const d = raw ? JSON.parse(raw) : null;
+    if (!d || typeof d !== 'object') throw new Error('Respuesta vacía del servidor');
+    return d;
+  } catch (e) {
+    if (/^\s*</.test(raw)) {
+      throw new Error('El servidor no devolvió JSON. Verifique que la Web App de Apps Script esté desplegada y accesible.');
+    }
+    if (e.message && e.message !== 'Respuesta vacía del servidor') throw e;
+    throw new Error('Respuesta del servidor ilegible');
+  }
 }
-let radicaciones = [], actas = [], admin = null;
+let radicaciones = [], actas = [], protocolos = [], admin = null;
+/** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
+let filtroDashboardMetrica = null;
 let solicitudActual = null;
 
 (function(){
   admin = JSON.parse(localStorage.getItem('cttg_admin') || 'null');
-  if (!admin || admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
+  if (!admin) { window.location.href = 'coordinadora_login.html'; return; }
+  if (admin.rol === 'asistente') { window.location.href = 'asistente_dashboard.html'; return; }
+  if (admin.rol !== 'coordinadora') { window.location.href = 'coordinadora_login.html'; return; }
   document.getElementById('userChip').textContent = admin.nombre || admin.email;
-  document.addEventListener('click', function(e) {
-    const btn = e.target.closest('button[data-rad-act]');
-    if (!btn) return;
-    const act = btn.getAttribute('data-rad-act');
-    const ri = Number(btn.getAttribute('data-row-index'));
-    const num = btn.getAttribute('data-num') || '';
-    const est = btn.getAttribute('data-est') || 'Radicado';
-    const closeId = btn.getAttribute('data-close-modal');
-    if (closeId) closeModal(closeId);
-    if (act === 'ver') verDetalle(ri);
-    else if (act === 'cancel-coord') abrirModalCancelacion(ri);
-    else if (act === 'estado') abrirModalEst(ri, num, est);
-    else if (act === 'seguimiento') abrirSeguimientoRad(num);
-  });
   cargar();
   setInterval(cargar, 60000);
 })();
 
 function salir() {
   localStorage.removeItem('cttg_admin');
-  localStorage.removeItem('cttg_token_coord');
+  localStorage.removeItem('cttg_token');
   window.location.href = 'index.html';
 }
 
@@ -779,16 +934,13 @@ function switchPanel(name, btn) {
     poblarFiltroEstadosInforme();
     renderInformes();
   }
+  else if (name === 'solicitudesCambio') cargarSolicitudesCambio();
+  else if (name === 'cancelaciones') cargarSolicitudesCancelacion();
   else if (name === 'filtros') {
     (async () => {
       try { if (!actas.length) await cargarActas(); } catch (e) {}
       renderFiltros();
     })();
-  }
-  else if (name === 'fase3') {
-    setTimeout(enviarTokenAlIframeFase3, 0);
-    setTimeout(enviarTokenAlIframeFase3, 200);
-    setTimeout(enviarTokenAlIframeFase3, 600);
   }
 }
 
@@ -827,9 +979,206 @@ function fmtFecha(s) {
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s) { return esc(s).replace(/"/g,'&quot;'); }
-function rowIndexEq(a, b) { return Number(a) === Number(b); }
-function normalizarRadCoord(r) {
-  return Object.assign({}, r, { rowIndex: Number(r.rowIndex) || 0, estado: String((r && r.estado) || 'Radicado').trim() });
+
+function esModalidadDiplomadoDash(r) {
+  const s = String((r && r.modalidad) || '').trim().toLowerCase();
+  return s.includes('diplomado') || s.includes('diplom');
+}
+function textoCeldaTutorDashboard(r) {
+  if (!r) return '—';
+  if (esModalidadDiplomadoDash(r)) {
+    return '<span class="pill-diplomado" title="Modalidad Diplomado: sin tutores; pendiente aval de coordinación o en Fase 2">🎓 Sin tutores · Diplomado</span>';
+  }
+  const t = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).join('<br>');
+  return t || '—';
+}
+function clasesBtnAvalDashboard(r) {
+  return esModalidadDiplomadoDash(r) ? 'btn dip-acc' : 'btn gr';
+}
+function textoBtnAvalDashboard(r) {
+  return esModalidadDiplomadoDash(r) ? '🎓 Aval diplomado' : '✅ Tutores';
+}
+
+function limpiarFiltroMetrica() {
+  filtroDashboardMetrica = null;
+}
+
+/** Desde métricas: abre pestaña y aplica filtros en Radicaciones si aplica */
+function irMetricaRuta(pan, opts) {
+  opts = opts || {};
+  limpiarFiltroMetrica();
+  if (opts.excludeDiplomado) filtroDashboardMetrica = { excludeDiplomado: true };
+  const map = {
+    rad: document.getElementById('tabRad'),
+    actas: document.getElementById('tabActas'),
+    protocolo: document.getElementById('tabProtocolo'),
+    fase3: document.getElementById('tabFase3'),
+    comite: document.getElementById('tabComite')
+  };
+  const btn = map[pan];
+  if (!btn) return;
+  switchPanel(pan, btn);
+
+  const searchEl = document.getElementById('search');
+  if (searchEl) searchEl.value = '';
+
+  const fe = document.getElementById('fEstRad');
+  const fm = document.getElementById('fMod');
+  if (pan !== 'rad') return;
+
+  if (opts.excludeDiplomado) {
+    if (fm) fm.value = '';
+    if (fe && opts.fEstRad !== undefined) fe.value = opts.fEstRad || '';
+  } else {
+    if (!('fMod' in opts) && fm) fm.value = '';
+    if (opts.fEstRad !== undefined && fe) fe.value = opts.fEstRad || '';
+    if ('fMod' in opts && fm) {
+      const target = String(opts.fMod || '').trim();
+      if (!target) fm.value = '';
+      else if (target.toLowerCase() === 'diplomado') {
+        const optFound = [...fm.options].find(function(o) { return String(o.value || '').trim().toLowerCase() === 'diplomado'; });
+        fm.value = optFound ? optFound.value : target;
+      } else fm.value = target;
+    }
+  }
+  renderTabla();
+}
+
+/** Actas + protocolo en paralelo: cola hero, vencimientos, badge actas. Errores ignorados. */
+async function precargarColaCoordinacion() {
+  const [resAct, resProt] = await Promise.all([
+    fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: coordToken() }) }),
+    fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: coordToken() }) })
+  ]);
+  const [da, dp] = await Promise.all([resAct.json(), resProt.json()]);
+  if (da.success) actas = da.actas || [];
+  if (dp.success) protocolos = dp.protocolos || [];
+  actualizarBadgeTabActas();
+  try {
+    const resSol = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getSolicitudesModRadPendientes', token: coordToken() }) });
+    const ds = await resSol.json();
+    if (ds.success) solicitudesCambio = ds.solicitudes || [];
+    actualizarBadgeSolicitudesCambio();
+  } catch(eSol) {}
+  try {
+    const resCancel = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getSolicitudesCancelarRadPendientes', token: coordToken() }) });
+    const dc = await resCancel.json();
+    if (dc.success) solicitudesCancelacion = dc.solicitudes || [];
+    actualizarBadgeCancelaciones();
+  } catch(eCancel) {}
+}
+
+function actualizarBadgeSolicitudesCambio() {
+  const badge = document.getElementById('badgeSolicitudesCambio');
+  if (!badge) return;
+  if (solicitudesCambio.length > 0) { badge.textContent = solicitudesCambio.length; badge.style.display = 'flex'; }
+  else badge.style.display = 'none';
+}
+
+function actualizarBadgeTabActas() {
+  const pendientes = actas.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2').length;
+  const tabActas = document.getElementById('tabActas');
+  if (!tabActas) return;
+  const existing = tabActas.querySelector('.badge-count');
+  if (existing) existing.remove();
+  if (pendientes > 0) {
+    const span = document.createElement('span');
+    span.className = 'badge-count';
+    span.textContent = pendientes;
+    tabActas.appendChild(span);
+  }
+}
+
+function nombreEstudiantesPorNumeroOEmail(num, email) {
+  const em = String(email || '').trim().toLowerCase();
+  const rad = radicaciones.find(r =>
+    String(r.numero || '').trim() === String(num || '').trim() ||
+    [r.email1, r.email2, r.email3, r.emailEstudiante].some(e => String(e || '').toLowerCase() === em));
+  if (!rad) return '—';
+  const n = [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ');
+  return n || rad.email1 || rad.emailEstudiante || em || '—';
+}
+
+function fechaRefColaGestión(val) {
+  const raw = parsearFecha(val) || String(val || '');
+  const t = new Date(raw);
+  return isNaN(t.getTime()) ? 0 : t.getTime();
+}
+
+function badgeProtocoloEstCola(est) {
+  const map = {
+    'Cargado':'b-radicado','Enviado':'b-radicado','Revisado':'b-revisado','En Solicitud':'b-ensolicitud',
+    'Pendiente Comité':'b-comite','En Evaluación':'b-evaluacion','Aprobado':'b-aprobado','Rechazado':'b-devuelto',
+    'Devuelto por Comité Técnico':'b-devuelto','Aprobado Directo':'b-aprobado','Aprobado Comité':'b-aprobadocomite'
+  };
+  const cls = map[est] || 'b-radicado';
+  return `<span class="badge ${cls}">${esc(est || '—')}</span>`;
+}
+
+function irACambiosYResolver(rowSol) {
+  const tab = document.getElementById('tabSolicitudesCambio');
+  if (tab) switchPanel('solicitudesCambio', tab);
+  abrirModalSolicitudCambio(rowSol);
+}
+
+function irColaActasNumero(num) {
+  const tab = document.getElementById('tabActas');
+  if (!tab) return;
+  switchPanel('actas', tab);
+  const s = document.getElementById('searchActas');
+  const fe = document.getElementById('fEstActas');
+  if (fe) fe.value = '';
+  if (s) s.value = String(num || '').trim();
+  cargarActas();
+}
+
+function irColaProtocoloProt(pIdx, numero, abrirModal) {
+  const tab = document.getElementById('tabProtocolo');
+  if (!tab) return;
+  switchPanel('protocolo', tab);
+  const sq = document.getElementById('searchProtocolo');
+  const fq = document.getElementById('fEstProtocolo');
+  if (fq) fq.value = '';
+  if (sq) sq.value = String(numero || '').trim();
+  cargarProtocolo().then(() => {
+    const p = protocolos.find(x => x.rowIndex === pIdx) || protocolos.find(x => String(x.numero || '') === String(numero || ''));
+    if (abrirModal && p && (p.estado === 'Cargado' || p.estado === 'Enviado')) {
+      abrirModalProtocolo(p.rowIndex, 'aprobar', p.numero || numero);
+    } else renderProtocolo();
+  }).catch(() => {});
+}
+
+function htmlBloqueDiplomadoEnProtocoloInfo(numeroRad) {
+  const nr = String(numeroRad || '').trim();
+  const rad = radicaciones.find(r => String(r.numero || '').trim() === nr);
+  if (!rad || !esModalidadDiplomadoDash(rad)) return '';
+  const ini = fmtFecha(rad.diplomadoFechaInicio);
+  const fin = fmtFecha(rad.diplomadoFechaFin);
+  const periodo = [ini, fin].filter(x => x && x !== '—').join(' → ') || '—';
+  const modo = String(rad.diplomadoJuradoModo || '').trim().toLowerCase();
+  const modoLabel = modo === 'cttg_asigna' ? 'CTTG asigna jurados' : (modo === 'tutor_sugiere' ? 'Tutor propone jurados' : (modo || '—'));
+  const jur = [rad.dipJurado1Nombre, rad.dipJurado2Nombre, rad.dipJurado3Nombre].map(String).map(s => s.trim()).filter(Boolean);
+  const jurHtml = jur.length
+    ? '<div style="margin-top:8px;font-size:12px;color:rgba(226,232,240,.82)">' + jur.map(function(j, i) {
+      return '<div>Jurado ' + (i + 1) + ': ' + esc(j) + '</div>';
+    }).join('') + '</div>'
+    : '';
+  return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)">'
+    + '<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(167,139,250,.9);margin-bottom:6px">Diplomado (Fase 1)</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.75)">Periodo: <strong style="color:#e2e8f0">' + esc(periodo) + '</strong></div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:4px">Modo jurado: ' + esc(modoLabel) + '</div>'
+    + jurHtml
+    + '</div>';
+}
+
+function aplicarHtmlProtocoloInfo(p, numeroVisible, textoEstudiante) {
+  const box = document.getElementById('protocoloInfo');
+  if (!box) return;
+  box.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,.55)">'
+    + 'Radicación: <strong style="color:#a78bfa" id="pNum">' + esc(numeroVisible || '') + '</strong>'
+    + ' · Estudiante / correo: <strong style="color:#a78bfa" id="pEst">' + esc(textoEstudiante || '—') + '</strong>'
+    + '</div>'
+    + htmlBloqueDiplomadoEnProtocoloInfo(numeroVisible || (p && p.numero));
 }
 
 // ── RADICACIONES ─────────────────────────────────────────────
@@ -839,13 +1188,14 @@ async function cargar() {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1', token: coordToken() }) });
     const d = await res.json();
     if (d.success) {
-      radicaciones = (d.radicaciones || []).map(r => normalizarRadCoord({
+      radicaciones = (d.radicaciones || []).map(r => ({
         ...r,
         estado: r.estado || "Radicado",
         notas:  r.notas  || "",
         fechaRadicacion: parsearFecha(r.fechaRadicacion),
         fechaAprobacion: parsearFecha(r.fechaAprobacion)
       }));
+      try { await precargarColaCoordinacion(); } catch (e) {}
      actualizarMetricas();
       contarVencimientos();
       poblarFiltroMod();
@@ -855,30 +1205,87 @@ async function cargar() {
      } else throw new Error(d.error);
   } catch(e) { setSyncState('error'); toast('Error al cargar: ' + e.message, 'err'); }
 }
-
+    
 function actualizarMetricas() {
-  const s = { total: radicaciones.length, radicado:0, revision:0, pendienteComite:0, aprobado:0, devuelto:0, critico:0 };
+  const s = {
+    total: radicaciones.length,
+    radicado: 0,
+    critico: 0,
+    avTutor: 0,
+    avDip: 0,
+    actasF1: 0,
+    protF2: 0,
+    pendienteComite: 0,
+    devComite: 0,
+    aprobado: 0,
+    devCoord: 0,
+    enSustCierre: 0,
+    revision: 0
+  };
+  const tutoresOk = ['Tutores Avalados','Tutores avalados'];
+
   radicaciones.forEach(r => {
     const est = r.estado || 'Radicado';
-    if (est === 'Radicado') s.radicado++;
-    else if (est === 'Revisión') s.revision++;
-    else if (['Pendiente Comité','Pendiente Comité Técnico'].includes(est)) s.pendienteComite++;
-    else if (est === 'Aprobado') s.aprobado++;
-    else if (est === 'Devuelto') s.devuelto++;
-    
-    // Contar plazo crítico (>60% del plazo transcurrido)
-    const pctPlazo = Number(r.porcentajeAvance ?? r.porcentajePlazo ?? 0);
-    if (pctPlazo > 60 && !['Aprobado','Devuelto','Sustentado'].includes(est)) {
-      s.critico++;
+    const eLow = String(est).toLowerCase();
+
+    if (est === 'Radicado') {
+      s.radicado++;
+      if (esModalidadDiplomadoDash(r)) s.avDip++;
+      else s.avTutor++;
     }
+    if (est === 'Revisión' || tutoresOk.includes(est)) s.actasF1++;
+    if (est === 'Revisión') s.revision++;
+    if (est === 'Fase 2 Desbloqueada') s.protF2++;
+    if (['Pendiente Comité','Pendiente Comité Técnico'].includes(est)) s.pendienteComite++;
+    if (est === 'Devuelto por Comité Técnico') s.devComite++;
+    if (est === 'Aprobado') s.aprobado++;
+    if (est === 'Devuelto') s.devCoord++;
+    if (eLow.includes('sustentado') || eLow.includes('reprobado') || eLow.includes('fase 3') || eLow.includes('sustentaci')) {
+      s.enSustCierre++;
+    }
+
+    const pctPlazo = Number(r.porcentajeAvance ?? r.porcentajePlazo ?? 0);
+    if (pctPlazo > 60 && !['Aprobado','Devuelto','Sustentado'].includes(est)) s.critico++;
   });
-  document.getElementById('mTot').textContent  = s.total;
-  document.getElementById('mRad').textContent  = s.radicado;
-  document.getElementById('mRev').textContent  = s.revision;
-  document.getElementById('mPend').textContent = s.pendienteComite;
-  document.getElementById('mApro').textContent = s.aprobado;
-  document.getElementById('mDev').textContent  = s.devuelto;
-  document.getElementById('mCritico').textContent = s.critico;
+
+  function setTxt(id, n) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = n;
+  }
+
+  setTxt('mTot', s.total);
+  setTxt('mRad', s.radicado);
+  setTxt('mCritico', s.critico);
+  setTxt('mAvTutor', s.avTutor);
+  setTxt('mAvDip', s.avDip);
+  setTxt('mActasF1', s.actasF1);
+  setTxt('mProtF2', s.protF2);
+  setTxt('mPend', s.pendienteComite);
+  setTxt('mDevComite', s.devComite);
+  setTxt('mApro', s.aprobado);
+  setTxt('mDev', s.devCoord);
+  setTxt('mEnSust', s.enSustCierre);
+  setTxt('mRev', s.revision);
+
+  function dimCard(idMetric, count) {
+    var cell = document.getElementById(idMetric);
+    if (!cell || !cell.parentElement) return;
+    cell.parentElement.style.opacity = count > 0 ? '1' : '0.45';
+  }
+  dimCard('mAvTutor', s.avTutor);
+  dimCard('mAvDip', s.avDip);
+  dimCard('mActasF1', s.actasF1);
+  dimCard('mProtF2', s.protF2);
+  dimCard('mPend', s.pendienteComite);
+  dimCard('mDevComite', s.devComite);
+  dimCard('mApro', s.aprobado);
+  dimCard('mEnSust', s.enSustCierre);
+  dimCard('mDev', s.devCoord);
+  dimCard('mRev', s.revision);
+
+  // Secciones nuevas en pantalla principal
+  renderModalidadGrid();
+  renderColaGestionesCoord();
 }
 function poblarFiltroMod() {
   const opts = [...new Set(radicaciones.map(r => r.modalidad).filter(Boolean))].sort();
@@ -886,52 +1293,100 @@ function poblarFiltroMod() {
   sel.innerHTML = '<option value="">Todas las modalidades</option>' + opts.map(o => `<option value="${o}" ${o===cur?'selected':''}>${o}</option>`).join('');
 }
 
+// ── POR MODALIDAD ──────────────────────────────────────────────
+function iconModalidad(mod) {
+  const m = String(mod || '').toLowerCase();
+  if (m.includes('diplomado')) return '🎓';
+  if (m.includes('investigaci')) return '🔬';
+  return '📄';
+}
+
+function renderModalidadGrid() {
+  const ACTIVOS = ['Radicado','Revisión','Tutores Avalados','Tutores avalados',
+    'Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Devuelto','Aprobado'];
+  const mods = {};
+  radicaciones.forEach(r => {
+    const m = r.modalidad || '(Sin modalidad)';
+    if (!mods[m]) mods[m] = { total: 0, activas: 0 };
+    mods[m].total++;
+    if (ACTIVOS.includes(r.estado || 'Radicado')) mods[m].activas++;
+  });
+  const entries = Object.entries(mods).sort((a, b) => b[1].total - a[1].total);
+  const cols = ['c6','c1','c5','c3','c2','c4'];
+  const wrap = document.getElementById('modGridWrap');
+  if (!wrap) return;
+  if (!entries.length) {
+    wrap.innerHTML = '<div class="mc" style="opacity:.4;font-size:12px;padding:14px;color:rgba(255,255,255,.35)">Sin datos de modalidades aún</div>';
+    return;
+  }
+  wrap.innerHTML = entries.map(([mod, s], i) => {
+    const col = cols[i % cols.length];
+    const ico = iconModalidad(mod);
+    return `<div class="mc ${col} mc-go" tabindex="0" role="button" data-mod="${escAttr(mod)}"
+      onclick="irMetricaRutaMod(this)"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRutaMod(this);}">
+      <div class="ml">${ico} ${esc(mod)}</div>
+      <div class="mv">${s.total}</div>
+      <div class="mh">${s.activas} activa${s.activas !== 1 ? 's' : ''} · clic para filtrar</div>
+    </div>`;
+  }).join('');
+}
+
+function irMetricaRutaMod(el) {
+  irMetricaRuta('rad', { fMod: el.dataset.mod || '', fEstRad: '' });
+}
+
+function irTodasRad() {
+  limpiarFiltroMetrica();
+  const fe = document.getElementById('fEstRad');
+  const fm = document.getElementById('fMod');
+  const q  = document.getElementById('search');
+  if (fe) fe.value = '';
+  if (fm) fm.value = '';
+  if (q)  q.value  = '';
+  switchPanel('rad', document.getElementById('tabRad'));
+  renderTabla();
+}
+
 function badgeEst(est) {
-  const map = { 'Radicado':'b-radicado','Tutores avalados':'b-tutores','Tutores Avalados':'b-tutores','Fase 2 Desbloqueada':'b-comite','Pendiente Comité Técnico':'b-comite','Devuelto por Comité Técnico':'b-devuelto','Aprobado':'b-aprobado','Devuelto':'b-devuelto','Sustentado':'b-aprobado','Reprobado':'b-devuelto','Cancelación solicitada':'b-revision','Cancelada':'b-devuelto' };
+  const map = { 'Radicado':'b-radicado','Revisión':'b-revision','Tutores avalados':'b-tutores','Tutores Avalados':'b-tutores','Fase 2 Desbloqueada':'b-comite','Pendiente Comité Técnico':'b-comite','Devuelto por Comité Técnico':'b-devuelto','Aprobado':'b-aprobado','Devuelto':'b-devuelto','Sustentado':'b-aprobado','Reprobado':'b-devuelto' };
   return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
 }
 
 function renderTabla() {
-  const aviso = document.getElementById('avisoCancelPend');
-  const nCancel = radicaciones.filter(r => String(r.estado || '').trim() === 'Cancelación solicitada').length;
-  if (aviso) {
-    if (nCancel > 0) {
-      aviso.style.display = 'block';
-      aviso.innerHTML = `🚫 <strong>${nCancel}</strong> solicitud${nCancel > 1 ? 'es' : ''} de cancelación pendiente${nCancel > 1 ? 's' : ''}. Use <em>Resolver cancelación</em> en la tabla. 
-        <button type="button" class="btn am" style="margin-left:8px;padding:4px 10px;font-size:11px" onclick="document.getElementById('fEstRad').value='Cancelación solicitada';renderTabla()">Ver solo pendientes</button>`;
-    } else {
-      aviso.style.display = 'none';
-      aviso.innerHTML = '';
-    }
-  }
   const q  = (document.getElementById('search').value || '').toLowerCase();
   const fE = document.getElementById('fEstRad').value;
   const fM = document.getElementById('fMod').value;
   const filtered = radicaciones.filter(r => {
-    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre].join(' ').toLowerCase();
-    return (!q || txt.includes(q)) && (!fE || r.estado === fE) && (!fM || r.modalidad === fM);
+    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.modalidad].join(' ').toLowerCase();
+    const estadoR = String(r.estado || '');
+    const estadoMatch = !fE || estadoR === fE || (fE === 'Tutores Avalados' && estadoR === 'Tutores avalados');
+    let ok = (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
+    if (ok && filtroDashboardMetrica && filtroDashboardMetrica.excludeDiplomado && esModalidadDiplomadoDash(r)) ok = false;
+    return ok;
   });
   const body = document.getElementById('tbody');
   if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
   body.innerHTML = filtered.map(r => {
     const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join('<br>') || '—';
-    const tutores = [r.tutor1Nombre,r.tutor2Nombre].filter(Boolean).join('<br>') || '—';
     const estado  = r.estado || 'Radicado';
-    const esCancelPend = estado === 'Cancelación solicitada';
-    return `<tr${esCancelPend ? ' style="background:rgba(245,158,11,.06)"' : ''}>
-      <td><div class="num-rad">${esc(r.numero||'')}</div>${esCancelPend ? '<div style="font-size:10px;color:#fcd34d;margin-top:4px">🚫 Cancelación pendiente</div>' : ''}</td>
+    const celdaTutor = textoCeldaTutorDashboard(r);
+    const btnAvalCls = clasesBtnAvalDashboard(r);
+    const btnAvalTxt = textoBtnAvalDashboard(r);
+    return `<tr>
+      <td><div class="num-rad">${esc(r.numero||'')}</div></td>
       <td style="font-size:12px;max-width:160px">${nombres}</td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:140px">${tutores}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:180px">${celdaTutor}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
       <td>${badgeEst(estado)}</td>
       <td><div class="act">
-        <button type="button" class="btn bl" data-rad-act="ver" data-row-index="${Number(r.rowIndex)}">👁 Ver</button>
-        ${esCancelPend ? `<button type="button" class="btn am" data-rad-act="cancel-coord" data-row-index="${Number(r.rowIndex)}">🚫 Resolver cancelación</button>` : ''}
-        <button type="button" class="btn am" data-rad-act="estado" data-row-index="${Number(r.rowIndex)}" data-num="${escAttr(r.numero||'')}" data-est="${escAttr(estado)}">✎ Estado</button>
-        <button type="button" class="btn gr" onclick="window.location.href='coordinadora_validar_tutores.html?row=${Number(r.rowIndex)}'">✅ Tutores</button>
-        <button type="button" class="btn" data-rad-act="seguimiento" data-num="${escAttr(r.numero||'')}">🕒 Seguimiento</button>
+        <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
+        <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
+        <button class="${btnAvalCls}" title="${esModalidadDiplomadoDash(r) ? 'Abrir aval de Diplomado (sin tutores/actas)' : 'Validar tutores'}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${btnAvalTxt}</button>
+        <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
+        <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -939,13 +1394,103 @@ function renderTabla() {
 
 function abrirSeguimientoRad(numero) {
   const n = String(numero || '').trim();
-  if (!n) { toast('Sin número de radicación para seguimiento.', 'warn'); return; }
+  if (!n) return;
   const inputSeg = document.getElementById('searchSeguimiento');
   if (inputSeg) inputSeg.value = n;
   const tabSeg = document.getElementById('tabSeguimiento');
   if (tabSeg) switchPanel('seguimiento', tabSeg);
-  else toast('No se encontró la pestaña Seguimiento.', 'err');
   cargarSeguimiento();
+}
+
+async function abrirHistorialRadicacion(numero) {
+  if (!numero) return;
+  document.getElementById('modalHistorialNum').textContent = numero;
+  document.getElementById('modalHistorialBody').innerHTML =
+    '<div class="hist-empty"><span class="spinner"></span> Cargando historial...</div>';
+  document.getElementById('modalHistorial').classList.add('open');
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'getHistorialRadicacion',
+      numeroRadicacion: numero,
+      token: coordToken()
+    })});
+    const d = await leerRespuestaApp(res);
+    if (!d.success) throw new Error(d.error || 'Error');
+    const eventos = d.eventos || [];
+    if (!eventos.length) {
+      document.getElementById('modalHistorialBody').innerHTML =
+        '<div class="hist-empty">Sin eventos registrados para esta radicación.</div>';
+      return;
+    }
+    const faseLabelMap = {
+      FASE1:'Fase 1 · Radicación', FASE2:'Fase 2 · Protocolo',
+      ACTAS:'Actas de asesoría',   FASE3:'Fase 3 · Sustentación'
+    };
+    const accionLabelMap = {
+      RADICACION:'Radicación inicial', ACTUALIZAR_ESTADO:'Actualizar estado',
+      VALIDAR_TUTORES:'Validar tutores', CREAR_PROTOCOLO:'Protocolo cargado',
+      ACTUALIZAR_PROTOCOLO:'Protocolo evaluado', AVALAR_PROTOCOLO_FASE2:'Evaluación protocolo (coord.)',
+      REGISTRAR_DECISION_COMITE:'Decisión comité técnico', CREAR_ACTA:'Acta de asesoría cargada',
+      APROBAR_ACTA:'Acta aprobada', RECHAZAR_ACTA:'Acta rechazada',
+      CREAR_FASE3:'Solicitud de sustentación', ASIGNAR_JURADOS:'Fecha y jurados asignados',
+      UPDATE_FASE3_ESTADO:'Estado sustentación actualizado', COMPLETAR_FASE3:'Sustentación completada',
+      SOL_MOD_DEVOLVER:'Sol. cambios devuelta', SOL_MOD_DERIVAR_CT:'Sol. cambios → comité',
+      SOL_MOD_APROBAR_DIRECTO:'Cambios aprobados directamente', SOL_MOD_COMITE_RECHAZAR:'Cambios rechazados (comité)',
+      SOL_MOD_COMITE_APROBAR:'Cambios aprobados (comité)'
+    };
+    // Botón exportar + contador
+    const realesCount = eventos.filter(e => !e.reconstruido).length;
+    const reconstrCount = eventos.filter(e => e.reconstruido).length;
+    // Guardar en panel para exportar desde modal (reutiliza la misma función que Seguimiento)
+    const histPanel = document.getElementById('historialSegPanel');
+    if (histPanel && !histPanel._lastRHist) histPanel._lastRHist = d;
+    // Forzar datos disponibles para exportarInformeRadicacion
+    window._lastHistorialExport = { numero, d };
+
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <span style="font-size:11px;color:rgba(255,255,255,.35)">
+        ${eventos.length} eventos · ${realesCount > 0 ? realesCount + ' registros exactos · ' : ''}${reconstrCount > 0 ? reconstrCount + ' inferidos desde hojas' : ''}
+      </span>
+      <button onclick="exportarInformeModal('${esc(numero)}')" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">📥 Exportar PDF</button>
+    </div>`;
+
+    html += eventos.map(ev => {
+      const faseLabel = faseLabelMap[ev.fase] || ev.fase || '—';
+      const accionLabel = accionLabelMap[ev.accion] || String(ev.accion || '').replace(/_/g, ' ').toLowerCase();
+      const reconBadge = ev.reconstruido ? ' <span style="font-size:9px;color:rgba(251,191,36,.5)" title="Inferido desde estado actual">≈</span>' : '';
+      const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
+        <div class="hist-states">
+          ${ev.estadoAnterior ? `<span class="hist-state-old">${esc(ev.estadoAnterior)}</span><span class="hist-arrow">→</span>` : ''}
+          ${ev.estadoNuevo ? `<span class="hist-state-new">${esc(ev.estadoNuevo)}</span>` : ''}
+        </div>` : '';
+      return `<div class="hist-event">
+        <div>
+          <div class="hist-ts">${esc(ev.timestamp || '—')}</div>
+          <span class="hist-fase-tag">${esc(faseLabel)}</span>
+        </div>
+        <div>
+          <div class="hist-accion">${esc(accionLabel)}${reconBadge}</div>
+          ${stateChange}
+          ${ev.motivo ? `<div class="hist-motivo">💬 ${esc(ev.motivo)}</div>` : ''}
+          ${ev.detalle ? `<div class="hist-detail">📋 ${esc(ev.detalle)}</div>` : ''}
+          ${ev.actor ? `<div class="hist-actor">👤 ${esc(ev.actor)}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('modalHistorialBody').innerHTML = html;
+  } catch(e) {
+    document.getElementById('modalHistorialBody').innerHTML =
+      `<div class="hist-empty">Error al cargar historial: ${esc(e.message)}</div>`;
+  }
+}
+
+function exportarInformeModal(numero) {
+  const data = window._lastHistorialExport;
+  if (!data || data.numero !== numero) { toast('Abre el historial primero.', 'err'); return; }
+  // Inyectar temporalmente en histPanel para reutilizar exportarInformeRadicacion
+  const histPanel = document.getElementById('historialSegPanel');
+  if (histPanel) { histPanel._lastRHist = data.d; histPanel._lastNumero = numero; }
+  exportarInformeRadicacion(numero, null);
 }
 
 function abrirModalEst(ri, numero, estadoActual) {
@@ -954,55 +1499,6 @@ function abrirModalEst(ri, numero, estadoActual) {
   document.getElementById('mEstado').value = estadoActual;
   document.getElementById('mNotas').value = '';
   document.getElementById('modalEst').classList.add('open');
-}
-
-function abrirModalCancelacion(ri) {
-  const r = radicaciones.find(x => rowIndexEq(x.rowIndex, ri));
-  if (!r || String(r.estado || '').trim() !== 'Cancelación solicitada') {
-    toast('Esta radicación no tiene cancelación pendiente.', 'warn');
-    return;
-  }
-  document.getElementById('mCancelRowIndex').value = ri;
-  const motivo = String(r.notas || '').split('[Cancelación solicitada').pop() || r.notas || '';
-  document.getElementById('mCancelLabel').innerHTML =
-    'Radicación <strong style="color:#fcd34d">' + esc(r.numero) + '</strong> · ' + esc(r.nombre1 || r.emailEstudiante || '') +
-    '<br><span style="font-size:11px;color:rgba(255,255,255,.45)">Al avalar, el estudiante podrá radicar un proyecto nuevo.</span>' +
-    (r.notas ? '<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,.04);border-radius:8px;font-size:11px;color:rgba(255,255,255,.7)">📝 ' + esc(r.notas) + '</div>' : '');
-  document.getElementById('mCancelNotas').value = '';
-  document.getElementById('modalCancelacion').classList.add('open');
-}
-
-async function resolverCancelacion(aprobar) {
-  const ri = parseInt(document.getElementById('mCancelRowIndex').value, 10);
-  const notas = document.getElementById('mCancelNotas').value.trim();
-  const btnOk = document.getElementById('btnAprobarCancel');
-  const btnNo = document.getElementById('btnRechazarCancel');
-  btnOk.disabled = true;
-  btnNo.disabled = true;
-  try {
-    const res = await fetch(URL_APP, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'resolverCancelacionRadicacion',
-        rowIndex: ri,
-        aprobar: !!aprobar,
-        notas,
-        emailCoord: admin.email,
-        token: coordToken()
-      })
-    });
-    const d = await res.json();
-    if (d.success) {
-      closeModal('modalCancelacion');
-      await cargar();
-      toast(aprobar ? 'Cancelación avalada. El estudiante ya puede radicar de nuevo.' : 'Solicitud rechazada. Radicación restaurada.', 'ok');
-    } else throw new Error(d.error);
-  } catch (e) {
-    toast('Error: ' + e.message, 'err');
-  } finally {
-    btnOk.disabled = false;
-    btnNo.disabled = false;
-  }
 }
 
 async function guardarEstado() {
@@ -1021,9 +1517,47 @@ async function guardarEstado() {
 }
 
 function verDetalle(ri) {
-  const r = radicaciones.find(x => rowIndexEq(x.rowIndex, ri));
+  const r = radicaciones.find(x => x.rowIndex === ri);
   if (!r) return;
   const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val">${esc(val)}</span></div>` : '';
+  const esDip = esModalidadDiplomadoDash(r);
+  const periodoDipStr = esDip
+    ? [fmtFecha(r.diplomadoFechaInicio), fmtFecha(r.diplomadoFechaFin)].filter(x => x && x !== '—').join(' → ') || '—'
+    : '';
+  const tutorBlock = esDip
+    ? (() => {
+        const modo = String(r.diplomadoJuradoModo || '').trim().toLowerCase();
+        const esCttg  = modo === 'cttg_asigna';
+        const esTutor = modo === 'tutor_sugiere';
+        const modoLabel = esCttg  ? '🏛 Comité CTTG asigna evaluador'
+                        : esTutor ? '👥 Tutor sugirió jurado'
+                        : modo   ? modo : '—';
+        const juradoRows = esCttg
+          ? `<div class="det-row"><span class="det-label">Evaluador</span><span class="det-val" style="color:#fcd34d">El Comité Técnico de Trabajos de Grado asignará al evaluador</span></div>`
+          : [
+              fila('Jurado 1',       r.dipJurado1Nombre),
+              fila('Email J1',       r.dipJurado1Email),
+              fila('Tel. J1',        r.dipJurado1Telefono),
+              fila('Especialidad J1',r.dipJurado1Especialidad),
+              fila('Acuerdo eval.',  r.dipJurado1AceptaPropuesta),
+              fila('Jurado 2',       r.dipJurado2Nombre),
+              fila('Email J2',       r.dipJurado2Email),
+              fila('Tel. J2',        r.dipJurado2Telefono),
+              fila('Jurado 3',       r.dipJurado3Nombre),
+              fila('Email J3',       r.dipJurado3Email),
+              fila('Tel. J3',        r.dipJurado3Telefono),
+            ].join('');
+        return `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Diplomado · Jurado</div>
+          <div class="det-row"><span class="det-label">Tutores</span><span class="det-val">No aplica · modalidad Diplomado</span></div>
+          ${fila('Modo jurado', modoLabel)}
+          ${juradoRows}`;
+      })()
+    : `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
+       ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
+       ${fila('Email T1',r.tutor1Email)}
+       ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}`;
+  const avalCls = esDip ? 'btn dip-acc' : 'btn gr';
+  const avalLbl = esDip ? '🎓 Avalar diplomado' : '✅ Validar tutores';
   document.getElementById('modalDetBody').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div><div style="font-family:'DM Mono',monospace;font-size:13px;color:#a78bfa;margin-bottom:4px">${esc(r.numero)}</div>
@@ -1031,21 +1565,20 @@ function verDetalle(ri) {
       ${badgeEst(r.estado)}
     </div>
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:6px">Proyecto</div>
-    ${fila('Modalidad',r.modalidad)}${fila('Área',r.area)}
+    ${fila('Modalidad',r.modalidad)}${esDip ? fila('Periodo del diplomado', periodoDipStr) : fila('Área',r.area)}
     ${fila('F. Radicación',fmtFecha(r.fechaRadicacion))}${fila('F. Aprobación',fmtFecha(r.fechaAprobacion))}
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Estudiantes</div>
     ${fila('Estudiante 1', r.nombre1 ? r.nombre1+' · Ced: '+r.cedula1+' · Sem. '+r.semestre1 : '')}
     ${fila('Email 1',r.email1)}${fila('Teléfono 1',r.telefono1)}
     ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
     ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
-    ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
-    ${fila('Email T1',r.tutor1Email)}
-    ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
+    ${tutorBlock}
     ${r.notas ? `<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#fcd34d">📝 </span>${esc(r.notas)}</div>` : ''}
     <div style="margin-top:14px">
-      <button type="button" class="btn am" data-rad-act="estado" data-row-index="${Number(r.rowIndex)}" data-num="${escAttr(r.numero||'')}" data-est="${escAttr(r.estado||'Radicado')}" data-close-modal="modalDet">✎ Cambiar estado</button>
-      <button type="button" class="btn bl" data-rad-act="seguimiento" data-num="${escAttr(r.numero||'')}" data-close-modal="modalDet">🕒 Ver trazabilidad</button>
+      <button class="btn am" onclick="closeModal('modalDet');abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Cambiar estado</button>
+      <button class="${avalCls}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${avalLbl}</button>
+      <button class="btn bl" onclick="closeModal('modalDet');abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Ver trazabilidad</button>
+      <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="closeModal('modalDet');abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial completo</button>
     </div>`;
   document.getElementById('modalDet').classList.add('open');
 }
@@ -1060,17 +1593,7 @@ async function cargarActas() {
     if (!d.success) throw new Error(d.error);
     actas = d.actas || [];
 
-    // contar pendientes para badge
-    const pendientes = actas.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2').length;
-    const tabActas = document.getElementById('tabActas');
-    const existing = tabActas.querySelector('.badge-count');
-    if (existing) existing.remove();
-    if (pendientes > 0) {
-      const span = document.createElement('span');
-      span.className = 'badge-count';
-      span.textContent = pendientes;
-      tabActas.appendChild(span);
-    }
+    actualizarBadgeTabActas();
 
     renderActas();
   } catch(e) {
@@ -1254,7 +1777,7 @@ function exportCSV() {
   toast('CSV exportado ✓', 'ok');
 }
 
-['modalEst','modalDet','modalActa','modalSolicitud','modalCancelacion'].forEach(id => {
+['modalEst','modalDet','modalActa','modalSolicitud'].forEach(id => {
   document.getElementById(id).addEventListener('click', e => {
     if (e.target === document.getElementById(id)) closeModal(id);
   });
@@ -1645,7 +2168,9 @@ function construirAlertasLocales() {
         estudiante: estudiantes,
         estado,
         plazo: `${diasRad} días hábiles`,
-        detalles: 'Pendiente validar tutores. Supera 15 días hábiles desde radicación.',
+        detalles: esModalidadDiplomadoDash(r)
+          ? 'Pendiente aval del diplomado por coordinación. Supera 15 días hábiles desde radicación.'
+          : 'Pendiente validar tutores. Supera 15 días hábiles desde radicación.',
         rowIndex: r.rowIndex
       });
     }
@@ -1685,7 +2210,6 @@ function renderAlertas() {
 // ════════════════════════════════════════════════════════════
 // TAB 5: PROTOCOLO FASE 2
 // ════════════════════════════════════════════════════════════
-let protocolos = [];
 async function cargarProtocolo() {
   try {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getFase2', token: coordToken() }) });
@@ -1707,6 +2231,163 @@ function nombreEstudianteDesdeRad(p) {
   if (!rad) return '—';
   const n = [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ');
   return n || rad.email1 || em || '—';
+}
+
+function construirFilasColaGestionesCoord() {
+  const rows = [];
+  const F1_COORD = ['Radicado', 'Revisión', 'Pendiente Comité Técnico'];
+  radicaciones.forEach(r => {
+    const est = r.estado || 'Radicado';
+    if (!F1_COORD.includes(est)) return;
+    const prio = est === 'Radicado' ? 30 : est === 'Revisión' ? 42 : 62;
+    const gestionTit =
+      est === 'Radicado' ? (esModalidadDiplomadoDash(r) ? 'Fase 1 · Aval diplomado' : 'Fase 1 · Validar tutores') :
+      est === 'Revisión' ? 'Fase 1 · Radicación en revisión' :
+      'Fase 1 · Pendiente decisión comité técnico';
+    rows.push({
+      kind: 'rad', prio,
+      ts: fechaRefColaGestión(r.fechaRadicacion),
+      numero: r.numero || '',
+      estudiantes: [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || '—',
+      contexto: r.modalidad || '—',
+      badge: badgeEst(est),
+      gestionTit: gestionTit, sub: '',
+      rowIndexRad: r.rowIndex
+    });
+  });
+
+  actas.forEach(a => {
+    const est = a.estado || '';
+    if (est !== 'Pendiente revisión' && est !== 'Solicitud Fase 2') return;
+    const prio = est === 'Pendiente revisión' ? 12 : 38;
+    const nomArch = String(a.nombreArchivo || '');
+    rows.push({
+      kind: 'acta', prio,
+      ts: fechaRefColaGestión(a.fechaCarga),
+      numero: a.numero || '—',
+      estudiantes: nombreEstudiantesPorNumeroOEmail(a.numero, a.emailEstudiante),
+      contexto: nomArch ? esc(nomArch.substring(0, 48)) + (nomArch.length > 48 ? '…' : '') : 'Acta',
+      badge: est === 'Pendiente revisión'
+        ? '<span class="badge b-pend">Pendiente revisión</span>'
+        : '<span class="badge b-solicitud">Solicitud Fase 2</span>',
+      gestionTit: est === 'Pendiente revisión' ? 'Acta · Revisión coordinación' : 'Acta · Solicitud paso a Fase 2',
+      sub: '',
+      fechaActaRef: a.fechaCarga
+    });
+  });
+
+  const PROT_TRAM_COORD = ['Cargado', 'Enviado', 'Revisado', 'En Solicitud', 'Pendiente Comité', 'En Evaluación'];
+  protocolos.forEach(p => {
+    const est = p.estado || '';
+    if (!PROT_TRAM_COORD.includes(est)) return;
+    const prio =
+      (est === 'Cargado' || est === 'Enviado') ? 15 :
+      est === 'En Solicitud' ? 41 :
+      (est === 'Pendiente Comité' || est === 'En Evaluación') ? 55 : 50;
+    const ev = p.evaluador ? 'Eval.: ' + String(p.evaluador).substring(0, 36) : '';
+    const ax = p.anexoCambio ? 'Anexo: ' + String(p.anexoCambio).substring(0, 36) : '';
+    const ctx = [ax, ev].filter(Boolean).join(' · ') || '—';
+    rows.push({
+      kind: 'prot', prio,
+      ts: fechaRefColaGestión(p.fechaCarga || p.fechaComite),
+      numero: p.numero || '',
+      estudiantes: nombreEstudianteDesdeRad(p),
+      contexto: ctx,
+      badge: badgeProtocoloEstCola(est),
+      gestionTit: 'Protocolo · ' + (est === 'Cargado' || est === 'Enviado' ? 'Aval / envío pendiente' : est),
+      sub: p.esDiplomado ? 'Diplomado' : '',
+      protRowIndex: p.rowIndex,
+      protEstado: est,
+      fechaProtRef: p.fechaCarga || p.fechaComite
+    });
+  });
+
+  solicitudesCambio.forEach(s => {
+    const cambiosKeys = Object.keys(s.cambios || {});
+    const resumen = cambiosKeys.map(k => LABELS_CAMPO[k] || k).join(', ') || 'Sin detalle';
+    rows.push({
+      kind: 'solicitud', prio: 20,
+      ts: fechaRefColaGestión(s.tsCreacion),
+      numero: s.numero || '',
+      estudiantes: s.emailEstudiante || '—',
+      contexto: resumen,
+      badge: '<span class="badge b-radicado">Cambio pendiente</span>',
+      gestionTit: 'Solicitud · Cambio de radicación',
+      sub: '',
+      rowSol: s.rowSol
+    });
+  });
+
+  rows.sort((a, b) => (a.prio !== b.prio ? a.prio - b.prio : a.ts - b.ts));
+  return rows;
+}
+
+const COLA_GESTIONES_MAX = 28;
+
+function renderColaGestionesCoord() {
+  const items = construirFilasColaGestionesCoord();
+  const tot = items.length;
+  const totEl = document.getElementById('pendHomeTot');
+  if (totEl) {
+    totEl.textContent = tot
+      ? `${tot} ítem${tot !== 1 ? 's' : ''} en cola institucional`
+      : '· Cola vacía — sin trámites urgentes ✅';
+  }
+  const tbody = document.getElementById('tbodyPendHome');
+  if (!tbody) return;
+
+  if (!tot) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty" style="padding:28px">✅ No hay gestiones pendientes en esta cola (Fase 1 en trámite, actas o protocolos visibles cuando apliquen).</td></tr>';
+    return;
+  }
+
+  const shown = items.slice(0, COLA_GESTIONES_MAX);
+  tbody.innerHTML = shown.map(it => {
+    const sub = it.sub ? `<div class="gh-sub">${esc(it.sub)}</div>` : '';
+    let fechaRef = '—';
+    if (it.kind === 'rad') {
+      const r = radicaciones.find(x => x.rowIndex === it.rowIndexRad);
+      fechaRef = fmtFecha(r && r.fechaRadicacion);
+    } else if (it.kind === 'acta') {
+      fechaRef = fmtFecha(it.fechaActaRef);
+    } else if (it.kind === 'solicitud') {
+      fechaRef = fmtFecha(it.ts);
+    } else {
+      fechaRef = fmtFecha(it.fechaProtRef);
+    }
+
+    let acciones = '';
+    if (it.kind === 'rad') {
+      const r0 = radicaciones.find(x => x.rowIndex === it.rowIndexRad) || {};
+      acciones = `<button class="btn bl" onclick="verDetalle(${it.rowIndexRad})">👁 Ver</button>
+        <button class="btn am" onclick="abrirModalEst(${it.rowIndexRad},'${escAttr(it.numero)}','${escAttr(r0.estado || 'Radicado')}')">✎ Estado</button>`;
+    } else if (it.kind === 'acta') {
+      acciones = `<button class="btn bl" onclick="irColaActasNumero('${escAttr(it.numero)}')">📄 Actas</button>`;
+    } else if (it.kind === 'solicitud') {
+      acciones = `<button class="btn bl" onclick="irACambiosYResolver(${it.rowSol})">✏️ Resolver</button>`;
+    } else {
+      const abrir = (it.protEstado === 'Cargado' || it.protEstado === 'Enviado') ? 'true' : 'false';
+      acciones = `<button class="btn bl" onclick="irColaProtocoloProt(${it.protRowIndex},'${escAttr(it.numero)}',${abrir})">📖 Protocolo</button>`;
+    }
+
+    const ctxHtml = it.kind === 'acta' ? it.contexto : esc(it.contexto);
+
+    return `<tr>
+      <td class="gh-gestion"><div>${esc(it.gestionTit)}</div>${sub}</td>
+      <td><div class="num-rad">${esc(it.numero || '')}</div></td>
+      <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(it.estudiantes)}">${esc(it.estudiantes)}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.5);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(it.contexto)}">${ctxHtml}</td>
+      <td>${it.badge}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fechaRef}</td>
+      <td><div class="act">${acciones}</div></td>
+    </tr>`;
+  }).join('');
+
+  if (tot > COLA_GESTIONES_MAX) {
+    tbody.innerHTML += `<tr><td colspan="7" style="text-align:center;padding:12px;font-size:12px;color:rgba(255,255,255,.45)">
+      Mostrando ${COLA_GESTIONES_MAX} de ${tot}. Usa las pestañas <strong>Radicaciones</strong>, <strong>Actas</strong> y <strong>Protocolo</strong> para el detalle completo.
+    </td></tr>`;
+  }
 }
 
 function renderProtocolo() {
@@ -1748,26 +2429,88 @@ function renderProtocolo() {
 }
  let protocoloActual = null;
 
+function primeraSugerenciaEvaluadorRadicacion(p) {
+  if (!p || !p.esDiplomado) return null;
+  const modo = String(p.diplomadoJuradoModo || '').toLowerCase();
+  if (modo === 'cttg_asigna') return null;
+  const jur = p.juradosSugeridosDiplomado;
+  if (!Array.isArray(jur) || jur.length === 0) return null;
+  const j0 = jur[0];
+  if (!j0 || (!String(j0.nombre || '').trim() && !String(j0.email || '').trim())) return null;
+  return {
+    nombre: String(j0.nombre || '').trim(),
+    email: String(j0.email || '').trim(),
+    telefono: String(j0.telefono || '').trim(),
+    especialidad: String(j0.especialidad || '').trim(),
+    aceptaPropuesta: String(j0.aceptaPropuesta || '').trim()
+  };
+}
+
+function rellenarBloqueEvaluadorSugerido(p) {
+  const el = document.getElementById('pEvalSugeridoContenido');
+  if (!el || !p) return;
+  if (p.esDiplomado) {
+    const modo = String(p.diplomadoJuradoModo || '').toLowerCase();
+    if (modo === 'cttg_asigna') {
+      el.innerHTML = '<p style="margin:0;line-height:1.55;color:rgba(255,255,255,.78)">El estudiante eligió que el <strong>Comité Técnico de Trabajos de Grado</strong> asigne el evaluador; <strong>no registró jurado sugerido</strong>. Asigne evaluador y fecha en los campos de abajo.</p>';
+      return;
+    }
+    const jur = p.juradosSugeridosDiplomado || [];
+    if (jur.length === 0) {
+      el.innerHTML = '<p style="margin:0;color:rgba(252,211,77,.85)">No hay datos de jurado sugerido en la radicación.</p>';
+      return;
+    }
+    const j0 = jur[0];
+    let html = '<div style="line-height:1.55;color:rgba(255,255,255,.9)">';
+    html += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.4);margin-bottom:6px">Sugerencia en radicación (tutor / estudiante)</div>';
+    html += '<strong style="color:#c4b5fd">' + esc(j0.nombre || '—') + '</strong>';
+    if (j0.especialidad) html += '<br><span style="color:rgba(255,255,255,.48)">Especialidad o área:</span> ' + esc(j0.especialidad);
+    if (j0.email) html += '<br><span style="color:rgba(255,255,255,.48)">Correo:</span> ' + esc(j0.email);
+    if (j0.telefono) html += '<br><span style="color:rgba(255,255,255,.48)">Teléfono:</span> ' + esc(j0.telefono);
+    if (j0.aceptaPropuesta) html += '<br><span style="color:rgba(255,255,255,.48)">Aceptación ante propuesta:</span> ' + esc(j0.aceptaPropuesta);
+    html += '</div>';
+    if (jur.length > 1) {
+      html += '<p style="margin:10px 0 0;font-size:12px;color:rgba(255,255,255,.45)">En radicación constan también <strong>' + (jur.length - 1) + '</strong> jurado(s) adicional(es); para comité cuenta la persona que asigne usted abajo.</p>';
+    }
+    el.innerHTML = html;
+    return;
+  }
+  el.innerHTML = '<p style="margin:0;line-height:1.55;color:rgba(255,255,255,.72)">En modalidades distintas a <strong>Diplomado</strong> no se guarda en la radicación un evaluador sugerido. Use el siguiente campo para indicar quién evaluará en el comité.</p>';
+}
+
+function correoRadicacionPareceValidoCliente(em) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(em || '').trim());
+}
+
 function abrirModalProtocolo(rowIndex, accion, numero) {
   const p = protocolos.find(x => x.rowIndex === rowIndex);
   if (!p) return;
-  
-  protocoloActual = { rowIndex, accion };
-  document.getElementById('pNum').textContent = numero;
-  document.getElementById('pEst').textContent = p.emailEstudiante || '—';
-  
-  // Pre-llenar decisión
+
+  protocoloActual = { rowIndex, accion, esDiplomado: !!p.esDiplomado, protocoloRef: p };
+  const nomProt = nombreEstudianteDesdeRad(p);
+  const estProtTxt = (nomProt && nomProt !== '—') ? nomProt + ' · ' + (p.emailEstudiante || '') : (p.emailEstudiante || '—');
+  aplicarHtmlProtocoloInfo(p, numero, estProtTxt);
+
   document.getElementById('pDecision').value = accion === 'aprobar' ? 'aprobar' : 'rechazar';
   document.getElementById('pMotivo').value = '';
   document.getElementById('pObservaciones').value = '';
-  
-  mostrarOpciones();
-  
-  if (accion === 'aprobar') {
-    cargarEvaluadoresProtocolo();
-    cargarFechasComiteProtocolo();
+
+  const optNO = document.querySelector('#pRequiereComite option[value="no"]');
+  if (optNO) optNO.style.display = p.esDiplomado ? 'none' : '';
+  if (p.esDiplomado && accion === 'aprobar') {
+    document.getElementById('pRequiereComite').value = 'si';
+  } else {
+    document.getElementById('pRequiereComite').value = '';
+    document.getElementById('seccionComite').style.display = 'none';
   }
-  
+
+  mostrarOpciones();
+
+  if (accion === 'aprobar') {
+    cargarFechasComiteProtocolo();
+    mostrarComite();
+  }
+
   document.getElementById('modalProtocolo').classList.add('open');
 }
 function mostrarOpciones() {
@@ -1779,9 +2522,18 @@ function mostrarOpciones() {
 function mostrarComite() {
   const req = document.getElementById('pRequiereComite').value;
   document.getElementById('seccionComite').style.display = req === 'si' ? 'block' : 'none';
+  if (req === 'si' && protocoloActual && protocoloActual.protocoloRef) {
+    rellenarBloqueEvaluadorSugerido(protocoloActual.protocoloRef);
+    cargarEvaluadoresProtocolo(protocoloActual.protocoloRef);
+  }
 }
 
-function cargarEvaluadoresProtocolo() {
+function cargarEvaluadoresProtocolo(p) {
+  const select = document.getElementById('pEvaluador');
+  select.innerHTML = '<option value="">— Selecciona evaluador —</option>';
+  document.getElementById('pEmailEval').value = '';
+  const sug = primeraSugerenciaEvaluadorRadicacion(p);
+
   fetch(URL_APP, {
     method: 'POST',
     body: JSON.stringify({ action: 'getEvaluadores', token: coordToken() })
@@ -1789,15 +2541,54 @@ function cargarEvaluadoresProtocolo() {
   .then(r => r.json())
   .then(data => {
     if (data.success && data.evaluadores) {
-      const select = document.getElementById('pEvaluador');
-      select.innerHTML = '<option value="">— Selecciona evaluador —</option>';
       data.evaluadores.forEach(ev => {
         const opt = document.createElement('option');
         opt.value = ev.nombre + '|' + ev.email;
-        opt.textContent = ev.nombre + ' (' + ev.especialidad + ')';
+        const esp = ev.especialidad ? String(ev.especialidad).trim() : '';
+        opt.textContent = esp ? ev.nombre + ' (' + esp + ')' : ev.nombre;
         select.appendChild(opt);
       });
     }
+
+    if (sug && sug.nombre && sug.email && correoRadicacionPareceValidoCliente(sug.email)) {
+      const em = sug.email.trim().toLowerCase();
+      const yaEnLista = Array.from(select.options).some(o => {
+        if (!o.value || o.value.indexOf('|') === -1) return false;
+        const mailPart = o.value.split('|').pop();
+        return (mailPart || '').trim().toLowerCase() === em;
+      });
+      if (!yaEnLista) {
+        const opt = document.createElement('option');
+        opt.value = sug.nombre + '|' + sug.email;
+        opt.textContent = 'Sugerencia del estudiante: ' + sug.nombre + ' (' + sug.email + ')';
+        select.insertBefore(opt, select.options[1] || null);
+      }
+    }
+
+    if (sug && sug.email && correoRadicacionPareceValidoCliente(sug.email)) {
+      const em = sug.email.trim().toLowerCase();
+      for (let i = 0; i < select.options.length; i++) {
+        const v = select.options[i].value;
+        if (!v || v.indexOf('|') === -1) continue;
+        const mail = v.split('|').pop().trim().toLowerCase();
+        if (mail === em) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+    } else if (sug && sug.nombre) {
+      const nom = sug.nombre.trim().toLowerCase();
+      for (let i = 0; i < select.options.length; i++) {
+        const v = select.options[i].value;
+        if (!v || v.indexOf('|') === -1) continue;
+        const n = v.split('|')[0].trim().toLowerCase();
+        if (n === nom) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+    }
+    cargarEmailEval();
   })
   .catch(e => console.error('Error cargando evaluadores:', e));
 }
@@ -1825,12 +2616,12 @@ function cargarFechasComiteProtocolo() {
 
 function cargarEmailEval() {
   const sel = document.getElementById('pEvaluador').value;
-  if (sel) {
-    const [nombre, email] = sel.split('|');
-    document.getElementById('pEmailEval').value = email;
-  } else {
+  if (!sel) {
     document.getElementById('pEmailEval').value = '';
+    return;
   }
+  const ix = sel.lastIndexOf('|');
+  document.getElementById('pEmailEval').value = ix >= 0 ? sel.slice(ix + 1).trim() : '';
 }
 
 async function guardarAvaloProtocolo() {
@@ -1869,7 +2660,7 @@ async function guardarAvaloProtocolo() {
     } else if (decision === 'aprobar') {
       if (requiere === 'si') {
         estado = 'Pendiente Comité';
-        evalNombre = evaluador.split('|')[0];
+        evalNombre = evaluador.indexOf('|') === -1 ? evaluador : evaluador.slice(0, evaluador.lastIndexOf('|')).trim();
       } else {
         estado = 'Aprobado Directo';
       }
@@ -1894,6 +2685,7 @@ async function guardarAvaloProtocolo() {
     const d = await res.json();
     if (d.success) {
       closeModal('modalProtocolo');
+      await cargar();
       await cargarProtocolo();
       toast('Protocolo avalado ✓', 'ok');
     } else {
@@ -1913,42 +2705,278 @@ async function guardarAvaloProtocolo() {
 // TAB 6: SEGUIMIENTO INDIVIDUAL
 // ════════════════════════════════════════════════════════════
 let seguimientos = [];
-async function cargarSeguimiento() {
-  const qRaw = (document.getElementById('searchSeguimiento').value || '').trim();
-  const q = qRaw.toUpperCase();
-  const radMatch = buscarRadicacionSeguimiento(qRaw);
-  const numeroConsulta = radMatch && !/^CTTG/i.test(q) ? (radMatch.numero || '') : q;
-  const tbody = document.getElementById('tbodySeguimiento');
-  tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando trazabilidad...</td></tr>';
-  try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
-      action: 'getTrazabilidad',
-      numeroRadicacion: numeroConsulta || '',
-      limit: 300,
-      token: coordToken()
-    })});
-    const d = await res.json();
-    if (!d.success) throw new Error(d.error || 'No fue posible cargar trazabilidad');
-    seguimientos = d.registros || [];
-    renderSeguimiento();
-  } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Error cargando trazabilidad.</td></tr>';
-    toast('Error cargando trazabilidad: ' + e.message, 'err');
+let seguimientoRadActual = null;
+let seguimientoTimer = null;
+
+function prepararBusquedaSeguimiento() {
+  clearTimeout(seguimientoTimer);
+  const q = (document.getElementById('searchSeguimiento').value || '').trim();
+  renderSugerenciasSeguimiento(q);
+  if (q.length >= 4 || /^CTTG/i.test(q)) {
+    seguimientoTimer = setTimeout(cargarSeguimiento, 500);
+  } else {
+    seguimientoRadActual = null;
+    seguimientos = [];
+    document.getElementById('timelineResumen').style.display = 'none';
+    document.getElementById('tbodySeguimiento').innerHTML = '<tr><td colspan="6" class="empty">Busca un trabajo por radicación, título, estudiante o correo.</td></tr>';
   }
 }
 
+async function cargarSeguimiento() {
+  const qRaw = (document.getElementById('searchSeguimiento').value || '').trim();
+  const q = qRaw.toUpperCase();
+  const matches = buscarRadicacionesSeguimiento(qRaw);
+  const exacta = matches.find(r => String(r.numero || '').trim().toUpperCase() === q);
+  const radMatch = exacta || (matches.length === 1 ? matches[0] : null);
+  const tbody = document.getElementById('tbodySeguimiento');
+  const histPanel = document.getElementById('historialSegPanel');
+  const tblWrap = document.getElementById('tblSeguimientoWrap');
+  seguimientoRadActual = radMatch || null;
+
+  if (!qRaw) {
+    document.getElementById('timelineResumen').style.display = 'none';
+    document.getElementById('segSearchInfo').classList.remove('show');
+    if (histPanel) { histPanel.style.display = 'none'; histPanel.innerHTML = ''; }
+    if (tblWrap) tblWrap.style.display = '';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Escribe el número de radicación o nombre del estudiante para ver su historial completo.</td></tr>';
+    return;
+  }
+  if (!radMatch && matches.length > 1) {
+    renderSugerenciasSeguimiento(qRaw, true);
+    document.getElementById('timelineResumen').style.display = 'none';
+    if (histPanel) { histPanel.style.display = 'none'; histPanel.innerHTML = ''; }
+    if (tblWrap) tblWrap.style.display = '';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Hay varios trabajos que coinciden. Selecciona uno de la lista.</td></tr>';
+    return;
+  }
+  if (!radMatch && !/^CTTG/i.test(q)) {
+    document.getElementById('timelineResumen').style.display = 'none';
+    renderSugerenciasSeguimiento(qRaw, true);
+    if (histPanel) { histPanel.style.display = 'none'; histPanel.innerHTML = ''; }
+    if (tblWrap) tblWrap.style.display = '';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No encontré ese trabajo. Prueba con el número de radicación.</td></tr>';
+    return;
+  }
+  const numeroConsulta = radMatch ? (radMatch.numero || '') : q;
+
+  // Mostrar historial enriquecido (nueva hoja Historial) + trazabilidad como respaldo
+  if (histPanel) {
+    histPanel.style.display = 'block';
+    histPanel.innerHTML = '<div style="padding:24px;text-align:center;color:rgba(255,255,255,.4)"><span class="spinner"></span> Cargando historial...</div>';
+  }
+  if (tblWrap) tblWrap.style.display = 'none';
+
+  try {
+    const [rHist, rTraz] = await Promise.all([
+      fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getHistorialRadicacion', numeroRadicacion: numeroConsulta, token: coordToken() }) }).then(r=>r.json()),
+      fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getTrazabilidad', numeroRadicacion: numeroConsulta, limit:300, token: coordToken() }) }).then(r=>r.json())
+    ]);
+    renderSugerenciasSeguimiento(qRaw);
+    renderHistorialSegPanel(histPanel, radMatch, numeroConsulta, rHist, rTraz);
+  } catch(e) {
+    if (histPanel) histPanel.innerHTML = `<div style="padding:24px;color:#fca5a5">Error cargando historial: ${esc(e.message)}</div>`;
+    toast('Error cargando historial: ' + e.message, 'err');
+  }
+}
+
+function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
+  if (!panel) return;
+  // Guardar para re-render al cambiar filtro
+  panel._lastRad = rad; panel._lastNumero = numero; panel._lastRHist = rHist; panel._lastRTraz = rTraz;
+  const fFase = document.getElementById('fFaseSeg').value;
+  const accionLabelMap = {
+    ACTUALIZAR_ESTADO:'Actualizar estado', VALIDAR_TUTORES:'Validar tutores',
+    CREAR_PROTOCOLO:'Protocolo cargado', ACTUALIZAR_PROTOCOLO:'Protocolo evaluado',
+    AVALAR_PROTOCOLO_FASE2:'Evaluación protocolo (coord.)', REGISTRAR_DECISION_COMITE:'Decisión comité técnico',
+    CREAR_ACTA:'Acta cargada', APROBAR_ACTA:'Acta aprobada', RECHAZAR_ACTA:'Acta rechazada',
+    CREAR_FASE3:'Solicitud sustentación', ASIGNAR_JURADOS:'Fecha y jurados asignados',
+    UPDATE_FASE3_ESTADO:'Estado sustentación actualizado', COMPLETAR_FASE3:'Sustentación completada',
+    SOL_MOD_DEVOLVER:'Sol. cambios devuelta', SOL_MOD_DERIVAR_CT:'Sol. cambios derivada a comité',
+    SOL_MOD_APROBAR_DIRECTO:'Cambios de datos aprobados', SOL_MOD_COMITE_RECHAZAR:'Cambios rechazados (comité)', SOL_MOD_COMITE_APROBAR:'Cambios aprobados (comité)'
+  };
+  const faseLabelMap = { FASE1:'Fase 1 · Radicación', FASE2:'Fase 2 · Protocolo', ACTAS:'Actas de asesoría', FASE3:'Fase 3 · Sustentación' };
+  const faseColorMap = {
+    FASE1: { bg:'rgba(167,139,250,.15)', color:'#c4b5fd' },
+    FASE2: { bg:'rgba(96,165,250,.15)', color:'#93c5fd' },
+    ACTAS: { bg:'rgba(52,211,153,.15)', color:'#6ee7b7' },
+    FASE3: { bg:'rgba(251,191,36,.15)', color:'#fcd34d' }
+  };
+
+  const eventos = (rHist && rHist.success ? rHist.eventos || [] : []).filter(ev => !fFase || ev.fase === fFase);
+  const trazas  = (rTraz && rTraz.success ? rTraz.registros || [] : []).filter(s => !fFase || String(s.modulo||'').toUpperCase() === fFase);
+
+  // Header con datos del trabajo
+  const titulo = rad ? esc(rad.titulo || '—') : '';
+  const nombre = rad ? esc([rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ')) : '';
+  const estado = rad ? esc(rad.estado || '') : '';
+  const modalidad = rad ? esc(rad.modalidad || '') : '';
+  const area = rad ? esc(rad.area || '') : '';
+
+  let html = `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:monospace;font-size:13px;color:#a78bfa;font-weight:700;margin-bottom:4px">${esc(numero)}</div>
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px">${titulo}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">${nombre}</div>
+        ${modalidad ? `<div style="font-size:11px;color:rgba(255,255,255,.35)">Modalidad: ${modalidad}${area ? ' · Área: '+area : ''}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <span style="background:rgba(167,139,250,.15);color:#c4b5fd;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600">${estado}</span>
+        <button onclick="exportarInformeRadicacion('${esc(numero)}', event)" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">📥 Exportar informe PDF</button>
+      </div>
+    </div>
+  </div>`;
+
+  if (!eventos.length) {
+    html += `<div style="padding:40px;text-align:center;color:rgba(255,255,255,.35);font-size:13px">
+      No se encontraron eventos para esta radicación. Puede que el estudiante aún no haya hecho ninguna acción.
+    </div>`;
+    panel.innerHTML = html;
+    return;
+  }
+
+  const realesCount = eventos.filter(e => !e.reconstruido).length;
+  const reconstrCount = eventos.filter(e => e.reconstruido).length;
+  html += `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:12px;font-weight:700">
+    📋 Historial de decisiones · ${eventos.length} eventos
+    ${realesCount > 0 ? `<span style="color:rgba(167,139,250,.7);margin-left:8px">${realesCount} registros exactos</span>` : ''}
+    ${reconstrCount > 0 ? `<span style="color:rgba(251,191,36,.5);margin-left:8px">${reconstrCount} inferidos desde hojas</span>` : ''}
+  </div>`;
+
+  html += eventos.map(ev => {
+    const fc = faseColorMap[ev.fase] || { bg:'rgba(255,255,255,.08)', color:'rgba(255,255,255,.6)' };
+    const accionLabel = accionLabelMap[ev.accion] || String(ev.accion||'').replace(/_/g,' ').toLowerCase();
+    const faseLabel = faseLabelMap[ev.fase] || ev.fase || '';
+    const reconBadge = ev.reconstruido ? `<span style="font-size:9px;color:rgba(251,191,36,.5);margin-left:6px;vertical-align:middle" title="Inferido desde el estado actual del registro">≈</span>` : '';
+    const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
+      <div style="display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap">
+        ${ev.estadoAnterior ? `<span style="background:rgba(239,68,68,.15);color:#fca5a5;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoAnterior)}</span><span style="color:rgba(255,255,255,.3);font-size:14px">→</span>` : ''}
+        ${ev.estadoNuevo ? `<span style="background:rgba(16,185,129,.15);color:#6ee7b7;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoNuevo)}</span>` : ''}
+      </div>` : '';
+    const motivoHtml = ev.motivo ? `<div style="background:rgba(251,191,36,.08);border-left:3px solid rgba(251,191,36,.5);padding:8px 12px;border-radius:0 6px 6px 0;margin-top:6px;font-size:12px;color:#fde68a;line-height:1.5"><strong>💬 Motivo / Observación:</strong><br>${esc(ev.motivo)}</div>` : '';
+    const detalleHtml = ev.detalle ? `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:5px;font-family:monospace">📋 ${esc(ev.detalle)}</div>` : '';
+    const actorHtml = ev.actor ? `<div style="font-size:10px;color:rgba(255,255,255,.3);font-family:monospace;margin-top:6px">👤 ${esc(ev.actor)}</div>` : '';
+    return `<div style="display:grid;grid-template-columns:185px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:rgba(255,255,255,.5);line-height:1.6">${esc(ev.timestamp||'—')}</div>
+        <span style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${fc.bg};color:${fc.color};margin-top:4px">${esc(faseLabel)}</span>
+      </div>
+      <div>
+        <div style="font-weight:700;color:#e2e8f0;font-size:13px;margin-bottom:3px">${esc(accionLabel)}${reconBadge}</div>
+        ${stateChange}
+        ${motivoHtml}
+        ${detalleHtml}
+        ${actorHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Trazabilidad del sistema como respaldo colapsable
+  if (trazas.length && !fFase) {
+    html += `<details style="margin-top:20px;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px">
+      <summary style="cursor:pointer;font-size:11px;color:rgba(255,255,255,.3);font-weight:600;text-transform:uppercase;letter-spacing:1px">🗂 Registro del sistema (${trazas.length} entradas — autenticaciones, notificaciones)</summary>
+      <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.4)">
+        ${trazas.slice(0,50).map(s => `<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-family:monospace;color:rgba(255,255,255,.25)">${esc(String(s.timestamp||'').slice(0,16))}</span> · <strong>${esc(s.accion||'')}</strong> · ${esc(s.detalle||'')}</div>`).join('')}
+      </div>
+    </details>`;
+  }
+
+  panel.innerHTML = html;
+}
+
+function exportarInformeRadicacion(numero, evt) {
+  if (evt) evt.stopPropagation();
+  // Buscar datos de la radicación
+  const rad = radicaciones.find(r => String(r.numero||'').trim().toUpperCase() === String(numero||'').trim().toUpperCase());
+  const histPanel = document.getElementById('historialSegPanel');
+  const rHist = histPanel ? histPanel._lastRHist : null;
+  if (!rHist || !rHist.success) { toast('Carga primero el historial buscando la radicación en Seguimiento.', 'err'); return; }
+  const eventos = rHist.eventos || [];
+  const titulo  = rad ? (rad.titulo || '—') : numero;
+  const nombres = rad ? [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ') : '';
+  const estado  = rad ? (rad.estado || '') : '';
+  const modalidad = rad ? (rad.modalidad || '') : '';
+  const area = rad ? (rad.area || '') : '';
+  const accionLabelMap = {
+    RADICACION:'Radicación inicial', ACTUALIZAR_ESTADO:'Actualización de estado', VALIDAR_TUTORES:'Validación de tutores',
+    CREAR_PROTOCOLO:'Protocolo cargado', ACTUALIZAR_PROTOCOLO:'Protocolo evaluado', AVALAR_PROTOCOLO_FASE2:'Evaluación protocolo (coordinadora)',
+    REGISTRAR_DECISION_COMITE:'Decisión comité técnico', CREAR_ACTA:'Acta de asesoría cargada', APROBAR_ACTA:'Acta aprobada',
+    RECHAZAR_ACTA:'Acta rechazada', CREAR_FASE3:'Solicitud de sustentación', ASIGNAR_JURADOS:'Fecha y jurados asignados',
+    UPDATE_FASE3_ESTADO:'Estado sustentación actualizado', COMPLETAR_FASE3:'Sustentación completada',
+    SOL_MOD_DEVOLVER:'Solicitud de cambios devuelta', SOL_MOD_DERIVAR_CT:'Solicitud derivada a comité',
+    SOL_MOD_APROBAR_DIRECTO:'Cambios de datos aprobados', SOL_MOD_COMITE_RECHAZAR:'Cambios rechazados (comité)', SOL_MOD_COMITE_APROBAR:'Cambios aprobados (comité)'
+  };
+  const faseLabelMap = { FASE1:'Fase 1 · Radicación', FASE2:'Fase 2 · Protocolo', ACTAS:'Actas de asesoría', FASE3:'Fase 3 · Sustentación' };
+  const faseColorPrint = { FASE1:'#7c3aed', FASE2:'#1d4ed8', ACTAS:'#065f46', FASE3:'#92400e' };
+  const rows = eventos.map(ev => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#555;white-space:nowrap">${esc(ev.timestamp||'—')}</td>
+      <td><span style="background:${faseColorPrint[ev.fase]||'#333'};color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${esc(faseLabelMap[ev.fase]||ev.fase||'')}</span></td>
+      <td style="font-weight:600">${esc(accionLabelMap[ev.accion]||String(ev.accion||'').replace(/_/g,' '))}</td>
+      <td style="font-size:11px;color:#333">${ev.estadoAnterior?`<span style="color:#c00">${esc(ev.estadoAnterior)}</span> → `:''}<span style="color:#16a34a;font-weight:600">${esc(ev.estadoNuevo||'')}</span></td>
+      <td style="font-size:11px;color:#333">${ev.motivo ? `<em style="color:#7c4f00">${esc(ev.motivo)}</em>` : ''}</td>
+      <td style="font-size:10px;color:#666;font-family:monospace">${esc(ev.actor||'')}</td>
+      <td style="font-size:10px;color:#888">${esc(ev.detalle||'')}</td>
+    </tr>`).join('');
+  const fechaHoy = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+  const w = window.open('', '_blank', 'width=1100,height=800');
+  w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+    <title>Informe de trazabilidad · ${esc(numero)}</title>
+    <style>
+      body{font-family:Arial,sans-serif;margin:30px;color:#1a1a1a;font-size:13px}
+      h1{font-size:18px;margin:0 0 4px}
+      h2{font-size:13px;font-weight:normal;color:#555;margin:0 0 20px}
+      .meta{background:#f4f4f8;border-left:4px solid #7c3aed;padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:24px}
+      .meta strong{display:block;font-size:15px;margin-bottom:4px}
+      .meta span{font-size:11px;color:#555;display:block;margin-top:2px}
+      table{width:100%;border-collapse:collapse;font-size:12px}
+      th{background:#1e1e2e;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+      td{padding:8px 10px;border-bottom:1px solid #e5e7eb;vertical-align:top}
+      tr:nth-child(even) td{background:#f9f9fb}
+      .footer{margin-top:30px;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:12px}
+      @media print{body{margin:15px}button{display:none}}
+    </style>
+  </head><body>
+    <h1>Informe de Trazabilidad · ${esc(numero)}</h1>
+    <h2>Generado el ${fechaHoy}</h2>
+    <div class="meta">
+      <strong>${esc(titulo)}</strong>
+      <span>Estudiante(s): ${esc(nombres)}</span>
+      ${modalidad ? `<span>Modalidad: ${esc(modalidad)}${area?' · Área: '+esc(area):''}</span>` : ''}
+      <span>Estado actual: <strong>${esc(estado)}</strong></span>
+    </div>
+    <table>
+      <thead><tr><th>Fecha y hora</th><th>Fase</th><th>Evento</th><th>Estado</th><th>Motivo / Observación</th><th>Actor</th><th>Detalle</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="footer">
+      CTTG Medicina · Sistema de Gestión de Trabajos de Grado · ${esc(numero)} · ${eventos.length} eventos registrados
+    </div>
+    <br><button onclick="window.print()" style="background:#7c3aed;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:13px;margin-bottom:20px">🖨️ Imprimir / Guardar PDF</button>
+  </body></html>`);
+  w.document.close();
+}
+
 function renderSeguimiento() {
+  // Si el historial panel está activo (búsqueda específica), re-renderizarlo con nuevo filtro
+  const histPanel = document.getElementById('historialSegPanel');
+  if (histPanel && histPanel.style.display !== 'none' && histPanel._lastRHist) {
+    renderHistorialSegPanel(histPanel, histPanel._lastRad, histPanel._lastNumero, histPanel._lastRHist, histPanel._lastRTraz);
+    return;
+  }
   const q  = (document.getElementById('searchSeguimiento').value || '').toLowerCase();
   const fF = document.getElementById('fFaseSeg').value;
   const filtered = seguimientos.filter(s => {
     const rad = obtenerRadicacionSeguimiento(s.numeroRadicacion);
     const txt = [s.numeroRadicacion, s.accion, s.email, s.detalle, s.modulo, rad && rad.numero, rad && rad.titulo, rad && rad.nombre1, rad && rad.nombre2, rad && rad.nombre3, rad && rad.emailEstudiante, rad && rad.email1].join(' ').toLowerCase();
-    return (!q || txt.includes(q)) && (!fF || String(s.modulo || '').toUpperCase() === fF);
+    const coincideBusqueda = seguimientoRadActual ? true : (!q || txt.includes(q));
+    return coincideBusqueda && (!fF || String(s.modulo || '').toUpperCase() === fF);
   });
   const tbody = document.getElementById('tbodySeguimiento');
   if (!filtered.length) {
-    document.getElementById('timelineResumen').style.display = 'none';
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin registros de trazabilidad para esa búsqueda.</td></tr>';
+    if (seguimientoRadActual) renderResumenTimeline([]);
+    else document.getElementById('timelineResumen').style.display = 'none';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin registros de trazabilidad para esa búsqueda.</td></tr>';
     return;
   }
   renderResumenTimeline(filtered);
@@ -1959,9 +2987,10 @@ function renderSeguimiento() {
     return `<tr>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5)">${esc(fmtFechaHoraSeguimiento(s.timestamp))}</td>
       <td><div class="num-rad">${esc(s.numeroRadicacion||'—')}</div></td>
-      <td><span class="badge ${hitoClass}">${esc(hito.texto)}</span></td>
+      <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(etiquetaModuloSeguimiento(s.modulo))}</td>
+      <td><span class="badge ${hitoClass}">${esc(hito.texto)}</span><span class="seg-mod-tag">${esc(String(s.accion||'').replace(/_/g,'·'))}</span></td>
       <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(s.email||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6);max-width:420px">${esc(s.detalle||'')}</td>
+      <td class="seg-td-det">${htmlDetalleSeguimientoCell(s)}</td>
     </tr>`;
   }).join('');
 }
@@ -1969,18 +2998,19 @@ function renderSeguimiento() {
 function renderResumenTimeline(registros) {
   const box = document.getElementById('timelineResumen');
   const numeroBuscado = (document.getElementById('searchSeguimiento').value || '').trim().toUpperCase();
-  if (!numeroBuscado) { box.style.display = 'none'; box.innerHTML = ''; return; }
-  const numero = String((registros[0] && registros[0].numeroRadicacion) || numeroBuscado || '').trim().toUpperCase();
-  const esConsultaTrabajo = numero || numeroBuscado;
+  const radSeleccionada = seguimientoRadActual || buscarRadicacionSeguimiento(numeroBuscado);
+  if (!numeroBuscado && !radSeleccionada) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const numero = String((radSeleccionada && radSeleccionada.numero) || (registros[0] && registros[0].numeroRadicacion) || numeroBuscado || '').trim().toUpperCase();
+  const esConsultaTrabajo = numero || radSeleccionada;
   if (!esConsultaTrabajo) { box.style.display = 'none'; box.innerHTML = ''; return; }
   const registrosOrdenados = [...registros].sort((a, b) => fechaSeguimientoVal(a) - fechaSeguimientoVal(b));
   const acciones = registrosOrdenados.map(r => String(r.accion || '').toUpperCase());
-  const rad = obtenerRadicacionSeguimiento(numero) || buscarRadicacionSeguimiento(numeroBuscado);
+  const rad = radSeleccionada || obtenerRadicacionSeguimiento(numero) || buscarRadicacionSeguimiento(numeroBuscado);
   const estadoActual = rad ? (rad.estado || 'Radicado') : '';
-  const inferido = inferirEtapaSeguimientoPorEstado(estadoActual);
+  const inferido = inferirEtapaSeguimientoPorEstado(estadoActual, rad && rad.modalidad);
   const orden = [
     { keys:['CREAR_RADICACION'], label:'Radicación registrada' },
-    { keys:['VALIDAR_TUTORES'], label:'Tutores autorizados' },
+    { keys:['VALIDAR_TUTORES','VALIDAR_OPCION_DIPLOMADO'], label:'Tutores avalados / aval Diplomado' },
     { keys:['CREAR_ACTA'], label:'Actas cargadas' },
     { keys:['APROBAR_ACTA'], label:'Actas aprobadas por coordinadora' },
     { keys:['CREAR_PROTOCOLO'], label:'Protocolo radicado' },
@@ -2009,22 +3039,38 @@ function renderResumenTimeline(registros) {
   const estadoVisible = estadoActual || (hitoUltimo ? hitoUltimo.texto : 'Sin estado disponible');
   const estudiantes = rad ? [rad.nombre1, rad.nombre2, rad.nombre3].filter(Boolean).join(', ') : '';
   const titulo = rad && rad.titulo ? rad.titulo : 'Trabajo consultado';
-  const historia = registrosOrdenados.map(function(r){
+  const historia = registrosOrdenados.length ? registrosOrdenados.map(function(r){
     const hito = describirHitoSeguimiento(r);
+    const cuerpoDet = htmlDetalleSeguimientoCell(r);
     return `<div class="seg-event">
-      <div class="date">${esc(fmtFechaHoraSeguimiento(r.timestamp))}</div>
-      <div class="what">Pasó: ${esc(hito.texto)}</div>
-      <div class="detail">${esc(r.detalle || 'Sin detalle adicional.')}</div>
-      <div class="detail">Responsable: ${esc(r.email || '—')}</div>
+      <div class="date">${esc(fmtFechaHoraSeguimiento(r.timestamp))} · ${esc(etiquetaModuloSeguimiento(r.modulo))}<span class="seg-acc-tag"> · ${esc(String(r.accion||''))}</span></div>
+      <div class="what">${esc(hito.texto)}</div>
+      <div class="seg-event-body">${cuerpoDet}</div>
+      <div class="detail">Quién registró (cuenta): ${esc(r.email || '—')}</div>
+      <div class="state">Estado global del trabajo en Fase 1: ${esc(estadoVisible)}</div>
     </div>`;
-  }).join('');
+  }).join('') : `<div class="seg-event">
+      <div class="date">Sin fecha registrada</div>
+      <div class="what">Trabajo encontrado</div>
+      <div class="detail">No hay movimientos de trazabilidad guardados para esta radicación, pero el estado actual del trabajo está disponible.</div>
+      <div class="state">Estado global del trabajo en Fase 1: ${esc(estadoVisible)}</div>
+    </div>`;
   const rows = orden.map(function(step, i){
     const donePorRegistro = step.keys.some(k => acciones.indexOf(k) !== -1);
     const done = donePorRegistro || i <= inferido.indice;
     const current = !done && i === idxActual + 1;
     const statusClass = done ? 'done' : (current ? 'current' : 'pending');
-    const reg = donePorRegistro ? registrosOrdenados.find(r => step.keys.indexOf(String(r.accion || '').toUpperCase()) !== -1) : null;
-    const meta = done && reg ? ((fmtFechaHoraSeguimiento(reg.timestamp) || '—') + ' · ' + (reg.email || '—')) : (done ? 'Cumplido según estado actual · fecha no registrada' : (current ? 'Siguiente etapa' : 'Pendiente'));
+    const reg = donePorRegistro ? registrosOrdenados.find(function(r) { return step.keys.indexOf(String(r.accion || '').toUpperCase()) !== -1; }) : null;
+    var meta = '';
+    if (donePorRegistro && reg) {
+      meta = resumenDetalleParaTimeline(reg);
+      if (!meta) meta = (fmtFechaHoraSeguimiento(reg.timestamp) || '—') + ' · ' + (reg.email || '—');
+      else meta = (fmtFechaHoraSeguimiento(reg.timestamp) || '—') + ' · ' + meta;
+    } else if (done) {
+      meta = 'Marcado como hecho según el estado actual del trabajo (puede faltar registro detallado en trazabilidad).';
+    } else {
+      meta = current ? 'Siguiente etapa sugerida' : 'Pendiente';
+    }
     return `<div class="timeline-step">
       <span class="timeline-dot ${statusClass}"></span>
       <div>
@@ -2046,9 +3092,10 @@ function renderResumenTimeline(registros) {
       <div class="seg-card"><div class="k">Vamos en</div><div class="v">${esc(estadoVisible)}</div></div>
       <div class="seg-card"><div class="k">Último movimiento</div><div class="v">${esc(hitoUltimo ? hitoUltimo.texto : 'Sin movimientos')}</div><div class="seg-sub">${esc(ultimo ? fmtFechaHoraSeguimiento(ultimo.timestamp) : '—')}</div></div>
       <div class="seg-card"><div class="k">Responsable último</div><div class="v">${esc(ultimo ? (ultimo.email || '—') : '—')}</div></div>
+      <div class="seg-card"><div class="k">Extracto último detalle</div><div class="v" style="font-weight:500;font-size:12px;line-height:1.35">${esc(ultimo ? (resumenDetalleParaTimeline(ultimo) || partesDetalleSeguimiento(ultimo.detalle).slice(0,2).join(' · ') || '—') : '—')}</div></div>
       <div class="seg-card"><div class="k">Siguiente paso</div><div class="v">${esc(siguiente)}</div></div>
     </div>
-    <div class="timeline-title">Historia por fechas</div>
+    <div class="timeline-title">Historia por fechas: qué pasó y cuándo</div>
     <div class="seg-history">${historia}</div>
     <div class="timeline-title">Ruta general del proceso</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -2074,19 +3121,73 @@ function buscarRadicacionSeguimiento(q) {
     || null;
 }
 
-function inferirEtapaSeguimientoPorEstado(estado) {
+function buscarRadicacionesSeguimiento(q) {
+  const needle = String(q || '').trim().toLowerCase();
+  if (!needle) return [];
+  const textoRad = r => [r.numero, r.titulo, r.nombre1, r.nombre2, r.nombre3, r.emailEstudiante, r.email1, r.email2, r.email3, r.tutor1Nombre, r.tutor2Nombre].join(' ').toLowerCase();
+  const exactas = radicaciones.filter(r => String(r.numero || '').trim().toLowerCase() === needle);
+  const parciales = radicaciones.filter(r => !exactas.includes(r) && textoRad(r).includes(needle));
+  return exactas.concat(parciales).slice(0, 8);
+}
+
+function seleccionarSeguimiento(numero) {
+  const input = document.getElementById('searchSeguimiento');
+  input.value = decodeURIComponent(numero || '');
+  cargarSeguimiento();
+}
+
+function renderSugerenciasSeguimiento(q, forzar) {
+  const box = document.getElementById('segSearchInfo');
+  if (!box) return;
+  const needle = String(q || '').trim();
+  if (!needle) {
+    box.classList.remove('show');
+    box.innerHTML = '';
+    return;
+  }
+  const matches = buscarRadicacionesSeguimiento(needle);
+  if (!matches.length) {
+    if (forzar) {
+      box.classList.add('show');
+      box.innerHTML = `<span class="seg-pill">Búsqueda</span><div style="font-size:13px;color:#fecaca">No encontré un trabajo con "${esc(needle)}". Intenta con número de radicación, nombre del estudiante o parte del título.</div>`;
+    } else {
+      box.classList.remove('show');
+      box.innerHTML = '';
+    }
+    return;
+  }
+  if (matches.length === 1 && !forzar) {
+    const r = matches[0];
+    box.classList.add('show');
+    box.innerHTML = `<span class="seg-pill">Trabajo encontrado</span><div class="seg-choice">
+      <div><div class="main">${esc(r.numero || '—')} · ${esc(r.titulo || 'Sin título')}</div><div class="sub">${esc([r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || r.emailEstudiante || 'Sin estudiante')} · Estado actual: ${esc(r.estado || 'Radicado')}</div></div>
+      <button class="btn bl" onclick="seleccionarSeguimiento('${encodeURIComponent(r.numero || '')}')">Ver seguimiento</button>
+    </div>`;
+    return;
+  }
+  box.classList.add('show');
+  box.innerHTML = `<span class="seg-pill">${matches.length === 1 ? 'Trabajo encontrado' : 'Coincidencias'}</span>
+    <div style="font-size:13px;color:rgba(255,255,255,.72);margin-bottom:4px">${matches.length === 1 ? 'Selecciona el trabajo para ver la historia completa.' : 'Hay varios trabajos posibles. Selecciona uno para ver su historia por fechas.'}</div>
+    ${matches.map(r => `<div class="seg-choice">
+      <div><div class="main">${esc(r.numero || '—')} · ${esc(r.titulo || 'Sin título')}</div><div class="sub">${esc([r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || r.emailEstudiante || 'Sin estudiante')} · Estado actual: ${esc(r.estado || 'Radicado')}</div></div>
+      <button class="btn bl" onclick="seleccionarSeguimiento('${encodeURIComponent(r.numero || '')}')">Ver seguimiento</button>
+    </div>`).join('')}`;
+}
+
+function inferirEtapaSeguimientoPorEstado(estado, modalidad) {
   const e = String(estado || '').toLowerCase();
+  const esDip = String(modalidad || '').trim().toLowerCase() === 'diplomado';
   if (!e) return { indice: -1, siguiente: '' };
   if (e.includes('sustentado') || e.includes('reprobado') || e.includes('cerrad')) return { indice: 8, siguiente: 'Proceso cerrado' };
   if (e.includes('jurado') || e.includes('fecha') || e.includes('sustentación asignada') || e.includes('sustentacion asignada')) return { indice: 7, siguiente: 'Realizar y cerrar sustentación' };
   if (e.includes('fase 3') || e.includes('sustentación') || e.includes('sustentacion')) return { indice: 6, siguiente: 'Asignar fecha y jurados de sustentación' };
   if (e.includes('devuelto por comité') || e.includes('devuelto por comite')) return { indice: 5, siguiente: 'Atender devolución del comité técnico' };
-  if (e.includes('aprobado comité') || e.includes('aprobado comite') || e.includes('aprobado directo') || e === 'aprobado') return { indice: 5, siguiente: 'Continuar con solicitud de sustentación' };
+  if (e.includes('aprobado comité') || e.includes('aprobado comite') || e.includes('aprobado directo') || e === 'aprobado') return { indice: 5, siguiente: esDip ? 'Trámite puede cerrar sin sustentación si aplica' : 'Continuar con solicitud de sustentación' };
   if (e.includes('pendiente comité') || e.includes('pendiente comite') || e.includes('evaluación') || e.includes('evaluacion')) return { indice: 4, siguiente: 'Registrar decisión del comité técnico' };
   if (e.includes('protocolo') || e.includes('fase 2') || e.includes('solicitud fase 2')) return { indice: 4, siguiente: 'Registrar decisión del comité técnico' };
   if (e.includes('acta') || e.includes('tutores avalados') || e.includes('tutores autorizados') || e.includes('revisión') || e.includes('revision')) return { indice: 1, siguiente: 'Cargar y aprobar actas' };
   if (e.includes('devuelto')) return { indice: 0, siguiente: 'Atender devolución registrada' };
-  if (e.includes('radicado')) return { indice: 0, siguiente: 'Validar tutores' };
+  if (e.includes('radicado')) return { indice: 0, siguiente: esDip ? 'Avalar opción Diplomado (coordinación)' : 'Validar tutores' };
   return { indice: -1, siguiente: '' };
 }
 
@@ -2102,25 +3203,79 @@ function fmtFechaHoraSeguimiento(s) {
   return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
 
+function partesDetalleSeguimiento(detalle) {
+  const d = String(detalle || '').trim();
+  if (!d) return [];
+  return d.split(/\s*\|\s*/).map(function(p) { return p.trim(); }).filter(Boolean);
+}
+
+function extraerExtractoPersonasSeguimiento(detalle) {
+  const parts = partesDetalleSeguimiento(detalle);
+  const pick = parts.filter(function(p) {
+    return /^(Tutor|Tutores|Evaluador|Email evaluador|Jurado|Jurados|Nombre jurado|Sustentación|Secretari|President)/i.test(p.trim());
+  });
+  if (!pick.length) return '';
+  return pick.slice(0, 4).join(' · ');
+}
+
+function aplicarExtractoSiUtil(hit, detalle, accion) {
+  if (!hit || typeof hit.texto !== 'string') return hit || { texto: 'Evento', clase: 'b-pend' };
+  const a = String(accion || '').toUpperCase();
+  if (a.indexOf('NOTIFICACION_') === 0 || a === 'LOGIN' || a === 'LOGIN_FAIL') return hit;
+  const ex = extraerExtractoPersonasSeguimiento(detalle);
+  if (!ex) return hit;
+  return { texto: hit.texto + ' · ' + ex, clase: hit.clase };
+}
+
+function htmlDetalleSeguimientoCell(s) {
+  const parts = partesDetalleSeguimiento(s.detalle);
+  if (!parts.length) return '<span class="seg-det-empty">Sin texto de detalle en este registro.</span>';
+  if (parts.length === 1) return '<div class="seg-det-plain">' + esc(parts[0]) + '</div>';
+  return '<ul class="seg-det-list">' + parts.map(function(p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>';
+}
+
+function resumenDetalleParaTimeline(s) {
+  const parts = partesDetalleSeguimiento(s.detalle);
+  if (!parts.length) return '';
+  const pref = parts.filter(function(p) {
+    return /^(Resultado|Estado protocolo|Estado asignado|Nuevo estado|Tipo:|Documento|Evaluó|Evaluador|Email evaluador|Decisión|Motivo|N° acta|Aval CCEB|Fecha|Observación|protocolo|Archivo|Jurado|Tutor|Tutores|President|Secretari|Sustentaci)/i.test(p);
+  });
+  const use = pref.length ? pref : parts;
+  return use.slice(0, 5).join(' · ');
+}
+
+function etiquetaModuloSeguimiento(mod) {
+  const x = String(mod || '').toUpperCase();
+  const map = { FASE1:'Fase 1', FASE2:'Fase 2 / Comité', ACTAS:'Actas', SUSTENTACION:'Sustentación', AUTH:'Accesos', SISTEMA:'Sistema', GENERAL:'General' };
+  return map[x] || (mod || '—');
+}
+
 function describirHitoSeguimiento(s) {
   const accion = String(s.accion || '').toUpperCase();
   const modulo = String(s.modulo || '').toUpperCase();
-  if (accion === 'CREAR_RADICACION') return { texto: 'Radicado por estudiante', clase: 'b-radicado' };
-  if (accion === 'VALIDAR_TUTORES') return { texto: 'Tutores autorizados por coordinadora', clase: 'b-tutores' };
-  if (accion === 'CREAR_ACTA') return { texto: 'Acta cargada por estudiante', clase: 'b-revision' };
-  if (accion === 'APROBAR_ACTA') return { texto: 'Acta aprobada por coordinadora', clase: 'b-aprobado' };
-  if (accion === 'RECHAZAR_ACTA') return { texto: 'Acta rechazada por coordinadora', clase: 'b-devuelto' };
-  if (accion === 'CREAR_PROTOCOLO') return { texto: 'Protocolo radicado', clase: 'b-comite' };
-  if (accion === 'ACTUALIZAR_PROTOCOLO' || accion === 'AVALAR_PROTOCOLO_FASE2') return { texto: 'Decisión de protocolo', clase: 'b-comite' };
-  if (accion === 'REGISTRAR_DECISION_COMITE') return { texto: 'Decisión del comité técnico', clase: 'b-comite' };
-  if (accion === 'CREAR_FASE3') return { texto: 'Solicitud de sustentación creada', clase: 'b-solicitud' };
-  if (accion === 'ASIGNAR_JURADOS') return { texto: 'Sustentación asignada por coordinadora', clase: 'b-aprobado' };
-  if (accion === 'COMPLETAR_FASE3') return { texto: 'Sustentación cerrada (resultado final)', clase: 'b-aprobado' };
-  if (accion === 'ACTUALIZAR_ESTADO') return { texto: 'Cambio de estado de radicación', clase: 'b-revision' };
-  if (accion === 'LOGIN') return { texto: 'Ingreso al sistema', clase: 'b-pend' };
-  if (accion === 'LOGIN_FAIL') return { texto: 'Intento de ingreso fallido', clase: 'b-devuelto' };
-  if (modulo === 'SISTEMA' || accion === 'ERROR') return { texto: 'Evento de sistema / error', clase: 'b-devuelto' };
-  return { texto: (s.accion || 'Evento') , clase: 'b-pend' };
+  let hit;
+  if (accion.indexOf('NOTIFICACION_') === 0) hit = { texto: 'Correo automático · ' + accion.replace(/^NOTIFICACION_/, '').replace(/_/g, ' '), clase: 'b-pend' };
+  else if (accion === 'CREAR_RADICACION') hit = { texto: 'Radicado por estudiante', clase: 'b-radicado' };
+  else if (accion === 'VALIDAR_TUTORES') hit = { texto: 'Tutores autorizados por coordinadora', clase: 'b-tutores' };
+  else if (accion === 'VALIDAR_OPCION_DIPLOMADO') hit = { texto: 'Aval opción Diplomado (sin tutores)', clase: 'b-comite' };
+  else if (accion === 'CREAR_ACTA') hit = { texto: 'Acta cargada por estudiante', clase: 'b-revision' };
+  else if (accion === 'APROBAR_ACTA') hit = { texto: 'Coordinación: acta aprobada', clase: 'b-aprobado' };
+  else if (accion === 'RECHAZAR_ACTA') hit = { texto: 'Coordinación: acta rechazada', clase: 'b-devuelto' };
+  else if (accion === 'CREAR_PROTOCOLO') hit = { texto: 'Protocolo cargado (ingreso a valoración)', clase: 'b-comite' };
+  else if (accion === 'AVALAR_PROTOCOLO_FASE2') hit = { texto: 'Coordinación: aval y envío / devolución antes del comité', clase: 'b-comite' };
+  else if (accion === 'ACTUALIZAR_PROTOCOLO') hit = { texto: 'Coordinación: actualización de protocolo (evaluador, fecha, etc.)', clase: 'b-comite' };
+  else if (accion === 'REGISTRAR_DECISION_COMITE') hit = { texto: 'Comité técnico: decisión registrada (aprobado / devolución)', clase: 'b-comite' };
+  else if (accion === 'CREAR_FASE3') hit = { texto: 'Solicitud de sustentación creada', clase: 'b-solicitud' };
+  else if (accion === 'APROBAR_JURADOS_FASE3') hit = { texto: 'Fase 3: solicitud con jurados aprobada', clase: 'b-aprobado' };
+  else if (accion === 'UPDATE_FASE3_ESTADO') hit = { texto: 'Fase 3: actualización de estado de la solicitud', clase: 'b-comite' };
+  else if (accion === 'ASIGNAR_JURADOS') hit = { texto: 'Sustentación: fecha, lugar y jurados asignados', clase: 'b-aprobado' };
+  else if (accion === 'COMPLETAR_FASE3') hit = { texto: 'Sustentación cerrada (resultado final)', clase: 'b-aprobado' };
+  else if (accion === 'ACTUALIZAR_ESTADO') hit = { texto: 'Cambio de estado en Fase 1', clase: 'b-revision' };
+  else if (accion === 'LOGIN') hit = { texto: 'Ingreso al sistema', clase: 'b-pend' };
+  else if (accion === 'LOGIN_FAIL') hit = { texto: 'Intento de ingreso fallido', clase: 'b-devuelto' };
+  else if (modulo === 'SISTEMA' || accion === 'ERROR') hit = { texto: 'Evento de sistema / error', clase: 'b-devuelto' };
+  else hit = { texto: (s.accion || 'Evento'), clase: 'b-pend' };
+  return aplicarExtractoSiUtil(hit, s.detalle, accion);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -2132,7 +3287,7 @@ function describirHitoSeguimiento(s) {
  function contarVencimientos() {
   let vencTutores = 0, vencActas = 0, vencProtocolo = 0;
   
-  // Contar vencimiento de tutores (15 días desde radicación)
+  // Radicado sin aval de coordinación: tutores (no diplomado) o aval diplomado — misma regla de 15 días hábiles
   radicaciones.forEach(r => {
     if (r.estado === 'Radicado' && r.fechaRadicacion) {
       const dias = calcularDiasHabilesDesdeHoy(r.fechaRadicacion);
@@ -2312,8 +3467,8 @@ function renderInformes() {
       <td style="text-align:center;font-weight:700;color:#a78bfa">${esc(semMax)}</td>
       <td><span class="badge ${fase === 'terminado' ? 'b-aprobado' : fase === '2' ? 'b-revision' : fase === '3' ? 'b-comite' : 'b-radicado'}">${infFaseTexto(fase)}</span></td>
       <td>${badgeEst(estado)}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(r.tutor1Nombre || '—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(r.tutor2Nombre || '—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esModalidadDiplomadoDash(r) ? '<span class="pill-diplomado" style="max-width:none">🎓 Sin tutores</span>' : esc(r.tutor1Nombre || '—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esModalidadDiplomadoDash(r) ? '—' : esc(r.tutor2Nombre || '—')}</td>
       <td style="text-align:center;color:rgba(255,255,255,.55)">${diasHabiles || 0}</td>
       <td style="${riesgo.estilo}">${riesgo.texto}</td>
     </tr>`;
@@ -2373,7 +3528,7 @@ function renderFiltros() {
       if (fActas === 'rechazadas' && !actasEste.some(a => a.estado === 'Rechazada')) return false;
     }
     if (q) {
-      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.tutor1Nombre].join(' ').toLowerCase();
+      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.tutor1Nombre, r.modalidad].join(' ').toLowerCase();
       if (!txt.includes(q)) return false;
     }
     return true;
@@ -2398,7 +3553,8 @@ function renderFiltros() {
     const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ');
     const estado = r.estado || 'Radicado';
     const estadoClass = estado === 'Radicado' ? 'b-radicado' : estado === 'Tutores Avalados' ? 'b-tutores' : estado === 'Pendiente Comité Técnico' ? 'b-comite' : estado === 'Aprobado' ? 'b-aprobado' : 'b-devuelto';
-    return `<tr><td><div class="num-rad">${esc(r.numero||'')}</div></td><td style="font-size:12px">${esc(nombres)}</td><td style="text-align:center;font-weight:600;color:#a78bfa">${semMax}</td><td><span class="badge ${estadoClass}">${esc(estado)}</span></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.tutor1Nombre||'—')}</td><td style="font-size:11px">${actasTexto}</td><td style="text-align:center;color:rgba(255,255,255,.5)">${r.diasTranscurridos||0}</td><td style="text-align:center;font-weight:600;color:#fcd34d">${dias < 0 ? 'Vencido' : dias + ' d'}</td><td style="${riesgoColor};font-weight:600">${riesgoTexto}</td><td><button class="btn bl" style="padding:4px 8px;font-size:11px" onclick="verDetalle(${r.rowIndex})">👁 Ver</button></td></tr>`;
+    const celdaT1 = esModalidadDiplomadoDash(r) ? '<span class="pill-diplomado" style="max-width:none">🎓 Diplomado</span>' : esc(r.tutor1Nombre || '—');
+    return `<tr><td><div class="num-rad">${esc(r.numero||'')}</div></td><td style="font-size:12px">${esc(nombres)}</td><td style="text-align:center;font-weight:600;color:#a78bfa">${semMax}</td><td><span class="badge ${estadoClass}">${esc(estado)}</span></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${celdaT1}</td><td style="font-size:11px">${actasTexto}</td><td style="text-align:center;color:rgba(255,255,255,.5)">${r.diasTranscurridos||0}</td><td style="text-align:center;font-weight:600;color:#fcd34d">${dias < 0 ? 'Vencido' : dias + ' d'}</td><td style="${riesgoColor};font-weight:600">${riesgoTexto}</td><td><button class="btn bl" style="padding:4px 8px;font-size:11px" onclick="verDetalle(${r.rowIndex})">👁 Ver</button></td></tr>`;
   }).join('');
 }
 
@@ -2445,7 +3601,7 @@ function exportarFiltrosCSV() {
       if (fActas === 'rechazadas' && !actasEste.some(a => a.estado === 'Rechazada')) return false;
     }
     if (q) {
-      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3].join(' ').toLowerCase();
+      const txt = [r.numero, r.nombre1, r.nombre2, r.nombre3, r.modalidad].join(' ').toLowerCase();
       if (!txt.includes(q)) return false;
     }
     return true;
@@ -2471,12 +3627,190 @@ function exportarFiltrosCSV() {
   toast('CSV exportado ✓', 'ok');
 }
 
-(function hookIframeFase3() {
-  const ifr = document.getElementById('iframeFase3Coord');
-  if (!ifr) return;
-  ifr.addEventListener('load', enviarTokenAlIframeFase3);
-  setTimeout(enviarTokenAlIframeFase3, 800);
-})();
+
+// ── SOLICITUDES DE CAMBIO DE RADICACIÓN ──────────────────────
+let solicitudesCambio = [];
+let solicitudCambioActual = null;
+
+const LABELS_CAMPO = {
+  titulo:'Título del trabajo', modalidad:'Modalidad', area:'Área',
+  nombre2:'Nombre estudiante 2', cedula2:'Cédula est. 2', email2:'Email est. 2', telefono2:'Tel. est. 2', semestre2:'Semestre est. 2', semillero2:'Semillero est. 2',
+  nombre3:'Nombre estudiante 3', cedula3:'Cédula est. 3', email3:'Email est. 3', telefono3:'Tel. est. 3', semestre3:'Semestre est. 3', semillero3:'Semillero est. 3',
+  tutor1Nombre:'Nombre tutor 1', tutor1Email:'Email tutor 1', tutor1Telefono:'Tel. tutor 1', tutor1Relacion:'Relación tutor 1',
+  tutor2Nombre:'Nombre tutor 2', tutor2Email:'Email tutor 2', tutor2Telefono:'Tel. tutor 2', tutor2Relacion:'Relación tutor 2',
+  diplomadoFechaInicio:'Fecha inicio diplomado', diplomadoFechaFin:'Fecha fin diplomado',
+  dipJurado1Nombre:'Nombre jurado sugerido', dipJurado1Email:'Email jurado sugerido', dipJurado1Telefono:'Tel. jurado sugerido',
+  dipJurado1Especialidad:'Especialidad jurado', dipJurado1AceptaPropuesta:'Jurado acepta', diplomadoJuradoModo:'Modo asignación jurado'
+};
+
+async function cargarSolicitudesCambio() {
+  document.getElementById('sc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando…</div>';
+  try {
+    const res = await fetch(URL_APP, { method:'POST',
+      body: JSON.stringify({ action:'getSolicitudesModRadPendientes', token: localStorage.getItem('cttg_token')||'' }) });
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error || 'Error al cargar');
+    solicitudesCambio = d.solicitudes || [];
+    actualizarBadgeSolicitudesCambio();
+    renderSolicitudesCambio();
+  } catch(e) {
+    console.error('[cargarSolicitudesCambio] Error:', e);
+    document.getElementById('sc_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${esc(e.message)}<br><small style="opacity:.6">${esc(e.stack||'')}</small></div>`;
+    return;
+  }
+  try { renderColaGestionesCoord(); } catch(e2) { console.error('[renderColaGestionesCoord]', e2); }
+}
+
+function renderSolicitudesCambio() {
+  const el = document.getElementById('sc_lista');
+  if (!solicitudesCambio.length) {
+    el.innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">No hay solicitudes de cambio pendientes.</div>';
+    return;
+  }
+  el.innerHTML = solicitudesCambio.map(s => {
+    const cambiosKeys = Object.keys(s.cambios || {});
+    const resumen = cambiosKeys.map(k => LABELS_CAMPO[k] || k).join(', ') || 'Sin detalle';
+    return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-weight:600;color:#fff;font-size:14px">${esc(s.numero)}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">${esc(s.emailEstudiante)} · ${esc(s.tsCreacion)}</div>
+        </div>
+        <button class="btn" style="font-size:12px;padding:6px 14px" onclick="abrirModalSolicitudCambio(${s.rowSol})">Ver y resolver</button>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.7)"><strong>Campos a cambiar:</strong> ${esc(resumen)}</div>
+      <div style="margin-top:4px;font-size:12px;color:rgba(255,255,255,.5)"><strong>Motivo:</strong> ${esc(s.motivoEstudiante)}</div>
+    </div>`;
+  }).join('');
+}
+
+function abrirModalSolicitudCambio(rowSol) {
+  const s = solicitudesCambio.find(x => x.rowSol === rowSol);
+  if (!s) return;
+  solicitudCambioActual = s;
+  const cambios = s.cambios || {};
+  const filas = Object.entries(cambios).map(([k, v]) =>
+    `<tr><td style="padding:4px 8px;color:rgba(255,255,255,.5);white-space:nowrap">${esc(LABELS_CAMPO[k]||k)}</td><td style="padding:4px 8px;color:#fff">${esc(String(v))}</td></tr>`
+  ).join('');
+  document.getElementById('sc_modal_detalle').innerHTML = `
+    <div style="margin-bottom:12px"><strong style="color:rgba(255,255,255,.5)">Radicación:</strong> ${esc(s.numero)}<br>
+    <strong style="color:rgba(255,255,255,.5)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
+    <strong style="color:rgba(255,255,255,.5)">Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Cambios solicitados</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;background:rgba(255,255,255,.03);border-radius:8px;overflow:hidden">${filas}</table>`;
+  document.getElementById('sc_obs').value = '';
+  document.getElementById('sc_modal_error').style.display = 'none';
+  document.getElementById('modalSolicitudCambio').style.display = 'block';
+}
+
+function cerrarModalSolicitudCambio() {
+  document.getElementById('modalSolicitudCambio').style.display = 'none';
+  solicitudCambioActual = null;
+}
+
+async function resolverSolicitudCambio(decision) {
+  if (!solicitudCambioActual) return;
+  const obs = document.getElementById('sc_obs').value.trim();
+  const errEl = document.getElementById('sc_modal_error');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch(URL_APP, { method:'POST',
+      body: JSON.stringify({ action:'resolverSolicitudModRad', token: localStorage.getItem('cttg_token')||'',
+        rowSol: solicitudCambioActual.rowSol, decision, observacionesCoord: obs }) });
+    const d = await res.json();
+    if (!d.success) { errEl.textContent = d.error || 'Error'; errEl.style.display = 'block'; return; }
+    cerrarModalSolicitudCambio();
+    const msgs = { aprobar_directo:'Cambios aprobados y aplicados.', derivar_ct:'Solicitud enviada al Comité Técnico.', devolver:'Solicitud devuelta al estudiante.' };
+    toast(msgs[decision] || 'Resuelto', 'ok');
+    await cargarSolicitudesCambio();
+  } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+}
+
+// ── CANCELACIONES DE RADICACIÓN ──────────────────────────────
+let solicitudesCancelacion = [];
+let cancelacionActual = null;
+
+async function cargarSolicitudesCancelacion() {
+  document.getElementById('scc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando…</div>';
+  try {
+    const res = await fetch(URL_APP, { method:'POST',
+      body: JSON.stringify({ action:'getSolicitudesCancelarRadPendientes', token: localStorage.getItem('cttg_token')||'' }) });
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error || 'Error al cargar');
+    solicitudesCancelacion = d.solicitudes || [];
+    actualizarBadgeCancelaciones();
+    renderSolicitudesCancelacion();
+  } catch(e) {
+    document.getElementById('scc_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+function actualizarBadgeCancelaciones() {
+  const badge = document.getElementById('badgeCancelaciones');
+  if (!badge) return;
+  const n = solicitudesCancelacion.length;
+  badge.textContent = n;
+  badge.style.display = n > 0 ? 'inline-flex' : 'none';
+}
+
+function renderSolicitudesCancelacion() {
+  const el = document.getElementById('scc_lista');
+  if (!solicitudesCancelacion.length) {
+    el.innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">No hay solicitudes de cancelación pendientes.</div>';
+    return;
+  }
+  el.innerHTML = solicitudesCancelacion.map(s => `
+    <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-weight:600;color:#fca5a5;font-size:14px">${esc(s.numero)}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">${esc(s.emailEstudiante)} · ${esc(s.tsCreacion)}</div>
+        </div>
+        <button class="btn" style="font-size:12px;padding:6px 14px" onclick="abrirModalCancelacion(${s.rowSol})">Ver y resolver</button>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.7)"><strong>Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
+    </div>`).join('');
+}
+
+function abrirModalCancelacion(rowSol) {
+  const s = solicitudesCancelacion.find(x => x.rowSol === rowSol);
+  if (!s) return;
+  cancelacionActual = s;
+  document.getElementById('scc_modal_detalle').innerHTML = `
+    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px">
+      ⚠️ Si aprueba, la radicación <strong>${esc(s.numero)}</strong> quedará en estado <strong>Cancelado</strong> y el estudiante podrá crear una nueva radicación.
+    </div>
+    <strong style="color:rgba(255,255,255,.5)">Radicación:</strong> ${esc(s.numero)}<br>
+    <strong style="color:rgba(255,255,255,.5)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
+    <strong style="color:rgba(255,255,255,.5)">Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}`;
+  document.getElementById('scc_obs').value = '';
+  document.getElementById('scc_modal_error').style.display = 'none';
+  document.getElementById('modalCancelacion').style.display = 'block';
+}
+
+function cerrarModalCancelacion() {
+  document.getElementById('modalCancelacion').style.display = 'none';
+  cancelacionActual = null;
+}
+
+async function resolverCancelacion(decision) {
+  if (!cancelacionActual) return;
+  const obs = document.getElementById('scc_obs').value.trim();
+  const errEl = document.getElementById('scc_modal_error');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch(URL_APP, { method:'POST',
+      body: JSON.stringify({ action:'resolverSolicitudCancelarRad', token: localStorage.getItem('cttg_token')||'',
+        rowSol: cancelacionActual.rowSol, decision, observacionesCoord: obs }) });
+    const d = await res.json();
+    if (!d.success) { errEl.textContent = d.error || 'Error'; errEl.style.display = 'block'; return; }
+    cerrarModalCancelacion();
+    toast(decision === 'aprobar' ? 'Cancelación aprobada. El estudiante puede radicar nuevamente.' : 'Solicitud rechazada.', 'ok');
+    await cargarSolicitudesCancelacion();
+  } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+}
+
+
 </script>
 </body>
 </html>
