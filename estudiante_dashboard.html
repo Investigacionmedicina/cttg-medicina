@@ -910,7 +910,8 @@ function badgeEst(est) {
     'Devuelto por Comité Técnico':'b-devuelto',
     'Devuelto':                'b-devuelto',
     'Sustentado':              'b-aprobado',
-    'Reprobado':               'b-devuelto'
+    'Reprobado':               'b-devuelto',
+    'Cancelado':               'b-devuelto'
   };
   return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
 }
