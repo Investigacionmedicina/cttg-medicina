@@ -3,7 +3,7 @@
  * Usage: node tools/test-api-smoke.mjs [email] [password]
  */
 const URL_APP =
-  'https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec';
+  'https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec';
 
 async function api(body) {
   const res = await fetch(URL_APP, {
