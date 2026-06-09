@@ -744,7 +744,7 @@ function crearSesion(email, rol) {
   
   var token = generarToken();
   var ahora = new Date();
-  var expiracion = new Date(ahora.getTime() + 8 * 60 * 60 * 1000); // 8 horas
+  var expiracion = new Date(ahora.getTime() + 72 * 60 * 60 * 1000); // 72 horas
   
   sheet.appendRow([
     sheet.getLastRow(),
@@ -1764,6 +1764,10 @@ function crearSolicitudModificarRad(sesion, body) {
   var sheetSol = asegurarHojaSolModRad();
   if (haySolicitudModRadPendienteMismaFila_(sheetSol, ri)) {
     return { success: false, error: "Ya tienes una solicitud de cambios pendiente para esta radicación." };
+  }
+  var sheetCancel = getSheet("Solicitudes_Cancelacion_Rad");
+  if (sheetCancel && haySolCancelPendienteMismaFila_(sheetCancel, ri)) {
+    return { success: false, error: "Tienes una solicitud de cancelación pendiente para esta radicación. Espera la respuesta de la coordinación." };
   }
   var ts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
   sheetSol.appendRow([
