@@ -43,15 +43,11 @@
   .alert-card p{font-size:13px;color:#e0ecff;line-height:1.45}
   .readonly-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.32);border-radius:10px;padding:12px 14px;font-size:12px;color:#bbf7d0;margin-bottom:12px;display:none}
   .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
-  .btn-det{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);color:#a5b4fc;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
+  .btn-det{background:rgba(102,126,234,.15);border:1px solid rgba(102,126,234,.3);color:#a5b4fc;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:10px}
   .btn-det:hover{background:rgba(102,126,234,.25)}
-  .rad-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  .btn-traza{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#6ee7b7;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
-  .btn-traza:hover{background:rgba(52,211,153,.2)}
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
   .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
-  .modal.modal-wide{max-width:640px}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
   .btn-close{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:4px 10px;border-radius:7px;cursor:pointer;font-size:13px}
@@ -87,12 +83,6 @@
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
-  .traza-est-item{border-bottom:1px solid rgba(255,255,255,.06);padding:12px 0}
-  .traza-est-item:last-child{border-bottom:none}
-  .traza-est-meta{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:6px}
-  .traza-est-tit{font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:6px}
-  .seg-det-list{margin:6px 0 0;padding-left:18px;color:rgba(255,255,255,.78);font-size:12px;line-height:1.45}
-  .seg-det-plain{font-size:12px;color:rgba(255,255,255,.72);margin-top:4px;line-height:1.45}
   @media(max-width:600px){main{padding:16px}.form-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -155,6 +145,7 @@
       <div style="font-size:14px;color:#e2e8f0" id="d_notas">—</div>
     </div>
   </div>
+  <div id="bloqueCancelacionRad" style="display:none;margin-top:14px;padding:12px 14px;border-radius:10px;font-size:12px;line-height:1.5"></div>
 </div>
   <!-- CONTADOR GENERAL DE PLAZO — CTTG MEDICINA -->
   <div style="background:linear-gradient(135deg,rgba(102,126,234,.2),rgba(167,139,250,.2));border:1px solid rgba(102,126,234,.3);border-radius:12px;padding:20px;margin-bottom:24px;text-align:center">
@@ -181,8 +172,7 @@
 
   <div id="alertasTiempo" class="alert-wrap" style="display:none"></div>
    <div class="tabs">
-    <button class="tab on" id="tabMisRad" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
-    <button class="tab" id="tabModRad" onclick="switchTab('mod-rad',this)">✏️ Cambios radicación</button>
+    <button class="tab on" onclick="switchTab('mis-rad',this)">📋 Mis Radicaciones</button>
     <button class="tab" id="tabNueva" onclick="switchTab('nueva',this)">➕ Nueva Radicación</button>
   </div>
 
@@ -192,7 +182,6 @@
       <div style="flex:1">
         <div style="font-weight:600;font-size:14px">Actas de Asesoría</div>
         <div id="btnActasSub" style="font-size:12px;color:rgba(255,255,255,.5)">Cargar actas firmadas por tu tutor</div>
-        <div id="btnActasMotivo" style="display:none;margin-top:6px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:7px 10px;font-size:11px;color:#fecaca;line-height:1.4"></div>
       </div>
       <span>→</span>
     </a>
@@ -201,7 +190,6 @@
       <div style="flex:1">
         <div style="font-weight:600;font-size:14px">Fase 2: Protocolo</div>
         <div id="btnFase2Sub" style="font-size:12px;color:rgba(255,255,255,.5)">Pendiente: aprobación de actas</div>
-        <div id="btnFase2Motivo" style="display:none;margin-top:6px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:7px 10px;font-size:11px;color:#fecaca;line-height:1.4"></div>
       </div>
       <span>→</span>
     </a>
@@ -277,87 +265,6 @@
     <div id="misRadWrap"><div class="empty">Cargando...</div></div>
   </div>
 
-
-
-  <div class="panel" id="pan-mod-rad">
-    <div class="form-card">
-      <h3><span class="dot"></span>Solicitar ajustes en Fase 1</h3>
-      <p>Puedes pedir cambios en título, modalidad, área, tutores, datos de diplomado / jurados sugeridos o compañeros. La coordinación revisa cada solicitud y puede aplicarlas en la hoja, devolverlas con observaciones o aplicarlas y dejar el caso Pendiente Comité Técnico si corresponde.</p>
-      <div class="fg full" style="margin-bottom:12px">
-        <label>Radicación *</label>
-        <select id="sm_rowRad" onchange="smAlElegirRad()"><option value="">— Cargando… —</option></select>
-      </div>
-      <div id="sm_formWrap" style="display:none">
-        <div class="sec-label" style="grid-column:1/-1">📄 Proyecto</div>
-        <div class="form-grid">
-          <div class="fg full"><label>Título del trabajo</label><input id="sm_titulo" placeholder="Solo si desea cambiarlo"></div>
-          <div class="fg"><label>Modalidad</label>
-            <select id="sm_modalidad" onchange="smToggleSeccionDiplomado()">
-              <option value="">(sin cambio)</option><option>Diplomado</option><option>Trabajo de investigación</option><option>Monografia Revision sistematica</option><option>Monografia Reporte de caso</option><option>Monografia serie de casos</option><option>Monografia Metaanalisis</option><option>Monografia revision de alcance</option>
-            </select>
-          </div>
-          <div class="fg"><label>Área / Especialidad</label>
-            <select id="sm_area">
-              <option value="">(sin cambio)</option><option>Medicina Interna</option><option>Cirugía General</option><option>Pediatría</option><option>Ginecología y Obstetricia</option><option>Psiquiatría</option><option>Neurología</option><option>Cardiología</option><option>Oncología</option><option>Urgencias y Emergencias</option><option>Salud Pública</option><option>Epidemiología</option><option>Otra</option>
-            </select>
-          </div>
-        </div>
-        <div id="sm_secDiplomado" style="display:none;margin-top:12px">
-          <div class="form-grid">
-            <div class="sec-label" style="grid-column:1/-1">🎓 Diplomado</div>
-            <div class="fg"><label>Inicio diplomado</label><input type="date" id="sm_diplomadoFechaInicio"></div>
-            <div class="fg"><label>Fin diplomado</label><input type="date" id="sm_diplomadoFechaFin"></div>
-            <div class="fg full"><label>Modo jurado / evaluador</label>
-              <select id="sm_diplomadoJuradoModo" onchange="smToggleModoJuradoDiplo()"><option value="">(sin cambio)</option><option value="tutor_sugiere">Tutor sugiere jurado</option><option value="cttg_asigna">CTTG asigna evaluador</option></select>
-            </div>
-          </div>
-          <div id="sm_wrapJuradosDiplo" class="form-grid" style="display:none;margin-top:8px">
-            <div class="sec-label" style="grid-column:1/-1">👤 Jurado sugerido (tutor)</div>
-            <div class="fg"><label>J1 Nombre</label><input id="sm_dipJurado1Nombre"></div>
-            <div class="fg"><label>J1 Email</label><input type="email" id="sm_dipJurado1Email"></div>
-            <div class="fg"><label>J1 Teléfono</label><input id="sm_dipJurado1Telefono"></div>
-            <div class="fg"><label>J1 Especialidad</label><input id="sm_dipJurado1Especialidad"></div>
-            <div class="fg"><label>J1 ¿Acepta evaluar?</label>
-              <select id="sm_dipJurado1AceptaPropuesta"><option value="">—</option><option>Sí</option><option>No</option></select>
-            </div>
-            <div class="sec-label" style="grid-column:1/-1">Jurados opcionales 2–3</div>
-            <div class="fg"><label>J2 Nombre</label><input id="sm_dipJurado2Nombre"></div><div class="fg"><label>J2 Email</label><input id="sm_dipJurado2Email"></div><div class="fg"><label>J2 Tel</label><input id="sm_dipJurado2Telefono"></div>
-            <div class="fg"><label>J3 Nombre</label><input id="sm_dipJurado3Nombre"></div><div class="fg"><label>J3 Email</label><input id="sm_dipJurado3Email"></div><div class="fg"><label>J3 Tel</label><input id="sm_dipJurado3Telefono"></div>
-          </div>
-        </div>
-        <div id="sm_secTutores" class="form-grid" style="margin-top:12px">
-          <div class="sec-label" style="grid-column:1/-1">👨‍🏫 Tutores</div>
-          <div class="fg"><label>Tutor 1 nombre</label><input id="sm_tutor1Nombre"></div>
-          <div class="fg"><label>Tutor 1 email</label><input type="email" id="sm_tutor1Email"></div>
-          <div class="fg"><label>Tutor 1 teléfono</label><input id="sm_tutor1Telefono"></div>
-          <div class="fg"><label>Tutor 1 vínculo</label>
-            <select id="sm_tutor1Relacion"><option value="">—</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
-          </div>
-          <div class="fg"><label>Tutor 2 nombre</label><input id="sm_tutor2Nombre"></div>
-          <div class="fg"><label>Tutor 2 email</label><input type="email" id="sm_tutor2Email"></div>
-          <div class="fg"><label>Tutor 2 teléfono</label><input id="sm_tutor2Telefono"></div>
-          <div class="fg"><label>Tutor 2 vínculo</label>
-            <select id="sm_tutor2Relacion"><option value="">—</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
-          </div>
-        </div>
-        <div class="form-grid" style="margin-top:12px">
-          <div class="sec-label" style="grid-column:1/-1">👥 Compañeros (si aplica)</div>
-          <div class="fg"><label>E2 Cédula</label><input id="sm_cedula2"></div><div class="fg"><label>E2 Nombre</label><input id="sm_nombre2"></div><div class="fg"><label>E2 Email</label><input id="sm_email2"></div>
-          <div class="fg"><label>E2 Tel</label><input id="sm_telefono2"></div><div class="fg"><label>E2 Semestre</label><input id="sm_semestre2" placeholder="ej. 8"></div><div class="fg"><label>E2 Semillero</label><input id="sm_semillero2"></div>
-          <div class="fg"><label>E3 Cédula</label><input id="sm_cedula3"></div><div class="fg"><label>E3 Nombre</label><input id="sm_nombre3"></div><div class="fg"><label>E3 Email</label><input id="sm_email3"></div>
-          <div class="fg"><label>E3 Tel</label><input id="sm_telefono3"></div><div class="fg"><label>E3 Semestre</label><input id="sm_semestre3"></div><div class="fg"><label>E3 Semillero</label><input id="sm_semillero3"></div>
-        </div>
-        <div class="fg full" style="margin-top:12px"><label>Motivo de los cambios *</label><textarea id="sm_motivo" placeholder="Explique por qué solicita estos ajustes (mínimo 12 caracteres)"></textarea></div>
-        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-          <button type="button" class="btn-rad" onclick="smEnviarSolicitud()" id="sm_btnEnv">📤 Enviar solicitud</button>
-          <button type="button" class="btn-sec" onclick="smLimpiarForm()">Limpiar campos</button>
-        </div>
-      </div>
-      <div id="sm_avisoSinRad" class="readonly-box" style="display:block;margin-top:12px;background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.25);color:#bfdbfe">Cargando sus radicaciones…</div>
-      <div style="margin-top:22px"><div class="sec-label" style="padding:0 0 8px;margin:0;color:rgba(255,255,255,.45)">Historial</div><div id="sm_hist" class="rad-card" style="font-size:12px;line-height:1.45;color:rgba(255,255,255,.82)"><div class="empty" style="padding:16px">Sin solicitudes aún.</div></div></div>
-    </div>
-  </div>
-
   <div class="panel" id="pan-nueva">
     <div id="readonlyRad" class="readonly-box"></div>
     <div id="bloqueoRad" class="block-box"></div>
@@ -399,79 +306,25 @@
         <div class="sec-label">📄 Proyecto</div>
         <div class="fg full"><label>Título del proyecto * (o escribe "Ninguno")</label><input id="titulo" placeholder="Título del trabajo de grado o Ninguno"></div>
         <div class="fg"><label>Modalidad *</label>
-          <select id="modalidad" onchange="alModalidadCambiar()"><option value="">Seleccionar...</option><option>Diplomado</option><option>Trabajo de investigación</option><option>Monografia Revision sistematica</option><option>Monografia Reporte de caso</option><option>Monografia serie de casos</option><option>Monografia Metaanalisis</option><option>Monografia revision de alcance</option></select>
+          <select id="modalidad"><option value="">Seleccionar...</option><option>Diplomado</option><option>Trabajo de investigación</option><option>Monografia Revision sistematica</option><option>Monografia Reporte de caso</option><option>Monografia serie de casos</option><option>Monografia Metaanalisis</option><option>Monografia revision de alcance</option></select>
         </div>
-        <div class="fg" id="wrapArea"><label>Área / Especialidad *</label>
+        <div class="fg"><label>Área / Especialidad *</label>
           <select id="area"><option value="">Seleccionar...</option><option>Medicina Interna</option><option>Cirugía General</option><option>Pediatría</option><option>Ginecología y Obstetricia</option><option>Psiquiatría</option><option>Neurología</option><option>Cardiología</option><option>Oncología</option><option>Urgencias y Emergencias</option><option>Salud Pública</option><option>Epidemiología</option><option>Otra</option></select>
         </div>
-      </div>
-
-      <!-- ── SECCIÓN DIPLOMADO (aparece solo cuando modalidad = Diplomado) ── -->
-      <div id="seccionDiplomado" style="display:none">
-        <div class="form-grid">
-          <div class="sec-label">🎓 Datos del Diplomado</div>
-          <div class="fg"><label>Fecha inicio del diplomado *</label><input type="date" id="diplomadoFechaInicio"></div>
-          <div class="fg"><label>Fecha fin del diplomado *</label><input type="date" id="diplomadoFechaFin"></div>
-          <div class="fg full"><label>¿Quién propone el evaluador para el producto? *</label>
-            <select id="diplomadoJuradoModo" onchange="alModoJuradoCambiar()">
-              <option value="">Seleccionar...</option>
-              <option value="tutor_sugiere">El tutor sugiere un jurado evaluador</option>
-              <option value="cttg_asigna">El Comité Técnico de Trabajos de Grado (CTTG) asigna el evaluador</option>
-            </select>
-          </div>
-          <div class="fg full" id="infoCttg" style="display:none">
-            <div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:9px;padding:12px 14px;font-size:13px;color:#c4b5fd">
-              📌 El Comité Técnico de Trabajos de Grado, junto con la coordinación, asignará el evaluador para la sesión de valoración del producto. No es necesario registrar un jurado en este momento.
-            </div>
-          </div>
+        <div class="sec-label">👨‍🏫 Tutor 1</div>
+        <div class="fg"><label>Nombre *</label><input id="tutor1Nombre" placeholder="Dr./Dra."></div>
+        <div class="fg"><label>Email *</label><input type="email" id="tutor1Email" placeholder="tutor@usc.edu.co"></div>
+        <div class="fg"><label>Teléfono</label><input id="tutor1Telefono" placeholder="300 000 0000"></div>
+        <div class="fg"><label>Rol</label>
+          <select id="tutor1Relacion"><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
         </div>
-        <div id="seccionJuradoDip" style="display:none">
-          <div class="form-grid">
-            <div class="sec-label">👤 Jurado evaluador sugerido por el tutor</div>
-            <div class="fg"><label>Nombre completo *</label><input id="dipJurado1Nombre" placeholder="Dr./Dra. Nombre Apellido"></div>
-            <div class="fg"><label>Email *</label><input type="email" id="dipJurado1Email" placeholder="jurado@institución.edu.co"></div>
-            <div class="fg"><label>Teléfono</label><input id="dipJurado1Telefono" placeholder="300 000 0000"></div>
-            <div class="fg"><label>Especialidad / Perfil</label><input id="dipJurado1Especialidad" placeholder="Ej: Medicina Interna, PhD en..."></div>
-            <div class="fg full"><label>¿El jurado acepta participar como evaluador?</label>
-              <select id="dipJurado1AceptaPropuesta">
-                <option value="">Seleccionar...</option>
-                <option value="Sí">Sí, acepta</option>
-                <option value="No">No acepta</option>
-              </select>
-            </div>
-            <div class="sec-label">👤 Jurado 2 (Opcional)</div>
-            <div class="fg"><label>Nombre</label><input id="dipJurado2Nombre" placeholder="(opcional)"></div>
-            <div class="fg"><label>Email</label><input type="email" id="dipJurado2Email" placeholder="(opcional)"></div>
-            <div class="fg"><label>Teléfono</label><input id="dipJurado2Telefono" placeholder="(opcional)"></div>
-            <div class="sec-label">👤 Jurado 3 (Opcional)</div>
-            <div class="fg"><label>Nombre</label><input id="dipJurado3Nombre" placeholder="(opcional)"></div>
-            <div class="fg"><label>Email</label><input type="email" id="dipJurado3Email" placeholder="(opcional)"></div>
-            <div class="fg"><label>Teléfono</label><input id="dipJurado3Telefono" placeholder="(opcional)"></div>
-          </div>
+        <div class="sec-label">👨‍🏫 Tutor 2 (Opcional)</div>
+        <div class="fg"><label>Nombre</label><input id="tutor2Nombre" placeholder="(opcional)"></div>
+        <div class="fg"><label>Email</label><input type="email" id="tutor2Email" placeholder="(opcional)"></div>
+        <div class="fg"><label>Teléfono</label><input id="tutor2Telefono" placeholder="(opcional)"></div>
+        <div class="fg"><label>Rol</label>
+          <select id="tutor2Relacion"><option value="">— Sin tutor 2 —</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
         </div>
-      </div>
-
-      <!-- ── SECCIÓN TUTORES (se oculta cuando es Diplomado) ── -->
-      <div id="seccionTutores">
-        <div class="form-grid">
-          <div class="sec-label">👨‍🏫 Tutor 1</div>
-          <div class="fg"><label>Nombre *</label><input id="tutor1Nombre" placeholder="Dr./Dra."></div>
-          <div class="fg"><label>Email *</label><input type="email" id="tutor1Email" placeholder="tutor@usc.edu.co"></div>
-          <div class="fg"><label>Teléfono</label><input id="tutor1Telefono" placeholder="300 000 0000"></div>
-          <div class="fg"><label>Rol</label>
-            <select id="tutor1Relacion"><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
-          </div>
-          <div class="sec-label">👨‍🏫 Tutor 2 (Opcional)</div>
-          <div class="fg"><label>Nombre</label><input id="tutor2Nombre" placeholder="(opcional)"></div>
-          <div class="fg"><label>Email</label><input type="email" id="tutor2Email" placeholder="(opcional)"></div>
-          <div class="fg"><label>Teléfono</label><input id="tutor2Telefono" placeholder="(opcional)"></div>
-          <div class="fg"><label>Rol</label>
-            <select id="tutor2Relacion"><option value="">— Sin tutor 2 —</option><option value="Profesor con Vinculo laboral con la USC">Profesor con Vinculo laboral con la USC</option><option value="Profesor SIN Vinculo laboral con la USC">Profesor SIN Vinculo laboral con la USC</option></select>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-grid">
         <div class="sec-label">📝 Observaciones (Opcional)</div>
         <div class="fg full"><label>Observaciones adicionales</label>
           <textarea id="observaciones" placeholder="Agrega cualquier observación adicional..." style="min-height:80px;resize:vertical"></textarea>
@@ -492,8 +345,30 @@
   </div>
 </main>
 
+<div class="modal-bg" id="modalCancelarRad">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Solicitar cancelación</h3>
+      <button class="btn-close" onclick="document.getElementById('modalCancelarRad').classList.remove('open')">✕ Cerrar</button>
+    </div>
+    <p style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:12px;line-height:1.45">
+      La coordinadora debe aprobar la cancelación. Mientras tanto no podrás radicar un proyecto nuevo.
+    </p>
+    <p id="cancelRadLabel" style="font-size:13px;color:#a78bfa;font-weight:600;margin-bottom:12px">—</p>
+    <input type="hidden" id="cancelRadRowIndex">
+    <div class="fg" style="margin-bottom:14px">
+      <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45)">Motivo *</label>
+      <textarea id="cancelRadMotivo" placeholder="Explica por qué deseas cancelar esta radicación..." style="min-height:90px;resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn-sec" onclick="document.getElementById('modalCancelarRad').classList.remove('open')">Volver</button>
+      <button class="btn-rad" id="btnEnviarCancelacion" onclick="enviarSolicitudCancelacion()">Enviar solicitud</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="modalDet">
-  <div class="modal modal-wide">
+  <div class="modal">
     <div class="modal-hdr">
       <h3>Detalle de Radicación</h3>
       <button class="btn-close" onclick="document.getElementById('modalDet').classList.remove('open')">✕ Cerrar</button>
@@ -502,58 +377,32 @@
   </div>
 </div>
 
-<div class="modal-bg" id="modalHistorialEst">
-  <div class="modal modal-wide">
-    <div class="modal-hdr">
-      <h3>📜 Historial completo</h3>
-      <button type="button" class="btn-close" onclick="document.getElementById('modalHistorialEst').classList.remove('open')">✕ Cerrar</button>
-    </div>
-    <p style="font-size:12px;color:rgba(255,255,255,.45);margin:-8px 0 12px" id="historialEstNum">—</p>
-    <div id="historialEstBody" style="min-height:120px;max-height:65vh;overflow-y:auto;font-size:13px;color:#e2e8f0">Cargando…</div>
-  </div>
-</div>
-
-<div class="modal-bg" id="modalTrazaEst">
-  <div class="modal modal-wide">
-    <div class="modal-hdr">
-      <h3>Movimientos del trámite</h3>
-      <button type="button" class="btn-close" onclick="document.getElementById('modalTrazaEst').classList.remove('open')">✕ Cerrar</button>
-    </div>
-    <p style="font-size:12px;color:rgba(255,255,255,.45);margin:-8px 0 12px" id="trazaEstNum">—</p>
-    <div id="trazaEstBody" style="min-height:120px;font-size:13px;color:#e2e8f0">Cargando…</div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
-const TOKEN = localStorage.getItem('cttg_token') || '';
-
-async function leerRespuestaApp(res) {
-  const raw = await res.text();
-  try {
-    const d = raw ? JSON.parse(raw) : null;
-    if (!d || typeof d !== 'object') throw new Error('Respuesta vacía del servidor');
-    return d;
-  } catch (e) {
-    if (/^\s*</.test(raw)) {
-      throw new Error('El servidor no devolvió JSON. Verifique que la Web App de Apps Script esté desplegada y accesible.');
-    }
-    if (e.message && e.message !== 'Respuesta vacía del servidor') throw e;
-    throw new Error('Respuesta del servidor ilegible');
-  }
+const URL_APP = "https://script.google.com/macros/s/AKfycbxThWOEZZWmJTZ9SsAdEOE7a2e0ai9uddlZBGTUz7rt-iq2VepCf0YC8r4trjAiF7MhlA/exec";
+function tokenActual() { return localStorage.getItem('cttg_token') || ''; }
+function rowIndexEq(a, b) { return Number(a) === Number(b); }
+function normalizarRadicacion(r) {
+  return Object.assign({}, r, { rowIndex: Number(r.rowIndex) || 0, estado: String((r && r.estado) || 'Radicado').trim() });
 }
 let numEst = 1;
 let user = null;
 let bloquearNuevaRad = false;
 let misRadicaciones = [];
-let misSolicitudesModRad = [];
 
 (function(){
   user = JSON.parse(localStorage.getItem('cttg_user') || 'null');
-  if (!user || user.rol !== 'estudiante' || !TOKEN) { window.location.href = 'estudiante_login.html'; return; }
+  if (!user || user.rol !== 'estudiante' || !tokenActual()) { window.location.href = 'estudiante_login.html'; return; }
   document.getElementById('userChip').textContent = user.nombre || user.email;
+  document.addEventListener('click', function(e) {
+    const el = e.target.closest('[data-rad-act]');
+    if (!el) return;
+    const act = el.getAttribute('data-rad-act');
+    const ri = Number(el.getAttribute('data-row-index'));
+    if (act === 'cancelar') abrirModalCancelarRad(ri);
+    else if (act === 'detalle') verDetalle(ri);
+  });
   cargarMisRad();
 })();
 
@@ -570,13 +419,16 @@ async function salirSession() {
 }
 
 function switchTab(name, btn) {
-  if (name === 'nueva' && bloquearNuevaRad) { toast('Aún tienes una radicación sin respuesta. No puedes crear otra.', 'warn'); return; }
+  if (name === 'nueva' && bloquearNuevaRad) {
+    const pend = misRadicaciones.find(r => String(r.estado || '').trim() === 'Cancelación solicitada');
+    toast(pend ? 'Tienes una cancelación en revisión. Espera respuesta de coordinación.' : 'Aún tienes una radicación en trámite. Solicita cancelación si necesitas radicar de nuevo.', 'warn');
+    return;
+  }
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
   document.getElementById('pan-' + name).classList.add('on');
   btn.classList.add('on');
   if (name === 'mis-rad') cargarMisRad();
-  else if (name === 'mod-rad') refrescarTabModRad();
 }
  
 function setEst(n, btn) {
@@ -597,7 +449,7 @@ function toast(msg, type) {
 function mensajeEsSesionInvalidaBackend(msg) {
   var k = String(msg || '').trim().toLowerCase();
   k = k.replace(/ó/g, 'o').replace(/í/g, 'i').replace(/á/g, 'a').replace(/é/g, 'e').replace(/ú/g, 'u').replace(/ñ/g, 'n');
-  return k === 'sesion invalida o expirada' || k === 'sesion requerida' || k === 'no autorizado' || k === 'sesion expirada' || k === 'token invalido';
+  return k === 'sesion invalida o expirada' || k === 'sesion requerida' || k === 'no autorizado' || k === 'sesion expirada';
 }
 
 function redirigirSiSesionInvalida(resp) {
@@ -612,229 +464,100 @@ function redirigirSiSesionInvalida(resp) {
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function smPickRad() {
-  const v = parseInt(document.getElementById('sm_rowRad').value, 10);
-  if (!v) return null;
-  return (misRadicaciones || []).find(x => Number(x.rowIndex) === v) || null;
+/** Estados en los que el portal permite abrir otra radicación (debe coincidir con Apps Script) */
+const ESTADOS_LIBERA_NUEVA_RAD = ['Aprobado', 'Devuelto', 'Cancelada'];
+const ESTADOS_NO_SOLICITAR_CANCEL = ['Cancelación solicitada', 'Cancelada', 'Sustentado', 'Reprobado'];
+
+function radicacionBloqueaNueva(r) {
+  return !ESTADOS_LIBERA_NUEVA_RAD.includes(String((r && r.estado) || '').trim());
 }
 
-function smFormatFechaPortal(v) {
-  const s = String(v || '').trim();
-  if (!s) return '';
-  const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
-  return m ? m[1] : s;
+function puedeSolicitarCancelacionRad(r) {
+  const est = String((r && r.estado) || '').trim();
+  return est && !ESTADOS_NO_SOLICITAR_CANCEL.includes(est);
 }
 
-function smAlElegirRad() {
-  const rad = smPickRad();
-  const fw = document.getElementById('sm_formWrap');
-  const av = document.getElementById('sm_avisoSinRad');
-  if (!rad) {
-    fw.style.display = 'none';
-    av.style.display = 'block'; av.textContent = 'Seleccione una radicación.';
+function actualizarBloqueCancelacionUI(rads) {
+  const box = document.getElementById('bloqueCancelacionRad');
+  if (!box) return;
+  const activas = (rads || []).filter(radicacionBloqueaNueva);
+  const pendiente = activas.find(r => String(r.estado || '').trim() === 'Cancelación solicitada');
+  const cancelable = activas.find(puedeSolicitarCancelacionRad);
+  if (!activas.length) {
+    box.style.display = 'none';
+    box.innerHTML = '';
     return;
   }
-  // Bloquear formulario si hay solicitud pendiente o en revisión de comité para esta radicación
-  const solPendiente = (misSolicitudesModRad || []).find(s =>
-    s.rowSol && (s.estado === 'pendiente' || s.estado === 'pendiente_comite') &&
-    String(s.numero || '') === String(rad.numero || '')
-  );
-  const btnEnv = document.getElementById('sm_btnEnv');
-  if (solPendiente) {
-    fw.style.display = 'block'; av.style.display = 'block';
-    av.textContent = solPendiente.estado === 'pendiente_comite'
-      ? 'Tu solicitud está en revisión por el Comité Técnico. No puedes enviar otra hasta que sea resuelta.'
-      : 'Ya tienes una solicitud pendiente de revisión por coordinación.';
-    if (btnEnv) btnEnv.disabled = true;
-  } else {
-    av.style.display = 'none';
-    if (btnEnv) btnEnv.disabled = false;
-    fw.style.display = 'block';
+  if (pendiente) {
+    box.style.display = 'block';
+    box.style.background = 'rgba(245,158,11,.12)';
+    box.style.border = '1px solid rgba(245,158,11,.35)';
+    box.style.color = '#fcd34d';
+    box.innerHTML = `⏳ Solicitud de cancelación en revisión (<strong>${esc(pendiente.numero)}</strong>). La coordinadora te avisará cuando puedas radicar de nuevo.`;
+    return;
   }
-  document.getElementById('sm_titulo').value = rad.titulo || '';
-  document.getElementById('sm_modalidad').value = rad.modalidad || '';
-  document.getElementById('sm_area').value = rad.area || '';
-  document.getElementById('sm_tutor1Nombre').value = rad.tutor1Nombre || '';
-  document.getElementById('sm_tutor1Email').value = rad.tutor1Email || '';
-  document.getElementById('sm_tutor1Telefono').value = rad.tutor1Telefono || '';
-  document.getElementById('sm_tutor1Relacion').value = rad.tutor1Relacion || '';
-  document.getElementById('sm_tutor2Nombre').value = rad.tutor2Nombre || '';
-  document.getElementById('sm_tutor2Email').value = rad.tutor2Email || '';
-  document.getElementById('sm_tutor2Telefono').value = rad.tutor2Telefono || '';
-  document.getElementById('sm_tutor2Relacion').value = rad.tutor2Relacion || '';
-  document.getElementById('sm_cedula2').value = rad.cedula2 || ''; document.getElementById('sm_nombre2').value = rad.nombre2 || '';
-  document.getElementById('sm_email2').value = rad.email2 || ''; document.getElementById('sm_telefono2').value = rad.telefono2 || '';
-  document.getElementById('sm_semestre2').value = rad.semestre2 || ''; document.getElementById('sm_semillero2').value = rad.semillero2 || '';
-  document.getElementById('sm_cedula3').value = rad.cedula3 || ''; document.getElementById('sm_nombre3').value = rad.nombre3 || '';
-  document.getElementById('sm_email3').value = rad.email3 || ''; document.getElementById('sm_telefono3').value = rad.telefono3 || '';
-  document.getElementById('sm_semestre3').value = rad.semestre3 || ''; document.getElementById('sm_semillero3').value = rad.semillero3 || '';
-  document.getElementById('sm_diplomadoFechaInicio').value = smFormatFechaPortal(rad.diplomadoFechaInicio || '');
-  document.getElementById('sm_diplomadoFechaFin').value = smFormatFechaPortal(rad.diplomadoFechaFin || '');
-  document.getElementById('sm_diplomadoJuradoModo').value = String(rad.diplomadoJuradoModo || '').trim() || '';
-  document.getElementById('sm_dipJurado1Nombre').value = rad.dipJurado1Nombre || '';
-  document.getElementById('sm_dipJurado1Email').value = rad.dipJurado1Email || '';
-  document.getElementById('sm_dipJurado1Telefono').value = rad.dipJurado1Telefono || '';
-  document.getElementById('sm_dipJurado1Especialidad').value = rad.dipJurado1Especialidad || '';
-  document.getElementById('sm_dipJurado1AceptaPropuesta').value = rad.dipJurado1AceptaPropuesta || '';
-  document.getElementById('sm_dipJurado2Nombre').value = rad.dipJurado2Nombre || ''; document.getElementById('sm_dipJurado2Email').value = rad.dipJurado2Email || '';
-  document.getElementById('sm_dipJurado2Telefono').value = rad.dipJurado2Telefono || '';
-  document.getElementById('sm_dipJurado3Nombre').value = rad.dipJurado3Nombre || ''; document.getElementById('sm_dipJurado3Email').value = rad.dipJurado3Email || '';
-  document.getElementById('sm_dipJurado3Telefono').value = rad.dipJurado3Telefono || '';
-  smToggleSeccionDiplomado();
-}
-
-function smToggleSeccionDiplomado() {
-  const sel = document.getElementById('sm_modalidad');
-  const show = sel && sel.value ? esModalidadDiplomado(sel.value) : (() => {
-    const r = smPickRad(); return !!(r && esModalidadDiplomado(r.modalidad));
-  })();
-  const sec = document.getElementById('sm_secDiplomado');
-  if (sec) sec.style.display = show ? '' : 'none';
-  const secTutores = document.getElementById('sm_secTutores');
-  if (secTutores) secTutores.style.display = show ? 'none' : '';
-  smToggleModoJuradoDiplo();
-}
-
-function smToggleModoJuradoDiplo() {
-  const m = document.getElementById('sm_diplomadoJuradoModo').value || '';
-  const w = document.getElementById('sm_wrapJuradosDiplo');
-  if (!w) return;
-  w.style.display = (m === 'tutor_sugiere') ? '' : 'none';
-}
-
-function smPoblarSelectYHist() {
-  const sel = document.getElementById('sm_rowRad');
-  if (!sel) return;
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">— Elija radicación —</option>';
-  (misRadicaciones || []).forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = String(r.rowIndex);
-    opt.textContent = `${r.numero || 'Sin #'} · ${(r.modalidad||'').slice(0,24)}`;
-    sel.appendChild(opt);
-  });
-  sel.value = cur;
-  smAlElegirRad();
-}
-
-function renderSmHistorial() {
-  const el = document.getElementById('sm_hist'); if (!el) return;
-  const list = misSolicitudesModRad || [];
-  if (!list.length) { el.innerHTML = '<div class="empty" style="padding:16px">Sin solicitudes aún.</div>'; return; }
-  function prettyRes(x) {
-    const r = String(x || '').trim();
-    if (r === 'devolver') return 'Devuelta por coordinación';
-    if (r === 'aprobar_directo' || r === 'aprobado_directo') return 'Aprobada por coordinación';
-    if (r === 'derivar_ct') return 'En revisión por Comité Técnico';
-    if (r === 'aprobado_comite') return 'Aprobada por Comité Técnico';
-    if (r === 'rechazado_comite') return 'Rechazada por Comité Técnico';
-    return r || '—';
+  if (cancelable) {
+    box.style.display = 'block';
+    box.style.background = 'rgba(239,68,68,.1)';
+    box.style.border = '1px solid rgba(239,68,68,.32)';
+    box.style.color = '#fecaca';
+    box.innerHTML = `¿Deseas anular tu radicación <strong>${esc(cancelable.numero)}</strong> y empezar una nueva? 
+      <button type="button" class="btn-det" style="margin-top:10px;display:inline-block" data-rad-act="cancelar" data-row-index="${Number(cancelable.rowIndex)}">🚫 Solicitar cancelación</button>`;
+    return;
   }
-  function prettyEstado(est) {
-    if (est === 'pendiente') return 'Pendiente revisión coordinación';
-    if (est === 'pendiente_comite') return 'En revisión por Comité Técnico';
-    if (est === 'resuelta') return 'Resuelta';
-    return est || '—';
-  }
-  el.innerHTML = list.map(function(s){
-    let keys = ''; try {
-      keys = typeof s.cambios === 'object' && s.cambios ? Object.keys(s.cambios).slice(0, 12).join(', ') + (Object.keys(s.cambios).length > 12 ? '…' : '') : '';
-    } catch (_) { keys = ''; }
-    const estado = esc(prettyEstado(s.estado || ''));
-    const res = esc(prettyRes(s.resultado || ''));
-    const esComite = (s.estado||'') === 'pendiente_comite';
-    const badgeColorEstado = esComite ? 'b-comite' : (s.estado === 'resuelta' ? 'b-aprobado' : 'b-revision');
-    return `<div style="margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08)">
-      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:4px"><span style="font-weight:600;color:#a5b4fc">${esc(s.numero || '')}</span>
-      <span class="badge ${badgeColorEstado}">${estado}</span>${s.resultado && s.estado === 'resuelta' ? `<span class="badge b-aprobado">${res}</span>` : ''}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.45)">${esc(String(s.tsCreacion||'').slice(0,19))}</div>
-      <div style="margin-top:6px">${esc(String(s.motivoEstudiante||'').slice(0, 360))}${String(s.motivoEstudiante||'').length>360?'…':''}</div>
-      ${keys ? `<div style="margin-top:6px;color:#93c5fd;font-family:DM Mono,monospace;font-size:10px">${esc(keys)}</div>` : ''}
-      ${s.obsCoord ? `<div style="margin-top:8px;background:rgba(245,158,11,.09);padding:8px;border-radius:8px;color:#fcd34d">Coord.: ${esc(s.obsCoord.slice(0,400))}${s.obsCoord.length>400?'…':''}</div>` : ''}</div>`;
-  }).join('');
+  box.style.display = 'block';
+  box.style.background = 'rgba(102,126,234,.12)';
+  box.style.border = '1px solid rgba(102,126,234,.28)';
+  box.style.color = '#c7d2fe';
+  box.innerHTML = 'Tienes una radicación en trámite. Para radicar de nuevo contacta a coordinación.';
 }
 
-function refrescarTabModRad() {
-  smPoblarSelectYHist();
-  renderSmHistorial();
+function abrirModalCancelarRad(rowIndex) {
+  const r = misRadicaciones.find(x => rowIndexEq(x.rowIndex, rowIndex));
+  if (!r || !puedeSolicitarCancelacionRad(r)) {
+    toast('Esta radicación no puede cancelarse en su estado actual.', 'warn');
+    return;
+  }
+  document.getElementById('cancelRadRowIndex').value = rowIndex;
+  document.getElementById('cancelRadLabel').textContent = r.numero + ' · ' + (r.titulo || 'Sin título');
+  document.getElementById('cancelRadMotivo').value = '';
+  document.getElementById('modalCancelarRad').classList.add('open');
 }
 
-function smLimpiarForm() { smAlElegirRad(); document.getElementById('sm_motivo').value = ''; toast('Campos cargados desde la radicación.', 'warn'); }
-
-function smSame(a, b) { return String(a == null ? '' : a).trim() === String(b == null ? '' : b).trim(); }
-
-async function smEnviarSolicitud() {
-  const rad = smPickRad();
-  if (!rad) { toast('Seleccione una radicación.', 'warn'); return; }
-  const motivo = (document.getElementById('sm_motivo').value || '').trim();
-  if (motivo.length < 12) { toast('Motivo demasiado corto.', 'warn'); return; }
-  const modSel = document.getElementById('sm_modalidad').value;
-  const effMod = modSel !== '' ? modSel : rad.modalidad;
-  const cambios = {};
-  const put = function(k,v,cur){ if (!smSame(v,cur)) cambios[k] = String(v||'').trim(); };
-  put('titulo', document.getElementById('sm_titulo').value, rad.titulo);
-  if (document.getElementById('sm_modalidad').value !== '')
-    put('modalidad', document.getElementById('sm_modalidad').value, rad.modalidad);
-  if (document.getElementById('sm_area').value !== '')
-    put('area', document.getElementById('sm_area').value, rad.area);
-  put('tutor1Nombre', document.getElementById('sm_tutor1Nombre').value, rad.tutor1Nombre);
-  put('tutor1Email', document.getElementById('sm_tutor1Email').value, rad.tutor1Email);
-  put('tutor1Telefono', document.getElementById('sm_tutor1Telefono').value, rad.tutor1Telefono);
-  if (document.getElementById('sm_tutor1Relacion').value !== '')
-    put('tutor1Relacion', document.getElementById('sm_tutor1Relacion').value, rad.tutor1Relacion);
-  put('tutor2Nombre', document.getElementById('sm_tutor2Nombre').value, rad.tutor2Nombre);
-  put('tutor2Email', document.getElementById('sm_tutor2Email').value, rad.tutor2Email);
-  put('tutor2Telefono', document.getElementById('sm_tutor2Telefono').value, rad.tutor2Telefono);
-  if (document.getElementById('sm_tutor2Relacion').value !== '')
-    put('tutor2Relacion', document.getElementById('sm_tutor2Relacion').value, rad.tutor2Relacion);
-  ['cedula2','nombre2','email2','telefono2','semestre2','semillero2','cedula3','nombre3','email3','telefono3','semestre3','semillero3'].forEach(function(f){
-    const elId = 'sm_' + f; const el = document.getElementById(elId); if(!el)return;
-    put(f, el.value, rad[f]);
-  });
-  if (esModalidadDiplomado(effMod)) {
-    put('diplomadoFechaInicio', document.getElementById('sm_diplomadoFechaInicio').value, smFormatFechaPortal(rad.diplomadoFechaInicio));
-    put('diplomadoFechaFin', document.getElementById('sm_diplomadoFechaFin').value, smFormatFechaPortal(rad.diplomadoFechaFin));
-    if (document.getElementById('sm_diplomadoJuradoModo').value !== '')
-      put('diplomadoJuradoModo', document.getElementById('sm_diplomadoJuradoModo').value, rad.diplomadoJuradoModo);
-    if (document.getElementById('sm_diplomadoJuradoModo').value === 'tutor_sugiere') {
-      put('dipJurado1Nombre', document.getElementById('sm_dipJurado1Nombre').value, rad.dipJurado1Nombre);
-      put('dipJurado1Email', document.getElementById('sm_dipJurado1Email').value, rad.dipJurado1Email);
-      put('dipJurado1Telefono', document.getElementById('sm_dipJurado1Telefono').value, rad.dipJurado1Telefono);
-      put('dipJurado1Especialidad', document.getElementById('sm_dipJurado1Especialidad').value, rad.dipJurado1Especialidad);
-      if (document.getElementById('sm_dipJurado1AceptaPropuesta').value !== '')
-        put('dipJurado1AceptaPropuesta', document.getElementById('sm_dipJurado1AceptaPropuesta').value, rad.dipJurado1AceptaPropuesta);
-    }
-    put('dipJurado2Nombre', document.getElementById('sm_dipJurado2Nombre').value, rad.dipJurado2Nombre);
-    put('dipJurado2Email', document.getElementById('sm_dipJurado2Email').value, rad.dipJurado2Email);
-    put('dipJurado2Telefono', document.getElementById('sm_dipJurado2Telefono').value, rad.dipJurado2Telefono);
-    put('dipJurado3Nombre', document.getElementById('sm_dipJurado3Nombre').value, rad.dipJurado3Nombre);
-    put('dipJurado3Email', document.getElementById('sm_dipJurado3Email').value, rad.dipJurado3Email);
-    put('dipJurado3Telefono', document.getElementById('sm_dipJurado3Telefono').value, rad.dipJurado3Telefono);
+async function enviarSolicitudCancelacion() {
+  const rowIndex = parseInt(document.getElementById('cancelRadRowIndex').value, 10);
+  const motivo = document.getElementById('cancelRadMotivo').value.trim();
+  if (!motivo || motivo.length < 10) {
+    toast('Escribe el motivo de cancelación (mínimo 10 caracteres).', 'warn');
+    return;
   }
-  const kc = Object.keys(cambios);
-  if (!kc.length) { toast('No marcó diferencias respecto al registro actual.', 'warn'); return; }
-
-  document.getElementById('sm_btnEnv').disabled = true;
+  const btn = document.getElementById('btnEnviarCancelacion');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
   try {
     const res = await fetch(URL_APP, {
       method: 'POST',
-      body: JSON.stringify({
-        action: 'crearSolicitudModificarRad',
-        token: TOKEN,
-        rowIndexFase1: rad.rowIndex,
-        cambios,
-        motivoEstudiante: motivo
-      }),
+      body: JSON.stringify({ action: 'solicitarCancelacionRadicacion', rowIndex, motivo, token: tokenActual() })
     });
-    const out = await res.json();
-    if (redirigirSiSesionInvalida(out)) return;
-    if (!out.success) { toast(out.error || 'No se envió.', 'err'); }
-    else { toast('Solicitud enviada.', 'ok'); document.getElementById('sm_motivo').value = ''; cargarMisRad(); }
-  } finally { document.getElementById('sm_btnEnv').disabled = false; }
+    const d = await res.json();
+    if (d.success) {
+      document.getElementById('modalCancelarRad').classList.remove('open');
+      toast('Solicitud enviada. Coordinación la revisará.', 'ok');
+      await cargarMisRad();
+    } else if (redirigirSiSesionInvalida(d)) {
+      return;
+    } else {
+      toast(d.error || 'No se pudo enviar la solicitud', 'err');
+    }
+  } catch (e) {
+    toast('Error: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enviar solicitud';
+  }
 }
 
-
-/** Diplomados suelen omitir valoración formal de protocolo (Fase 2); tratamos ese flujo aparte si la modalidad en Fase 1 contiene «diplomado». */
+/** Diplomados: flujo sin actas obligatorias; Fase 2 y 3 pueden abrirse por estado en Fase 1 (lista estadosConAcceso), sin cruzar aprobación de actas del Sheet. Modalidad reconocida si el texto incluye «diplomado» o «diplom». */
 function esModalidadDiplomado(mod) {
   const s = String(mod || '').toLowerCase();
   return s.includes('diplomado') || s.includes('diplom');
@@ -911,7 +634,8 @@ function badgeEst(est) {
     'Devuelto':                'b-devuelto',
     'Sustentado':              'b-aprobado',
     'Reprobado':               'b-devuelto',
-    'Cancelado':               'b-devuelto'
+    'Cancelación solicitada':   'b-revision',
+    'Cancelada':               'b-devuelto'
   };
   return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
 }
@@ -974,7 +698,6 @@ function limpiarNotas(notas) {
 }
 
 function construirCajaTiempos(r) {
-  if (esModalidadDiplomado(r.modalidad || '')) return '';
   const fechaRad = parseFecha(r.fechaRadicacion);
   if (!fechaRad) return '';
   const limiteTutor = addBusinessDays(fechaRad, 15);
@@ -999,24 +722,9 @@ function setFormularioSoloLectura(flag) {
 
 function renderAlertasSuperiores(radicaciones) {
   const wrap = document.getElementById('alertasTiempo');
-  const sinRespuesta = radicaciones.filter(r => !['Aprobado','Devuelto'].includes(String(r.estado||'')));
+  const sinRespuesta = radicaciones.filter(r => radicacionBloqueaNueva(r));
   if (!sinRespuesta.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
   const r = sinRespuesta[0];
-  if (esModalidadDiplomado(r.modalidad || '')) {
-    const estado = String(r.estado || '');
-    let msgDip = '';
-    if (estado === 'Radicado') msgDip = 'Tu solicitud de diplomado está en revisión por la coordinación.';
-    else if (['Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada'].includes(estado)) msgDip = 'La coordinación avaló tu solicitud. Sube el producto final en Fase 2.';
-    else if (estado === 'Pendiente Comité Técnico') msgDip = 'Tu producto está en revisión por el Comité Técnico de Trabajos de Grado.';
-    else if (estado === 'Devuelto por Comité Técnico') msgDip = 'El Comité Técnico devolvió tu producto. Realiza los ajustes y vuelve a subirlo.';
-    if (msgDip) {
-      wrap.style.display = 'block';
-      wrap.innerHTML = `<div class="alert-card"><h4>📋 Diplomado — ${esc(r.numero)}</h4><p>${esc(msgDip)}</p></div>`;
-    } else {
-      wrap.style.display = 'none'; wrap.innerHTML = '';
-    }
-    return;
-  }
   const fechaRad = parseFecha(r.fechaRadicacion);
   if (!fechaRad) { wrap.style.display = 'none'; return; }
   const limiteTutor = addBusinessDays(fechaRad, 15);
@@ -1037,201 +745,11 @@ function renderAlertasSuperiores(radicaciones) {
     </div>`;
 }
 
-function etiquetaModuloTrazaEst(mod) {
-  const x = String(mod || '').toUpperCase();
-  const map = { FASE1:'Fase 1', FASE2:'Fase 2 / Comité', ACTAS:'Actas', SUSTENTACION:'Sustentación', AUTH:'Accesos', SISTEMA:'Sistema', GENERAL:'General' };
-  return map[x] || (mod || '—');
-}
-
-function textoModoJuradoDiplomado(m) {
-  const v = String(m || '').trim().toLowerCase();
-  if (v === 'tutor_sugiere') return 'Tutor sugiere jurado evaluador';
-  if (v === 'cttg_asigna') return 'CTTG / coordinación asignan evaluador';
-  return String(m || '').trim() || '—';
-}
-
-function fmtFechaHoraTrazaEst(s) {
-  if (!s) return '—';
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return String(s);
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() + ' '
-    + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-}
-
-function partesDetalleTrazaEst(detalle) {
-  const d = String(detalle || '').trim();
-  if (!d) return [];
-  return d.split(/\s*\|\s*/).map(pt => pt.trim()).filter(Boolean);
-}
-
-function htmlDetalleTrazaEst(detalle) {
-  const parts = partesDetalleTrazaEst(detalle);
-  if (!parts.length) return '<div class="seg-det-plain">Sin texto de detalle en este movimiento.</div>';
-  if (parts.length === 1) return '<div class="seg-det-plain">' + esc(parts[0]) + '</div>';
-  return '<ul class="seg-det-list">' + parts.map(pt => '<li>' + esc(pt) + '</li>').join('') + '</ul>';
-}
-
-function tituloEventoTrazaEst(s) {
-  const accion = String(s.accion || '').toUpperCase();
-  const modulo = String(s.modulo || '').toUpperCase();
-  if (accion.indexOf('NOTIFICACION_') === 0) return 'Correo · ' + accion.replace(/^NOTIFICACION_/, '').replace(/_/g, ' ');
-  if (accion === 'CREAR_RADICACION') return 'Radicación registrada';
-  if (accion === 'VALIDAR_TUTORES') return 'Coordinación: tutores autorizados';
-  if (accion === 'VALIDAR_OPCION_DIPLOMADO' || accion === 'VALIDAR_OPCION_DIPLOMADO_F1') return 'Coordinación: aval opción diplomado';
-  if (accion === 'CREAR_ACTA') return 'Acta de asesoría cargada';
-  if (accion === 'APROBAR_ACTA') return 'Coordinación: acta aprobada';
-  if (accion === 'RECHAZAR_ACTA') return 'Coordinación: acta devuelta / rechazada';
-  if (accion === 'CREAR_PROTOCOLO') return 'Documento cargado para valoración (Fase 2)';
-  if (accion === 'AVALAR_PROTOCOLO_FASE2') return 'Coordinación: revisión antes del comité (protocolo o producto)';
-  if (accion === 'ACTUALIZAR_PROTOCOLO') return 'Actualización protocolo / evaluador asignado';
-  if (accion === 'REGISTRAR_DECISION_COMITE') return 'Comité técnico: decisión registrada';
-  if (accion === 'CREAR_FASE3') return 'Solicitud de sustentación enviada';
-  if (accion === 'ASIGNAR_JURADOS') return 'Sustentación: fecha y jurados asignados';
-  if (accion === 'UPDATE_FASE3_ESTADO') return 'Actualización estado sustentación';
-  if (accion === 'COMPLETAR_FASE3') return 'Sustentación cerrada · resultado';
-  if (accion === 'ACTUALIZAR_ESTADO') return 'Cambio de estado (Fase 1)';
-  if (modulo === 'SISTEMA' || accion === 'ERROR') return 'Evento de sistema';
-  return s.accion || 'Evento';
-}
-
-async function abrirTrazaEstudiante(numRad) {
-  const n = String(numRad || '').trim();
-  const modal = document.getElementById('modalTrazaEst');
-  const body = document.getElementById('trazaEstBody');
-  const lbl = document.getElementById('trazaEstNum');
-  if (!n) { toast('No hay número de radicación para consultar.', 'warn'); return; }
-  lbl.textContent = 'Radicación: ' + n;
-  body.innerHTML = '<div class="empty" style="padding:20px">Cargando movimientos…</div>';
-  modal.classList.add('open');
-  try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
-      action: 'getTrazabilidad', numeroRadicacion: n, limit: 300, token: TOKEN
-    })});
-    const d = await res.json();
-    if (redirigirSiSesionInvalida(d)) { modal.classList.remove('open'); return; }
-    if (!d.success) {
-      body.innerHTML = `<div class="empty" style="padding:16px;color:#fecaca">${esc(d.error || 'No se pudieron cargar los movimientos')}</div>`;
-      toast(d.error || 'Sin trazabilidad', 'warn');
-      return;
-    }
-    const regs = d.registros || [];
-    if (!regs.length) {
-      body.innerHTML = '<div class="empty" style="padding:16px">Aún no hay movimientos registrados para esta radicación.</div>';
-      return;
-    }
-    const ordenados = [...regs].sort((a,b) => {
-      const ta = new Date(a.timestamp||0).getTime();
-      const tb = new Date(b.timestamp||0).getTime();
-      return (isNaN(ta)?0:ta) - (isNaN(tb)?0:tb);
-    });
-    body.innerHTML = ordenados.map(s =>
-      `<div class="traza-est-item">`
-      + `<div class="traza-est-meta">${esc(fmtFechaHoraTrazaEst(s.timestamp))} · ${esc(etiquetaModuloTrazaEst(s.modulo))}</div>`
-      + `<div class="traza-est-tit">${esc(tituloEventoTrazaEst(s))}<span style="opacity:.65;font-weight:500;font-size:11px"> · ${esc(String(s.accion||'').replace(/_/g,'·'))}</span></div>`
-      + htmlDetalleTrazaEst(s.detalle)
-      + `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">Registrado por cuenta: ${esc(s.email||'—')}</div>`
-      + `</div>`).join('');
-  } catch (e) {
-    body.innerHTML = '<div class="empty" style="padding:16px;color:#fecaca">Error de conexión al cargar movimientos.</div>';
-    toast('Error al cargar trazabilidad', 'err');
-  }
-}
-
-async function abrirHistorialEstudiante(numRad) {
-  const n = String(numRad || '').trim();
-  if (!n) { toast('No hay número de radicación.', 'warn'); return; }
-  const modal = document.getElementById('modalHistorialEst');
-  const body = document.getElementById('historialEstBody');
-  if (!modal || !body) { toast('Modal de historial no disponible.', 'warn'); return; }
-  document.getElementById('historialEstNum').textContent = n;
-  body.innerHTML = '<div class="empty" style="padding:20px">Cargando historial completo…</div>';
-  modal.classList.add('open');
-  try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-      action: 'getHistorialRadicacion', numeroRadicacion: n, token: TOKEN
-    })});
-    const d = await leerRespuestaApp(res);
-    if (redirigirSiSesionInvalida(d)) { modal.classList.remove('open'); return; }
-    if (!d.success) {
-      body.innerHTML = `<div class="empty" style="padding:16px;color:#fecaca">${esc(d.error||'Error')}</div>`;
-      return;
-    }
-    const eventos = d.eventos || [];
-    if (!eventos.length) {
-      body.innerHTML = '<div class="empty" style="padding:16px">Aún no hay eventos de historial. Los eventos se registran a partir de la versión actual del sistema.</div>';
-      return;
-    }
-    const faseLabelMap = { FASE1:'Fase 1 · Radicación', FASE2:'Fase 2 · Protocolo', ACTAS:'Actas de asesoría', FASE3:'Fase 3 · Sustentación' };
-    const accionLabelMap = {
-      ACTUALIZAR_ESTADO:'Cambio de estado', VALIDAR_TUTORES:'Tutores validados', CREAR_PROTOCOLO:'Protocolo cargado',
-      ACTUALIZAR_PROTOCOLO:'Protocolo evaluado', AVALAR_PROTOCOLO_FASE2:'Evaluación protocolo',
-      REGISTRAR_DECISION_COMITE:'Decisión comité técnico', CREAR_ACTA:'Acta cargada',
-      APROBAR_ACTA:'Acta aprobada', RECHAZAR_ACTA:'Acta rechazada',
-      CREAR_FASE3:'Solicitud sustentación creada', ASIGNAR_JURADOS:'Fecha y jurados asignados',
-      UPDATE_FASE3_ESTADO:'Estado sustentación actualizado', COMPLETAR_FASE3:'Sustentación completada',
-      SOL_MOD_DEVOLVER:'Sol. cambios devuelta', SOL_MOD_DERIVAR_CT:'Sol. cambios → comité',
-      SOL_MOD_APROBAR_DIRECTO:'Cambios aplicados', SOL_MOD_COMITE_RECHAZAR:'Cambios rechazados', SOL_MOD_COMITE_APROBAR:'Cambios aprobados'
-    };
-    body.innerHTML = eventos.map(ev => {
-      const faseLabel = faseLabelMap[ev.fase] || ev.fase || '';
-      const accionLabel = accionLabelMap[ev.accion] || String(ev.accion||'').replace(/_/g,' ').toLowerCase();
-      const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ?
-        `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0">
-          ${ev.estadoAnterior ? `<span style="background:rgba(239,68,68,.12);color:#fca5a5;border-radius:4px;padding:2px 8px;font-size:11px">${esc(ev.estadoAnterior)}</span><span style="color:rgba(255,255,255,.3)">→</span>` : ''}
-          ${ev.estadoNuevo ? `<span style="background:rgba(16,185,129,.12);color:#6ee7b7;border-radius:4px;padding:2px 8px;font-size:11px">${esc(ev.estadoNuevo)}</span>` : ''}
-        </div>` : '';
-      return `<div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px">
-        <div>
-          <div style="font-family:monospace;font-size:10px;color:rgba(255,255,255,.4);line-height:1.6">${esc(ev.timestamp||'—')}</div>
-          <span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(96,165,250,.15);color:#93c5fd;margin-top:3px">${esc(faseLabel)}</span>
-        </div>
-        <div>
-          <div style="font-weight:600;color:#e2e8f0;margin-bottom:4px;font-size:13px">${esc(accionLabel)}</div>
-          ${stateChange}
-          ${ev.motivo ? `<div style="color:rgba(255,255,255,.65);font-size:11px;font-style:italic;margin-top:3px">💬 ${esc(ev.motivo)}</div>` : ''}
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    body.innerHTML = `<div class="empty" style="padding:16px;color:#fecaca">Error: ${esc(e.message)}</div>`;
-  }
-}
-
-function htmlBloqueDiplomadoDetalle(r) {
-  if (!esModalidadDiplomado(r.modalidad || '')) return '';
-  const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val" style="white-space:pre-wrap">${esc(val)}</span></div>` : '';
-  const modo = String(r.diplomadoJuradoModo || '').trim().toLowerCase();
-  let juradosHtml = '';
-  const j1 = [r.dipJurado1Nombre, r.dipJurado1Email, r.dipJurado1Telefono].map(x => String(x||'').trim()).filter(Boolean);
-  const j2 = [r.dipJurado2Nombre, r.dipJurado2Email, r.dipJurado2Telefono].map(x => String(x||'').trim()).filter(Boolean);
-  const j3 = [r.dipJurado3Nombre, r.dipJurado3Email, r.dipJurado3Telefono].map(x => String(x||'').trim()).filter(Boolean);
-  if (modo === 'cttg_asigna') {
-    juradosHtml = fila('Evaluador en radicación', 'Indicaste que CTTG/coordinación asignará evaluador. No registraste jurado sugerido en este paso.');
-  } else {
-    if (j1.length) {
-      juradosHtml += fila('Jurado sugerido 1', j1.join(' · ')
-        + (String(r.dipJurado1Especialidad||'').trim() ? ' · Esp.: ' + String(r.dipJurado1Especialidad).trim() : '')
-        + (String(r.dipJurado1AceptaPropuesta||'').trim() ? ' · Acepta propuesta: ' + String(r.dipJurado1AceptaPropuesta).trim() : ''));
-    }
-    if (j2.length) juradosHtml += fila('Jurado sugerido 2', j2.join(' · '));
-    if (j3.length) juradosHtml += fila('Jurado sugerido 3', j3.join(' · '));
-    if (!juradosHtml) juradosHtml = fila('Jurados sugeridos', 'Sin datos — revisa con coordinación.');
-  }
-  return `
-    <div class="det-sec">Modalidad Diplomado</div>
-    ${fila('Fecha inicio diplomado', r.diplomadoFechaInicio ? fmtFecha(r.diplomadoFechaInicio) : '')}
-    ${fila('Fecha fin diplomado', r.diplomadoFechaFin ? fmtFecha(r.diplomadoFechaFin) : '')}
-    ${fila('Quién propone evaluador', textoModoJuradoDiplomado(r.diplomadoJuradoModo))}
-    ${juradosHtml}`;
-}
-
 function verDetalle(rowIndex) {
-  const r = misRadicaciones.find(x => x.rowIndex === rowIndex);
+  const r = misRadicaciones.find(x => rowIndexEq(x.rowIndex, rowIndex));
   if (!r) return;
   const fila = (label, val) => val ? `<div class="det-row"><span class="det-label">${label}</span><span class="det-val">${esc(val)}</span></div>` : '';
   const notas = limpiarNotas(r.notas);
-  const dipBlock = htmlBloqueDiplomadoDetalle(r);
-  const numJson = JSON.stringify(String(r.numero || ''));
   document.getElementById('modalDetBody').innerHTML = `
     <div style="margin-bottom:14px">
       <div style="font-size:13px;color:#a78bfa;font-weight:600;margin-bottom:4px">${esc(r.numero)}</div>
@@ -1243,25 +761,16 @@ function verDetalle(rowIndex) {
     ${fila('Área', r.area)}
     ${fila('F. Radicación', fmtFecha(r.fechaRadicacion))}
     ${fila('F. Aprobación', fmtFecha(r.fechaAprobacion))}
-    ${dipBlock}
     <div class="det-sec">Estudiantes</div>
     ${fila('Estudiante 1', r.nombre1 ? r.nombre1+' · Ced: '+r.cedula1+' · Sem. '+r.semestre1 : '')}
     ${fila('Email 1', r.email1)}
     ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
-    ${fila('Email 2', r.email2)}
     ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
-    ${fila('Email 3', r.email3)}
     <div class="det-sec">Tutores</div>
     ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
     ${fila('Email T1', r.tutor1Email)}
     ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}
-    ${fila('Email T2', r.tutor2Email)}
-    ${(()=>{ const est = String(r.estado||'').toLowerCase(); const devuelto = est.includes('devuelt') || est.includes('rechaz'); return devuelto && notas ? `<div style="margin-top:12px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:12px;color:#fecaca;font-size:12px;line-height:1.5"><strong>🔄 Motivo de devolución:</strong><br>${esc(notas)}</div>` : (notas ? `<div class="notas-box" style="margin-top:14px">📝 ${esc(notas)}</div>` : ''); })()}
-    <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
-      <button type="button" class="btn-traza" onclick="document.getElementById('modalDet').classList.remove('open'); void abrirTrazaEstudiante(${numJson})">📜 Ver movimientos del trámite</button>
-      <button type="button" class="btn-traza" style="margin-top:8px;background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3);color:#c4b5fd" onclick="document.getElementById('modalDet').classList.remove('open'); void abrirHistorialEstudiante(${numJson})">📋 Historial completo con fechas y motivos</button>
-      <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.4">El historial completo muestra cada cambio de estado, fecha exacta y motivo de cada decisión.</div>
-    </div>
+    ${notas ? `<div class="notas-box" style="margin-top:14px">📝 ${esc(notas)}</div>` : ''}
   `;
   document.getElementById('modalDet').classList.add('open');
 }
@@ -1270,17 +779,8 @@ async function cargarMisRad() {
   const wrap = document.getElementById('misRadWrap');
   wrap.innerHTML = '<div class="empty">Cargando...</div>';
   try {
-    const [res, sl] = await Promise.all([
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN }) }),
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getMisSolicitudesModRad', token: TOKEN }) })
-    ]);
+    const res  = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: tokenActual() }) });
     const data = await res.json();
-    try {
-      const sd = await sl.json();
-      if (sd && sd.success && Array.isArray(sd.solicitudes)) misSolicitudesModRad = sd.solicitudes;
-      else misSolicitudesModRad = [];
-    } catch (__) { misSolicitudesModRad = []; }
-    const _pm = document.getElementById('pan-mod-rad'); if (_pm && _pm.classList.contains('on')) { smPoblarSelectYHist(); renderSmHistorial(); }
     if (!data.success) {
       const err = String(data.error || '');
       if (mensajeEsSesionInvalidaBackend(err)) {
@@ -1291,7 +791,7 @@ async function cargarMisRad() {
       }
     }
     if (data.success && data.radicaciones?.length > 0) {
-      misRadicaciones = data.radicaciones;
+      misRadicaciones = data.radicaciones.map(normalizarRadicacion);
       const r = radicacionReferenciaDashboard(misRadicaciones) || misRadicaciones[0];
 
       document.getElementById('d_numeroRadicacion').textContent = r.numero || '—';
@@ -1308,15 +808,19 @@ async function cargarMisRad() {
       actualizarContadorGeneral(r);
       
       renderAlertasSuperiores(misRadicaciones);
-      bloquearNuevaRad = misRadicaciones.some(r => !['Aprobado','Devuelto','Cancelado'].includes(String(r.estado||'')));
+      bloquearNuevaRad = misRadicaciones.some(radicacionBloqueaNueva);
+      actualizarBloqueCancelacionUI(misRadicaciones);
       const bloqueo  = document.getElementById('bloqueoRad');
       const readonly = document.getElementById('readonlyRad');
       const tabNueva = document.getElementById('tabNueva');
       if (bloquearNuevaRad) {
         bloqueo.style.display  = 'block';
-        bloqueo.innerHTML      = '🚫 Ya tienes una radicación sin respuesta. Debes esperar respuesta del comité para crear una nueva.';
+        const hayCancelPend = misRadicaciones.some(r => String(r.estado || '').trim() === 'Cancelación solicitada');
+        bloqueo.innerHTML      = hayCancelPend
+          ? '🚫 Tienes una solicitud de cancelación en revisión. Cuando coordinación la apruebe podrás radicar de nuevo.'
+          : '🚫 Ya tienes una radicación en trámite. Solicita cancelación (arriba) o espera respuesta del comité.';
         readonly.style.display = 'block';
-        readonly.innerHTML     = '👁 Para corregir título, tutores u otros datos de una radicación ya enviada use la pestaña «Cambios radicación»; desde aquí sólo puede crear una radicación nueva cuando no exista ninguna pendiente.';
+        readonly.innerHTML     = '👁 Tu radicación está en trámite y no puede modificarse.';
         tabNueva.style.opacity = '.55';
         setFormularioSoloLectura(true);
       } else {
@@ -1327,7 +831,6 @@ async function cargarMisRad() {
       }
       wrap.innerHTML = misRadicaciones.map(r => {
         const notasLimpias = limpiarNotas(r.notas);
-        const numQ = JSON.stringify(String(r.numero || ''));
         return `<div class="rad-card">
           <div class="num">📋 ${esc(r.numero)}</div>
           <div class="titulo">${esc(r.titulo||'Sin título')}</div>
@@ -1338,30 +841,20 @@ async function cargarMisRad() {
             ${r.fechaAprobacion ? `<span class="date-info">✅ ${fmtFecha(r.fechaAprobacion)}</span>` : ''}
           </div>
           ${construirCajaTiempos(r)}
-          ${(()=>{ const est = String(r.estado||'').toLowerCase(); const devuelto = est.includes('devuelt') || est.includes('rechaz'); return devuelto && notasLimpias ? `<div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 12px;font-size:12px;color:#fecaca;line-height:1.4;margin-top:8px"><strong>🔄 Motivo:</strong> ${esc(notasLimpias)}</div>` : (notasLimpias ? `<div class="notas-box">📝 ${esc(notasLimpias)}</div>` : ''); })()}
-          <div class="rad-card-actions">
-            <button type="button" class="btn-det" onclick="verDetalle(${r.rowIndex})">👁 Ver detalle</button>
-            <button type="button" class="btn-traza" onclick="void abrirTrazaEstudiante(${numQ})">📜 Movimientos</button>
-            ${(()=>{ const est = String(r.estado||'').toLowerCase(); const terminal = est==='sustentado'||est==='reprobado'||est==='cancelado'; return terminal ? '' : `<button type="button" class="btn-det" style="background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.35);color:#fca5a5" onclick="abrirModalCancelarRad(${r.rowIndex},${JSON.stringify(r.numero)})">🗑 Solicitar cancelación</button>`; })()}
-          </div>
+          ${notasLimpias ? `<div class="notas-box">📝 ${esc(notasLimpias)}</div>` : ''}
+          <button type="button" class="btn-det" data-rad-act="detalle" data-row-index="${Number(r.rowIndex)}">👁 Ver detalle</button>
+          ${puedeSolicitarCancelacionRad(r) ? `<button type="button" class="btn-det" style="margin-left:8px;background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.35);color:#fca5a5" data-rad-act="cancelar" data-row-index="${Number(r.rowIndex)}">🚫 Solicitar cancelación</button>` : ''}
         </div>`;
       }).join('');
     } else {
       misRadicaciones = [];
       bloquearNuevaRad = false;
+      actualizarBloqueCancelacionUI([]);
       renderAlertasSuperiores([]);
       document.getElementById('bloqueoRad').style.display  = 'none';
       document.getElementById('readonlyRad').style.display = 'none';
       document.getElementById('tabNueva').style.opacity    = '1';
       setFormularioSoloLectura(false);
-      if (document.getElementById('sm_rowRad')) {
-        document.getElementById('sm_rowRad').innerHTML = '<option value="">Sin radicaciones cargadas</option>';
-      }
-      if (document.getElementById('sm_avisoSinRad')) {
-        document.getElementById('sm_avisoSinRad').style.display = 'block';
-        document.getElementById('sm_avisoSinRad').textContent = 'Primero debe crear una radicación en «Nueva radicación».';
-      }
-      if (document.getElementById('sm_formWrap')) document.getElementById('sm_formWrap').style.display = 'none';
       wrap.innerHTML = `<div class="empty">
         <div style="font-size:32px;margin-bottom:12px">📭</div>
         <div>No tienes radicaciones registradas aún.</div>
@@ -1387,21 +880,19 @@ async function actualizarBotonesFases(radicaciones) {
   const radRef = radicacionReferenciaDashboard(radicaciones);
   const estadoActual = (radRef && radRef.estado) || '';
   const estadosConAcceso = ['Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Aprobado','Sustentado'];
+  const estadoPermiteEtapaSinActas = estadosConAcceso.includes(estadoActual);
+  const diplomoRad = esModalidadDiplomado((radRef && radRef.modalidad) || '');
 
   if (btnActas) {
-    if (esModalidadDiplomado(radRef.modalidad || '')) {
-      btnActas.style.display = 'none';
+    btnActas.style.display = 'flex';
+    if (estadoPermiteEtapaSinActas) {
+      btnActas.style.opacity       = '1';
+      btnActas.style.pointerEvents = 'auto';
+      if (btnActasSub) btnActasSub.textContent = diplomoRad ? 'Opcional (diplomado): cargar solo si tu programa las exige' : 'Cargar actas firmadas por tu tutor';
     } else {
-      btnActas.style.display = 'flex';
-      if (estadosConAcceso.includes(estadoActual)) {
-        btnActas.style.opacity       = '1';
-        btnActas.style.pointerEvents = 'auto';
-        if (btnActasSub) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
-      } else {
-        btnActas.style.opacity       = '0.4';
-        btnActas.style.pointerEvents = 'none';
-        if (btnActasSub) btnActasSub.textContent = 'Pendiente: aval de tutores';
-      }
+      btnActas.style.opacity       = '0.4';
+      btnActas.style.pointerEvents = 'none';
+      if (btnActasSub) btnActasSub.textContent = 'Pendiente: aval de tutores';
     }
   }
 let actasAprobadas = false;
@@ -1409,18 +900,15 @@ let actasAprobadas = false;
 
   try {
     const [dActas, dF2, dFase3] = await Promise.all([
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: TOKEN }) }).then(r => r.json()),
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: TOKEN }) }).then(r => r.json()),
-      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: TOKEN }) }).then(r => r.json())
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getActasAsesoria', token: tokenActual() }) }).then(r => r.json()),
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase2', token: tokenActual() }) }).then(r => r.json()),
+      fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: tokenActual() }) }).then(r => r.json())
     ]);
 
     if (redirigirSiSesionInvalida(dActas) || redirigirSiSesionInvalida(dF2) || redirigirSiSesionInvalida(dFase3)) return;
 
     const numRef = radRef.numero;
     const emEst = user.email;
-
-    const btnActasMotivo = document.getElementById('btnActasMotivo');
-    const btnFase2Motivo = document.getElementById('btnFase2Motivo');
 
     if (dActas.success) {
       const listaActas = dActas.actas || [];
@@ -1431,45 +919,20 @@ let actasAprobadas = false;
       );
       const pendientes = misActasRad.filter(a => String(a.estado || '').trim() === 'Pendiente revisión').length;
       if (btnActasSub) {
-        if (actasAprobadas) btnActasSub.textContent = '✅ Actas aprobadas';
-        else if (pendientes > 0) btnActasSub.textContent = `⏳ ${pendientes} acta(s) en revisión`;
-        else if (estadosConAcceso.includes(estadoActual)) btnActasSub.textContent = 'Cargar actas firmadas por tu tutor';
-      }
-      // Mostrar motivo del rechazo más reciente si existe
-      if (btnActasMotivo) {
-        const rechazadas = misActasRad.filter(a => String(a.estado || '').trim() === 'Rechazada' && a.observaciones);
-        const ultimaRechazada = rechazadas[rechazadas.length - 1];
-        if (ultimaRechazada && !actasAprobadas) {
-          btnActasMotivo.style.display = 'block';
-          btnActasMotivo.innerHTML = `<strong>❌ Acta rechazada · ${esc(ultimaRechazada.nombreArchivo || '')}:</strong><br>${esc(ultimaRechazada.observaciones)}`;
-        } else {
-          btnActasMotivo.style.display = 'none';
-        }
+        if (!diplomoRad && actasAprobadas) btnActasSub.textContent = '✅ Actas aprobadas';
+        else if (diplomoRad && actasAprobadas) btnActasSub.textContent = '✅ Actas aprobadas (opcional)';
+        else if (!diplomoRad && pendientes > 0) btnActasSub.textContent = `⏳ ${pendientes} acta(s) en revisión`;
+        else if (diplomoRad && pendientes > 0) btnActasSub.textContent = `⏳ ${pendientes} acta(s) en revisión · no bloquean Fase 2/3`;
+        else if (estadoPermiteEtapaSinActas) btnActasSub.textContent = diplomoRad ? 'Opcional (diplomado): cargar solo si tu programa las exige' : 'Cargar actas firmadas por tu tutor';
       }
     }
 
     if (dF2.success) {
       fase2Aprobada = protocoloAprobadoParaRadicacion(dF2.protocolos || [], numRef, emEst);
-      // Mostrar motivo de devolución del protocolo si fue devuelto
-      if (btnFase2Motivo) {
-        const misProtocolos = (dF2.protocolos || []).filter(p =>
-          normNumRadEst(p.numero || p.numeroRadicacion || '') === normNumRadEst(numRef)
-        );
-        const devuelto = misProtocolos.find(p => {
-          const est = String(p.estado || '').toLowerCase();
-          return (est.includes('devuelto') || est.includes('devuelta')) && p.observaciones;
-        });
-        if (devuelto && !fase2Aprobada) {
-          btnFase2Motivo.style.display = 'block';
-          btnFase2Motivo.innerHTML = `<strong>🔄 Protocolo devuelto:</strong><br>${esc(devuelto.observaciones || devuelto.motivoUltimaDevolucion || '')}`;
-        } else {
-          btnFase2Motivo.style.display = 'none';
-        }
-      }
     }
 
     const panelF3 = document.getElementById('panelFase3Estado');
-    if (dFase3.success && !esModalidadDiplomado(radRef.modalidad || '')) {
+    if (dFase3.success) {
       const miSolicitud = solicitudFase3ParaRadicacion(dFase3.fase3 || [], numRef, emEst);
       if (!miSolicitud) {
         if (panelF3) panelF3.style.display = 'none';
@@ -1480,7 +943,7 @@ let actasAprobadas = false;
         document.getElementById('f3Turnitin').textContent = (miSolicitud.pctTurnitin || '—') + '%';
         document.getElementById('f3Fecha').textContent = fechaProg ? fmtFecha(fechaProg) : '—';
         document.getElementById('f3Hora').textContent = miSolicitud.horaSustentacion || '—';
-        const obsF3 = miSolicitud.motivoDevolucion || miSolicitud.observacionesEstado || (!fechaProg ? miSolicitud.observaciones : '');
+        const obsF3 = miSolicitud.motivoDevolucion || miSolicitud.observacionEstado || miSolicitud.observacionesEstado || (!fechaProg ? miSolicitud.observaciones : '');
         const obsBox = document.getElementById('f3Observaciones');
         if (obsF3) {
           obsBox.style.display = 'block';
@@ -1513,102 +976,66 @@ let actasAprobadas = false;
     }
   } catch(e) { console.log('Error cargando fases:', e); }
 
+  const fase2PorActasMedicina = !diplomoRad && actasAprobadas;
+  const fase2PorDiplomo = diplomoRad && estadoPermiteEtapaSinActas;
+  const fase2Permitida = fase2PorActasMedicina || fase2PorDiplomo;
+
   if (btnFase2) {
-    const esDipFase2 = esModalidadDiplomado(radRef.modalidad || '');
-    const diplomadoFase2Habilitado = esDipFase2 &&
-      ['Tutores Avalados', 'Tutores avalados', 'Fase 2 Desbloqueada', 'Pendiente Comité Técnico', 'Devuelto por Comité Técnico', 'Devuelto'].includes(estadoActual);
     btnFase2.style.display = 'flex';
-    if (actasAprobadas || diplomadoFase2Habilitado) {
+    if (fase2Permitida) {
       btnFase2.style.opacity = '1';
       btnFase2.style.pointerEvents = 'auto';
-      if (btnFase2Sub) {
-        const esDevuelto = ['Devuelto por Comité Técnico', 'Devuelto'].includes(estadoActual);
-        btnFase2Sub.textContent = esDipFase2
-          ? (esDevuelto ? 'Subir producto ajustado' : 'Subir producto del diplomado')
-          : (esDevuelto ? 'Solicitar nueva valoración del protocolo' : 'Subir documento de protocolo');
-      }
+      if (btnFase2Sub) btnFase2Sub.textContent = estadoActual === 'Devuelto por Comité Técnico' ? 'Solicitar nueva valoración del protocolo' : 'Subir documento de protocolo';
     } else {
       btnFase2.style.opacity = '0.4';
       btnFase2.style.pointerEvents = 'none';
-      if (btnFase2Sub) btnFase2Sub.textContent = esDipFase2
-        ? 'Pendiente: aval de coordinación'
-        : 'Pendiente: aprobación de actas';
+      if (btnFase2Sub) btnFase2Sub.textContent = diplomoRad ? 'Pendiente: espera cambio de estado en tu radiación diplomado' : 'Pendiente: aprobación de actas';
     }
   }
 
-  if (btnFase3) {
-    const modalidadRef = radRef.modalidad || '';
-    if (esModalidadDiplomado(modalidadRef)) {
-      btnFase3.style.display = 'none';
+ if (btnFase3) {
+    btnFase3.style.display = 'flex';
+    const rutasFase3Habilitada =
+      !diplomoRad ? fase2Aprobada
+        : (fase2Aprobada || estadoPermiteEtapaSinActas);
+
+    if (rutasFase3Habilitada) {
+      btnFase3.style.opacity = '1';
+      btnFase3.style.pointerEvents = 'auto';
+      if (btnFase3Sub) btnFase3Sub.textContent = diplomoRad ? 'Solicitar fecha de sustentación (diplomado)' : 'Solicitar fecha de sustentación';
     } else {
-      btnFase3.style.display = 'flex';
-      if (fase2Aprobada) {
-        btnFase3.style.opacity = '1';
-        btnFase3.style.pointerEvents = 'auto';
-        if (btnFase3Sub) btnFase3Sub.textContent = 'Solicitar fecha de sustentación';
-      } else {
-        btnFase3.style.opacity = '0.4';
-        btnFase3.style.pointerEvents = 'none';
-        if (btnFase3Sub) btnFase3Sub.textContent = 'Pendiente: aprobación de protocolo';
+      btnFase3.style.opacity = '0.4';
+      btnFase3.style.pointerEvents = 'none';
+      if (btnFase3Sub) {
+        btnFase3Sub.textContent = diplomoRad
+          ? 'Pendiente: avanza el estado en Fase 1 hasta etapa válida para sustentación'
+          : 'Pendiente: aprobación de protocolo';
       }
     }
   }
 }
 
 function limpiar() {
-  ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono',
-   'diplomadoFechaInicio','diplomadoFechaFin','dipJurado1Nombre','dipJurado1Email','dipJurado1Telefono','dipJurado1Especialidad','dipJurado2Nombre','dipJurado2Email','dipJurado2Telefono','dipJurado3Nombre','dipJurado3Email','dipJurado3Telefono'].forEach(id => {
+ ['cedula1','nombre1','email1','telefono1','semillero1','cedula2','nombre2','email2','telefono2','semillero2','cedula3','nombre3','email3','telefono3','semillero3','titulo','tutor1Nombre','tutor1Email','tutor1Telefono','tutor2Nombre','tutor2Email','tutor2Telefono'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  ['semestre1','semestre2','semestre3','modalidad','area','tutor1Relacion','tutor2Relacion','diplomadoJuradoModo','dipJurado1AceptaPropuesta'].forEach(id => {
+  ['semestre1','semestre2','semestre3','modalidad','area','tutor1Relacion','tutor2Relacion'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('successBox').style.display = 'none';
-  alModalidadCambiar();
   setEst(1, document.querySelector('.ne'));
 }
 
-function alModalidadCambiar() {
-  const mod = (document.getElementById('modalidad')?.value || '').trim().toLowerCase();
-  const esDip = mod === 'diplomado';
-  document.getElementById('seccionDiplomado').style.display = esDip ? 'block' : 'none';
-  document.getElementById('seccionTutores').style.display  = esDip ? 'none'  : 'block';
-  document.getElementById('wrapArea').style.display        = esDip ? 'none'  : '';
-  if (!esDip) {
-    document.getElementById('seccionJuradoDip').style.display = 'none';
-    document.getElementById('infoCttg').style.display = 'none';
-  } else {
-    alModoJuradoCambiar();
-  }
-}
-
-function alModoJuradoCambiar() {
-  const modo = (document.getElementById('diplomadoJuradoModo')?.value || '');
-  document.getElementById('seccionJuradoDip').style.display = modo === 'tutor_sugiere' ? 'block' : 'none';
-  document.getElementById('infoCttg').style.display = modo === 'cttg_asigna' ? 'block' : 'none';
-}
-
 async function radicar() {
-  if (bloquearNuevaRad) { toast('No puedes radicar hasta recibir respuesta de tu radicación actual.', 'warn'); return; }
-  const modalidadVal = (document.getElementById('modalidad')?.value || '').trim();
-  const esDip = modalidadVal.toLowerCase() === 'diplomado';
-
-  const reqsBase = [['cedula1','Cédula estudiante 1'],['nombre1','Nombre estudiante 1'],['email1','Email estudiante 1'],['telefono1','Teléfono estudiante 1'],['semestre1','Semestre estudiante 1'],['titulo','Título del proyecto'],['modalidad','Modalidad']];
-  const reqsTutor = [['tutor1Nombre','Nombre del tutor 1'],['tutor1Email','Email del tutor 1'],['area','Área']];
-  const reqs = esDip ? reqsBase : [...reqsBase, ...reqsTutor];
+  if (bloquearNuevaRad) {
+    const pend = misRadicaciones.find(r => String(r.estado || '').trim() === 'Cancelación solicitada');
+    toast(pend ? 'Tienes una solicitud de cancelación en revisión. Espera respuesta de coordinación.' : 'No puedes radicar hasta resolver tu radicación actual (solicita cancelación si aplica).', 'warn');
+    return;
+  }
+  const reqs = [['cedula1','Cédula estudiante 1'],['nombre1','Nombre estudiante 1'],['email1','Email estudiante 1'],['telefono1','Teléfono estudiante 1'],['semestre1','Semestre estudiante 1'],['titulo','Título del proyecto'],['modalidad','Modalidad'],['area','Área'],['tutor1Nombre','Nombre del tutor 1'],['tutor1Email','Email del tutor 1']];
   for (const [id, label] of reqs) {
     const el = document.getElementById(id);
     if (!el || !el.value.trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
-  }
-  if (esDip) {
-    const modoJur = document.getElementById('diplomadoJuradoModo')?.value || '';
-    if (!document.getElementById('diplomadoFechaInicio')?.value) { toast('Indica la fecha de inicio del diplomado', 'warn'); return; }
-    if (!document.getElementById('diplomadoFechaFin')?.value) { toast('Indica la fecha de fin del diplomado', 'warn'); return; }
-    if (!modoJur) { toast('Indica quién propone el evaluador para el producto', 'warn'); return; }
-    if (modoJur === 'tutor_sugiere') {
-      if (!(document.getElementById('dipJurado1Nombre')?.value || '').trim()) { toast('Completa: Nombre del jurado evaluador sugerido', 'warn'); return; }
-      if (!(document.getElementById('dipJurado1Email')?.value || '').trim()) { toast('Completa: Email del jurado evaluador sugerido', 'warn'); return; }
-    }
   }
   if (numEst >= 2) {
     const e2 = [['cedula2','Cédula estudiante 2'],['nombre2','Nombre estudiante 2'],['email2','Email estudiante 2'],['telefono2','Teléfono estudiante 2'],['semestre2','Semestre estudiante 2']];
@@ -1624,13 +1051,11 @@ async function radicar() {
       if (!el || !String(el.value).trim()) { toast('Completa: ' + label, 'warn'); el && el.focus(); return; }
     }
   }
-  if (!esDip) {
-    const t2n = (document.getElementById('tutor2Nombre')?.value || '').trim();
-    const t2e = (document.getElementById('tutor2Email')?.value || '').trim();
-    if ((t2n && !t2e) || (!t2n && t2e)) { toast('Si indicas tutor 2, completa nombre y email.', 'warn'); return; }
-  }
+  const t2n = (document.getElementById('tutor2Nombre')?.value || '').trim();
+  const t2e = (document.getElementById('tutor2Email')?.value || '').trim();
+  if ((t2n && !t2e) || (!t2n && t2e)) { toast('Si indicas tutor 2, completa nombre y email.', 'warn'); return; }
   const btn = document.getElementById('btnRad');
-  const datos = {
+   const datos = {
     cedula1: document.getElementById('cedula1').value.trim(),
     nombre1: document.getElementById('nombre1').value.trim(),
     email1: document.getElementById('email1').value.trim(),
@@ -1650,37 +1075,23 @@ async function radicar() {
     semestre3: numEst >= 3 ? document.getElementById('semestre3').value : '',
     semillero3: numEst >= 3 ? document.getElementById('semillero3').value.trim() : '',
     titulo: document.getElementById('titulo').value.trim(),
-    modalidad: modalidadVal,
-    area: esDip ? '' : document.getElementById('area').value,
-    tutor1Nombre: esDip ? '' : (document.getElementById('tutor1Nombre')?.value || '').trim(),
-    tutor1Email: esDip ? '' : (document.getElementById('tutor1Email')?.value || '').trim(),
-    tutor1Telefono: esDip ? '' : (document.getElementById('tutor1Telefono')?.value || '').trim(),
-    tutor1Relacion: esDip ? '' : (document.getElementById('tutor1Relacion')?.value || ''),
-    tutor2Nombre: esDip ? '' : (document.getElementById('tutor2Nombre')?.value || '').trim(),
-    tutor2Email: esDip ? '' : (document.getElementById('tutor2Email')?.value || '').trim(),
-    tutor2Telefono: esDip ? '' : (document.getElementById('tutor2Telefono')?.value || '').trim(),
-    tutor2Relacion: esDip ? '' : (document.getElementById('tutor2Relacion')?.value || ''),
-    observaciones: document.getElementById('observaciones')?.value || '',
-    diplomadoFechaInicio: esDip ? (document.getElementById('diplomadoFechaInicio')?.value || '') : '',
-    diplomadoFechaFin:    esDip ? (document.getElementById('diplomadoFechaFin')?.value    || '') : '',
-    diplomadoJuradoModo:  esDip ? (document.getElementById('diplomadoJuradoModo')?.value  || '') : '',
-    dipJurado1Nombre:        esDip ? (document.getElementById('dipJurado1Nombre')?.value        || '').trim() : '',
-    dipJurado1Email:         esDip ? (document.getElementById('dipJurado1Email')?.value         || '').trim() : '',
-    dipJurado1Telefono:      esDip ? (document.getElementById('dipJurado1Telefono')?.value      || '').trim() : '',
-    dipJurado1Especialidad:  esDip ? (document.getElementById('dipJurado1Especialidad')?.value  || '').trim() : '',
-    dipJurado1AceptaPropuesta: esDip ? (document.getElementById('dipJurado1AceptaPropuesta')?.value || '') : '',
-    dipJurado2Nombre:   esDip ? (document.getElementById('dipJurado2Nombre')?.value   || '').trim() : '',
-    dipJurado2Email:    esDip ? (document.getElementById('dipJurado2Email')?.value    || '').trim() : '',
-    dipJurado2Telefono: esDip ? (document.getElementById('dipJurado2Telefono')?.value || '').trim() : '',
-    dipJurado3Nombre:   esDip ? (document.getElementById('dipJurado3Nombre')?.value   || '').trim() : '',
-    dipJurado3Email:    esDip ? (document.getElementById('dipJurado3Email')?.value    || '').trim() : '',
-    dipJurado3Telefono: esDip ? (document.getElementById('dipJurado3Telefono')?.value || '').trim() : '',
+    modalidad: document.getElementById('modalidad').value,
+    area: document.getElementById('area').value,
+    tutor1Nombre: (document.getElementById('tutor1Nombre')?.value || '').trim(),
+    tutor1Email: (document.getElementById('tutor1Email')?.value || '').trim(),
+    tutor1Telefono: (document.getElementById('tutor1Telefono')?.value || '').trim(),
+    tutor1Relacion: document.getElementById('tutor1Relacion')?.value || '',
+    tutor2Nombre: (document.getElementById('tutor2Nombre')?.value || '').trim(),
+    tutor2Email: (document.getElementById('tutor2Email')?.value || '').trim(),
+    tutor2Telefono: (document.getElementById('tutor2Telefono')?.value || '').trim(),
+    tutor2Relacion: document.getElementById('tutor2Relacion')?.value || '',
+    observaciones: document.getElementById('observaciones')?.value || ''
   };
 
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Radicando...';
   try {
-   const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'createRadicacion', datos, emailEstudiante: user.email, token: TOKEN }) });
+   const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'createRadicacion', datos, emailEstudiante: user.email, token: tokenActual() }) });
     const d = await res.json();
     if (d.success) {
       document.getElementById('numRadResult').textContent = d.numero;
@@ -1715,76 +1126,12 @@ function actualizarContadorGeneral(radicacion) {
 }
 
 
-(function trapRadEstModales() {
-  const md = document.getElementById('modalDet');
-  if (md) md.addEventListener('click', function(e){ if (e.target === md) md.classList.remove('open'); });
-  const mz = document.getElementById('modalTrazaEst');
-  if (mz) mz.addEventListener('click', function(e){ if (e.target === mz) mz.classList.remove('open'); });
-})();
-
-// ── CANCELACIÓN DE RADICACIÓN ────────────────────────────────
-let _cancelRowFase1 = null;
-let _cancelNumero   = null;
-
-function abrirModalCancelarRad(rowIndex, numero) {
-  _cancelRowFase1 = rowIndex;
-  _cancelNumero   = numero;
-  document.getElementById('cancelMotivo').value = '';
-  document.getElementById('cancelModalError').style.display = 'none';
-  document.getElementById('modalCancelarRad').style.display = 'flex';
-}
-
-function cerrarModalCancelarRad() {
-  document.getElementById('modalCancelarRad').style.display = 'none';
-  _cancelRowFase1 = null;
-  _cancelNumero   = null;
-}
-
-async function enviarSolicitudCancelacion() {
-  const motivo = document.getElementById('cancelMotivo').value.trim();
-  const errEl  = document.getElementById('cancelModalError');
-  errEl.style.display = 'none';
-  if (motivo.length < 12) { errEl.textContent = 'Describa el motivo (mínimo 12 caracteres).'; errEl.style.display = 'block'; return; }
-  const btn = document.getElementById('cancelBtnEnviar');
-  btn.disabled = true; btn.textContent = 'Enviando…';
-  try {
-    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
-      action: 'crearSolicitudCancelarRad', token: TOKEN,
-      rowIndexFase1: _cancelRowFase1, motivoEstudiante: motivo
-    })});
-    const d = await res.json();
-    if (d.success) {
-      cerrarModalCancelarRad();
-      toast('Solicitud de cancelación enviada. La coordinación la revisará.', 'ok');
-      await cargarMisRad();
-    } else {
-      errEl.textContent = d.error || 'Error al enviar'; errEl.style.display = 'block';
-    }
-  } catch(e) { errEl.textContent = 'Error de conexión'; errEl.style.display = 'block'; }
-  finally { btn.disabled = false; btn.textContent = 'Enviar solicitud'; }
-}
+document.getElementById('modalDet').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalDet')) document.getElementById('modalDet').classList.remove('open');
+});
+document.getElementById('modalCancelarRad').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalCancelarRad')) document.getElementById('modalCancelarRad').classList.remove('open');
+});
 </script>
-
-<!-- MODAL CANCELAR RADICACIÓN -->
-<div id="modalCancelarRad" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#1a1f2e;border:1px solid rgba(239,68,68,.3);border-radius:16px;max-width:500px;width:100%;padding:28px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-      <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Solicitar cancelación de radicación</div>
-      <button onclick="cerrarModalCancelarRad()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
-    </div>
-    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:16px;line-height:1.6;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px">
-      ⚠️ Esta solicitud será revisada por la coordinación. Si es aprobada, su radicación quedará <strong>Cancelada</strong> y podrá crear una nueva. Esta acción no es automática.
-    </div>
-    <div style="margin-bottom:14px">
-      <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Motivo de la cancelación *</label>
-      <textarea id="cancelMotivo" rows="4" placeholder="Explique por qué desea cancelar esta radicación (mínimo 12 caracteres)…" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
-    </div>
-    <div id="cancelModalError" style="color:#f87171;font-size:13px;margin-bottom:10px;display:none"></div>
-    <div style="display:flex;gap:10px">
-      <button id="cancelBtnEnviar" onclick="enviarSolicitudCancelacion()" style="flex:1;background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:8px;padding:10px 18px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Enviar solicitud</button>
-      <button onclick="cerrarModalCancelarRad()" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 18px;color:rgba(255,255,255,.7);font-size:13px;cursor:pointer">Cancelar</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
