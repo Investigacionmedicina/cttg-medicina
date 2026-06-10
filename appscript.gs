@@ -1180,10 +1180,10 @@ function diagnosticarFilasLoginUsuarios() {
 // … AL(38)=DiasRestantes | AM(39)=Diplomado inicio | AN(40)=Diplomado fin
 // AO–AQ jurado sugerido 1 | AR–AT jurado 2 | AU–AW jurado 3 (nombre, email, tel c/u)
 
-/** Garantiza columnas para fechas diplomado y datos del jurado (1 bloque; cols 44–49 jurados extra; 50–51 esp/acuerdo j1; 52 modo jurado). */
+/** Garantiza columnas para fechas diplomado, datos del jurado y resultado (nota/acta). */
 function asegurarColumnasFase1DiplomadoJurados(sheet) {
   if (!sheet) return;
-  var need = 52;
+  var need = 55;
   if (sheet.getMaxColumns() < need) {
     sheet.insertColumnsAfter(sheet.getMaxColumns(), need - sheet.getMaxColumns());
   }
@@ -1201,7 +1201,10 @@ function asegurarColumnasFase1DiplomadoJurados(sheet) {
     [49, "Dip jurado3 tel"],
     [50, "Dip jurado1 especialidad"],
     [51, "Dip jurado1 acuerdo propuesta"],
-    [52, "Dip jurado modo"]
+    [52, "Dip jurado modo"],
+    [53, "Dip nota"],
+    [54, "Dip acta"],
+    [55, "Dip fecha resultado"]
   ];
   for (var h = 0; h < hdrs.length; h++) {
     var col = hdrs[h][0];
@@ -1438,7 +1441,10 @@ function mapearFilaFase1(r, rowIndex) {
     dipJurado3Telefono:  String(r[48] || ""),
     dipJurado1Especialidad:   String(r[49] || ""),
     dipJurado1AceptaPropuesta: String(r[50] || ""),
-    diplomadoJuradoModo:      String(r[51] || "")
+    diplomadoJuradoModo:      String(r[51] || ""),
+    dipNota:              r.length > 52 ? String(r[52] || "") : "",
+    dipActa:              r.length > 53 ? String(r[53] || "") : "",
+    dipFechaResultado:    r.length > 54 ? formatearFecha(r[54] || "") : ""
   };
 }
 
@@ -3748,6 +3754,11 @@ function completarFase3(rowIndex, nota, numeroActa, producto, descripcion, email
  * Registra el resultado final de un Diplomado (acta + nota) después de aprobación del Comité Técnico.
  * Crea una fila en Fase 3 con los datos mínimos y actualiza Fase 1 a Sustentado/Reprobado.
  */
+/**
+ * Registra el resultado final de un Diplomado (nota + acta) almacenando los datos
+ * directamente en Fase 1 (cols 53-55). Estado final: "Completado".
+ * No usa Fase 3, ya que el Diplomado no tiene sustentación.
+ */
 function registrarResultadoDiplomado(rowIndexF1, nota, numeroActa, sesion) {
   if (!sesion || sesion.rol !== "coordinadora") {
     return { success: false, error: "No autorizado" };
@@ -3762,16 +3773,16 @@ function registrarResultadoDiplomado(rowIndexF1, nota, numeroActa, sesion) {
 
   var sheetF1 = getSheet("Fase1");
   if (!sheetF1) return { success: false, error: "Hoja Fase1 no encontrada" };
+  asegurarColumnasFase1DiplomadoJurados(sheetF1);
 
   var ri = parseInt(rowIndexF1, 10);
   var dataF1 = sheetF1.getDataRange().getValues();
   var rowData = dataF1[ri - 1];
   if (!rowData) return { success: false, error: "Fila Fase 1 no encontrada" };
 
-  var numero        = String(rowData[1]  || "").trim();
-  var emailEst      = String(rowData[2]  || "").trim();
-  var modalidad     = String(rowData[22] || "").trim().toLowerCase();
-  var estadoActual  = String(rowData[32] || "").trim();
+  var numero       = String(rowData[1]  || "").trim();
+  var modalidad    = String(rowData[22] || "").trim().toLowerCase();
+  var estadoActual = String(rowData[32] || "").trim();
 
   if (!modalidad.includes("diplomado") && !modalidad.includes("diplom")) {
     return { success: false, error: "Esta radicación no es de modalidad Diplomado" };
@@ -3780,59 +3791,19 @@ function registrarResultadoDiplomado(rowIndexF1, nota, numeroActa, sesion) {
     return { success: false, error: "La radicación debe estar en estado Aprobado para registrar el resultado" };
   }
 
-  // Crear fila en Fase 3 con datos mínimos del Diplomado
-  var sheetF3 = getSheetFase3();
-  if (!sheetF3) return { success: false, error: "Hoja Fase 3 no encontrada" };
-  asegurarColumnasEstadoFase3(sheetF3);
+  // Guardar nota, acta y fecha en cols 53, 54, 55 de Fase 1
+  sheetF1.getRange(ri, 53).setValue(notaNum);
+  sheetF1.getRange(ri, 54).setValue(String(numeroActa).trim());
+  sheetF1.getRange(ri, 55).setValue(hoy());
 
-  var estadoFinal = notaNum >= 3 ? "Sustentado" : "Reprobado";
-  var newRowF3 = sheetF3.getLastRow() + 1;
-  sheetF3.appendRow([
-    newRowF3,           // 1  ID
-    numero,             // 2  Número Radicación
-    emailEst,           // 3  Email Estudiante
-    "",                 // 4  Fecha Sustentación
-    "",                 // 5  Semestre
-    "",                 // 6  Alerta S12
-    "",                 // 7  Anexo A7
-    "",                 // 8  Artículo
-    "",                 // 9  Guía Autores
-    "",                 // 10 Aval CCEB
-    "",                 // 11 Turnitin doc
-    "",                 // 12 % Turnitin
-    hoy(),              // 13 Fecha Carga
-    "",                 // 14 Jurado 1 Nombre
-    "",                 // 15 Jurado 1 Tel
-    "",                 // 16 Jurado 1 Email
-    "",                 // 17 Jurado 2 Nombre
-    "",                 // 18 Jurado 2 Tel
-    "",                 // 19 Jurado 2 Email
-    "",                 // 20 Nombres Acta
-    hoy(),              // 21 Fecha Asignada
-    String(numeroActa), // 22 Número Acta
-    String(notaNum),    // 23 Nota
-    "",                 // 24 Generó Producto
-    "",                 // 25 Descripción Producto
-    hoy(),              // 26 Fecha Cierre
-    "",                 // 27 Hora
-    "Diplomado",        // 28 Observaciones / Lugar (marca que es Diplomado)
-    estadoFinal,        // 29 Estado Solicitud
-    "Resultado Diplomado registrado por coordinación", // 30 Observaciones Estado
-    "",                 // 31 Jurado 1 Tel réplica
-    "",                 // 32 Jurado 2 Tel réplica
-    "",                 // 33 Jurado 1 Especialidad
-    ""                  // 34 Jurado 2 Especialidad
-  ]);
+  // Cambiar estado a "Completado" (estado propio de Diplomado)
+  sheetF1.getRange(ri, 33).setValue("Completado");
+  notificarCambioEstado(ri, "Completado", { nota: notaNum, acta: numeroActa });
 
-  // Actualizar estado en Fase 1
-  sheetF1.getRange(ri, 33).setValue(estadoFinal);
-  notificarCambioEstado(ri, estadoFinal, { nota: notaNum, acta: numeroActa });
-
-  registrarTrazabilidadSustentacion(numero, newRowF3, "RESULTADO_DIPLOMADO", estadoFinal, sesion.email || "", "Nota: " + notaNum + " | Acta: " + numeroActa);
   registrarAuditoria(sesion.email || "", "RESULTADO_DIPLOMADO", numero + " | Nota: " + notaNum + " | Acta: " + numeroActa);
-  registrarHistorial(numero, "FASE3", "RESULTADO_DIPLOMADO", estadoActual, estadoFinal, sesion.email || "", "", "Nota: " + notaNum + " | Acta: " + numeroActa);
+  registrarHistorial(numero, "DIPLOMADO", "RESULTADO_DIPLOMADO", estadoActual, "Completado", sesion.email || "", "", "Nota: " + notaNum + " | Acta: " + numeroActa);
 
-  return { success: true, estadoFinal: estadoFinal };
+  return { success: true, estadoFinal: "Completado" };
 }
 
 function testSistema() {

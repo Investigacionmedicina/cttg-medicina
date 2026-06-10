@@ -250,6 +250,7 @@
   <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
     <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
     <button class="main-tab" id="tabInformes" onclick="switchPanel('informes', this)">📈 Informes</button>
+    <button class="main-tab" id="tabDiplomado" onclick="switchPanel('diplomado', this)">📚 Diplomado <span class="badge-count" id="badgeDiplomado" style="display:none"></span></button>
     <button class="main-tab" id="tabTerminados" onclick="switchPanel('terminados', this)">🏁 Terminados <span class="badge-count" id="badgeTerminados" style="display:none"></span></button>
     </div>
 
@@ -784,6 +785,38 @@
     </div>
   </div>
 
+  <!-- PANEL DIPLOMADO -->
+  <div class="panel" id="pan-diplomado">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);border-radius:10px">
+      <span style="font-size:18px">📚</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#c4b5fd">Modalidad Diplomado</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px">Seguimiento exclusivo de radicaciones Diplomado. Una vez aprobados por Comité Técnico, registre el acta y la nota para completar el proceso.</div>
+      </div>
+    </div>
+    <div class="filters">
+      <input id="searchDiplomado" placeholder="🔍 Buscar por número, estudiante, título..." oninput="renderTablaDiplomado()">
+      <select id="fEstDiplomado" onchange="renderTablaDiplomado()">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">⏳ Pendiente acta/nota</option>
+        <option value="tramite">🔄 En trámite</option>
+        <option value="Completado">✅ Completado</option>
+      </select>
+      <button class="btn" onclick="cargar()">↻ Actualizar</button>
+      <button class="btn gr" style="margin-left:auto" onclick="exportCSVDiplomado()">⬇ Exportar CSV</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Inicio / Fin Diplomado</th><th>Jurado evaluador</th><th>F. Aprobación CT</th><th>Nota</th><th>N° Acta</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyDiplomado">
+          <tr><td colspan="10" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- PANEL TERMINADOS -->
   <div class="panel" id="pan-terminados">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:10px">
@@ -999,6 +1032,7 @@ function switchPanel(name, btn) {
   else if (name === 'solicitudesCambio') cargarSolicitudesCambio();
   else if (name === 'cancelaciones') cargarSolicitudesCancelacion();
   else if (name === 'terminados') cargarTerminados();
+  else if (name === 'diplomado') renderTablaDiplomado();
   else if (name === 'filtros') {
     (async () => {
       try { if (!actas.length) await cargarActas(); } catch (e) {}
@@ -1264,7 +1298,9 @@ async function cargar() {
       poblarFiltroMod();
       renderTabla();
       actualizarBadgeTerminados();
+      actualizarBadgeDiplomado();
       if (document.getElementById('pan-terminados')?.classList.contains('on')) cargarTerminados();
+      if (document.getElementById('pan-diplomado')?.classList.contains('on')) renderTablaDiplomado();
       if (document.getElementById('pan-informes')?.classList.contains('on')) renderInformes();
       setSyncState('ok');
      } else throw new Error(d.error);
@@ -1420,7 +1456,7 @@ function irTodasRad() {
 
 function esTerminado(r) {
   const est = String(r.estado || 'Radicado');
-  return ['Sustentado','Reprobado','Cancelado'].includes(est);
+  return ['Sustentado','Reprobado','Cancelado','Completado'].includes(est);
 }
 
 function esDiplomadoPendienteResultado(r) {
@@ -1465,7 +1501,6 @@ function renderTabla() {
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
         <button class="${btnAvalCls}" title="${esModalidadDiplomadoDash(r) ? 'Abrir aval de Diplomado (sin tutores/actas)' : 'Validar tutores'}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${btnAvalTxt}</button>
-        ${esDiplomadoPendienteResultado(r) ? `<button class="btn" style="color:#fcd34d;border-color:rgba(252,211,77,.4);font-weight:600" onclick="abrirResultadoDiplomado(${r.rowIndex},'${esc(r.numero||'')}','${esc([r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', '))}')">📋 Acta/Nota</button>` : ''}
         <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
         <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
       </div></td>
@@ -1546,6 +1581,79 @@ function renderTablaTerminados() {
       </div></td>
     </tr>`;
   }).join('');
+}
+
+function renderTablaDiplomado() {
+  const q  = (document.getElementById('searchDiplomado')?.value || '').toLowerCase();
+  const fE = document.getElementById('fEstDiplomado')?.value || '';
+  const TRAMITE = ['Radicado','Revisión','Tutores Avalados','Tutores avalados','Fase 2 Desbloqueada','Pendiente Comité Técnico','Devuelto por Comité Técnico','Devuelto','Aprobado'];
+  const filtered = radicaciones.filter(r => {
+    if (!esModalidadDiplomadoDash(r)) return false;
+    const est = String(r.estado || '');
+    if (fE === 'pendiente' && !esDiplomadoPendienteResultado(r)) return false;
+    if (fE === 'Completado' && est !== 'Completado') return false;
+    if (fE === 'tramite' && !TRAMITE.filter(s => s !== 'Aprobado').includes(est)) return false;
+    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.dipJurado1Nombre||'',r.dipJurado2Nombre||'',r.dipJurado3Nombre||''].join(' ').toLowerCase();
+    return !q || txt.includes(q);
+  });
+  const body = document.getElementById('tbodyDiplomado');
+  if (!body) return;
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="10" class="empty">Sin registros Diplomado que coincidan.</td></tr>'; return; }
+  body.innerHTML = filtered.map(r => {
+    const est = String(r.estado || '');
+    const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).map(n => esc(n)).join('<br>') || '—';
+    const jurado = r.dipJurado1Nombre ? esc(r.dipJurado1Nombre) + (r.dipJurado1Especialidad ? `<br><span style="font-size:10px;color:rgba(255,255,255,.4)">${esc(r.dipJurado1Especialidad)}</span>` : '') : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    const periodo = [r.diplomadoFechaInicio, r.diplomadoFechaFin].filter(Boolean).join(' → ') || '—';
+    const notaTxt = r.dipNota ? `<span style="font-weight:700;color:${parseFloat(r.dipNota)>=3?'#6ee7b7':'#fca5a5'}">${esc(r.dipNota)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    const actaTxt = r.dipActa ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#c4b5fd">${esc(r.dipActa)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    const badgeDip = est === 'Completado'
+      ? '<span class="badge b-sustentado">Completado ✓</span>'
+      : esDiplomadoPendienteResultado(r)
+        ? '<span class="badge" style="background:rgba(252,211,77,.2);color:#fcd34d;border:1px solid rgba(252,211,77,.35)">⏳ Pendiente acta</span>'
+        : badgeEst(est);
+    const btnAccion = esDiplomadoPendienteResultado(r)
+      ? `<button class="btn" style="color:#fcd34d;border-color:rgba(252,211,77,.4);font-weight:600" onclick="abrirResultadoDiplomado(${r.rowIndex},'${esc(r.numero||'')}','${esc([r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', '))}')">📋 Registrar acta/nota</button>`
+      : '';
+    return `<tr>
+      <td><div class="num-rad">${esc(r.numero||'')}</div></td>
+      <td style="font-size:12px;max-width:150px">${nombres}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${escAttr(r.titulo||'')}">${esc(r.titulo||'—')}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(periodo)}</td>
+      <td style="font-size:12px;max-width:140px">${jurado}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaAprobacion)}</td>
+      <td style="text-align:center">${notaTxt}</td>
+      <td style="text-align:center">${actaTxt}</td>
+      <td>${badgeDip}</td>
+      <td><div class="act">
+        ${btnAccion}
+        <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
+        <button class="btn" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function actualizarBadgeDiplomado() {
+  const badge = document.getElementById('badgeDiplomado');
+  if (!badge) return;
+  const n = radicaciones.filter(esDiplomadoPendienteResultado).length;
+  if (n > 0) { badge.textContent = n; badge.style.display = 'flex'; }
+  else badge.style.display = 'none';
+}
+
+function exportCSVDiplomado() {
+  const rows = radicaciones.filter(r => esModalidadDiplomadoDash(r));
+  if (!rows.length) return;
+  const headers = ['N° Radicación','Título','Estudiante 1','Cédula 1','Estudiante 2','Cédula 2','Estudiante 3','Cédula 3','Tutor 1','Jurado evaluador','Inicio Diplomado','Fin Diplomado','F. Aprobación CT','Nota','N° Acta','Fecha Resultado','Estado'];
+  const csv = [headers.join(','), ...rows.map(r => [
+    r.numero, r.titulo, r.nombre1||'', r.cedula1||'', r.nombre2||'', r.cedula2||'', r.nombre3||'', r.cedula3||'',
+    r.tutor1Nombre||'', r.dipJurado1Nombre||'', r.diplomadoFechaInicio||'', r.diplomadoFechaFin||'',
+    r.fechaAprobacion||'', r.dipNota||'', r.dipActa||'', r.dipFechaResultado||'', r.estado||''
+  ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
+  a.download = 'diplomados_cttg.csv';
+  a.click();
 }
 
 function abrirResultadoDiplomado(rowIndex, numero, nombreEstudiantes) {
