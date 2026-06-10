@@ -646,31 +646,31 @@
     <!-- Separador -->
     <div style="border-top:1px solid rgba(255,255,255,.08);margin:28px 0 20px"></div>
 
-    <!-- Sección cancelaciones -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Solicitudes de Cancelación de Radicación</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Los estudiantes pueden solicitar cancelar su radicación activa. Si aprueba, el estado cambia a <strong>Cancelado</strong> y el estudiante podrá crear una nueva radicación.</div>
-      </div>
-      <button class="btn" onclick="cargarSolicitudesCancelacion()">↺ Actualizar</button>
-    </div>
-    <div id="scc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
-
-    <!-- Separador -->
-    <div style="border-top:1px solid rgba(255,255,255,.08);margin:28px 0 20px"></div>
-
-    <!-- Sección cancelación directa por duplicados -->
+    <!-- Sección cancelación directa — acción principal de la coordinadora -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:16px;font-weight:600;color:#fcd34d">⚠ Cancelar radicación directamente</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Busca una radicación activa por número o correo y cancélala sin esperar solicitud del estudiante. Úsalo para limpiar duplicados.</div>
+        <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Cancelar radicación</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Como coordinadora puedes cancelar directamente cualquier radicación activa. Las que tienen <span style="color:#fca5a5">⚠ duplicado</span> aparecen resaltadas automáticamente.</div>
       </div>
       <button class="btn" onclick="renderCancelDirecta()">↺ Actualizar</button>
     </div>
     <div class="filters" style="margin-bottom:14px">
-      <input id="searchCancelDirecta" placeholder="🔍 Buscar por número de radicación o correo..." oninput="renderCancelDirecta()" style="max-width:420px">
+      <input id="searchCancelDirecta" placeholder="🔍 Buscar por número de radicación, correo o nombre..." oninput="renderCancelDirecta()" style="max-width:460px">
     </div>
     <div id="cancelDirecta_lista"></div>
+
+    <!-- Separador -->
+    <div style="border-top:1px solid rgba(255,255,255,.08);margin:28px 0 20px"></div>
+
+    <!-- Sección solicitudes de cancelación enviadas por estudiantes -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:rgba(255,255,255,.6)">📨 Solicitudes de cancelación enviadas por estudiantes</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px">Solicitudes que el estudiante generó desde el portal. Puedes aprobarlas o rechazarlas.</div>
+      </div>
+      <button class="btn" onclick="cargarSolicitudesCancelacion()">↺ Actualizar</button>
+    </div>
+    <div id="scc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
   </div>
 
   <!-- MODAL RESOLVER SOLICITUD DE CAMBIO -->
