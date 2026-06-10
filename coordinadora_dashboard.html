@@ -1574,7 +1574,7 @@ function renderTablaTerminados() {
     // Integrantes con cédula
     const integrantes = [[r.nombre1,r.cedula1],[r.nombre2,r.cedula2],[r.nombre3,r.cedula3]]
       .filter(([n]) => n)
-      .map(([n,c]) => `${esc(n)}${c ? `<br><span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4)">${esc(c)}</span>` : ''}`)
+      .map(([n,c]) => { const cedSpan = c ? '<br><span style="font-family:\'DM Mono\',monospace;font-size:10px;color:rgba(255,255,255,.4)">' + esc(c) + '</span>' : ''; return `${esc(n)}${cedSpan}`; })
       .join('<hr style="border:none;border-top:1px solid rgba(255,255,255,.06);margin:3px 0">');
     // Tutores
     const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).map(t => esc(t)).join('<br>') || '—';
@@ -1904,8 +1904,8 @@ async function abrirHistorialRadicacion(numero) {
       const reconBadge = ev.reconstruido ? ' <span style="font-size:9px;color:rgba(251,191,36,.5)" title="Inferido desde estado actual">≈</span>' : '';
       const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
         <div class="hist-states">
-          ${ev.estadoAnterior ? `<span class="hist-state-old">${esc(ev.estadoAnterior)}</span><span class="hist-arrow">→</span>` : ''}
-          ${ev.estadoNuevo ? `<span class="hist-state-new">${esc(ev.estadoNuevo)}</span>` : ''}
+          ${ev.estadoAnterior ? '<span class="hist-state-old">' + esc(ev.estadoAnterior) + '</span><span class="hist-arrow">→</span>' : ''}
+          ${ev.estadoNuevo ? '<span class="hist-state-new">' + esc(ev.estadoNuevo) + '</span>' : ''}
         </div>` : '';
       return `<div class="hist-event">
         <div>
@@ -1915,9 +1915,9 @@ async function abrirHistorialRadicacion(numero) {
         <div>
           <div class="hist-accion">${esc(accionLabel)}${reconBadge}</div>
           ${stateChange}
-          ${ev.motivo ? `<div class="hist-motivo">💬 ${esc(ev.motivo)}</div>` : ''}
-          ${ev.detalle ? `<div class="hist-detail">📋 ${esc(ev.detalle)}</div>` : ''}
-          ${ev.actor ? `<div class="hist-actor">👤 ${esc(ev.actor)}</div>` : ''}
+          ${ev.motivo ? '<div class="hist-motivo">💬 ' + esc(ev.motivo) + '</div>' : ''}
+          ${ev.detalle ? '<div class="hist-detail">📋 ' + esc(ev.detalle) + '</div>' : ''}
+          ${ev.actor ? '<div class="hist-actor">👤 ' + esc(ev.actor) + '</div>' : ''}
         </div>
       </div>`;
     }).join('');
@@ -2017,7 +2017,7 @@ function verDetalle(ri) {
     ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
     ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
     ${tutorBlock}
-    ${r.notas ? `<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#fcd34d">📝 </span>${esc(r.notas)}</div>` : ''}
+    ${r.notas ? '<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#fcd34d">📝 </span>' + esc(r.notas) + '</div>' : ''}
     <div style="margin-top:14px">
       <button class="btn am" onclick="closeModal('modalDet');abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Cambiar estado</button>
       <button class="${avalCls}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${avalLbl}</button>
@@ -2110,7 +2110,7 @@ const esPendiente = a.estado === 'Pendiente revisión' && !esSolicitud;
         ${urlBtn}
         ${esPendiente ? `<button class="btn gr" onclick="abrirModalActa(${a.rowIndex},'${esc(a.emailEstudiante)}','aprobar','${esc(a.numero||'')}','${esc(a.nombreArchivo||'')}')">✅ Aprobar</button>
         <button class="btn rd" onclick="abrirModalActa(${a.rowIndex},'${esc(a.emailEstudiante)}','rechazar','${esc(a.numero||'')}','${esc(a.nombreArchivo||'')}')">✕ Rechazar</button>` : ''}
-        ${esSolicitud ? `<button class="btn bl" onclick="abrirModalSolicitud(${a.rowIndex},'${esc(a.emailEstudiante)}','${esc(a.numero||'')}')">📨 Ver solicitud</button>` : ''}
+        ${esSolicitud ? '<button class="btn bl" onclick="abrirModalSolicitud(' + a.rowIndex + ',\'' + esc(a.emailEstudiante) + '\',\'' + esc(a.numero||'') + '\')">📨 Ver solicitud</button>' : ''}
       </div></td>
     </tr>`;
   }).join('');
@@ -2375,7 +2375,7 @@ function renderTutores() {
   tbody.innerHTML = filtered.map(t => `<tr>
     <td style="font-weight:600">
       ${esc(t.nombre||'—')}
-      ${(t.nombresOriginales || []).length > 1 ? `<div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:400;margin-top:3px">Unido: ${t.nombresOriginales.map(esc).join(' · ')}</div>` : ''}
+      ${(t.nombresOriginales || []).length > 1 ? '<div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:400;margin-top:3px">Unido: ' + t.nombresOriginales.map(esc).join(' · ') + '</div>' : ''}
     </td>
     <td><span style="font-size:16px;font-weight:700;color:#a78bfa">${t.totalTrabajos||0}</span></td>
     <td>
@@ -2445,7 +2445,7 @@ function abrirDetallesTutor(nombre) {
         </div>
       </div>
     </div>
-    ${(t.nombresOriginales || []).length > 1 ? `<div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:9px;padding:10px;font-size:12px;color:#93c5fd;margin-top:14px">Nombres unidos: ${(t.nombresOriginales || []).map(esc).join(' · ')}</div>` : ''}
+    ${(t.nombresOriginales || []).length > 1 ? '<div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:9px;padding:10px;font-size:12px;color:#93c5fd;margin-top:14px">Nombres unidos: ' + (t.nombresOriginales || []).map(esc).join(' · ') + '</div>' : ''}
     <div style="margin-top:14px">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:8px">Trabajos y fase actual</div>
       <div style="display:flex;flex-direction:column;gap:8px">${trabajosHtml}</div>
@@ -3262,7 +3262,7 @@ function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
         <div style="font-family:monospace;font-size:13px;color:#a78bfa;font-weight:700;margin-bottom:4px">${esc(numero)}</div>
         <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px">${titulo}</div>
         <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">${nombre}</div>
-        ${modalidad ? `<div style="font-size:11px;color:rgba(255,255,255,.35)">Modalidad: ${modalidad}${area ? ' · Área: '+area : ''}</div>` : ''}
+        ${modalidad ? '<div style="font-size:11px;color:rgba(255,255,255,.35)">Modalidad: ' + modalidad + (area ? ' · Área: '+area : '') + '</div>' : ''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
         <span style="background:rgba(167,139,250,.15);color:#c4b5fd;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600">${estado}</span>
@@ -3283,8 +3283,8 @@ function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
   const reconstrCount = eventos.filter(e => e.reconstruido).length;
   html += `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:12px;font-weight:700">
     📋 Historial de decisiones · ${eventos.length} eventos
-    ${realesCount > 0 ? `<span style="color:rgba(167,139,250,.7);margin-left:8px">${realesCount} registros exactos</span>` : ''}
-    ${reconstrCount > 0 ? `<span style="color:rgba(251,191,36,.5);margin-left:8px">${reconstrCount} inferidos desde hojas</span>` : ''}
+    ${realesCount > 0 ? '<span style="color:rgba(167,139,250,.7);margin-left:8px">' + realesCount + ' registros exactos</span>' : ''}
+    ${reconstrCount > 0 ? '<span style="color:rgba(251,191,36,.5);margin-left:8px">' + reconstrCount + ' inferidos desde hojas</span>' : ''}
   </div>`;
 
   html += eventos.map(ev => {
@@ -3294,8 +3294,8 @@ function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
     const reconBadge = ev.reconstruido ? `<span style="font-size:9px;color:rgba(251,191,36,.5);margin-left:6px;vertical-align:middle" title="Inferido desde el estado actual del registro">≈</span>` : '';
     const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
       <div style="display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap">
-        ${ev.estadoAnterior ? `<span style="background:rgba(239,68,68,.15);color:#fca5a5;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoAnterior)}</span><span style="color:rgba(255,255,255,.3);font-size:14px">→</span>` : ''}
-        ${ev.estadoNuevo ? `<span style="background:rgba(16,185,129,.15);color:#6ee7b7;border-radius:4px;padding:3px 9px;font-size:11px">${esc(ev.estadoNuevo)}</span>` : ''}
+        ${ev.estadoAnterior ? '<span style="background:rgba(239,68,68,.15);color:#fca5a5;border-radius:4px;padding:3px 9px;font-size:11px">' + esc(ev.estadoAnterior) + '</span><span style="color:rgba(255,255,255,.3);font-size:14px">→</span>' : ''}
+        ${ev.estadoNuevo ? '<span style="background:rgba(16,185,129,.15);color:#6ee7b7;border-radius:4px;padding:3px 9px;font-size:11px">' + esc(ev.estadoNuevo) + '</span>' : ''}
       </div>` : '';
     const motivoHtml = ev.motivo ? `<div style="background:rgba(251,191,36,.08);border-left:3px solid rgba(251,191,36,.5);padding:8px 12px;border-radius:0 6px 6px 0;margin-top:6px;font-size:12px;color:#fde68a;line-height:1.5"><strong>💬 Motivo / Observación:</strong><br>${esc(ev.motivo)}</div>` : '';
     const detalleHtml = ev.detalle ? `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:5px;font-family:monospace">📋 ${esc(ev.detalle)}</div>` : '';
@@ -3320,7 +3320,7 @@ function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
     html += `<details style="margin-top:20px;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px">
       <summary style="cursor:pointer;font-size:11px;color:rgba(255,255,255,.3);font-weight:600;text-transform:uppercase;letter-spacing:1px">🗂 Registro del sistema (${trazas.length} entradas — autenticaciones, notificaciones)</summary>
       <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.4)">
-        ${trazas.slice(0,50).map(s => `<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-family:monospace;color:rgba(255,255,255,.25)">${esc(String(s.timestamp||'').slice(0,16))}</span> · <strong>${esc(s.accion||'')}</strong> · ${esc(s.detalle||'')}</div>`).join('')}
+        ${trazas.slice(0,50).map(s => '<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-family:monospace;color:rgba(255,255,255,.25)">' + esc(String(s.timestamp||'').slice(0,16)) + '</span> · <strong>' + esc(s.accion||'') + '</strong> · ' + esc(s.detalle||'') + '</div>').join('')}
       </div>
     </details>`;
   }
@@ -3357,8 +3357,8 @@ function exportarInformeRadicacion(numero, evt) {
       <td style="font-family:monospace;font-size:11px;color:#555;white-space:nowrap">${esc(ev.timestamp||'—')}</td>
       <td><span style="background:${faseColorPrint[ev.fase]||'#333'};color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${esc(faseLabelMap[ev.fase]||ev.fase||'')}</span></td>
       <td style="font-weight:600">${esc(accionLabelMap[ev.accion]||String(ev.accion||'').replace(/_/g,' '))}</td>
-      <td style="font-size:11px;color:#333">${ev.estadoAnterior?`<span style="color:#c00">${esc(ev.estadoAnterior)}</span> → `:''}<span style="color:#16a34a;font-weight:600">${esc(ev.estadoNuevo||'')}</span></td>
-      <td style="font-size:11px;color:#333">${ev.motivo ? `<em style="color:#7c4f00">${esc(ev.motivo)}</em>` : ''}</td>
+      <td style="font-size:11px;color:#333">${ev.estadoAnterior ? '<span style="color:#c00">' + esc(ev.estadoAnterior) + '</span> → ' : ''}<span style="color:#16a34a;font-weight:600">${esc(ev.estadoNuevo||'')}</span></td>
+      <td style="font-size:11px;color:#333">${ev.motivo ? '<em style="color:#7c4f00">' + esc(ev.motivo) + '</em>' : ''}</td>
       <td style="font-size:10px;color:#666;font-family:monospace">${esc(ev.actor||'')}</td>
       <td style="font-size:10px;color:#888">${esc(ev.detalle||'')}</td>
     </tr>`).join('');
@@ -3386,7 +3386,7 @@ function exportarInformeRadicacion(numero, evt) {
     <div class="meta">
       <strong>${esc(titulo)}</strong>
       <span>Estudiante(s): ${esc(nombres)}</span>
-      ${modalidad ? `<span>Modalidad: ${esc(modalidad)}${area?' · Área: '+esc(area):''}</span>` : ''}
+      ${modalidad ? '<span>Modalidad: ' + esc(modalidad) + (area ? ' · Área: '+esc(area) : '') + '</span>' : ''}
       <span>Estado actual: <strong>${esc(estado)}</strong></span>
     </div>
     <table>
