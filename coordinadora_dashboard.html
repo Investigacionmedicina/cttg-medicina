@@ -655,6 +655,22 @@
       <button class="btn" onclick="cargarSolicitudesCancelacion()">↺ Actualizar</button>
     </div>
     <div id="scc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
+
+    <!-- Separador -->
+    <div style="border-top:1px solid rgba(255,255,255,.08);margin:28px 0 20px"></div>
+
+    <!-- Sección cancelación directa por duplicados -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fcd34d">⚠ Cancelar radicación directamente</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Busca una radicación activa por número o correo y cancélala sin esperar solicitud del estudiante. Úsalo para limpiar duplicados.</div>
+      </div>
+      <button class="btn" onclick="renderCancelDirecta()">↺ Actualizar</button>
+    </div>
+    <div class="filters" style="margin-bottom:14px">
+      <input id="searchCancelDirecta" placeholder="🔍 Buscar por número de radicación o correo..." oninput="renderCancelDirecta()" style="max-width:420px">
+    </div>
+    <div id="cancelDirecta_lista"></div>
   </div>
 
   <!-- MODAL RESOLVER SOLICITUD DE CAMBIO -->
@@ -680,6 +696,26 @@
 
   <!-- pan-cancelaciones mantenido como alias invisible para compatibilidad con referencias existentes -->
   <div id="pan-cancelaciones" style="display:none"></div>
+
+  <!-- MODAL CANCELAR DIRECTA -->
+  <div class="modal-bg" id="modalCancelDirecta">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3>🗑 Cancelar radicación</h3>
+        <button class="btn" onclick="closeModal('modalCancelDirecta')">✕</button>
+      </div>
+      <div id="mCancelDirectaInfo" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:9px;padding:12px 14px;font-size:13px;color:rgba(255,255,255,.8);margin-bottom:16px"></div>
+      <div class="mfg">
+        <label>Motivo / observación (opcional)</label>
+        <textarea id="mCancelDirectaObs" rows="3" placeholder="Ej: Duplicado — se conserva la radicación XXXX" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div id="mCancelDirectaError" style="color:#f87171;font-size:13px;display:none;margin-bottom:10px"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+        <button class="btn" onclick="closeModal('modalCancelDirecta')">Cancelar</button>
+        <button class="btn rd" id="btnConfirmarCancelDirecta" onclick="confirmarCancelDirecta()">🗑 Confirmar cancelación</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL RESOLVER CANCELACIÓN -->
   <div id="modalCancelacion" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;overflow-y:auto;padding:20px">
@@ -1040,7 +1076,7 @@ function switchPanel(name, btn) {
     poblarFiltroEstadosInforme();
     renderInformes();
   }
-  else if (name === 'solicitudesCambio') { cargarSolicitudesCambio(); cargarSolicitudesCancelacion(); }
+  else if (name === 'solicitudesCambio') { cargarSolicitudesCambio(); cargarSolicitudesCancelacion(); renderCancelDirecta(); }
   else if (name === 'terminados') cargarTerminados();
   else if (name === 'diplomado') renderTablaDiplomado();
   else if (name === 'filtros') {
@@ -4168,6 +4204,120 @@ async function resolverSolicitudCambio(decision) {
     toast(msgs[decision] || 'Resuelto', 'ok');
     await cargarSolicitudesCambio();
   } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+}
+
+// ── CANCELAR DIRECTA (coordinadora cancela sin solicitud del estudiante) ──
+let cancelDirectaActual = null;
+
+function renderCancelDirecta() {
+  const el = document.getElementById('cancelDirecta_lista');
+  if (!el) return;
+  const q = (document.getElementById('searchCancelDirecta')?.value || '').toLowerCase().trim();
+
+  // Detectar duplicados: correos con más de 1 radicación activa
+  const emailMap = {};
+  radicaciones.filter(r => !esTerminado(r)).forEach(r => {
+    const emails = [r.emailEstudiante, r.email1, r.email2, r.email3].filter(Boolean).map(e => e.toLowerCase());
+    emails.forEach(e => {
+      if (!emailMap[e]) emailMap[e] = [];
+      if (!emailMap[e].find(x => x.rowIndex === r.rowIndex)) emailMap[e].push(r);
+    });
+  });
+  const duplicados = Object.entries(emailMap).filter(([, rads]) => rads.length > 1);
+
+  // Si hay búsqueda, mostrar coincidencias; si no, mostrar solo duplicados
+  let filas = [];
+  if (q) {
+    filas = radicaciones.filter(r => {
+      if (esTerminado(r)) return false;
+      return (r.numero||'').toLowerCase().includes(q) ||
+             (r.emailEstudiante||'').toLowerCase().includes(q) ||
+             (r.email1||'').toLowerCase().includes(q) ||
+             (r.nombre1||'').toLowerCase().includes(q);
+    });
+  } else {
+    // Solo mostrar duplicados automáticamente
+    const vistos = new Set();
+    duplicados.forEach(([, rads]) => rads.forEach(r => { if (!vistos.has(r.rowIndex)) { vistos.add(r.rowIndex); filas.push(r); } }));
+  }
+
+  if (!filas.length) {
+    el.innerHTML = q
+      ? '<div class="empty" style="padding:20px;text-align:center;color:rgba(255,255,255,.3)">Sin radicaciones activas que coincidan.</div>'
+      : '<div class="empty" style="padding:20px;text-align:center;color:rgba(255,255,255,.3)">✅ No se detectan radicaciones duplicadas activas.</div>';
+    return;
+  }
+
+  // Agrupar por correo para contexto visual
+  const grupos = {};
+  filas.forEach(r => {
+    const key = (r.emailEstudiante || r.email1 || r.rowIndex).toLowerCase();
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(r);
+  });
+
+  el.innerHTML = Object.entries(grupos).map(([, rads]) => {
+    const correo = rads[0].emailEstudiante || rads[0].email1 || '—';
+    const esDup = rads.length > 1 || (emailMap[correo.toLowerCase()]||[]).length > 1;
+    return rads.map(r => {
+      const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', ') || '—';
+      return '<div style="background:rgba(252,211,77,.04);border:1px solid rgba(252,211,77,' + (esDup?'.25':'.1') + ');border-radius:12px;padding:14px 16px;margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">' +
+          '<div>' +
+            '<div style="font-weight:600;color:#fff;font-size:14px">' + esc(r.numero||'') + (esDup ? ' <span style="font-size:11px;color:#fca5a5;font-weight:400">⚠ duplicado</span>' : '') + '</div>' +
+            '<div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">' + esc(correo) + '</div>' +
+            '<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:3px">' + esc(nombres) + '</div>' +
+            '<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">' + esc(r.modalidad||'') + ' · ' + badgeEst(r.estado||'Radicado') + '</div>' +
+          '</div>' +
+          '<button class="btn rd" style="font-size:12px;padding:6px 14px" onclick="abrirCancelDirecta(' + r.rowIndex + ')">🗑 Cancelar</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }).join('');
+}
+
+function abrirCancelDirecta(rowIndex) {
+  const r = radicaciones.find(x => x.rowIndex === rowIndex);
+  if (!r) return;
+  cancelDirectaActual = r;
+  document.getElementById('mCancelDirectaInfo').innerHTML =
+    '<strong style="color:#fca5a5">' + esc(r.numero||'') + '</strong> · ' + esc([r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', ')) +
+    '<br><span style="font-size:11px;color:rgba(255,255,255,.45)">Estado actual: ' + esc(r.estado||'Radicado') + ' · ' + esc(r.emailEstudiante||r.email1||'') + '</span>' +
+    '<br><span style="font-size:11px;color:#fca5a5;margin-top:4px;display:block">Esta acción cambiará el estado a <strong>Cancelado</strong> y saldrá del panel principal.</span>';
+  document.getElementById('mCancelDirectaObs').value = '';
+  document.getElementById('mCancelDirectaError').style.display = 'none';
+  document.getElementById('btnConfirmarCancelDirecta').disabled = false;
+  document.getElementById('btnConfirmarCancelDirecta').textContent = '🗑 Confirmar cancelación';
+  document.getElementById('modalCancelDirecta').classList.add('open');
+}
+
+async function confirmarCancelDirecta() {
+  if (!cancelDirectaActual) return;
+  const obs = document.getElementById('mCancelDirectaObs').value.trim();
+  const btn = document.getElementById('btnConfirmarCancelDirecta');
+  const errEl = document.getElementById('mCancelDirectaError');
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Cancelando...';
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
+      action: 'updateEstado',
+      rowIndex: cancelDirectaActual.rowIndex,
+      estado: 'Cancelado',
+      notas: obs || 'Cancelado por coordinadora',
+      emailCoord: admin.email,
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error || 'Error al cancelar');
+    closeModal('modalCancelDirecta');
+    toast('Radicación ' + (cancelDirectaActual.numero||'') + ' cancelada ✓', 'ok');
+    cancelDirectaActual = null;
+    await cargar();
+    renderCancelDirecta();
+  } catch(e) {
+    errEl.textContent = e.message; errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = '🗑 Confirmar cancelación';
+  }
 }
 
 // ── CANCELACIONES DE RADICACIÓN ──────────────────────────────
