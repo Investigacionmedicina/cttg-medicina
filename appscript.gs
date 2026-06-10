@@ -81,6 +81,7 @@ function handleRequest(e, body) {
       case "updateFase3Estado": result = updateFase3Estado(body.rowIndex, body.estado, body.observaciones, body.emailCoord); break;
       case "updateFase3Asignacion": result = updateFase3Asignacion(body.rowIndex, body.fechaSustentacion, body.horaSustentacion, body.lugar, body.jurado1, body.jurado2, body.emailCoord); break;
       case "completarFase3":       result = completarFase3(body.rowIndex, body.nota, body.numeroActa, body.producto, body.descripcion, body.emailCoord); break;
+      case "registrarResultadoDiplomado": result = registrarResultadoDiplomado(body.rowIndexF1, body.nota, body.numeroActa, sesion); break;
       case "repararEstadosFase1":  result = repararEstadosFase1(); break;
       case "crearSolicitudModificarRad": result = crearSolicitudModificarRad(sesion, body); break;
       case "getMisSolicitudesModRad": result = getMisSolicitudesModRad(sesion); break;
@@ -3741,6 +3742,97 @@ function completarFase3(rowIndex, nota, numeroActa, producto, descripcion, email
   registrarAuditoria(emailCoord, "COMPLETAR_FASE3", numero + " | Nota: " + notaNum);
   registrarHistorial(numero, "FASE3", "COMPLETAR_FASE3", "", estadoFinal, emailCoord || "", "", "Nota: " + notaNum + " | Acta: " + (numeroActa || "") + " | Producto: " + (producto || "NO"));
   return { success: true };
+}
+
+/**
+ * Registra el resultado final de un Diplomado (acta + nota) después de aprobación del Comité Técnico.
+ * Crea una fila en Fase 3 con los datos mínimos y actualiza Fase 1 a Sustentado/Reprobado.
+ */
+function registrarResultadoDiplomado(rowIndexF1, nota, numeroActa, sesion) {
+  if (!sesion || sesion.rol !== "coordinadora") {
+    return { success: false, error: "No autorizado" };
+  }
+  var notaNum = parseFloat(nota);
+  if (isNaN(notaNum) || notaNum < 0 || notaNum > 5) {
+    return { success: false, error: "Nota inválida (debe ser 0–5)" };
+  }
+  if (!numeroActa || String(numeroActa).trim() === "") {
+    return { success: false, error: "El número de acta es obligatorio" };
+  }
+
+  var sheetF1 = getSheet("Fase1");
+  if (!sheetF1) return { success: false, error: "Hoja Fase1 no encontrada" };
+
+  var ri = parseInt(rowIndexF1, 10);
+  var dataF1 = sheetF1.getDataRange().getValues();
+  var rowData = dataF1[ri - 1];
+  if (!rowData) return { success: false, error: "Fila Fase 1 no encontrada" };
+
+  var numero        = String(rowData[1]  || "").trim();
+  var emailEst      = String(rowData[2]  || "").trim();
+  var modalidad     = String(rowData[22] || "").trim().toLowerCase();
+  var estadoActual  = String(rowData[32] || "").trim();
+
+  if (!modalidad.includes("diplomado") && !modalidad.includes("diplom")) {
+    return { success: false, error: "Esta radicación no es de modalidad Diplomado" };
+  }
+  if (estadoActual !== "Aprobado") {
+    return { success: false, error: "La radicación debe estar en estado Aprobado para registrar el resultado" };
+  }
+
+  // Crear fila en Fase 3 con datos mínimos del Diplomado
+  var sheetF3 = getSheetFase3();
+  if (!sheetF3) return { success: false, error: "Hoja Fase 3 no encontrada" };
+  asegurarColumnasEstadoFase3(sheetF3);
+
+  var estadoFinal = notaNum >= 3 ? "Sustentado" : "Reprobado";
+  var newRowF3 = sheetF3.getLastRow() + 1;
+  sheetF3.appendRow([
+    newRowF3,           // 1  ID
+    numero,             // 2  Número Radicación
+    emailEst,           // 3  Email Estudiante
+    "",                 // 4  Fecha Sustentación
+    "",                 // 5  Semestre
+    "",                 // 6  Alerta S12
+    "",                 // 7  Anexo A7
+    "",                 // 8  Artículo
+    "",                 // 9  Guía Autores
+    "",                 // 10 Aval CCEB
+    "",                 // 11 Turnitin doc
+    "",                 // 12 % Turnitin
+    hoy(),              // 13 Fecha Carga
+    "",                 // 14 Jurado 1 Nombre
+    "",                 // 15 Jurado 1 Tel
+    "",                 // 16 Jurado 1 Email
+    "",                 // 17 Jurado 2 Nombre
+    "",                 // 18 Jurado 2 Tel
+    "",                 // 19 Jurado 2 Email
+    "",                 // 20 Nombres Acta
+    hoy(),              // 21 Fecha Asignada
+    String(numeroActa), // 22 Número Acta
+    String(notaNum),    // 23 Nota
+    "",                 // 24 Generó Producto
+    "",                 // 25 Descripción Producto
+    hoy(),              // 26 Fecha Cierre
+    "",                 // 27 Hora
+    "Diplomado",        // 28 Observaciones / Lugar (marca que es Diplomado)
+    estadoFinal,        // 29 Estado Solicitud
+    "Resultado Diplomado registrado por coordinación", // 30 Observaciones Estado
+    "",                 // 31 Jurado 1 Tel réplica
+    "",                 // 32 Jurado 2 Tel réplica
+    "",                 // 33 Jurado 1 Especialidad
+    ""                  // 34 Jurado 2 Especialidad
+  ]);
+
+  // Actualizar estado en Fase 1
+  sheetF1.getRange(ri, 33).setValue(estadoFinal);
+  notificarCambioEstado(ri, estadoFinal, { nota: notaNum, acta: numeroActa });
+
+  registrarTrazabilidadSustentacion(numero, newRowF3, "RESULTADO_DIPLOMADO", estadoFinal, sesion.email || "", "Nota: " + notaNum + " | Acta: " + numeroActa);
+  registrarAuditoria(sesion.email || "", "RESULTADO_DIPLOMADO", numero + " | Nota: " + notaNum + " | Acta: " + numeroActa);
+  registrarHistorial(numero, "FASE3", "RESULTADO_DIPLOMADO", estadoActual, estadoFinal, sesion.email || "", "", "Nota: " + notaNum + " | Acta: " + numeroActa);
+
+  return { success: true, estadoFinal: estadoFinal };
 }
 
 function testSistema() {

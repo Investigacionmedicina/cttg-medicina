@@ -226,7 +226,8 @@
     <div class="mc c1 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('protocolo')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('protocolo');}"><div class="ml">Protocolo · Fase 2</div><div class="mv" id="mProtF2">—</div><div class="mh">«Fase 2 Desbloqueada» · tab Protocolo</div></div>
     <div class="mc c5 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('comite')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('comite');}"><div class="ml">Pendiente comité</div><div class="mv" id="mPend">—</div><div class="mh">Decisión pendiente CT · tab Comité Técnico</div></div>
     <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'});}"><div class="ml">Dev. por comité</div><div class="mv" id="mDevComite">—</div><div class="mh">Corrección post CT · tab Radicaciones</div></div>
-    <div class="mc c2 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Aprobado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado'});}"><div class="ml">Aprobadas comité</div><div class="mv" id="mApro">—</div><div class="mh">Listas para tramitar sustentación · luego tab Sustentación</div></div>
+    <div class="mc c2 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Aprobado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado'});}"><div class="ml">Aprobadas comité</div><div class="mv" id="mApro">—</div><div class="mh">Listas para sustentación (o registrar acta/nota si es Diplomado) · tab Radicaciones</div></div>
+    <div class="mc c5 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Aprobado',fMod:'diplomado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado',fMod:'diplomado'});}"><div class="ml">🎓 Diplomado · Acta pendiente</div><div class="mv" id="mDipPendActa">—</div><div class="mh">Diplomados aprobados que aún no tienen nota y acta registradas</div></div>
     <div class="mc c3 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('fase3')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('fase3');}"><div class="ml">En sustentación · cierre</div><div class="mv" id="mEnSust">—</div><div class="mh">Fase sustentación, sustentado o reprobado · tab Sustentación</div></div>
     <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto'});}"><div class="ml">Devolución coord.</div><div class="mv" id="mDev">—</div><div class="mh">Devuelto por coordinación · tab Radicaciones</div></div>
     <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}"><div class="ml">En revisión</div><div class="mv" id="mRev">—</div><div class="mh">Estado Revisión · tab Radicaciones</div></div>
@@ -818,6 +819,32 @@
 
  </main>
 
+<!-- MODAL RESULTADO DIPLOMADO -->
+<div class="modal-bg" id="modalResultadoDip">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>📋 Registrar Acta y Nota — Diplomado</h3>
+      <button class="btn" onclick="closeModal('modalResultadoDip')">✕</button>
+    </div>
+    <div id="mDipInfo" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:9px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:16px"></div>
+    <div class="mfg">
+      <label>Nota de calificación * (0 – 5)</label>
+      <input type="number" id="mDipNota" min="0" max="5" step="0.1" placeholder="Ej: 4.5" style="width:100%">
+    </div>
+    <div class="mfg">
+      <label>Número de Acta *</label>
+      <input type="text" id="mDipActa" placeholder="Ej: ACTA-001-2025">
+    </div>
+    <div id="mDipError" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px;display:none"></div>
+    <input type="hidden" id="mDipRowIndex">
+    <input type="hidden" id="mDipNumero">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalResultadoDip')">Cancelar</button>
+      <button class="btn-action" id="btnGuardarDip" onclick="guardarResultadoDiplomado()">Guardar y notificar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL ESTADO RADICACIÓN -->
 <div class="modal-bg" id="modalEst">
   <div class="modal">
@@ -1277,6 +1304,7 @@ function actualizarMetricas() {
     if (['Pendiente Comité','Pendiente Comité Técnico'].includes(est)) s.pendienteComite++;
     if (est === 'Devuelto por Comité Técnico') s.devComite++;
     if (est === 'Aprobado') s.aprobado++;
+    if (esDiplomadoPendienteResultado(r)) s.dipPendActa = (s.dipPendActa||0) + 1;
     if (est === 'Devuelto') s.devCoord++;
     if (eLow.includes('sustentado') || eLow.includes('reprobado') || eLow.includes('fase 3') || eLow.includes('sustentaci')) {
       s.enSustCierre++;
@@ -1301,6 +1329,7 @@ function actualizarMetricas() {
   setTxt('mPend', s.pendienteComite);
   setTxt('mDevComite', s.devComite);
   setTxt('mApro', s.aprobado);
+  setTxt('mDipPendActa', s.dipPendActa || 0);
   setTxt('mDev', s.devCoord);
   setTxt('mEnSust', s.enSustCierre);
   setTxt('mRev', s.revision);
@@ -1317,6 +1346,7 @@ function actualizarMetricas() {
   dimCard('mPend', s.pendienteComite);
   dimCard('mDevComite', s.devComite);
   dimCard('mApro', s.aprobado);
+  dimCard('mDipPendActa', s.dipPendActa || 0);
   dimCard('mEnSust', s.enSustCierre);
   dimCard('mDev', s.devCoord);
   dimCard('mRev', s.revision);
@@ -1390,9 +1420,11 @@ function irTodasRad() {
 
 function esTerminado(r) {
   const est = String(r.estado || 'Radicado');
-  if (['Sustentado','Reprobado','Cancelado'].includes(est)) return true;
-  if (esModalidadDiplomadoDash(r) && est === 'Aprobado') return true;
-  return false;
+  return ['Sustentado','Reprobado','Cancelado'].includes(est);
+}
+
+function esDiplomadoPendienteResultado(r) {
+  return esModalidadDiplomadoDash(r) && String(r.estado || '') === 'Aprobado';
 }
 
 function badgeEst(est) {
@@ -1433,6 +1465,7 @@ function renderTabla() {
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
         <button class="${btnAvalCls}" title="${esModalidadDiplomadoDash(r) ? 'Abrir aval de Diplomado (sin tutores/actas)' : 'Validar tutores'}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${btnAvalTxt}</button>
+        ${esDiplomadoPendienteResultado(r) ? `<button class="btn" style="color:#fcd34d;border-color:rgba(252,211,77,.4);font-weight:600" onclick="abrirResultadoDiplomado(${r.rowIndex},'${esc(r.numero||'')}','${esc([r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', '))}')">📋 Acta/Nota</button>` : ''}
         <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
         <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
       </div></td>
@@ -1513,6 +1546,62 @@ function renderTablaTerminados() {
       </div></td>
     </tr>`;
   }).join('');
+}
+
+function abrirResultadoDiplomado(rowIndex, numero, nombreEstudiantes) {
+  document.getElementById('mDipRowIndex').value = rowIndex;
+  document.getElementById('mDipNumero').value = numero;
+  document.getElementById('mDipNota').value = '';
+  document.getElementById('mDipActa').value = '';
+  document.getElementById('mDipError').style.display = 'none';
+  document.getElementById('mDipInfo').innerHTML =
+    `<strong style="color:#c4b5fd">${esc(numero)}</strong> · ${esc(nombreEstudiantes)}<br>
+     <span style="font-size:11px;color:rgba(255,255,255,.45)">Aprobado por Comité Técnico · Registre la nota y número de acta para completar el proceso.</span>`;
+  document.getElementById('modalResultadoDip').classList.add('open');
+}
+
+async function guardarResultadoDiplomado() {
+  const rowIndex = document.getElementById('mDipRowIndex').value;
+  const numero   = document.getElementById('mDipNumero').value;
+  const nota     = document.getElementById('mDipNota').value;
+  const acta     = document.getElementById('mDipActa').value.trim();
+  const errEl    = document.getElementById('mDipError');
+  const btn      = document.getElementById('btnGuardarDip');
+
+  errEl.style.display = 'none';
+  const notaNum = parseFloat(nota);
+  if (isNaN(notaNum) || notaNum < 0 || notaNum > 5) {
+    errEl.textContent = 'La nota debe ser un número entre 0 y 5.';
+    errEl.style.display = 'block'; return;
+  }
+  if (!acta) {
+    errEl.textContent = 'El número de acta es obligatorio.';
+    errEl.style.display = 'block'; return;
+  }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'registrarResultadoDiplomado',
+      rowIndexF1: parseInt(rowIndex),
+      nota: notaNum,
+      numeroActa: acta,
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalResultadoDip');
+      toast(`Resultado Diplomado registrado · ${d.estadoFinal}`, 'ok');
+      await cargar();
+    } else {
+      errEl.textContent = d.error || 'Error al guardar.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Error de conexión.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar y notificar';
+  }
 }
 
 function actualizarBadgeTerminados() {
