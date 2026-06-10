@@ -226,7 +226,8 @@
     <div class="mc c1 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('protocolo')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('protocolo');}"><div class="ml">Protocolo · Fase 2</div><div class="mv" id="mProtF2">—</div><div class="mh">«Fase 2 Desbloqueada» · tab Protocolo</div></div>
     <div class="mc c5 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('comite')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('comite');}"><div class="ml">Pendiente comité</div><div class="mv" id="mPend">—</div><div class="mh">Decisión pendiente CT · tab Comité Técnico</div></div>
     <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto por Comité Técnico'});}"><div class="ml">Dev. por comité</div><div class="mv" id="mDevComite">—</div><div class="mh">Corrección post CT · tab Radicaciones</div></div>
-    <div class="mc c2 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Aprobado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado'});}"><div class="ml">Aprobadas comité</div><div class="mv" id="mApro">—</div><div class="mh">Listas para tramitar sustentación · luego tab Sustentación</div></div>
+    <div class="mc c2 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Aprobado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado'});}"><div class="ml">Aprobadas comité</div><div class="mv" id="mApro">—</div><div class="mh">Listas para sustentación (o registrar acta/nota si es Diplomado) · tab Radicaciones</div></div>
+    <div class="mc c5 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Aprobado',fMod:'diplomado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Aprobado',fMod:'diplomado'});}"><div class="ml">🎓 Diplomado · Acta pendiente</div><div class="mv" id="mDipPendActa">—</div><div class="mh">Diplomados aprobados que aún no tienen nota y acta registradas</div></div>
     <div class="mc c3 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('fase3')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('fase3');}"><div class="ml">En sustentación · cierre</div><div class="mv" id="mEnSust">—</div><div class="mh">Fase sustentación, sustentado o reprobado · tab Sustentación</div></div>
     <div class="mc c4 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Devuelto'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Devuelto'});}"><div class="ml">Devolución coord.</div><div class="mv" id="mDev">—</div><div class="mh">Devuelto por coordinación · tab Radicaciones</div></div>
     <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}"><div class="ml">En revisión</div><div class="mv" id="mRev">—</div><div class="mh">Estado Revisión · tab Radicaciones</div></div>
@@ -807,16 +808,42 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor</th><th>F. Radicación</th><th>Estado final</th><th>Acciones</th>
+          <th>N° Radicación</th><th>Título</th><th>Modalidad</th><th>Integrantes / Cédula</th><th>Tutores</th><th>Jurados</th><th>Nota</th><th>N° Acta</th><th>Estado</th><th>Acta Doc.</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyTerminados">
-          <tr><td colspan="8" class="empty">Cargando...</td></tr>
+          <tr><td colspan="11" class="empty">Cargando...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
  </main>
+
+<!-- MODAL RESULTADO DIPLOMADO -->
+<div class="modal-bg" id="modalResultadoDip">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>📋 Registrar Acta y Nota — Diplomado</h3>
+      <button class="btn" onclick="closeModal('modalResultadoDip')">✕</button>
+    </div>
+    <div id="mDipInfo" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:9px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:16px"></div>
+    <div class="mfg">
+      <label>Nota de calificación * (0 – 5)</label>
+      <input type="number" id="mDipNota" min="0" max="5" step="0.1" placeholder="Ej: 4.5" style="width:100%">
+    </div>
+    <div class="mfg">
+      <label>Número de Acta *</label>
+      <input type="text" id="mDipActa" placeholder="Ej: ACTA-001-2025">
+    </div>
+    <div id="mDipError" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px;display:none"></div>
+    <input type="hidden" id="mDipRowIndex">
+    <input type="hidden" id="mDipNumero">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('modalResultadoDip')">Cancelar</button>
+      <button class="btn-action" id="btnGuardarDip" onclick="guardarResultadoDiplomado()">Guardar y notificar</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL ESTADO RADICACIÓN -->
 <div class="modal-bg" id="modalEst">
@@ -933,6 +960,7 @@ async function leerRespuestaApp(res) {
   }
 }
 let radicaciones = [], actas = [], protocolos = [], admin = null;
+let fase3PorNumero = {}; // Cache de Fase3 indexado por número de radicación
 /** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
 let filtroDashboardMetrica = null;
 let solicitudActual = null;
@@ -970,7 +998,7 @@ function switchPanel(name, btn) {
   }
   else if (name === 'solicitudesCambio') cargarSolicitudesCambio();
   else if (name === 'cancelaciones') cargarSolicitudesCancelacion();
-  else if (name === 'terminados') renderTablaTerminados();
+  else if (name === 'terminados') cargarTerminados();
   else if (name === 'filtros') {
     (async () => {
       try { if (!actas.length) await cargarActas(); } catch (e) {}
@@ -1236,7 +1264,7 @@ async function cargar() {
       poblarFiltroMod();
       renderTabla();
       actualizarBadgeTerminados();
-      if (document.getElementById('pan-terminados')?.classList.contains('on')) renderTablaTerminados();
+      if (document.getElementById('pan-terminados')?.classList.contains('on')) cargarTerminados();
       if (document.getElementById('pan-informes')?.classList.contains('on')) renderInformes();
       setSyncState('ok');
      } else throw new Error(d.error);
@@ -1276,6 +1304,7 @@ function actualizarMetricas() {
     if (['Pendiente Comité','Pendiente Comité Técnico'].includes(est)) s.pendienteComite++;
     if (est === 'Devuelto por Comité Técnico') s.devComite++;
     if (est === 'Aprobado') s.aprobado++;
+    if (esDiplomadoPendienteResultado(r)) s.dipPendActa = (s.dipPendActa||0) + 1;
     if (est === 'Devuelto') s.devCoord++;
     if (eLow.includes('sustentado') || eLow.includes('reprobado') || eLow.includes('fase 3') || eLow.includes('sustentaci')) {
       s.enSustCierre++;
@@ -1300,6 +1329,7 @@ function actualizarMetricas() {
   setTxt('mPend', s.pendienteComite);
   setTxt('mDevComite', s.devComite);
   setTxt('mApro', s.aprobado);
+  setTxt('mDipPendActa', s.dipPendActa || 0);
   setTxt('mDev', s.devCoord);
   setTxt('mEnSust', s.enSustCierre);
   setTxt('mRev', s.revision);
@@ -1316,6 +1346,7 @@ function actualizarMetricas() {
   dimCard('mPend', s.pendienteComite);
   dimCard('mDevComite', s.devComite);
   dimCard('mApro', s.aprobado);
+  dimCard('mDipPendActa', s.dipPendActa || 0);
   dimCard('mEnSust', s.enSustCierre);
   dimCard('mDev', s.devCoord);
   dimCard('mRev', s.revision);
@@ -1389,9 +1420,11 @@ function irTodasRad() {
 
 function esTerminado(r) {
   const est = String(r.estado || 'Radicado');
-  if (['Sustentado','Reprobado','Cancelado'].includes(est)) return true;
-  if (esModalidadDiplomadoDash(r) && est === 'Aprobado') return true;
-  return false;
+  return ['Sustentado','Reprobado','Cancelado'].includes(est);
+}
+
+function esDiplomadoPendienteResultado(r) {
+  return esModalidadDiplomadoDash(r) && String(r.estado || '') === 'Aprobado';
 }
 
 function badgeEst(est) {
@@ -1432,11 +1465,34 @@ function renderTabla() {
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
         <button class="${btnAvalCls}" title="${esModalidadDiplomadoDash(r) ? 'Abrir aval de Diplomado (sin tutores/actas)' : 'Validar tutores'}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${btnAvalTxt}</button>
+        ${esDiplomadoPendienteResultado(r) ? `<button class="btn" style="color:#fcd34d;border-color:rgba(252,211,77,.4);font-weight:600" onclick="abrirResultadoDiplomado(${r.rowIndex},'${esc(r.numero||'')}','${esc([r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', '))}')">📋 Acta/Nota</button>` : ''}
         <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
         <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
       </div></td>
     </tr>`;
   }).join('');
+}
+
+async function cargarTerminados() {
+  const body = document.getElementById('tbodyTerminados');
+  if (body) body.innerHTML = '<tr><td colspan="12" class="empty"><span class="spinner"></span>Cargando datos de sustentación...</td></tr>';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe: false }) });
+    const d = await res.json();
+    if (d.success) {
+      fase3PorNumero = {};
+      (d.fase3 || []).forEach(f => {
+        const num = String(f.numero || '').trim();
+        if (!num) return;
+        const prev = fase3PorNumero[num];
+        // Keep the one with a nota (completed) or the most recent
+        if (!prev || (f.nota && !prev.nota) || (!prev.nota && (f.rowIndex||0) > (prev.rowIndex||0))) {
+          fase3PorNumero[num] = f;
+        }
+      });
+    }
+  } catch(e) {}
+  renderTablaTerminados();
 }
 
 function renderTablaTerminados() {
@@ -1447,31 +1503,105 @@ function renderTablaTerminados() {
     if (!esTerminado(r)) return false;
     const estadoR = String(r.estado || '');
     const estadoMatch = !fE || estadoR === fE;
-    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.modalidad].join(' ').toLowerCase();
+    const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
+    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.cedula1,r.cedula2,r.cedula3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.tutor2Nombre,r.modalidad,f3.jurado1Nombre,f3.jurado2Nombre,f3.numeroActa].join(' ').toLowerCase();
     return (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
   });
   const body = document.getElementById('tbodyTerminados');
   if (!body) return;
-  if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">No hay procesos terminados aún.</td></tr>'; return; }
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="12" class="empty">No hay procesos terminados aún.</td></tr>'; return; }
   body.innerHTML = filtered.map(r => {
-    const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join('<br>') || '—';
-    const estado  = r.estado || '';
-    const celdaTutor = textoCeldaTutorDashboard(r);
+    const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
+    const estado = r.estado || '';
+    // Integrantes con cédula
+    const integrantes = [[r.nombre1,r.cedula1],[r.nombre2,r.cedula2],[r.nombre3,r.cedula3]]
+      .filter(([n]) => n)
+      .map(([n,c]) => `${esc(n)}${c ? `<br><span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4)">${esc(c)}</span>` : ''}`)
+      .join('<hr style="border:none;border-top:1px solid rgba(255,255,255,.06);margin:3px 0">');
+    // Tutores
+    const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).map(t => esc(t)).join('<br>') || '—';
+    // Jurados (de Fase 3)
+    const jurados = [f3.jurado1Nombre, f3.jurado2Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(255,255,255,.3)">—</span>';
+    // Nota
+    const notaTxt = f3.nota != null && f3.nota !== '' ? `<span style="font-weight:700;color:${parseFloat(f3.nota)>=3?'#6ee7b7':'#fca5a5'}">${esc(String(f3.nota))}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    // Acta
+    const actaTxt = f3.numeroActa ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#c4b5fd">${esc(f3.numeroActa)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    // Acta de sustentación (documento)
+    const docActa = f3.urlAnexoA7 ? `<a href="${escAttr(f3.urlAnexoA7)}" target="_blank" class="btn bl" style="font-size:11px;padding:3px 8px">📄 Acta</a>` : '<span style="color:rgba(255,255,255,.3);font-size:11px">—</span>';
     return `<tr>
-      <td><div class="num-rad">${esc(r.numero||'')}</div></td>
-      <td style="font-size:12px;max-width:160px">${nombres}</td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:180px">${celdaTutor}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
+      <td><div class="num-rad">${esc(r.numero||'')}</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${fmtFecha(r.fechaRadicacion)}</div></td>
+      <td style="max-width:200px;font-size:12px;overflow:hidden;text-overflow:ellipsis" title="${escAttr(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.55)">${esc(r.modalidad||'—')}</td>
+      <td style="font-size:12px;max-width:160px">${integrantes}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${tutores}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${jurados}</td>
+      <td style="text-align:center">${notaTxt}</td>
+      <td style="text-align:center">${actaTxt}</td>
       <td>${badgeEst(estado)}</td>
+      <td style="text-align:center">${docActa}</td>
       <td><div class="act">
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
-        <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
-        <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
+        <button class="btn gr" onclick="exportarUniversidad('${esc(r.numero||'')}')">🎓 Exportar</button>
+        <button class="btn" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
       </div></td>
     </tr>`;
   }).join('');
+}
+
+function abrirResultadoDiplomado(rowIndex, numero, nombreEstudiantes) {
+  document.getElementById('mDipRowIndex').value = rowIndex;
+  document.getElementById('mDipNumero').value = numero;
+  document.getElementById('mDipNota').value = '';
+  document.getElementById('mDipActa').value = '';
+  document.getElementById('mDipError').style.display = 'none';
+  document.getElementById('mDipInfo').innerHTML =
+    `<strong style="color:#c4b5fd">${esc(numero)}</strong> · ${esc(nombreEstudiantes)}<br>
+     <span style="font-size:11px;color:rgba(255,255,255,.45)">Aprobado por Comité Técnico · Registre la nota y número de acta para completar el proceso.</span>`;
+  document.getElementById('modalResultadoDip').classList.add('open');
+}
+
+async function guardarResultadoDiplomado() {
+  const rowIndex = document.getElementById('mDipRowIndex').value;
+  const numero   = document.getElementById('mDipNumero').value;
+  const nota     = document.getElementById('mDipNota').value;
+  const acta     = document.getElementById('mDipActa').value.trim();
+  const errEl    = document.getElementById('mDipError');
+  const btn      = document.getElementById('btnGuardarDip');
+
+  errEl.style.display = 'none';
+  const notaNum = parseFloat(nota);
+  if (isNaN(notaNum) || notaNum < 0 || notaNum > 5) {
+    errEl.textContent = 'La nota debe ser un número entre 0 y 5.';
+    errEl.style.display = 'block'; return;
+  }
+  if (!acta) {
+    errEl.textContent = 'El número de acta es obligatorio.';
+    errEl.style.display = 'block'; return;
+  }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'registrarResultadoDiplomado',
+      rowIndexF1: parseInt(rowIndex),
+      nota: notaNum,
+      numeroActa: acta,
+      token: coordToken()
+    })});
+    const d = await res.json();
+    if (d.success) {
+      closeModal('modalResultadoDip');
+      toast(`Resultado Diplomado registrado · ${d.estadoFinal}`, 'ok');
+      await cargar();
+    } else {
+      errEl.textContent = d.error || 'Error al guardar.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Error de conexión.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar y notificar';
+  }
 }
 
 function actualizarBadgeTerminados() {
@@ -1482,15 +1612,74 @@ function actualizarBadgeTerminados() {
   else badge.style.display = 'none';
 }
 
+function exportarUniversidad(numero) {
+  const r = radicaciones.find(x => String(x.numero||'') === String(numero||''));
+  if (!r) return;
+  const f3 = fase3PorNumero[String(numero).trim()] || {};
+  const campos = [
+    ['Código / N° Radicación', r.numero],
+    ['Título del trabajo', r.titulo],
+    ['Modalidad', r.modalidad],
+    ['Área', r.area || ''],
+    ['Estado final', r.estado],
+    ['Nota de calificación', f3.nota != null ? f3.nota : ''],
+    ['Número de acta', f3.numeroActa || ''],
+    ['Fecha de sustentación', f3.fechaSustentacion || f3.fechaAsignada || ''],
+    ['--- INTEGRANTES ---', ''],
+    ['Nombre integrante 1', r.nombre1 || ''],
+    ['Cédula integrante 1', r.cedula1 || ''],
+    ['Email integrante 1', r.email1 || ''],
+    ['Semestre integrante 1', r.semestre1 || ''],
+    ['Nombre integrante 2', r.nombre2 || ''],
+    ['Cédula integrante 2', r.cedula2 || ''],
+    ['Email integrante 2', r.email2 || ''],
+    ['Nombre integrante 3', r.nombre3 || ''],
+    ['Cédula integrante 3', r.cedula3 || ''],
+    ['--- TUTORES ---', ''],
+    ['Tutor 1 - Nombre', r.tutor1Nombre || ''],
+    ['Tutor 1 - Email', r.tutor1Email || ''],
+    ['Tutor 2 - Nombre', r.tutor2Nombre || ''],
+    ['Tutor 2 - Email', r.tutor2Email || ''],
+    ['--- JURADOS ---', ''],
+    ['Jurado 1 - Nombre', f3.jurado1Nombre || ''],
+    ['Jurado 1 - Email', f3.jurado1Email || ''],
+    ['Jurado 1 - Especialidad', f3.jurado1Especialidad || ''],
+    ['Jurado 2 - Nombre', f3.jurado2Nombre || ''],
+    ['Jurado 2 - Email', f3.jurado2Email || ''],
+    ['Jurado 2 - Especialidad', f3.jurado2Especialidad || ''],
+    ['--- DOCUMENTOS ---', ''],
+    ['Acta de sustentación (URL)', f3.urlAnexoA7 || ''],
+    ['Artículo (URL)', f3.urlArticulo || ''],
+    ['Fecha radicación', r.fechaRadicacion || ''],
+    ['Fecha aprobación comité', r.fechaAprobacion || ''],
+  ];
+  const csv = campos.map(([k,v]) => `"${k}","${String(v||'').replace(/"/g,'""')}"`).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
+  a.download = `universidad_${numero}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
 function exportCSVTerminados() {
   const rows = radicaciones.filter(esTerminado);
   if (!rows.length) return;
-  const headers = ['N° Radicación','Estudiante 1','Estudiante 2','Estudiante 3','Título','Modalidad','Tutor','Fecha Radicación','Estado'];
-  const csv = [headers.join(','), ...rows.map(r => [
-    r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.modalidad,r.tutor1Nombre,r.fechaRadicacion,r.estado
-  ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const headers = ['N° Radicación','Título','Modalidad','Área','Estado','Nota','N° Acta','Fecha Sustentación','Nombre 1','Cédula 1','Nombre 2','Cédula 2','Nombre 3','Cédula 3','Tutor 1','Email Tutor 1','Tutor 2','Email Tutor 2','Jurado 1','Email Jurado 1','Jurado 2','Email Jurado 2','Fecha Radicación'];
+  const csv = [
+    headers.join(','),
+    ...rows.map(r => {
+      const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
+      return [
+        r.numero, r.titulo, r.modalidad, r.area||'', r.estado,
+        f3.nota||'', f3.numeroActa||'', f3.fechaSustentacion||f3.fechaAsignada||'',
+        r.nombre1||'', r.cedula1||'', r.nombre2||'', r.cedula2||'', r.nombre3||'', r.cedula3||'',
+        r.tutor1Nombre||'', r.tutor1Email||'', r.tutor2Nombre||'', r.tutor2Email||'',
+        f3.jurado1Nombre||'', f3.jurado1Email||'', f3.jurado2Nombre||'', f3.jurado2Email||'',
+        r.fechaRadicacion||''
+      ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',');
+    })
+  ].join('\n');
   const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
   a.download = 'terminados_cttg.csv';
   a.click();
 }

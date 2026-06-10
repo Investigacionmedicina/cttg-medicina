@@ -96,6 +96,7 @@
   </div>
 
   <div class="filtro-estado-f3" style="margin:10px 0 18px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+    <input id="searchFase3" type="search" placeholder="🔍 Buscar por radicación, estudiante, jurado, tutor..." autocomplete="off" oninput="renderTablas()" style="min-width:240px;flex:1;max-width:420px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none">
     <label for="filtroEstadoF3" style="font-size:12px;color:rgba(255,255,255,.55);flex:1;min-width:220px">
       Filtrar por texto exacto de <strong style="color:#e2e8f0;font-weight:600">Estado solicitud</strong> (columna AC del Excel). «Observaciones estado» se muestra en las tablas (columna AD); los valores posibles salen de lo que haya en la hoja más los estándar del sistema.
     </label>
@@ -471,6 +472,21 @@ function coincideFiltroEstadoSheet(r) {
   const v = sel && sel.value ? String(sel.value).trim() : '';
   if (!v) return true;
   return estadoSheetRaw(r) === v;
+}
+
+function coincideSearchFase3(r) {
+  const q = (document.getElementById('searchFase3')?.value || '').toLowerCase().trim();
+  if (!q) return true;
+  const txt = [
+    r.numero, r.nombreEstudiante, r.emailEstudiante,
+    r.jurado1Nombre, r.jurado1Email, r.jurado2Nombre, r.jurado2Email,
+    r.nombres, r.observaciones
+  ].join(' ').toLowerCase();
+  return txt.includes(q);
+}
+
+function coincideFiltros(r) {
+  return coincideFiltroEstadoSheet(r) && coincideSearchFase3(r);
 }
 
 function poblarFiltroEstadoF3() {
@@ -908,11 +924,11 @@ function renderTablas() {
   poblarFiltroEstadoF3();
 
   const sinFecha = fase3.filter(r =>
-    !tieneFechaProgramada(r) && coincideFiltroEstadoSheet(r));
+    !tieneFechaProgramada(r) && coincideFiltros(r));
   const conFecha = fase3.filter(r =>
-    tieneFechaProgramada(r) && (!r.nota || r.nota === '') && coincideFiltroEstadoSheet(r));
+    tieneFechaProgramada(r) && (!r.nota || r.nota === '') && coincideFiltros(r));
 
-  const todasCoincidenEstado = fase3.filter(coincideFiltroEstadoSheet);
+  const todasCoincidenEstado = fase3.filter(coincideFiltros);
 
   const elAsig = document.getElementById('tabAsignar');
   const elRes = document.getElementById('tabResultado');
@@ -982,9 +998,9 @@ function renderTablas() {
     const q = (document.getElementById('searchTodasF3') && document.getElementById('searchTodasF3').value || '').trim().toLowerCase();
     const ordenadas = [...fase3].sort((a, b) => fechaOrdValF3(b) - fechaOrdValF3(a));
     const todasFiltradas = ordenadas.filter(r => {
-      if (!coincideFiltroEstadoSheet(r)) return false;
+      if (!coincideFiltros(r)) return false;
       if (!q) return true;
-      const blob = [r.numero, r.nombreEstudiante, r.emailEstudiante, modalidadDeNumeroFase1(r.numero), r.estadoSolicitud, r.estado, r.observacionesEstado].join(' ').toLowerCase();
+      const blob = [r.numero, r.nombreEstudiante, r.emailEstudiante, modalidadDeNumeroFase1(r.numero), r.estadoSolicitud, r.estado, r.observacionesEstado, r.jurado1Nombre, r.jurado2Nombre].join(' ').toLowerCase();
       return blob.includes(q);
     });
     if (!todasFiltradas.length) {
