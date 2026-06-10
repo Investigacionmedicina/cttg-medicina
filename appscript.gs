@@ -2828,6 +2828,19 @@ function crearFase3(numeroRadicacion, emailEstudiante, porcentajeTurnitin, jurad
     }
   }
 
+  // Bloquear nueva solicitud si ya existe una activa con jurados asignados
+  var existingRows = sheet.getDataRange().getValues();
+  for (var j = 1; j < existingRows.length; j++) {
+    if (String(existingRows[j][1] || "").trim() !== String(numeroRadicacion).trim()) continue;
+    var j1Nom = String(existingRows[j][13] || "").trim();  // col N jurado1Nombre
+    var j2Nom = String(existingRows[j][16] || "").trim();  // col Q jurado2Nombre
+    var estSol = String(existingRows[j][28] || "").trim().toLowerCase(); // col AC estadoSolicitud
+    var esTerminalSol = estSol.includes("devuelt") || estSol.includes("cancel") || estSol.includes("rechaz");
+    if (j1Nom && j2Nom && !esTerminalSol) {
+      return { success: false, error: "Ya existe una solicitud de sustentación activa con jurados asignados para esta radicación. Debe solicitar a la coordinación anular la solicitud previa antes de crear una nueva." };
+    }
+  }
+
   var alertaS12 = (semNum === 12) ? "SÍ" : "";
   var newRow = sheet.getLastRow() + 1;
 

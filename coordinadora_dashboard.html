@@ -807,10 +807,10 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor</th><th>F. Radicación</th><th>Estado final</th><th>Acciones</th>
+          <th>N° Radicación</th><th>Título</th><th>Modalidad</th><th>Integrantes / Cédula</th><th>Tutores</th><th>Jurados</th><th>Nota</th><th>N° Acta</th><th>Estado</th><th>Acta Doc.</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyTerminados">
-          <tr><td colspan="8" class="empty">Cargando...</td></tr>
+          <tr><td colspan="11" class="empty">Cargando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -933,6 +933,7 @@ async function leerRespuestaApp(res) {
   }
 }
 let radicaciones = [], actas = [], protocolos = [], admin = null;
+let fase3PorNumero = {}; // Cache de Fase3 indexado por número de radicación
 /** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
 let filtroDashboardMetrica = null;
 let solicitudActual = null;
@@ -970,7 +971,7 @@ function switchPanel(name, btn) {
   }
   else if (name === 'solicitudesCambio') cargarSolicitudesCambio();
   else if (name === 'cancelaciones') cargarSolicitudesCancelacion();
-  else if (name === 'terminados') renderTablaTerminados();
+  else if (name === 'terminados') cargarTerminados();
   else if (name === 'filtros') {
     (async () => {
       try { if (!actas.length) await cargarActas(); } catch (e) {}
@@ -1236,7 +1237,7 @@ async function cargar() {
       poblarFiltroMod();
       renderTabla();
       actualizarBadgeTerminados();
-      if (document.getElementById('pan-terminados')?.classList.contains('on')) renderTablaTerminados();
+      if (document.getElementById('pan-terminados')?.classList.contains('on')) cargarTerminados();
       if (document.getElementById('pan-informes')?.classList.contains('on')) renderInformes();
       setSyncState('ok');
      } else throw new Error(d.error);
@@ -1439,6 +1440,28 @@ function renderTabla() {
   }).join('');
 }
 
+async function cargarTerminados() {
+  const body = document.getElementById('tbodyTerminados');
+  if (body) body.innerHTML = '<tr><td colspan="12" class="empty"><span class="spinner"></span>Cargando datos de sustentación...</td></tr>';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe: false }) });
+    const d = await res.json();
+    if (d.success) {
+      fase3PorNumero = {};
+      (d.fase3 || []).forEach(f => {
+        const num = String(f.numero || '').trim();
+        if (!num) return;
+        const prev = fase3PorNumero[num];
+        // Keep the one with a nota (completed) or the most recent
+        if (!prev || (f.nota && !prev.nota) || (!prev.nota && (f.rowIndex||0) > (prev.rowIndex||0))) {
+          fase3PorNumero[num] = f;
+        }
+      });
+    }
+  } catch(e) {}
+  renderTablaTerminados();
+}
+
 function renderTablaTerminados() {
   const q  = (document.getElementById('searchTerminados')?.value || '').toLowerCase();
   const fE = document.getElementById('fEstTerminados')?.value || '';
@@ -1447,28 +1470,46 @@ function renderTablaTerminados() {
     if (!esTerminado(r)) return false;
     const estadoR = String(r.estado || '');
     const estadoMatch = !fE || estadoR === fE;
-    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.modalidad].join(' ').toLowerCase();
+    const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
+    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.cedula1,r.cedula2,r.cedula3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.tutor2Nombre,r.modalidad,f3.jurado1Nombre,f3.jurado2Nombre,f3.numeroActa].join(' ').toLowerCase();
     return (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
   });
   const body = document.getElementById('tbodyTerminados');
   if (!body) return;
-  if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">No hay procesos terminados aún.</td></tr>'; return; }
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="12" class="empty">No hay procesos terminados aún.</td></tr>'; return; }
   body.innerHTML = filtered.map(r => {
-    const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join('<br>') || '—';
-    const estado  = r.estado || '';
-    const celdaTutor = textoCeldaTutorDashboard(r);
+    const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
+    const estado = r.estado || '';
+    // Integrantes con cédula
+    const integrantes = [[r.nombre1,r.cedula1],[r.nombre2,r.cedula2],[r.nombre3,r.cedula3]]
+      .filter(([n]) => n)
+      .map(([n,c]) => `${esc(n)}${c ? `<br><span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4)">${esc(c)}</span>` : ''}`)
+      .join('<hr style="border:none;border-top:1px solid rgba(255,255,255,.06);margin:3px 0">');
+    // Tutores
+    const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).map(t => esc(t)).join('<br>') || '—';
+    // Jurados (de Fase 3)
+    const jurados = [f3.jurado1Nombre, f3.jurado2Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(255,255,255,.3)">—</span>';
+    // Nota
+    const notaTxt = f3.nota != null && f3.nota !== '' ? `<span style="font-weight:700;color:${parseFloat(f3.nota)>=3?'#6ee7b7':'#fca5a5'}">${esc(String(f3.nota))}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    // Acta
+    const actaTxt = f3.numeroActa ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#c4b5fd">${esc(f3.numeroActa)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    // Acta de sustentación (documento)
+    const docActa = f3.urlAnexoA7 ? `<a href="${escAttr(f3.urlAnexoA7)}" target="_blank" class="btn bl" style="font-size:11px;padding:3px 8px">📄 Acta</a>` : '<span style="color:rgba(255,255,255,.3);font-size:11px">—</span>';
     return `<tr>
-      <td><div class="num-rad">${esc(r.numero||'')}</div></td>
-      <td style="font-size:12px;max-width:160px">${nombres}</td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:180px">${celdaTutor}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
+      <td><div class="num-rad">${esc(r.numero||'')}</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${fmtFecha(r.fechaRadicacion)}</div></td>
+      <td style="max-width:200px;font-size:12px;overflow:hidden;text-overflow:ellipsis" title="${escAttr(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.55)">${esc(r.modalidad||'—')}</td>
+      <td style="font-size:12px;max-width:160px">${integrantes}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${tutores}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${jurados}</td>
+      <td style="text-align:center">${notaTxt}</td>
+      <td style="text-align:center">${actaTxt}</td>
       <td>${badgeEst(estado)}</td>
+      <td style="text-align:center">${docActa}</td>
       <td><div class="act">
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
-        <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
-        <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
+        <button class="btn gr" onclick="exportarUniversidad('${esc(r.numero||'')}')">🎓 Exportar</button>
+        <button class="btn" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1482,15 +1523,74 @@ function actualizarBadgeTerminados() {
   else badge.style.display = 'none';
 }
 
+function exportarUniversidad(numero) {
+  const r = radicaciones.find(x => String(x.numero||'') === String(numero||''));
+  if (!r) return;
+  const f3 = fase3PorNumero[String(numero).trim()] || {};
+  const campos = [
+    ['Código / N° Radicación', r.numero],
+    ['Título del trabajo', r.titulo],
+    ['Modalidad', r.modalidad],
+    ['Área', r.area || ''],
+    ['Estado final', r.estado],
+    ['Nota de calificación', f3.nota != null ? f3.nota : ''],
+    ['Número de acta', f3.numeroActa || ''],
+    ['Fecha de sustentación', f3.fechaSustentacion || f3.fechaAsignada || ''],
+    ['--- INTEGRANTES ---', ''],
+    ['Nombre integrante 1', r.nombre1 || ''],
+    ['Cédula integrante 1', r.cedula1 || ''],
+    ['Email integrante 1', r.email1 || ''],
+    ['Semestre integrante 1', r.semestre1 || ''],
+    ['Nombre integrante 2', r.nombre2 || ''],
+    ['Cédula integrante 2', r.cedula2 || ''],
+    ['Email integrante 2', r.email2 || ''],
+    ['Nombre integrante 3', r.nombre3 || ''],
+    ['Cédula integrante 3', r.cedula3 || ''],
+    ['--- TUTORES ---', ''],
+    ['Tutor 1 - Nombre', r.tutor1Nombre || ''],
+    ['Tutor 1 - Email', r.tutor1Email || ''],
+    ['Tutor 2 - Nombre', r.tutor2Nombre || ''],
+    ['Tutor 2 - Email', r.tutor2Email || ''],
+    ['--- JURADOS ---', ''],
+    ['Jurado 1 - Nombre', f3.jurado1Nombre || ''],
+    ['Jurado 1 - Email', f3.jurado1Email || ''],
+    ['Jurado 1 - Especialidad', f3.jurado1Especialidad || ''],
+    ['Jurado 2 - Nombre', f3.jurado2Nombre || ''],
+    ['Jurado 2 - Email', f3.jurado2Email || ''],
+    ['Jurado 2 - Especialidad', f3.jurado2Especialidad || ''],
+    ['--- DOCUMENTOS ---', ''],
+    ['Acta de sustentación (URL)', f3.urlAnexoA7 || ''],
+    ['Artículo (URL)', f3.urlArticulo || ''],
+    ['Fecha radicación', r.fechaRadicacion || ''],
+    ['Fecha aprobación comité', r.fechaAprobacion || ''],
+  ];
+  const csv = campos.map(([k,v]) => `"${k}","${String(v||'').replace(/"/g,'""')}"`).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
+  a.download = `universidad_${numero}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
 function exportCSVTerminados() {
   const rows = radicaciones.filter(esTerminado);
   if (!rows.length) return;
-  const headers = ['N° Radicación','Estudiante 1','Estudiante 2','Estudiante 3','Título','Modalidad','Tutor','Fecha Radicación','Estado'];
-  const csv = [headers.join(','), ...rows.map(r => [
-    r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.modalidad,r.tutor1Nombre,r.fechaRadicacion,r.estado
-  ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const headers = ['N° Radicación','Título','Modalidad','Área','Estado','Nota','N° Acta','Fecha Sustentación','Nombre 1','Cédula 1','Nombre 2','Cédula 2','Nombre 3','Cédula 3','Tutor 1','Email Tutor 1','Tutor 2','Email Tutor 2','Jurado 1','Email Jurado 1','Jurado 2','Email Jurado 2','Fecha Radicación'];
+  const csv = [
+    headers.join(','),
+    ...rows.map(r => {
+      const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
+      return [
+        r.numero, r.titulo, r.modalidad, r.area||'', r.estado,
+        f3.nota||'', f3.numeroActa||'', f3.fechaSustentacion||f3.fechaAsignada||'',
+        r.nombre1||'', r.cedula1||'', r.nombre2||'', r.cedula2||'', r.nombre3||'', r.cedula3||'',
+        r.tutor1Nombre||'', r.tutor1Email||'', r.tutor2Nombre||'', r.tutor2Email||'',
+        f3.jurado1Nombre||'', f3.jurado1Email||'', f3.jurado2Nombre||'', f3.jurado2Email||'',
+        r.fechaRadicacion||''
+      ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',');
+    })
+  ].join('\n');
   const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
   a.download = 'terminados_cttg.csv';
   a.click();
 }
