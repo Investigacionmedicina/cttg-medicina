@@ -245,8 +245,7 @@
     <button class="main-tab" id="tabProtocolo" onclick="switchPanel('protocolo', this)">📖 Protocolo</button>
     <button class="main-tab" id="tabFase3" onclick="switchPanel('fase3', this)">🎓 Sustentación</button>
   <button class="main-tab" id="tabComite" onclick="switchPanel('comite', this)">📅 Comité Técnico</button>
-  <button class="main-tab" id="tabSolicitudesCambio" onclick="switchPanel('solicitudesCambio', this)">✏️ Cambios <span class="badge-count" id="badgeSolicitudesCambio" style="display:none"></span></button>
-  <button class="main-tab" id="tabCancelaciones" onclick="switchPanel('cancelaciones', this)">🗑 Cancelaciones <span class="badge-count" id="badgeCancelaciones" style="display:none"></span></button>
+  <button class="main-tab" id="tabSolicitudesCambio" onclick="switchPanel('solicitudesCambio', this)">✏️ Cambios y Cancelaciones <span class="badge-count" id="badgeSolicitudesCambio" style="display:none"></span><span class="badge-count" id="badgeCancelaciones" style="display:none;margin-left:2px"></span></button>
   <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
     <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
     <button class="main-tab" id="tabInformes" onclick="switchPanel('informes', this)">📈 Informes</button>
@@ -634,14 +633,28 @@
 
   <!-- PANEL SOLICITUDES DE CAMBIO -->
   <div class="panel" id="pan-solicitudesCambio">
+    <!-- Sección cambios -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:16px;font-weight:600;color:#fff">Solicitudes de Cambio de Radicación</div>
+        <div style="font-size:16px;font-weight:600;color:#fff">✏️ Solicitudes de Cambio de Radicación</div>
         <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Los estudiantes pueden solicitar modificar datos de su radicación. Usted decide si aprueba directamente o lo eleva al Comité Técnico.</div>
       </div>
       <button class="btn" onclick="cargarSolicitudesCambio()">↺ Actualizar</button>
     </div>
     <div id="sc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
+
+    <!-- Separador -->
+    <div style="border-top:1px solid rgba(255,255,255,.08);margin:28px 0 20px"></div>
+
+    <!-- Sección cancelaciones -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Solicitudes de Cancelación de Radicación</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Los estudiantes pueden solicitar cancelar su radicación activa. Si aprueba, el estado cambia a <strong>Cancelado</strong> y el estudiante podrá crear una nueva radicación.</div>
+      </div>
+      <button class="btn" onclick="cargarSolicitudesCancelacion()">↺ Actualizar</button>
+    </div>
+    <div id="scc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
   </div>
 
   <!-- MODAL RESOLVER SOLICITUD DE CAMBIO -->
@@ -665,17 +678,8 @@
     </div>
   </div>
 
-  <!-- PANEL CANCELACIONES DE RADICACIÓN -->
-  <div class="panel" id="pan-cancelaciones">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:16px;font-weight:600;color:#fff">Solicitudes de Cancelación de Radicación</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Los estudiantes pueden solicitar cancelar su radicación activa. Si aprueba, el estado cambia a <strong>Cancelado</strong> y el estudiante podrá crear una nueva radicación.</div>
-      </div>
-      <button class="btn" onclick="cargarSolicitudesCancelacion()">↺ Actualizar</button>
-    </div>
-    <div id="scc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
-  </div>
+  <!-- pan-cancelaciones mantenido como alias invisible para compatibilidad con referencias existentes -->
+  <div id="pan-cancelaciones" style="display:none"></div>
 
   <!-- MODAL RESOLVER CANCELACIÓN -->
   <div id="modalCancelacion" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;overflow-y:auto;padding:20px">
@@ -833,6 +837,7 @@
         <option value="Sustentado">Sustentado</option>
         <option value="Reprobado">Reprobado</option>
         <option value="Cancelado">Cancelado</option>
+        <option value="Completado">Completado (Diplomado)</option>
       </select>
       <select id="fModTerminados" onchange="renderTablaTerminados()"><option value="">Todas las modalidades</option></select>
       <button class="btn" onclick="cargar()">↻ Actualizar</button>
@@ -841,10 +846,10 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Título</th><th>Modalidad</th><th>Integrantes / Cédula</th><th>Tutores</th><th>Jurados</th><th>Nota</th><th>N° Acta</th><th>Estado</th><th>Acta Doc.</th><th>Acciones</th>
+          <th>N° Radicación</th><th>Título</th><th>Modalidad</th><th>Integrantes / Cédula</th><th>Tutores</th><th>Jurados</th><th>F. Sustentación</th><th>Nota</th><th>N° Acta</th><th>Estado</th><th>Acta Doc.</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyTerminados">
-          <tr><td colspan="11" class="empty">Cargando...</td></tr>
+          <tr><td colspan="12" class="empty">Cargando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -1015,6 +1020,12 @@ function salir() {
 }
 
 function switchPanel(name, btn) {
+  // Cancelaciones ahora está integrado dentro del panel de Cambios
+  if (name === 'cancelaciones') {
+    const tabCambios = document.getElementById('tabSolicitudesCambio');
+    if (tabCambios) switchPanel('solicitudesCambio', tabCambios);
+    return;
+  }
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('on'));
   document.getElementById('pan-' + name).classList.add('on');
@@ -1029,8 +1040,7 @@ function switchPanel(name, btn) {
     poblarFiltroEstadosInforme();
     renderInformes();
   }
-  else if (name === 'solicitudesCambio') cargarSolicitudesCambio();
-  else if (name === 'cancelaciones') cargarSolicitudesCancelacion();
+  else if (name === 'solicitudesCambio') { cargarSolicitudesCambio(); cargarSolicitudesCancelacion(); }
   else if (name === 'terminados') cargarTerminados();
   else if (name === 'diplomado') renderTablaDiplomado();
   else if (name === 'filtros') {
@@ -1548,6 +1558,7 @@ function renderTablaTerminados() {
   body.innerHTML = filtered.map(r => {
     const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
     const estado = r.estado || '';
+    const esDip = esModalidadDiplomadoDash(r);
     // Integrantes con cédula
     const integrantes = [[r.nombre1,r.cedula1],[r.nombre2,r.cedula2],[r.nombre3,r.cedula3]]
       .filter(([n]) => n)
@@ -1555,13 +1566,21 @@ function renderTablaTerminados() {
       .join('<hr style="border:none;border-top:1px solid rgba(255,255,255,.06);margin:3px 0">');
     // Tutores
     const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).map(t => esc(t)).join('<br>') || '—';
-    // Jurados (de Fase 3)
-    const jurados = [f3.jurado1Nombre, f3.jurado2Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(255,255,255,.3)">—</span>';
-    // Nota
-    const notaTxt = f3.nota != null && f3.nota !== '' ? `<span style="font-weight:700;color:${parseFloat(f3.nota)>=3?'#6ee7b7':'#fca5a5'}">${esc(String(f3.nota))}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
-    // Acta
-    const actaTxt = f3.numeroActa ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#c4b5fd">${esc(f3.numeroActa)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
-    // Acta de sustentación (documento)
+    // Jurados: Diplomado usa campos dipJurado, no-Diplomado usa Fase 3
+    const jurados = esDip
+      ? [r.dipJurado1Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(255,255,255,.3)">—</span>'
+      : [f3.jurado1Nombre, f3.jurado2Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(255,255,255,.3)">—</span>';
+    // Fecha sustentación: Diplomado usa dipFechaResultado; no-Diplomado usa fechaSustentacion de Fase3
+    const fechaSust = esDip
+      ? (r.dipFechaResultado ? fmtFecha(r.dipFechaResultado) : '<span style="color:rgba(255,255,255,.3)">—</span>')
+      : (f3.fechaSustentacion ? fmtFecha(f3.fechaSustentacion) : '<span style="color:rgba(255,255,255,.3)">—</span>');
+    // Nota: Diplomado usa dipNota; no-Diplomado usa f3.nota
+    const notaVal = esDip ? r.dipNota : f3.nota;
+    const notaTxt = notaVal != null && notaVal !== '' ? `<span style="font-weight:700;color:${parseFloat(notaVal)>=3?'#6ee7b7':'#fca5a5'}">${esc(String(notaVal))}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    // Acta: Diplomado usa dipActa; no-Diplomado usa f3.numeroActa
+    const actaVal = esDip ? r.dipActa : f3.numeroActa;
+    const actaTxt = actaVal ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#c4b5fd">${esc(actaVal)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    // Documento acta (solo sustentación)
     const docActa = f3.urlAnexoA7 ? `<a href="${escAttr(f3.urlAnexoA7)}" target="_blank" class="btn bl" style="font-size:11px;padding:3px 8px">📄 Acta</a>` : '<span style="color:rgba(255,255,255,.3);font-size:11px">—</span>';
     return `<tr>
       <td><div class="num-rad">${esc(r.numero||'')}</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${fmtFecha(r.fechaRadicacion)}</div></td>
@@ -1570,6 +1589,7 @@ function renderTablaTerminados() {
       <td style="font-size:12px;max-width:160px">${integrantes}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${tutores}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${jurados}</td>
+      <td style="text-align:center;font-size:12px">${fechaSust}</td>
       <td style="text-align:center">${notaTxt}</td>
       <td style="text-align:center">${actaTxt}</td>
       <td>${badgeEst(estado)}</td>
@@ -1776,12 +1796,20 @@ function exportCSVTerminados() {
     headers.join(','),
     ...rows.map(r => {
       const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
+      const esDip = esModalidadDiplomadoDash(r);
+      const nota = esDip ? (r.dipNota||'') : (f3.nota||'');
+      const acta = esDip ? (r.dipActa||'') : (f3.numeroActa||'');
+      const fechaSust = esDip ? (r.dipFechaResultado||'') : (f3.fechaSustentacion||f3.fechaAsignada||'');
+      const j1Nom = esDip ? (r.dipJurado1Nombre||'') : (f3.jurado1Nombre||'');
+      const j1Email = esDip ? '' : (f3.jurado1Email||'');
+      const j2Nom = esDip ? '' : (f3.jurado2Nombre||'');
+      const j2Email = esDip ? '' : (f3.jurado2Email||'');
       return [
         r.numero, r.titulo, r.modalidad, r.area||'', r.estado,
-        f3.nota||'', f3.numeroActa||'', f3.fechaSustentacion||f3.fechaAsignada||'',
+        nota, acta, fechaSust,
         r.nombre1||'', r.cedula1||'', r.nombre2||'', r.cedula2||'', r.nombre3||'', r.cedula3||'',
         r.tutor1Nombre||'', r.tutor1Email||'', r.tutor2Nombre||'', r.tutor2Email||'',
-        f3.jurado1Nombre||'', f3.jurado1Email||'', f3.jurado2Nombre||'', f3.jurado2Email||'',
+        j1Nom, j1Email, j2Nom, j2Email,
         r.fechaRadicacion||''
       ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',');
     })
