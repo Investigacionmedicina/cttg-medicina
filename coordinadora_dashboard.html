@@ -1510,7 +1510,7 @@ function renderTabla() {
     const celdaTutor = textoCeldaTutorDashboard(r);
     const btnAvalCls = clasesBtnAvalDashboard(r);
     const btnAvalTxt = textoBtnAvalDashboard(r);
-    return `<tr${esDuplicado?' style="background:rgba(239,68,68,.04);outline:1px solid rgba(239,68,68,.15)"':'}>
+    return `<tr${esDuplicado?' style="background:rgba(239,68,68,.04);outline:1px solid rgba(239,68,68,.15)"':''}>
       <td><div class="num-rad">${esc(r.numero||'')}</div></td>
       <td style="font-size:12px;max-width:160px">${nombres}${correoHtml}</td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
