@@ -275,7 +275,7 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Modalidad</th><th>Tutor / Diplomado</th><th>F. Radicación</th><th>Estado</th><th>Acciones</th>
+          <th>N° Radicación</th><th>Estudiante(s) / Correo</th><th>Título</th><th>Modalidad</th><th>Tutor / Diplomado</th><th>F. Radicación</th><th>Estado</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbody">
           <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando registros...</td></tr>
@@ -1493,15 +1493,26 @@ function renderTabla() {
   });
   const body = document.getElementById('tbody');
   if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
+  // Detectar correos con más de una radicación activa (duplicados)
+  const emailCount = {};
+  filtered.forEach(r => {
+    const emails = [r.emailEstudiante, r.email1, r.email2, r.email3].filter(Boolean).map(e => e.toLowerCase());
+    emails.forEach(e => { emailCount[e] = (emailCount[e]||0) + 1; });
+  });
   body.innerHTML = filtered.map(r => {
     const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join('<br>') || '—';
+    const correoRad = r.emailEstudiante || r.email1 || '';
+    const esDuplicado = correoRad && (emailCount[correoRad.toLowerCase()]||0) > 1;
+    const correoHtml = correoRad
+      ? `<div style="font-size:10px;margin-top:3px;${esDuplicado?'color:#fca5a5;font-weight:600':'color:rgba(255,255,255,.35)'}">${esDuplicado?'⚠ ':''}${esc(correoRad)}</div>`
+      : '';
     const estado  = r.estado || 'Radicado';
     const celdaTutor = textoCeldaTutorDashboard(r);
     const btnAvalCls = clasesBtnAvalDashboard(r);
     const btnAvalTxt = textoBtnAvalDashboard(r);
-    return `<tr>
+    return `<tr${esDuplicado?' style="background:rgba(239,68,68,.04);outline:1px solid rgba(239,68,68,.15)"':'}>
       <td><div class="num-rad">${esc(r.numero||'')}</div></td>
-      <td style="font-size:12px;max-width:160px">${nombres}</td>
+      <td style="font-size:12px;max-width:160px">${nombres}${correoHtml}</td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:180px">${celdaTutor}</td>
@@ -1582,8 +1593,9 @@ function renderTablaTerminados() {
     const actaTxt = actaVal ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#c4b5fd">${esc(actaVal)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
     // Documento acta (solo sustentación)
     const docActa = f3.urlAnexoA7 ? `<a href="${escAttr(f3.urlAnexoA7)}" target="_blank" class="btn bl" style="font-size:11px;padding:3px 8px">📄 Acta</a>` : '<span style="color:rgba(255,255,255,.3);font-size:11px">—</span>';
+    const correoTerminado = r.emailEstudiante || r.email1 || '';
     return `<tr>
-      <td><div class="num-rad">${esc(r.numero||'')}</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${fmtFecha(r.fechaRadicacion)}</div></td>
+      <td><div class="num-rad">${esc(r.numero||'')}</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${fmtFecha(r.fechaRadicacion)}</div>${correoTerminado?`<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px;word-break:break-all">${esc(correoTerminado)}</div>`:''}</td>
       <td style="max-width:200px;font-size:12px;overflow:hidden;text-overflow:ellipsis" title="${escAttr(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.55)">${esc(r.modalidad||'—')}</td>
       <td style="font-size:12px;max-width:160px">${integrantes}</td>
@@ -1621,7 +1633,9 @@ function renderTablaDiplomado() {
   if (!filtered.length) { body.innerHTML = '<tr><td colspan="10" class="empty">Sin registros Diplomado que coincidan.</td></tr>'; return; }
   body.innerHTML = filtered.map(r => {
     const est = String(r.estado || '');
+    const correoDip = r.emailEstudiante || r.email1 || '';
     const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).map(n => esc(n)).join('<br>') || '—';
+    const nombresConCorreo = nombres + (correoDip ? `<br><span style="font-size:10px;color:rgba(255,255,255,.3)">${esc(correoDip)}</span>` : '');
     const jurado = r.dipJurado1Nombre ? esc(r.dipJurado1Nombre) + (r.dipJurado1Especialidad ? `<br><span style="font-size:10px;color:rgba(255,255,255,.4)">${esc(r.dipJurado1Especialidad)}</span>` : '') : '<span style="color:rgba(255,255,255,.3)">—</span>';
     const periodo = [r.diplomadoFechaInicio, r.diplomadoFechaFin].filter(Boolean).join(' → ') || '—';
     const notaTxt = r.dipNota ? `<span style="font-weight:700;color:${parseFloat(r.dipNota)>=3?'#6ee7b7':'#fca5a5'}">${esc(r.dipNota)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
@@ -1636,7 +1650,7 @@ function renderTablaDiplomado() {
       : '';
     return `<tr>
       <td><div class="num-rad">${esc(r.numero||'')}</div></td>
-      <td style="font-size:12px;max-width:150px">${nombres}</td>
+      <td style="font-size:12px;max-width:150px">${nombresConCorreo}</td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${escAttr(r.titulo||'')}">${esc(r.titulo||'—')}</td>
       <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(periodo)}</td>
       <td style="font-size:12px;max-width:140px">${jurado}</td>
