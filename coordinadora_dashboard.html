@@ -1660,6 +1660,7 @@ function renderTablaDiplomado() {
   const filtered = radicaciones.filter(r => {
     if (!esModalidadDiplomadoDash(r)) return false;
     const est = String(r.estado || '');
+    if (est === 'Cancelado') return false;
     if (fE === 'pendiente' && !esDiplomadoPendienteResultado(r)) return false;
     if (fE === 'Completado' && est !== 'Completado') return false;
     if (fE === 'tramite' && !TRAMITE.filter(s => s !== 'Aprobado').includes(est)) return false;
