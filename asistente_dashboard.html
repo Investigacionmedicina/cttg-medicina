@@ -283,6 +283,7 @@
   <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
     <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
     <button class="main-tab" id="tabInformes" onclick="switchPanel('informes', this)">📈 Informes</button>
+    <button class="main-tab" id="tabTerminados" onclick="switchPanel('terminados', this)">🏁 Terminadas <span class="badge-count" id="badgeTerminados" style="display:none"></span></button>
     </div>
 
   <!-- PANEL RADICACIONES -->
@@ -752,6 +753,39 @@
     </div>
   </div>
 
+  <!-- PANEL TERMINADAS -->
+  <div class="panel" id="pan-terminados">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:10px">
+      <span style="font-size:18px">🏁</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#6ee7b7">Procesos completados</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px">Radicaciones que finalizaron todo su proceso: sustentadas, reprobadas, canceladas o diplomados aprobados.</div>
+      </div>
+    </div>
+    <div class="filters">
+      <input id="searchTerminados" placeholder="🔍 Buscar por nombre, número, título..." oninput="renderTablaTerminados()">
+      <select id="fEstTerminados" onchange="renderTablaTerminados()">
+        <option value="">Todos los estados finales</option>
+        <option value="Sustentado">Sustentado</option>
+        <option value="Reprobado">Reprobado</option>
+        <option value="Cancelado">Cancelado</option>
+        <option value="Completado">Completado (Diplomado)</option>
+      </select>
+      <select id="fModTerminados" onchange="renderTablaTerminados()"><option value="">Todas las modalidades</option></select>
+      <button class="btn" onclick="cargar()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Título</th><th>Modalidad</th><th>Integrantes</th><th>Tutores</th><th>Jurados</th><th>F. Sustentación</th><th>Nota</th><th>N° Acta</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyTerminados">
+          <tr><td colspan="11" class="empty">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
  </main>
 
 <!-- MODAL ESTADO RADICACIÓN -->
@@ -869,6 +903,7 @@ async function leerRespuestaApp(res) {
   }
 }
 let radicaciones = [], actas = [], admin = null;
+let fase3PorNumero = {};
 /** Cuando viene de clic en métricas (ej. omitir Diplomado en lista). Se limpia al cambiar filtros manuales. */
 let filtroDashboardMetrica = null;
 let solicitudActual = null;
@@ -900,6 +935,7 @@ function switchPanel(name, btn) {
   else if (name === 'alertas') cargarAlertas();
   else if (name === 'protocolo') cargarProtocolo();
   else if (name === 'seguimiento') cargarSeguimiento();
+  else if (name === 'terminados') cargarTerminados();
   else if (name === 'informes') {
     poblarFiltroTutoresInforme();
     poblarFiltroEstadosInforme();
@@ -1030,6 +1066,8 @@ async function cargar() {
       contarVencimientos();
       poblarFiltroMod();
       renderTabla();
+      actualizarBadgeTerminados();
+      if (document.getElementById('pan-terminados')?.classList.contains('on')) cargarTerminados();
       if (document.getElementById('pan-informes')?.classList.contains('on')) renderInformes();
       setSyncState('ok');
      } else throw new Error(d.error);
@@ -1124,11 +1162,17 @@ function badgeEst(est) {
   return `<span class="badge ${map[est]||'b-radicado'}">${est||'Radicado'}</span>`;
 }
 
+function esTerminado(r) {
+  const est = String(r.estado || 'Radicado');
+  return ['Sustentado','Reprobado','Cancelado','Completado'].includes(est);
+}
+
 function renderTabla() {
   const q  = (document.getElementById('search').value || '').toLowerCase();
   const fE = document.getElementById('fEstRad').value;
   const fM = document.getElementById('fMod').value;
   const filtered = radicaciones.filter(r => {
+    if (esTerminado(r)) return false;
     const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.modalidad].join(' ').toLowerCase();
     const estadoR = String(r.estado || '');
     const estadoMatch = !fE || estadoR === fE || (fE === 'Tutores Avalados' && estadoR === 'Tutores avalados');
@@ -3016,6 +3060,94 @@ function exportarFiltrosCSV() {
   a.download = 'filtros_' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
   toast('CSV exportado ✓', 'ok');
+}
+
+function actualizarBadgeTerminados() {
+  const badge = document.getElementById('badgeTerminados');
+  if (!badge) return;
+  const n = radicaciones.filter(esTerminado).length;
+  if (n > 0) { badge.textContent = n; badge.style.display = 'flex'; }
+  else badge.style.display = 'none';
+}
+
+async function cargarTerminados() {
+  const body = document.getElementById('tbodyTerminados');
+  if (body) body.innerHTML = '<tr><td colspan="11" class="empty"><span class="spinner"></span>Cargando datos de sustentación...</td></tr>';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe: false }) });
+    const d = await res.json();
+    if (d.success) {
+      fase3PorNumero = {};
+      (d.fase3 || []).forEach(f => {
+        const num = String(f.numero || '').trim();
+        if (!num) return;
+        const prev = fase3PorNumero[num];
+        if (!prev || (f.nota && !prev.nota) || (!prev.nota && (f.rowIndex||0) > (prev.rowIndex||0))) {
+          fase3PorNumero[num] = f;
+        }
+      });
+    }
+  } catch(e) {}
+  renderTablaTerminados();
+}
+
+function renderTablaTerminados() {
+  const q  = (document.getElementById('searchTerminados')?.value || '').toLowerCase();
+  const fE = document.getElementById('fEstTerminados')?.value || '';
+  const fM = document.getElementById('fModTerminados')?.value || '';
+  const filtered = radicaciones.filter(r => {
+    if (!esTerminado(r)) return false;
+    const estadoR = String(r.estado || '');
+    const estadoMatch = !fE || estadoR === fE;
+    const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
+    const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.cedula1,r.cedula2,r.cedula3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.tutor2Nombre,r.modalidad,f3.jurado1Nombre,f3.jurado2Nombre,f3.numeroActa].join(' ').toLowerCase();
+    return (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
+  });
+  const body = document.getElementById('tbodyTerminados');
+  if (!body) return;
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="11" class="empty">No hay procesos terminados aún.</td></tr>'; return; }
+  body.innerHTML = filtered.map(r => {
+    const f3 = fase3PorNumero[String(r.numero||'').trim()] || {};
+    const estado = r.estado || '';
+    const esDip = esModalidadDiplomadoDash(r);
+    const integrantes = [[r.nombre1,r.cedula1],[r.nombre2,r.cedula2],[r.nombre3,r.cedula3]]
+      .filter(([n]) => n)
+      .map(([n,c]) => { const cedSpan = c ? '<br><span style="font-family:\'DM Mono\',monospace;font-size:10px;color:rgba(255,255,255,.4)">' + esc(c) + '</span>' : ''; return `${esc(n)}${cedSpan}`; })
+      .join('<hr style="border:none;border-top:1px solid rgba(255,255,255,.06);margin:3px 0">');
+    const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).map(t => esc(t)).join('<br>') || '—';
+    const jurados = esDip
+      ? [r.dipJurado1Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(255,255,255,.3)">—</span>'
+      : [f3.jurado1Nombre, f3.jurado2Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(255,255,255,.3)">—</span>';
+    const fechaSust = esDip
+      ? (r.dipFechaResultado ? fmtFecha(r.dipFechaResultado) : '<span style="color:rgba(255,255,255,.3)">—</span>')
+      : (f3.fechaSustentacion ? fmtFecha(f3.fechaSustentacion) : '<span style="color:rgba(255,255,255,.3)">—</span>');
+    const notaVal = esDip ? r.dipNota : f3.nota;
+    const notaTxt = notaVal != null && notaVal !== '' ? `<span style="font-weight:700;color:${parseFloat(notaVal)>=3?'#6ee7b7':'#fca5a5'}">${esc(String(notaVal))}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    const actaVal = esDip ? r.dipActa : f3.numeroActa;
+    const actaTxt = actaVal ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#c4b5fd">${esc(actaVal)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    return `<tr>
+      <td><div class="num-rad">${esc(r.numero||'')}</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${fmtFecha(r.fechaRadicacion)}</div></td>
+      <td style="max-width:200px;font-size:12px;overflow:hidden;text-overflow:ellipsis" title="${escAttr(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.55)">${esc(r.modalidad||'—')}</td>
+      <td style="font-size:12px;max-width:160px">${integrantes}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${tutores}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${jurados}</td>
+      <td style="text-align:center;font-size:12px">${fechaSust}</td>
+      <td style="text-align:center">${notaTxt}</td>
+      <td style="text-align:center">${actaTxt}</td>
+      <td>${badgeEst(estado)}</td>
+      <td><div class="act">
+        <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
+        <button class="btn" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  // Poblar filtro de modalidades si está vacío
+  const fModSel = document.getElementById('fModTerminados');
+  if (fModSel && fModSel.options.length <= 1) {
+    const mods = [...new Set(radicaciones.filter(esTerminado).map(r => r.modalidad).filter(Boolean))].sort();
+    mods.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; fModSel.appendChild(o); });
+  }
 }
 
 </script>
