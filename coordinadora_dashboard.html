@@ -2097,6 +2097,8 @@ function renderActas() {
   const q  = (document.getElementById('searchActas').value || '').toLowerCase();
   const fE = document.getElementById('fEstActas').value;
   const filtered = actas.filter(a => {
+    const rad = radicaciones.find(r => String(r.numero||'').trim() === String(a.numero||'').trim());
+    if (rad && esTerminado(rad)) return false;
     const txt = [a.numero, a.emailEstudiante, a.nombreArchivo].join(' ').toLowerCase();
     return (!q || txt.includes(q)) && (!fE || a.estado === fE);
   });
