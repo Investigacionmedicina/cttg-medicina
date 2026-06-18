@@ -257,17 +257,6 @@
   <div class="panel on" id="pan-rad">
     <div class="filters">
       <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="limpiarFiltroMetrica();renderTabla()">
-      <select id="fEstRad" onchange="limpiarFiltroMetrica();renderTabla()">
-  <option value="">Todos los estados</option>
-  <option value="Radicado">Radicado</option>
-  <option value="Revisión">En Revisión</option>
-  <option value="Tutores Avalados">Tutores Avalados</option>
-  <option value="Fase 2 Desbloqueada">Fase 2 Desbloqueada</option>
-  <option value="Pendiente Comité Técnico">Pendiente Comité Técnico</option>
-  <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico</option>
-  <option value="Aprobado">Aprobado</option>
-  <option value="Devuelto">Devuelto</option>
-</select>
       <select id="fMod" onchange="limpiarFiltroMetrica();renderTabla()"><option value="">Todas las modalidades</option></select>
       <button class="btn" onclick="cargar()">↻ Actualizar</button>
       <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
@@ -1516,19 +1505,16 @@ function badgeEst(est) {
 
 function renderTabla() {
   const q  = (document.getElementById('search').value || '').toLowerCase();
-  const fE = document.getElementById('fEstRad').value;
   const fM = document.getElementById('fMod').value;
   const filtered = radicaciones.filter(r => {
-    if (esTerminado(r)) return false;
+    if (String(r.estado || 'Radicado') !== 'Radicado') return false;
     const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.modalidad].join(' ').toLowerCase();
-    const estadoR = String(r.estado || '');
-    const estadoMatch = !fE || estadoR === fE || (fE === 'Tutores Avalados' && estadoR === 'Tutores avalados');
-    let ok = (!q || txt.includes(q)) && estadoMatch && (!fM || r.modalidad === fM);
+    let ok = (!q || txt.includes(q)) && (!fM || r.modalidad === fM);
     if (ok && filtroDashboardMetrica && filtroDashboardMetrica.excludeDiplomado && esModalidadDiplomadoDash(r)) ok = false;
     return ok;
   });
   const body = document.getElementById('tbody');
-  if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Sin radicaciones que coincidan.</td></tr>'; return; }
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="8" class="empty">No hay radicaciones nuevas pendientes de revisión.</td></tr>'; return; }
   // Detectar correos con más de una radicación activa (duplicados)
   const emailCount = {};
   filtered.forEach(r => {
