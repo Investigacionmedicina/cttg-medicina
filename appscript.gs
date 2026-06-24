@@ -2762,6 +2762,20 @@ function obtenerActasAsesoria(sesion) {
   } else if (!sesionEsCoordinadoraOAsistente(sesion)) {
     return { success: false, error: "No autorizado" };
   }
+  // Cross-reference Fase1 to tag each acta with the radicación's current estado
+  var mapaEstados = {};
+  var sheetF1 = getSheet("Fase1");
+  if (sheetF1) {
+    var dataF1 = sheetF1.getDataRange().getValues();
+    for (var k = 1; k < dataF1.length; k++) {
+      var numF1 = String(dataF1[k][1] || "").trim();
+      if (numF1) mapaEstados[numF1] = String(dataF1[k][32] || "Radicado").trim();
+    }
+  }
+  actas = actas.map(function(a) {
+    a.estadoRadicacion = mapaEstados[String(a.numero || "").trim()] || "";
+    return a;
+  });
   return { success: true, actas: actas };
 }
 

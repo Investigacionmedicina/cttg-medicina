@@ -226,6 +226,10 @@ async function cargar() {
   }
 }
 
+const ESTADOS_FASE2_PLUS = ['Fase 2 Desbloqueada','Protocolo radicado','Protocolo en revisión',
+  'Pendiente Comité','Pendiente Comité Técnico','Aprobado Comité','Aprobado Comité Técnico',
+  'Aprobado','Sustentado','Reprobado','Devuelto'];
+
 function toggleHistorial() {
   const wrap = document.getElementById('histWrap');
   const btn = document.getElementById('btnToggleHist');
@@ -234,8 +238,13 @@ function toggleHistorial() {
 }
 
 function renderTabla() {
-  const pendientes = actas.filter(a => a.estado === 'Pendiente revisión');
-  const historial  = actas.filter(a => a.estado !== 'Pendiente revisión');
+  // Pendientes: solo actas que aún están en fase de actas (radicación no avanzó a Fase 2+)
+  const pendientes = actas.filter(a =>
+    a.estado === 'Pendiente revisión' &&
+    !ESTADOS_FASE2_PLUS.includes(a.estadoRadicacion)
+  );
+  // Historial: todas las ya resueltas (aprobadas/rechazadas), sin importar el estado de la radicación
+  const historial = actas.filter(a => a.estado !== 'Pendiente revisión');
 
   document.getElementById('chipPendientes').textContent = pendientes.length;
   document.getElementById('chipHistorial').textContent  = historial.length;
