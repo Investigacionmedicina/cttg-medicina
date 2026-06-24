@@ -30,7 +30,7 @@ function handleRequest(e, body) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1','resolverSolicitudModRad','resolverSolicitudModRadComite','resolverSolicitudCancelarRad'];
+    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1','resolverSolicitudModRad','resolverSolicitudModRadComite','resolverSolicitudCancelarRad','enviarEmailAlertaCritica'];
 
     if (accionesCoord.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
@@ -74,6 +74,7 @@ function handleRequest(e, body) {
       case "getActasAsesoria":     result = obtenerActasAsesoria(sesion); break;
       case "getEstadisticasTutores": result = obtenerEstadisticasTutores(); break;
       case "getAlertasCriticas": result = obtenerAlertasCriticas(); break;
+      case "enviarEmailAlertaCritica": result = enviarEmailAlertaCritica(body.numero, body.emailEstudiante, body.tipo, body.detalles); break;
       case "getTrazabilidad":    result = obtenerTrazabilidad(sesion, body.numeroRadicacion, body.limit); break;
       case "aprobarActasAsesoria": result = aprobarActasAsesoria(body.rowIndex, body.emailEstudiante, body.emailCoord, body.rechazar, body.motivo); break;
       case "crearFase3": result = crearFase3(body.numeroRadicacion, body.emailEstudiante, body.porcentajeTurnitin, body.jurado1Nombre, body.jurado1Email, body.jurado1Telefono, body.jurado2Nombre, body.jurado2Email, body.jurado2Telefono, body.jurado1Especialidad || "", body.jurado2Especialidad || "", body.anexoA7, body.articulo, body.guiaAutores, body.avalCCEB, body.turnitinDoc, sesion); break;
@@ -3420,10 +3421,13 @@ function obtenerAlertasCriticas() {
     if (!sheet) return { success: false, error: "Hoja Fase1 no encontrada" };
     var data = sheet.getDataRange().getValues();
     
+    var estadosTerminales = ['Aprobado','Sustentado','Reprobado','Devuelto'];
     for (var i = 1; i < data.length; i++) {
       var numero = String(data[i][1] || "").trim();
       var estudiante = String(data[i][4] || "").trim();
+      var emailEst1 = String(data[i][5] || data[i][2] || "").trim();
       var estado = String(data[i][32] || "").trim();
+      if (estadosTerminales.indexOf(estado) !== -1) continue;
       var s1 = parseInt(data[i][7] || 0, 10) || 0;
       var s2 = parseInt(data[i][13] || 0, 10) || 0;
       var s3 = parseInt(data[i][19] || 0, 10) || 0;
@@ -3437,15 +3441,15 @@ function obtenerAlertasCriticas() {
       var pct = diasVigencia > 0 ? Math.round((diasTranscurridos / diasVigencia) * 100) : 0;
 
       if (pct > 60 && diasRestantes > 0) {
-        alertas.push({tipo: "critico", numero: numero, estudiante: estudiante, estado: estado, plazo: diasRestantes + " días", detalles: pct + "% del plazo cumplido", rowIndex: i + 1});
+        alertas.push({tipo: "critico", numero: numero, estudiante: estudiante, emailEstudiante: emailEst1, estado: estado, plazo: diasRestantes + " días", detalles: pct + "% del plazo cumplido", rowIndex: i + 1});
       }
       if (semestre >= 12) {
-        alertas.push({tipo: "s12", numero: numero, estudiante: estudiante, estado: estado, plazo: "S" + semestre, detalles: "Semestre " + semestre, rowIndex: i + 1});
+        alertas.push({tipo: "s12", numero: numero, estudiante: estudiante, emailEstudiante: emailEst1, estado: estado, plazo: "S" + semestre, detalles: "Semestre " + semestre, rowIndex: i + 1});
       }
       if (!tutor1 && fechaRad) {
         var diasDes = Math.floor((new Date() - new Date(fechaRad)) / 86400000);
         if (diasDes > 7) {
-          alertas.push({tipo: "gestion", numero: numero, estudiante: estudiante, estado: "Radicado", plazo: diasDes + " días", detalles: "Tutor sin asignar", rowIndex: i + 1});
+          alertas.push({tipo: "gestion", numero: numero, estudiante: estudiante, emailEstudiante: emailEst1, estado: "Radicado", plazo: diasDes + " días", detalles: "Tutor sin asignar", rowIndex: i + 1});
         }
       }
     }
@@ -3483,6 +3487,37 @@ function obtenerAlertasCriticas() {
     return { success: false, error: e.toString() };
   }
 }
+function enviarEmailAlertaCritica(numero, emailEstudiante, tipo, detalles) {
+  try {
+    if (!emailEstudiante || !numero) return { success: false, error: "Datos insuficientes" };
+    var tipoTexto = tipo === 'critico' ? 'Plazo crítico (>60% del tiempo transcurrido)' :
+                    tipo === 's12'    ? 'Estudiante en semestre 12' :
+                    tipo === 'gestion' ? 'Gestión pendiente (tutores sin validar)' :
+                    (detalles || 'Alerta crítica detectada');
+    var asunto = "[CTTG USC] Alerta en su trabajo de grado — Radicación " + numero;
+    var cuerpo = "Estimado(a) estudiante,\n\n" +
+      "Este es un mensaje AUTOMÁTICO del sistema CTTG de la Coordinación de Trabajos de Grado — Facultad de Medicina, Universidad Santiago de Cali.\n\n" +
+      "Se ha identificado una alerta en su proceso:\n\n" +
+      "  N° Radicación: " + numero + "\n" +
+      "  Tipo de alerta: " + tipoTexto + "\n" +
+      (detalles ? "  Detalle: " + detalles + "\n" : "") +
+      "\nPor favor comuníquese con la coordinación a la brevedad posible para evitar inconvenientes en su proceso.\n\n" +
+      "► DEBE RESPONDER este correo a: investigacionmedicina@usc.edu.co\n\n" +
+      "Si ya realizó las gestiones correspondientes y su proceso está al día, puede hacer caso omiso de este mensaje.\n\n" +
+      "Atentamente,\n" +
+      "Coordinación de Trabajos de Grado\n" +
+      "Facultad de Medicina — Universidad Santiago de Cali\n" +
+      "investigacionmedicina@usc.edu.co";
+    GmailApp.sendEmail(emailEstudiante, asunto, cuerpo, {
+      replyTo: "investigacionmedicina@usc.edu.co",
+      name: "CTTG Medicina USC"
+    });
+    return { success: true };
+  } catch(e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
 function calcularDiasHabilesTranscurridos(fechaInicio, fechaFin) {
   if (!fechaInicio) return 0;
   var inicio = new Date(fechaInicio);
