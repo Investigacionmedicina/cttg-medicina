@@ -377,18 +377,12 @@
   <div class="panel" id="pan-protocolo">
     <div class="filters">
       <input id="searchProtocolo" placeholder="🔍 Buscar por número, estudiante..." oninput="renderProtocolo()">
-      <select id="fEstProtocolo" onchange="renderProtocolo()">
-        <option value="">Todos los estados</option>
-        <option value="Cargado">Cargado</option>
-        <option value="Revisado">Revisado</option>
-        <option value="En Solicitud">En Solicitud</option>
-        <option value="Aprobado">Aprobado</option>
-        <option value="Rechazado">Rechazado</option>
-        <option value="Devuelto por Comité Técnico">Devuelto por Comité Técnico</option>
-        <option value="En Evaluación">En Evaluación</option>
-        <option value="Aprobado Comité">Aprobado Comité</option>
-      </select>
       <button class="btn" onclick="cargarProtocolo()">↻ Actualizar</button>
+    </div>
+
+    <!-- Activos: pendientes de acción -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;flex-wrap:wrap;gap:8px">
+      <span style="font-family:'DM Serif Display',serif;font-size:15px;color:#fff">📋 Pendientes de acción <span class="badge b-radicado" id="chipProtActivos" style="font-size:12px;margin-left:6px">—</span></span>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -399,6 +393,24 @@
           <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando protocolos...</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Historial: procesados -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:32px 0 10px;flex-wrap:wrap;gap:8px">
+      <span style="font-family:'DM Serif Display',serif;font-size:15px;color:#fff">📂 Historial de protocolos <span class="badge b-aprobado" id="chipProtHistorial" style="font-size:12px;margin-left:6px">—</span></span>
+      <button class="toggle-hist" id="btnToggleProtHist" onclick="toggleProtHistorial()">▼ Mostrar historial</button>
+    </div>
+    <div class="hist-wrap" id="histProtWrap">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>N° Radicación</th><th>Estudiante</th><th>Email</th><th>Evaluador</th><th>Fecha Reunión</th><th>Estado</th><th>Motivo</th>
+          </tr></thead>
+          <tbody id="tbodyProtHistorial">
+            <tr><td colspan="7" class="empty">Sin historial aún.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 <!-- MODAL AVALUAR PROTOCOLO -->
@@ -2770,9 +2782,15 @@ function construirFilasColaGestionesCoord() {
     });
   });
 
+  const ESTADOS_F2_PLUS = ['Fase 2 Desbloqueada','Protocolo radicado','Protocolo en revisión',
+    'Pendiente Comité','Pendiente Comité Técnico','Aprobado Comité','Aprobado Comité Técnico',
+    'Aprobado','Sustentado','Reprobado','Devuelto'];
+
   actas.forEach(a => {
     const est = a.estado || '';
     if (est !== 'Pendiente revisión' && est !== 'Solicitud Fase 2') return;
+    // Si la radicación ya avanzó a Fase 2+, no mostrar en la cola de actas
+    if (ESTADOS_F2_PLUS.includes(a.estadoRadicacion)) return;
     const prio = est === 'Pendiente revisión' ? 12 : 38;
     const nomArch = String(a.nombreArchivo || '');
     rows.push({
@@ -2904,42 +2922,97 @@ function renderColaGestionesCoord() {
   }
 }
 
+const PROT_ESTADOS_ACTIVOS    = ['Cargado','Enviado','Revisado','En Solicitud','Pendiente Comité','En Evaluación'];
+const PROT_ESTADOS_PROCESADOS = ['Aprobado','Aprobado Directo','Aprobado Comité','Rechazado','Devuelto por Comité Técnico'];
+const ESTADOS_RAD_TERMINADOS  = ['Aprobado','Sustentado','Reprobado','Devuelto'];
+
+function toggleProtHistorial() {
+  const wrap = document.getElementById('histProtWrap');
+  const btn  = document.getElementById('btnToggleProtHist');
+  const open = wrap.classList.toggle('open');
+  btn.textContent = open ? '▲ Ocultar historial' : '▼ Mostrar historial';
+}
+
+function protEstadoBadge(estado) {
+  return ({
+    'Cargado':'b-radicado','Enviado':'b-radicado','Revisado':'b-revisado',
+    'En Solicitud':'b-ensolicitud','Pendiente Comité':'b-comite','En Evaluación':'b-evaluacion',
+    'Aprobado':'b-aprobado','Aprobado Directo':'b-aprobado','Aprobado Comité':'b-aprobadocomite',
+    'Rechazado':'b-devuelto','Devuelto por Comité Técnico':'b-devuelto'
+  }[estado] || 'b-radicado');
+}
+
 function renderProtocolo() {
-  const q  = (document.getElementById('searchProtocolo').value || '').toLowerCase();
-  const fE = document.getElementById('fEstProtocolo').value;
-  const filtered = protocolos.filter(p => {
+  const q = (document.getElementById('searchProtocolo').value || '').toLowerCase();
+
+  // Mapa de estado de radicaciones para excluir trabajos terminados
+  const mapaRad = {};
+  radicaciones.forEach(r => { mapaRad[String(r.numero||'')] = r.estado || ''; });
+
+  const activos = protocolos.filter(p => {
+    if (!PROT_ESTADOS_ACTIVOS.includes(p.estado)) return false;
+    if (ESTADOS_RAD_TERMINADOS.includes(mapaRad[String(p.numero||'')])) return false;
+    if (!q) return true;
     const nom = nombreEstudianteDesdeRad(p);
-    const txt = [p.numero, p.emailEstudiante, nom].join(' ').toLowerCase();
-    return (!q || txt.includes(q)) && (!fE || p.estado === fE);
+    return [p.numero, p.emailEstudiante, nom].join(' ').toLowerCase().includes(q);
   });
+
+  const procesados = protocolos.filter(p => {
+    if (!PROT_ESTADOS_PROCESADOS.includes(p.estado)) return false;
+    if (!q) return true;
+    const nom = nombreEstudianteDesdeRad(p);
+    return [p.numero, p.emailEstudiante, nom].join(' ').toLowerCase().includes(q);
+  });
+
+  // Contadores
+  document.getElementById('chipProtActivos').textContent   = activos.length;
+  document.getElementById('chipProtHistorial').textContent = procesados.length;
+
+  // --- Tabla activos ---
   const tbody = document.getElementById('tbodyProtocolo');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos.</td></tr>'; return; }
-  tbody.innerHTML = filtered.map(p => {
-    const estadoBadge = {
-      'Cargado':'b-radicado','Enviado':'b-radicado','Revisado':'b-revisado','En Solicitud':'b-ensolicitud',
-      'Pendiente Comité':'b-comite','En Evaluación':'b-evaluacion','Aprobado':'b-aprobado','Rechazado':'b-devuelto','Devuelto por Comité Técnico':'b-devuelto',
-      'Aprobado Directo':'b-aprobado','Aprobado Comité':'b-aprobadocomite'
-    }[p.estado] || 'b-radicado';
-    
-    const estadoTexto = esc(p.estado||'Cargado');
-    const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
-    const nomEst = esc(nombreEstudianteDesdeRad(p));
-    const fechaReu = p.fechaComite ? fmtFecha(p.fechaComite) : '—';
-    
-    return `<tr>
-      <td><div class="num-rad">${esc(p.numero||'')}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.85)">${nomEst}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.emailEstudiante||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.anexoCambio||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(fechaReu)}</td>
-      <td><span class="badge ${estadoBadge}">${estadoTexto}</span></td>
-      <td><div class="act">
-        ${esPendiente ? `<button class="btn gr" onclick="abrirModalProtocolo(${p.rowIndex},'aprobar','${esc(p.numero||'')}')">✅ Aprobar</button>
-        <button class="btn rd" onclick="abrirModalProtocolo(${p.rowIndex},'rechazar','${esc(p.numero||'')}')">✕ Rechazar</button>` : ''}
-      </div></td>
-    </tr>`;
-  }).join('');
+  if (!activos.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin protocolos pendientes de acción.</td></tr>';
+  } else {
+    tbody.innerHTML = activos.map(p => {
+      const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
+      return `<tr>
+        <td><div class="num-rad">${esc(p.numero||'')}</div></td>
+        <td style="font-size:12px;color:rgba(255,255,255,.85)">${esc(nombreEstudianteDesdeRad(p))}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.emailEstudiante||'—')}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.anexoCambio||'—')}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaComite ? fmtFecha(p.fechaComite) : '—'}</td>
+        <td><span class="badge ${protEstadoBadge(p.estado)}">${esc(p.estado||'Cargado')}</span></td>
+        <td><div class="act">
+          ${esPendiente ? `<button class="btn gr" onclick="abrirModalProtocolo(${p.rowIndex},'aprobar','${esc(p.numero||'')}')">✅ Aprobar</button>
+          <button class="btn rd" onclick="abrirModalProtocolo(${p.rowIndex},'rechazar','${esc(p.numero||'')}')">✕ Rechazar</button>` : ''}
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // --- Tabla historial ---
+  const tbodyH = document.getElementById('tbodyProtHistorial');
+  if (!procesados.length) {
+    tbodyH.innerHTML = '<tr><td colspan="7" class="empty">Sin protocolos procesados aún.</td></tr>';
+  } else {
+    tbodyH.innerHTML = procesados.map(p => {
+      const aprobado = p.estado.startsWith('Aprobado');
+      const badge = aprobado
+        ? `<span class="badge b-aprobado">${esc(p.estado)}</span>`
+        : `<span class="badge b-devuelto">${esc(p.estado)}</span>`;
+      const motivo = p.motivo || p.observaciones || '—';
+      return `<tr>
+        <td><div class="num-rad">${esc(p.numero||'')}</div></td>
+        <td style="font-size:12px;color:rgba(255,255,255,.85)">${esc(nombreEstudianteDesdeRad(p))}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.emailEstudiante||'—')}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaComite ? fmtFecha(p.fechaComite) : '—'}</td>
+        <td>${badge}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.55);max-width:200px;word-break:break-word">${esc(motivo)}</td>
+      </tr>`;
+    }).join('');
+  }
 }
  let protocoloActual = null;
 
