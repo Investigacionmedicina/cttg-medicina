@@ -41,6 +41,13 @@
   .btn.gr{color:#34d399;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
   .btn.rd{color:#fca5a5;border-color:rgba(239,68,68,.3)}.btn.rd:hover{background:rgba(239,68,68,.1)}
   .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
+  .section-hdr{display:flex;align-items:center;justify-content:space-between;margin:24px 0 10px;gap:8px;flex-wrap:wrap}
+  .section-hdr h2{font-family:'DM Serif Display',serif;font-size:15px;color:#fff}
+  .section-hdr .count-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:3px 11px;font-size:12px;color:rgba(255,255,255,.6)}
+  .toggle-hist{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.6);font-family:'Outfit',sans-serif;font-size:12px;padding:5px 12px;cursor:pointer}
+  .hist-wrap{display:none}.hist-wrap.open{display:block}
+  .b-seguimiento-ok{background:rgba(16,185,129,.15);color:#6ee7b7}
+  .b-seguimiento-no{background:rgba(239,68,68,.15);color:#fca5a5}
   .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
   @keyframes spin{to{transform:rotate(360deg)}}
   /* MODAL */
@@ -78,16 +85,14 @@
 <main>
   <a href="#" class="back" onclick="window.location.href=urlPanelStaff();return false;">← Volver al panel</a>
 
-  <div class="filters">
-    <select id="fEst" onchange="renderTabla()">
-      <option value="">Todos los estados</option>
-      <option value="Pendiente revisión">Pendiente revisión</option>
-      <option value="Aprobada">Aprobada</option>
-      <option value="Rechazada">Rechazada</option>
-    </select>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
     <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
   </div>
 
+  <!-- PENDIENTES -->
+  <div class="section-hdr">
+    <h2>📋 Pendientes de revisión <span class="count-chip" id="chipPendientes">—</span></h2>
+  </div>
   <div class="tbl-wrap">
     <table>
       <thead><tr>
@@ -95,14 +100,35 @@
         <th>Estudiante</th>
         <th>Archivo</th>
         <th>Fecha Carga</th>
-        <th>Estado</th>
-        <th>Observaciones</th>
         <th>Acciones</th>
       </tr></thead>
       <tbody id="tbody">
-        <tr><td colspan="7" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>
+        <tr><td colspan="5" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- HISTORIAL / SEGUIMIENTO -->
+  <div class="section-hdr" style="margin-top:32px">
+    <h2>📂 Seguimiento de decisiones <span class="count-chip" id="chipHistorial">—</span></h2>
+    <button class="toggle-hist" id="btnToggleHist" onclick="toggleHistorial()">▼ Mostrar historial</button>
+  </div>
+  <div class="hist-wrap" id="histWrap">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th>
+          <th>Estudiante</th>
+          <th>Archivo</th>
+          <th>Fecha Carga</th>
+          <th>Decisión</th>
+          <th>Motivo / Observaciones</th>
+        </tr></thead>
+        <tbody id="tbodyHistorial">
+          <tr><td colspan="6" class="empty">Cargando historial...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </main>
 
@@ -200,25 +226,58 @@ async function cargar() {
   }
 }
 
+function toggleHistorial() {
+  const wrap = document.getElementById('histWrap');
+  const btn = document.getElementById('btnToggleHist');
+  const open = wrap.classList.toggle('open');
+  btn.textContent = open ? '▲ Ocultar historial' : '▼ Mostrar historial';
+}
+
 function renderTabla() {
-  const fE = document.getElementById('fEst').value;
-  const filtered = actas.filter(a => !fE || a.estado === fE);
+  const pendientes = actas.filter(a => a.estado === 'Pendiente revisión');
+  const historial  = actas.filter(a => a.estado !== 'Pendiente revisión');
+
+  document.getElementById('chipPendientes').textContent = pendientes.length;
+  document.getElementById('chipHistorial').textContent  = historial.length;
+
+  // --- Tabla pendientes ---
   const tbody = document.getElementById('tbody');
-  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin actas que coincidan.</td></tr>'; return; }
-  tbody.innerHTML = filtered.map(a => `<tr>
-    <td><div class="num-rad">${esc(a.numero)}</div></td>
-    <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.emailEstudiante)}</td>
-    <td style="font-size:12px">📄 ${esc(a.nombreArchivo)}</td>
-    <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(a.fechaCarga)}</td>
-    <td>${badgeActa(a.estado)}</td>
-    <td style="font-size:12px;color:rgba(255,255,255,.4);max-width:160px">${esc(a.observaciones||'—')}</td>
-    <td><div class="act">
-      ${a.estado === 'Pendiente revisión' ? `
+  if (!pendientes.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay actas pendientes de revisión. ✓</td></tr>';
+  } else {
+    tbody.innerHTML = pendientes.map(a => `<tr>
+      <td><div class="num-rad">${esc(a.numero)}</div></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.emailEstudiante)}</td>
+      <td style="font-size:12px">📄 <a href="${esc(a.urlArchivo||'#')}" target="_blank" style="color:#34d399">${esc(a.nombreArchivo)}</a></td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(a.fechaCarga)}</td>
+      <td><div class="act">
         <button class="btn gr" onclick="abrirAprobar(${a.rowIndex},'${esc(a.numero)}','${esc(a.emailEstudiante)}')">✅ Aprobar</button>
         <button class="btn rd" onclick="abrirRechazar(${a.rowIndex},'${esc(a.numero)}','${esc(a.emailEstudiante)}')">❌ Rechazar</button>
-            ` : `<span style="font-size:12px;color:rgba(255,255,255,.3)">Procesada</span>`}
-    </div></td>
-  </tr>`).join('');
+      </div></td>
+    </tr>`).join('');
+  }
+
+  // --- Tabla historial / seguimiento ---
+  const tbodyH = document.getElementById('tbodyHistorial');
+  if (!historial.length) {
+    tbodyH.innerHTML = '<tr><td colspan="6" class="empty">Sin historial de decisiones aún.</td></tr>';
+  } else {
+    tbodyH.innerHTML = historial.map(a => {
+      const aprobada = a.estado === 'Aprobada';
+      const badge = aprobada
+        ? '<span class="badge b-seguimiento-ok">✅ Aprobada</span>'
+        : '<span class="badge b-seguimiento-no">❌ Rechazada</span>';
+      const motivo = a.observaciones && a.observaciones !== '' ? esc(a.observaciones) : '<span style="color:rgba(255,255,255,.3)">—</span>';
+      return `<tr>
+        <td><div class="num-rad">${esc(a.numero)}</div></td>
+        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.emailEstudiante)}</td>
+        <td style="font-size:12px">📄 <a href="${esc(a.urlArchivo||'#')}" target="_blank" style="color:#34d399">${esc(a.nombreArchivo)}</a></td>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(a.fechaCarga)}</td>
+        <td>${badge}</td>
+        <td style="font-size:12px;color:rgba(255,255,255,.55);max-width:220px;word-break:break-word">${motivo}</td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 function abrirAprobar(rowIndex, numero, emailEst) {

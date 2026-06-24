@@ -313,7 +313,7 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>Tutor</th><th>Total Trabajos</th><th>% Avance Promedio</th><th>En Radicación</th><th>En Fase 2</th><th>Aprobados</th><th>Pendientes</th><th>Acciones</th>
+          <th>Tutor</th><th>En Curso</th><th>Terminados</th><th>% Avance Promedio</th><th>En Radicación</th><th>En Fase 2</th><th>Pendientes</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyTutores">
           <tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando tutores...</td></tr>
@@ -2397,12 +2397,22 @@ function renderTutores() {
   });
   const tbody = document.getElementById('tbodyTutores');
   if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin tutores.</td></tr>'; return; }
-  tbody.innerHTML = filtered.map(t => `<tr>
+  tbody.innerHTML = filtered.map(t => {
+    const terminadosEstados = ['Aprobado','Sustentado','Reprobado','Devuelto'];
+    const trabajos = t.trabajos || [];
+    const terminados = trabajos.length
+      ? trabajos.filter(tr => terminadosEstados.includes(tr.estado)).length
+      : (t.aprobados || 0);
+    const enCurso = trabajos.length
+      ? trabajos.length - terminados
+      : Math.max(0, (t.totalTrabajos || 0) - terminados);
+    return `<tr>
     <td style="font-weight:600">
       ${esc(t.nombre||'—')}
       ${(t.nombresOriginales || []).length > 1 ? '<div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:400;margin-top:3px">Unido: ' + t.nombresOriginales.map(esc).join(' · ') + '</div>' : ''}
     </td>
-    <td><span style="font-size:16px;font-weight:700;color:#a78bfa">${t.totalTrabajos||0}</span></td>
+    <td><span style="font-size:16px;font-weight:700;color:#a78bfa">${enCurso}</span></td>
+    <td><span style="font-size:14px;font-weight:600;color:#6ee7b7">${terminados}</span></td>
     <td>
       <div style="display:flex;align-items:center;gap:6px">
         <div class="progress-bar" style="width:100px"><div class="progress-fill" style="width:${(t.promAvance||0)}%"></div></div>
@@ -2411,10 +2421,10 @@ function renderTutores() {
     </td>
     <td><span class="badge b-radicado">${t.enRadicacion||0}</span></td>
     <td><span class="badge b-revision">${t.enFase2||0}</span></td>
-    <td><span class="badge b-aprobado">${t.aprobados||0}</span></td>
     <td><span class="badge b-pend">${t.pendientes||0}</span></td>
     <td><button class="btn bl" onclick="abrirDetallesTutor('${encodeURIComponent(t.nombre||'')}')">👁 Ver</button></td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
 }
 
 function abrirDetallesTutor(nombre) {
@@ -2438,11 +2448,19 @@ function abrirDetallesTutor(nombre) {
       </div>
     </div>
   `).join('') : '<div class="empty" style="padding:20px">No hay detalle de trabajos para este tutor.</div>';
+  const _terminadosE = ['Aprobado','Sustentado','Reprobado','Devuelto'];
+  const _trabs = t.trabajos || [];
+  const _term = _trabs.length ? _trabs.filter(tr => _terminadosE.includes(tr.estado)).length : (t.aprobados || 0);
+  const _enCurso = _trabs.length ? _trabs.length - _term : Math.max(0, (t.totalTrabajos||0) - _term);
   document.getElementById('modalDetBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
-      <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
-        <div style="font-size:18px;font-weight:700;color:#a78bfa">${t.totalTrabajos||0}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4)">Total</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+      <div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#a78bfa">${_enCurso}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">En Curso</div>
+      </div>
+      <div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#6ee7b7">${_term}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">Terminados</div>
       </div>
       <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
         <div style="font-size:18px;font-weight:700;color:#fcd34d">${t.promAvance||0}%</div>
@@ -2580,7 +2598,8 @@ async function cargarAlertas() {
 }
 
 function aplicarAlertas(lista) {
-  alertas = lista || [];
+  const terminales = ['Aprobado','Sustentado','Reprobado','Devuelto'];
+  alertas = (lista || []).filter(a => !terminales.includes(a.estado));
   const countCritico = alertas.filter(a => a.tipo === 'critico').length;
   const countS12 = alertas.filter(a => a.tipo === 's12').length;
   const countGestion = alertas.filter(a => a.tipo === 'gestion').length;
@@ -2608,11 +2627,13 @@ function construirAlertasLocales() {
     const semestres = [r.semestre1, r.semestre2, r.semestre3].map(s => parseInt(s || 0)).filter(n => n > 0);
     const pctPlazo = Number(r.porcentajeAvance ?? r.porcentajePlazo ?? 0);
     const diasRad = calcularDiasHabilesDesdeHoy(r.fechaRadicacion);
+    const emailEst = r.email1 || r.emailEstudiante || '';
     if (pctPlazo > 60) {
       locales.push({
         tipo: 'critico',
         numero: r.numero,
         estudiante: estudiantes,
+        emailEstudiante: emailEst,
         estado,
         plazo: `${pctPlazo.toFixed(0)}% del plazo`,
         detalles: 'Trabajo con más del 60% del plazo transcurrido.',
@@ -2624,6 +2645,7 @@ function construirAlertasLocales() {
         tipo: 's12',
         numero: r.numero,
         estudiante: estudiantes,
+        emailEstudiante: emailEst,
         estado,
         plazo: 'Semestre 12',
         detalles: 'Hay estudiante de semestre 12 en esta radicación.',
@@ -2635,6 +2657,7 @@ function construirAlertasLocales() {
         tipo: 'gestion',
         numero: r.numero,
         estudiante: estudiantes,
+        emailEstudiante: emailEst,
         estado,
         plazo: `${diasRad} días hábiles`,
         detalles: esModalidadDiplomadoDash(r)
@@ -2665,17 +2688,39 @@ function renderAlertas() {
     else if (a.tipo === 'protocolo_vencido') badgeAlert = '<span class="alert-badge" style="background:rgba(239,68,68,.3);color:#fca5a5">🔴 PROTOCOLO VENCIDO</span>';
     else badgeAlert = '<span class="alert-badge alert-gestion">ℹ️ GESTIÓN</span>';
     
+    const emailBtn = (a.tipo === 'critico' || a.tipo === 's12')
+      ? `<button class="btn rd" style="margin-top:4px;width:100%;font-size:11px" onclick="enviarEmailAlerta('${encodeURIComponent(a.numero||'')}','${encodeURIComponent(a.emailEstudiante||'')}','${a.tipo}','${encodeURIComponent(a.detalles||'')}')">✉ Enviar alerta</button>`
+      : '';
     return `<tr>
       <td>${badgeAlert}</td>
       <td><div class="num-rad">${esc(a.numero||'')}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.estudiante||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.estudiante||'—')}<br><span style="font-size:11px;color:rgba(255,255,255,.3)">${esc(a.emailEstudiante||'')}</span></td>
       <td><span class="badge ${a.tipo === 'protocolo_vencido' ? 'b-devuelto' : 'b-aprobado'}">${esc(a.estado||'—')}</span></td>
       <td style="font-size:12px">${esc(a.plazo||'—')}</td>
       <td style="font-size:11px;color:rgba(255,255,255,.5)">${esc(a.detalles||'—')}</td>
-      <td><button class="btn bl" onclick="verDetalle(${a.rowIndex||0})">👁 Ver</button></td>
+      <td>
+        <button class="btn bl" onclick="verDetalle(${a.rowIndex||0})">👁 Ver</button>
+        ${emailBtn}
+      </td>
     </tr>`;
   }).join('');
 }
+async function enviarEmailAlerta(numeroEnc, emailEnc, tipo, detallesEnc) {
+  const numero = decodeURIComponent(numeroEnc || '');
+  const emailEstudiante = decodeURIComponent(emailEnc || '');
+  const detalles = decodeURIComponent(detallesEnc || '');
+  if (!emailEstudiante) { toast('No hay email registrado para este estudiante.', 'warn'); return; }
+  if (!confirm(`¿Enviar correo de alerta automático a ${emailEstudiante}?\n\nEl estudiante recibirá un mensaje indicando que debe responder a investigacionmedicina@usc.edu.co.`)) return;
+  try {
+    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({
+      action: 'enviarEmailAlertaCritica', numero, emailEstudiante, tipo, detalles, token: coordToken()
+    })});
+    const d = await res.json();
+    if (d.success) toast(`Correo enviado a ${emailEstudiante} ✓`, 'ok');
+    else throw new Error(d.error);
+  } catch(e) { toast('Error al enviar correo: ' + e.message, 'err'); }
+}
+
 // ════════════════════════════════════════════════════════════
 // TAB 5: PROTOCOLO FASE 2
 // ════════════════════════════════════════════════════════════
