@@ -298,6 +298,9 @@ function fechaRadMsF3(fr) {
 /** Igual que en estudiante_dashboard: prioriza radicación diplomado más reciente. */
 function radicacionReferenciaF3(rads) {
   if (!rads || !rads.length) return null;
+  // Misma regla que el panel del estudiante: ignorar canceladas si hay otra vigente.
+  const vigentes = rads.filter(r => String(r.estado || '').trim().toLowerCase() !== 'cancelado');
+  if (vigentes.length) rads = vigentes;
   const pickNewer = (a, b) => (fechaRadMsF3(a.fechaRadicacion) >= fechaRadMsF3(b.fechaRadicacion) ? a : b);
   const diplos = rads.filter(r => esModalidadDiplomado(r.modalidad));
   if (diplos.length) return diplos.reduce(pickNewer);
