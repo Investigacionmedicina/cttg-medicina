@@ -526,6 +526,27 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- MODAL CANCELAR RADICACIÓN -->
+<div id="modalCancelarRad" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#1a1f2e;border:1px solid rgba(239,68,68,.3);border-radius:16px;max-width:500px;width:100%;padding:28px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Solicitar cancelación de radicación</div>
+      <button onclick="cerrarModalCancelarRad()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:16px;line-height:1.6;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px">
+      ⚠️ Esta solicitud será revisada por la coordinación. Si es aprobada, su radicación quedará <strong>Cancelada</strong> y podrá crear una nueva. Esta acción no es automática.
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Motivo de la cancelación *</label>
+      <textarea id="cancelMotivo" rows="4" placeholder="Explique por qué desea cancelar esta radicación (mínimo 12 caracteres)…" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+    </div>
+    <div id="cancelModalError" style="color:#f87171;font-size:13px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:10px">
+      <button id="cancelBtnEnviar" onclick="enviarSolicitudCancelacion()" style="flex:1;background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:8px;padding:10px 18px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Enviar solicitud</button>
+      <button onclick="cerrarModalCancelarRad()" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 18px;color:rgba(255,255,255,.7);font-size:13px;cursor:pointer">Cancelar</button>
+    </div>
+  </div>
+</div>
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 const TOKEN = localStorage.getItem('cttg_token') || '';
@@ -1765,26 +1786,5 @@ async function enviarSolicitudCancelacion() {
 }
 </script>
 
-<!-- MODAL CANCELAR RADICACIÓN -->
-<div id="modalCancelarRad" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#1a1f2e;border:1px solid rgba(239,68,68,.3);border-radius:16px;max-width:500px;width:100%;padding:28px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-      <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Solicitar cancelación de radicación</div>
-      <button onclick="cerrarModalCancelarRad()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
-    </div>
-    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:16px;line-height:1.6;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px">
-      ⚠️ Esta solicitud será revisada por la coordinación. Si es aprobada, su radicación quedará <strong>Cancelada</strong> y podrá crear una nueva. Esta acción no es automática.
-    </div>
-    <div style="margin-bottom:14px">
-      <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Motivo de la cancelación *</label>
-      <textarea id="cancelMotivo" rows="4" placeholder="Explique por qué desea cancelar esta radicación (mínimo 12 caracteres)…" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
-    </div>
-    <div id="cancelModalError" style="color:#f87171;font-size:13px;margin-bottom:10px;display:none"></div>
-    <div style="display:flex;gap:10px">
-      <button id="cancelBtnEnviar" onclick="enviarSolicitudCancelacion()" style="flex:1;background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:8px;padding:10px 18px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Enviar solicitud</button>
-      <button onclick="cerrarModalCancelarRad()" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 18px;color:rgba(255,255,255,.7);font-size:13px;cursor:pointer">Cancelar</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>

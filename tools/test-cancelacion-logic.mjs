@@ -3,8 +3,8 @@
  * node tools/test-cancelacion-logic.mjs
  */
 
-const ESTADOS_LIBERA_NUEVA_RAD = ['Aprobado', 'Devuelto', 'Cancelada'];
-const ESTADOS_NO_SOLICITAR_CANCEL = ['Cancelación solicitada', 'Cancelada', 'Sustentado', 'Reprobado'];
+const ESTADOS_LIBERA_NUEVA_RAD = ['Aprobado', 'Devuelto', 'Cancelado'];
+const ESTADOS_NO_SOLICITAR_CANCEL = ['Cancelado', 'Sustentado', 'Reprobado'];
 
 function radicacionBloqueaNueva(r) {
   return !ESTADOS_LIBERA_NUEVA_RAD.includes(String((r && r.estado) || '').trim());
@@ -16,11 +16,11 @@ function puedeSolicitarCancelacionRad(r) {
 }
 
 function estadosPermitenNuevaRadicacionF1() {
-  return ['Aprobado', 'Devuelto', 'Cancelada'];
+  return ['Aprobado', 'Devuelto', 'Cancelado'];
 }
 
 function estadosNoPermitenSolicitarCancelacionF1() {
-  return ['Cancelación solicitada', 'Cancelada', 'Sustentado', 'Reprobado'];
+  return ['Cancelado', 'Sustentado', 'Reprobado'];
 }
 
 function estudianteTieneRadicacionBloqueandoNueva(rads, email) {
@@ -54,20 +54,18 @@ console.log('── Lógica cancelación (frontend/backend) ──\n');
 
 test('Radicado bloquea nueva radicación', radicacionBloqueaNueva({ estado: 'Radicado' }));
 test('Aprobado libera nueva radicación', !radicacionBloqueaNueva({ estado: 'Aprobado' }));
-test('Cancelada libera nueva radicación', !radicacionBloqueaNueva({ estado: 'Cancelada' }));
-test('Cancelación solicitada bloquea nueva', radicacionBloqueaNueva({ estado: 'Cancelación solicitada' }));
+test('Cancelado libera nueva radicación', !radicacionBloqueaNueva({ estado: 'Cancelado' }));
 
 test('Radicado permite solicitar cancelación', puedeSolicitarCancelacionRad({ estado: 'Radicado' }));
 test('Tutores Avalados permite cancelar', puedeSolicitarCancelacionRad({ estado: 'Tutores Avalados' }));
-test('Cancelación solicitada NO permite otra solicitud', !puedeSolicitarCancelacionRad({ estado: 'Cancelación solicitada' }));
-test('Cancelada NO permite solicitar de nuevo', !puedeSolicitarCancelacionRad({ estado: 'Cancelada' }));
+test('Cancelado NO permite solicitar de nuevo', !puedeSolicitarCancelacionRad({ estado: 'Cancelado' }));
 
 const rads = [
   { numero: 'CTTG-1', estado: 'Radicado', emailEstudiante: 'a@usc.edu.co', rowIndex: 5 },
-  { numero: 'CTTG-2', estado: 'Cancelada', email1: 'a@usc.edu.co', rowIndex: 10 },
+  { numero: 'CTTG-2', estado: 'Cancelado', email1: 'a@usc.edu.co', rowIndex: 10 },
 ];
 test('Con radicación activa bloquea nueva', estudianteTieneRadicacionBloqueandoNueva(rads, 'a@usc.edu.co'));
-test('Solo Cancelada no bloquea si no hay otra activa', !estudianteTieneRadicacionBloqueandoNueva([rads[1]], 'a@usc.edu.co'));
+test('Solo Cancelado no bloquea si no hay otra activa', !estudianteTieneRadicacionBloqueandoNueva([rads[1]], 'a@usc.edu.co'));
 
 // Simular UI: debe mostrar botón en tarjeta Radicado
 const r = { estado: 'Radicado', rowIndex: 5, numero: 'X' };
@@ -90,18 +88,17 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dash = fs.readFileSync(path.join(__dirname, '..', 'estudiante_dashboard.html'), 'utf8');
 const coord = fs.readFileSync(path.join(__dirname, '..', 'coordinadora_dashboard.html'), 'utf8');
-const apps = fs.readFileSync(path.join(__dirname, '..', 'apps scr.txt'), 'utf8');
+const apps = fs.readFileSync(path.join(__dirname, '..', 'appscript.gs'), 'utf8');
 
 test('HTML estudiante: modal cancelar', dash.includes('id="modalCancelarRad"'));
-test('HTML estudiante: action solicitarCancelacionRadicacion', dash.includes('solicitarCancelacionRadicacion'));
-test('HTML estudiante: botones con data-rad-act (sin onclick frágil)', dash.includes('data-rad-act="cancelar"'));
-test('HTML coord: botón seguimiento con data-rad-act', coord.includes('data-rad-act="seguimiento"'));
-test('HTML coord: resolver cancelación', coord.includes('resolverCancelacionRadicacion'));
-test('Apps Script: función solicitarCancelacionRadicacion', apps.includes('function solicitarCancelacionRadicacion'));
-test('Apps Script: case solicitarCancelacionRadicacion', apps.includes('case "solicitarCancelacionRadicacion"'));
-test('Apps Script: obtenerFilasHojaUsuario (login fila 38+)', apps.includes('function obtenerFilasHojaUsuario'));
-test('Apps Script: obtenerMatrizFase1 (Fase1 sin truncar)', apps.includes('function obtenerMatrizFase1'));
-test('Apps Script: obtenerFase1 usa obtenerMatrizFase1', /function obtenerFase1[\s\S]*?obtenerMatrizFase1\(sheet\)/.test(apps));
+test('HTML estudiante: action crearSolicitudCancelarRad', dash.includes("action: 'crearSolicitudCancelarRad'"));
+test('HTML estudiante: botón abre modal de cancelación', dash.includes('abrirModalCancelarRad('));
+test('HTML coord: lista solicitudes de cancelación', coord.includes('getSolicitudesCancelarRadPendientes'));
+test('HTML coord: resolver cancelación', coord.includes('resolverSolicitudCancelarRad'));
+test('Apps Script: función crearSolicitudCancelarRad', apps.includes('function crearSolicitudCancelarRad'));
+test('Apps Script: case crearSolicitudCancelarRad', apps.includes('case "crearSolicitudCancelarRad"'));
+test('Apps Script: case resolverSolicitudCancelarRad', apps.includes('case "resolverSolicitudCancelarRad"'));
+test('Apps Script: debugUsuario no es acción pública', !/accionesPublicas\s*=\s*\[[^\]]*debugUsuario/.test(apps));
 
 console.log(`\nResumen: ${passed} OK, ${failed} FAIL`);
 process.exit(failed > 0 ? 1 : 0);

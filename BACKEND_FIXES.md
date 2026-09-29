@@ -145,3 +145,29 @@ case "crearFase3": result = crearFase3(
 ```
 
 **Nota temporal:** Mientras no se aplique este fix en el AS, el frontend usa los nombres de campo actuales (`Cedula` para teléfono, `Telefono` para especialidad) y los mapea correctamente en pantalla.
+
+---
+
+## Fix 6 — `debugUsuario` ya no es acción pública (seguridad)
+
+**Problema:** `debugUsuario` estaba en `accionesPublicas` (sin sesión) y devolvía la columna C de la hoja **Usuarios** (contraseña en texto plano) de cualquier correo. Cualquiera con la URL del Web App podía obtener la contraseña de la coordinación.
+
+**Corrección (en `appscript.gs`):** se quitó de `accionesPublicas` y del `switch`. La función sigue existiendo para ejecutarla a mano desde el editor de Apps Script si hace falta diagnosticar.
+
+**Después de redesplegar:** cambiar las contraseñas de las cuentas de coordinación/auxiliar en la hoja Usuarios.
+
+---
+
+## Fix 7 — Número de radicación duplicado en envíos simultáneos
+
+**Problema:** `generarNumero` soltaba el lock antes de que `crearRadicacion` escribiera la fila, así que dos radicaciones enviadas al mismo tiempo podían recibir el mismo número. Si el lock fallaba, se guardaba una fila sin número.
+
+**Corrección:** `crearRadicacion` mantiene el `ScriptLock` desde que genera el número hasta escribir la fila (`generarNumero(..., true)`), y si no hay número devuelve error en vez de guardar.
+
+---
+
+## Cómo aplicar Fix 6 y 7 (obligatorio: el backend NO se actualiza solo)
+
+1. Abrir el proyecto de Apps Script del Web App.
+2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.
+3. **Implementar → Administrar implementaciones → ✏️ Editar → Versión: Nueva versión → Implementar.** (Editar la implementación existente mantiene la misma URL; no crear una implementación nueva.)
