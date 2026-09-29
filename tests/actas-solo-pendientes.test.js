@@ -41,6 +41,7 @@ describe.each(['coordinadora_dashboard.html', 'asistente_dashboard.html'])('%s â
       const esc = s => String(s ?? '');
       const fmtFecha = s => String(s ?? '');
       let verTodasActas = false;
+      ${extraer(html, 'numeroActaDeducido')}
       ${extraer(html, 'actaPorRevisar')}
       ${extraer(html, 'toggleVerTodasActas')}
       ${extraer(html, 'renderActas')}

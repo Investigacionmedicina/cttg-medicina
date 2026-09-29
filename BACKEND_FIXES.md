@@ -184,7 +184,15 @@ No toca radicaciones en Cancelado, Sustentado, Reprobado, Completado o Fase 2 De
 
 ---
 
-## Cómo aplicar Fix 6 a 10 (obligatorio: el backend NO se actualiza solo)
+## Fix 11 — Actas guardadas con «—» como número de radicación
+
+**Problema:** `actas_asesoria.html` arranca con el número en «—» mientras lo carga; si el estudiante enviaba antes, se guardaba «—». Al aprobar una «Solicitud activación Fase 2» así, `aprobarActasAsesoria` no encontraba la radicación y **no desbloqueaba la Fase 2**, sin avisar.
+
+**Corrección:** `aprobarActasAsesoria` completa el número con la única radicación vigente del correo (y lo escribe en la hoja); si no puede deducirlo, devuelve error en vez de aprobar a ciegas. `crearActasAsesoria` rechaza «—» con un mensaje claro. (El frontend ya no envía sin número.)
+
+---
+
+## Cómo aplicar Fix 6 a 11 (obligatorio: el backend NO se actualiza solo)
 
 1. Abrir el proyecto de Apps Script del Web App.
 2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.
