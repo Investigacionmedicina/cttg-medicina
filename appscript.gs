@@ -19,7 +19,7 @@ function doPost(e) {
 function handleRequest(e, body) {
   var action = (body && body.action) ? body.action : "";
   var result = { success: false, error: "Acción no válida" };
-  var accionesPublicas = ['login', 'debugUsuario', 'loginDebugListaUsuarios'];
+  var accionesPublicas = ['login', 'loginDebugListaUsuarios'];
   var sesion = null;
 
   if (accionesPublicas.indexOf(action) === -1) {
@@ -50,7 +50,6 @@ function handleRequest(e, body) {
   try {
     switch(action) {
         case "login":                result = loginUsuario(body.email, body.password); break;
-      case "debugUsuario":         result = debugUsuario(body.email); break;
       case "loginDebugListaUsuarios":
         result = loginDebugListaUsuarios(body.email, body.password);
         break;
@@ -251,12 +250,15 @@ function valorCeldaLegible(val) {
   return s;
 }
 
-function generarNumero(prefijo, nombreHoja) {
-  var lock = LockService.getScriptLock();
-  try {
-    lock.waitLock(10000);
-  } catch(e) {
-    return null;
+/** yaBloqueado: el llamador ya tiene el ScriptLock y lo mantiene hasta escribir la fila. */
+function generarNumero(prefijo, nombreHoja, yaBloqueado) {
+  var lock = yaBloqueado ? null : LockService.getScriptLock();
+  if (lock) {
+    try {
+      lock.waitLock(10000);
+    } catch(e) {
+      return null;
+    }
   }
 
   try {
@@ -282,7 +284,7 @@ function generarNumero(prefijo, nombreHoja) {
     return numeroGenerado;
 
   } finally {
-    lock.releaseLock();
+    if (lock) lock.releaseLock();
   }
 }
 
@@ -1305,7 +1307,18 @@ function crearRadicacion(datos, emailEstudiante, sesion) {
   var sheet  = getSheet("Fase1");
   if (!sheet) return { success: false, error: "Hoja Fase1 no encontrada" };
   asegurarColumnasFase1DiplomadoJurados(sheet);
-  var numero = generarNumero("CTTG", "Fase1");
+  // El lock se mantiene hasta escribir la fila: sin esto, dos radicaciones simultáneas
+  // pueden recibir el mismo número.
+  var lockRad = LockService.getScriptLock();
+  try {
+    lockRad.waitLock(20000);
+  } catch (eLock) {
+    return { success: false, error: "El sistema está ocupado. Intenta radicar de nuevo en unos segundos." };
+  }
+  var numero, newRow;
+  try {
+  numero = generarNumero("CTTG", "Fase1", true);
+  if (!numero) return { success: false, error: "No se pudo generar el número de radicación. Intenta de nuevo." };
   var fecha  = hoy();
   var nuevoId = sheet.getLastRow();
 
@@ -1380,9 +1393,13 @@ function crearRadicacion(datos, emailEstudiante, sesion) {
     d1Ace,                      // 51 Acuerdo (Sí/No)
     dipModoGuardar              // 52 tutor_sugiere | cttg_asigna
   ]);
+  SpreadsheetApp.flush();
+  newRow = sheet.getLastRow();
+  } finally {
+    lockRad.releaseLock();
+  }
 
   // Notificar usando función centralizada
-  var newRow = sheet.getLastRow();
   notificarCambioEstado(newRow, "Radicado", {});
   registrarAuditoria(emailEstudiante, "CREAR_RADICACION", numero);
   return { success: true, numero: numero };
