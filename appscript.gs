@@ -618,6 +618,31 @@ function reconstruirHistorialDesdeSheets(numero) {
   return eventos;
 }
 
+/** Estado (col AG) de la radicación si el estudiante figura en ella; null si no existe o no es suya. */
+function estadoRadicacionDelEstudiante_(emailEstudiante, numeroRadicacion) {
+  var emailLower = String(emailEstudiante || "").trim().toLowerCase();
+  var numero = String(numeroRadicacion || "").trim().toUpperCase();
+  if (!emailLower || !numero) return null;
+  var sheet = getSheet("Fase1");
+  if (!sheet) return null;
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    if (String(row[1] || "").trim().toUpperCase() !== numero) continue;
+    if (!filaFase1TieneEmail_(row, emailLower)) return null;
+    return String(row[32] || "Radicado").trim();
+  }
+  return null;
+}
+
+function filaFase1TieneEmail_(row, emailLower) {
+  var cols = [2, 5, 11, 17];
+  for (var c = 0; c < cols.length; c++) {
+    if (String(row[cols[c]] || "").trim().toLowerCase() === emailLower) return true;
+  }
+  return false;
+}
+
 function estudiantePuedeVerRadicacionPorNumero(emailEstudiante, numeroRadicacion) {
   var emailLower = String(emailEstudiante || "").trim().toLowerCase();
   var numero = String(numeroRadicacion || "").trim().toUpperCase();
@@ -2537,6 +2562,12 @@ function crearProtocolo(numeroRadicacion, emailEstudiante, nombreArchivo, urlArc
   if (!numeroRadicacion || !emailEstudiante) {
     return { success: false, error: "Datos incompletos" };
   }
+  var estadoRad = estadoRadicacionDelEstudiante_(sesion.email, numeroRadicacion);
+  if (estadoRad === null) return { success: false, error: "Esta radicación no está asociada a tu correo." };
+  // Evita que un reenvío devuelva a «Pendiente Comité Técnico» una radicación ya aprobada o cerrada.
+  if (["Aprobado", "Cancelado", "Sustentado", "Reprobado", "Completado"].indexOf(estadoRad) !== -1) {
+    return { success: false, error: "La radicación " + numeroRadicacion + " está en estado «" + estadoRad + "» y no admite un nuevo protocolo. Si necesitas un cambio, contacta a la coordinación." };
+  }
 
   var sheet = getSheet("Fase2");
   if (!sheet) {
@@ -2664,7 +2695,11 @@ function actualizarEstadoProtocolo(rowIndex, estado, evaluador, emailEvaluador, 
 
   var numRad = String(sheet.getRange(ri, 2).getValue());
   var aprobado = (estado === "Aprobado" || estado === "Pendiente Comité");
-  var estadoFase1 = (estado === "Devuelto") ? "Devuelto" : "Aprobado";
+  // Mismo mapeo que registrarDecisionComite: «Pendiente Comité» no es una aprobación, y «Devuelto»
+  // en Fase 1 significaría radicación rechazada (liberaría una nueva), no protocolo devuelto.
+  var estadoFase1 = (estado === "Aprobado" || estado === "Aprobado Directo") ? "Aprobado"
+    : (estado === "Devuelto" || estado === "Devuelto por Comité Técnico") ? "Devuelto por Comité Técnico"
+    : "Pendiente Comité Técnico";
 
   var sheetF1 = getSheet("Fase1");
   var dataF1 = sheetF1.getDataRange().getValues();
@@ -2709,6 +2744,9 @@ function crearActasAsesoria(numeroRadicacion, emailEstudiante, nombreArchivo, ba
     return { success: false, error: "No autorizado" };
   }
   if (!numeroRadicacion || !emailEstudiante) return { success: false, error: "Datos incompletos" };
+  var estadoRadActa = estadoRadicacionDelEstudiante_(sesion.email, numeroRadicacion);
+  if (estadoRadActa === null) return { success: false, error: "Esta radicación no está asociada a tu correo." };
+  if (estadoRadActa === "Cancelado") return { success: false, error: "La radicación " + numeroRadicacion + " está cancelada." };
   var sheet = getSheet("Acta asesoria");
   if (!sheet) return { success: false, error: "Hoja Acta asesoria no encontrada" };
 
@@ -2847,6 +2885,11 @@ function crearFase3(numeroRadicacion, emailEstudiante, porcentajeTurnitin, jurad
     return { success: false, error: "No autorizado" };
   }
   if (!numeroRadicacion || !emailEstudiante) return { success: false, error: "Datos incompletos" };
+  var estadoRadF3 = estadoRadicacionDelEstudiante_(sesion.email, numeroRadicacion);
+  if (estadoRadF3 === null) return { success: false, error: "Esta radicación no está asociada a tu correo." };
+  if (["Cancelado", "Sustentado", "Reprobado", "Completado"].indexOf(estadoRadF3) !== -1) {
+    return { success: false, error: "La radicación " + numeroRadicacion + " está en estado «" + estadoRadF3 + "» y no admite una solicitud de sustentación." };
+  }
   
   var pct = parseFloat(porcentajeTurnitin || 0);
   if (pct >= 20) return { success: false, error: "El porcentaje Turnitin debe ser menor al 20%" };
@@ -3698,6 +3741,9 @@ function repararEstadosFase1() {
     
     for (var i = 1; i < dataF1.length; i++) {
       if (String(dataF1[i][1] || "").trim() === numRad) {
+        // No retroceder radicaciones que ya pasaron la Fase 2 o se cerraron.
+        var estadoActualF1 = String(dataF1[i][32] || "").trim();
+        if (["Cancelado", "Sustentado", "Reprobado", "Completado", "Fase 2 Desbloqueada"].indexOf(estadoActualF1) !== -1) break;
         var estadoF1 = "";
         if (estadoF2 === "Aprobado" || estadoF2 === "Aprobado Directo") {
           estadoF1 = "Aprobado";

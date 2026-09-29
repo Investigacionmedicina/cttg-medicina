@@ -263,6 +263,9 @@ function esDiplomadoFase2() {
 
 function radicacionRefFase2(rads) {
   if (!rads || !rads.length) return null;
+  // Misma regla que el panel del estudiante: ignorar canceladas si hay otra vigente.
+  const vigentes = rads.filter(r => String(r.estado || '').trim().toLowerCase() !== 'cancelado');
+  if (vigentes.length) rads = vigentes;
   const newer = (a, b) => {
     const ta = new Date(String(a.fechaRadicacion || a.fechaCarga || '')).getTime() || 0;
     const tb = new Date(String(b.fechaRadicacion || b.fechaCarga || '')).getTime() || 0;

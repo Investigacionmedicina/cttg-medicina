@@ -166,7 +166,25 @@ case "crearFase3": result = crearFase3(
 
 ---
 
-## Cómo aplicar Fix 6 y 7 (obligatorio: el backend NO se actualiza solo)
+## Fix 8 — Envíos de estudiante validan la radicación (Fase 2, actas, Fase 3)
+
+**Problema:** `crearProtocolo`, `crearActasAsesoria` y `crearFase3` aceptaban cualquier número de radicación sin comprobar que fuera del estudiante ni su estado. Un reenvío del protocolo devolvía a «Pendiente Comité Técnico» radicaciones ya aprobadas, canceladas o sustentadas.
+
+**Corrección:** nuevo helper `estadoRadicacionDelEstudiante_`. Protocolo: se rechaza si la radicación está Aprobado, Cancelado, Sustentado, Reprobado o Completado. Actas: se rechaza si está Cancelado. Fase 3: se rechaza si está Cancelado, Sustentado, Reprobado o Completado.
+
+## Fix 9 — `actualizarEstadoProtocolo` marcaba «Aprobado» antes del comité
+
+**Problema:** cualquier estado distinto de «Devuelto» (incluido «Pendiente Comité») ponía la radicación en «Aprobado» en Fase 1, y «Devuelto» la dejaba como radicación rechazada.
+
+**Corrección:** mismo mapeo que `registrarDecisionComite` (Aprobado / Devuelto por Comité Técnico / Pendiente Comité Técnico).
+
+## Fix 10 — `repararEstadosFase1` ya no retrocede radicaciones cerradas
+
+No toca radicaciones en Cancelado, Sustentado, Reprobado, Completado o Fase 2 Desbloqueada.
+
+---
+
+## Cómo aplicar Fix 6 a 10 (obligatorio: el backend NO se actualiza solo)
 
 1. Abrir el proyecto de Apps Script del Web App.
 2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.

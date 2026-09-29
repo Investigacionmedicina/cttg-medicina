@@ -882,6 +882,9 @@ function normNumRadEst(n) {
  */
 function radicacionReferenciaDashboard(rads) {
   if (!rads || !rads.length) return null;
+  // Una radicación cancelada no debe tapar a otra vigente (p. ej. Completado + Cancelado más reciente).
+  const vigentes = rads.filter(r => String(r.estado || '').trim().toLowerCase() !== 'cancelado');
+  if (vigentes.length) rads = vigentes;
   const pickNewer = (a, b) => (fechaRadMs(a.fechaRadicacion) >= fechaRadMs(b.fechaRadicacion) ? a : b);
   const diplos = rads.filter(r => esModalidadDiplomado(r.modalidad));
   if (diplos.length) return diplos.reduce(pickNewer);

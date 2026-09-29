@@ -278,13 +278,31 @@ function badgeClass(estado) {
   return 'b-pend';
 }
 
+/** Misma regla que estudiante_dashboard (radicacionReferenciaDashboard): el panel busca
+ *  las actas en esa radicación, así que aquí deben cargarse en la misma. */
+function radicacionReferenciaActas(rads) {
+  if (!rads || !rads.length) return null;
+  const vigentes = rads.filter(r => String(r.estado || '').trim().toLowerCase() !== 'cancelado');
+  if (vigentes.length) rads = vigentes;
+  const ms = fr => {
+    const s = String(fr || '').trim();
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(s) ? new Date(s + 'T12:00:00') : new Date(fr);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  };
+  const pickNewer = (a, b) => (ms(a.fechaRadicacion) >= ms(b.fechaRadicacion) ? a : b);
+  const diplos = rads.filter(r => /diplom/i.test(String(r.modalidad || '')));
+  if (diplos.length) return diplos.reduce(pickNewer);
+  return rads.reduce(pickNewer);
+}
+
 async function cargarContexto() {
   try {
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1ByEmail', email: user.email, token: TOKEN })});
     const d = await res.json();
     if (redirigirSiSesionInvalida(d)) return;
     if (d.success && d.radicaciones.length > 0) {
-      numeroRadicacion = String(d.radicaciones[0].numero || '').trim();
+      const ref = radicacionReferenciaActas(d.radicaciones) || d.radicaciones[0];
+      numeroRadicacion = String(ref.numero || '').trim();
       if (!numeroRadicacion || numeroRadicacion === '—') {
         toast('No se encontró tu número de radicación. Recarga la página.', 'warn');
       }
