@@ -373,9 +373,27 @@ async function cargarActas() {
   }
 }
 
+/** El número se carga del servidor al abrir la página y tarda unos segundos: si el estudiante
+ *  envía antes, se guardaba «—» y el panel no reconocía el acta. Espera la carga o no envía. */
+function numeroRadicacionValido() {
+  const n = String(numeroRadicacion || '').trim();
+  return n !== '' && n !== '—';
+}
+
+async function asegurarNumeroRadicacion() {
+  if (!numeroRadicacionValido()) await cargarContexto();
+  if (numeroRadicacionValido()) return true;
+  toast('No se pudo cargar tu número de radicación. Recarga la página e inténtalo de nuevo.', 'err');
+  return false;
+}
+
 async function solicitarFase2() {
   const btn = document.getElementById('btnSolicitar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Enviando solicitud...';
+  if (!(await asegurarNumeroRadicacion())) {
+    btn.disabled = false; btn.innerHTML = '🚀 Solicitar activación de Fase 2';
+    return;
+  }
   try {
    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'crearActasAsesoria',
@@ -421,6 +439,10 @@ async function confirmarEnvio() {
   const obs = document.getElementById('observaciones').value.trim();
   const btn = document.getElementById('btnConfirmar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Registrando...';
+  if (!(await asegurarNumeroRadicacion())) {
+    btn.disabled = false; btn.innerHTML = '✅ Ya envié mi acta';
+    return;
+  }
   try {
 
    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({

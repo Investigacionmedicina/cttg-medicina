@@ -2744,6 +2744,7 @@ function crearActasAsesoria(numeroRadicacion, emailEstudiante, nombreArchivo, ba
     return { success: false, error: "No autorizado" };
   }
   if (!numeroRadicacion || !emailEstudiante) return { success: false, error: "Datos incompletos" };
+  if (String(numeroRadicacion).trim() === "—") return { success: false, error: "Tu número de radicación aún no ha cargado. Recarga la página e inténtalo de nuevo." };
   var estadoRadActa = estadoRadicacionDelEstudiante_(sesion.email, numeroRadicacion);
   if (estadoRadActa === null) return { success: false, error: "Esta radicación no está asociada a tu correo." };
   if (estadoRadActa === "Cancelado") return { success: false, error: "La radicación " + numeroRadicacion + " está cancelada." };
@@ -2834,6 +2835,23 @@ function obtenerActasAsesoria(sesion) {
   return { success: true, actas: actas };
 }
 
+/** Número de la única radicación no cancelada del correo; "" si no hay o hay varias. */
+function numeroRadicacionUnicaPorEmail_(email) {
+  var em = String(email || "").trim().toLowerCase();
+  if (!em) return "";
+  var sheet = getSheet("Fase1");
+  if (!sheet) return "";
+  var data = sheet.getDataRange().getValues();
+  var nums = {};
+  for (var i = 1; i < data.length; i++) {
+    var num = String(data[i][1] || "").trim();
+    if (!num || String(data[i][32] || "").trim() === "Cancelado") continue;
+    if (filaFase1TieneEmail_(data[i], em)) nums[num] = true;
+  }
+  var lista = Object.keys(nums);
+  return lista.length === 1 ? lista[0] : "";
+}
+
 function aprobarActasAsesoria(rowIndex, emailEstudiante, emailCoord, rechazar, motivo) {
   var sheetActas = getSheet("Acta asesoria");
   var ri         = parseInt(rowIndex);
@@ -2843,12 +2861,23 @@ function aprobarActasAsesoria(rowIndex, emailEstudiante, emailCoord, rechazar, m
   var estado     = rechazar ? "Rechazada" : "Aprobada";
   var estadoAnteriorActa = String(sheetActas.getRange(ri, 7).getValue() || "");
 
+  // Filas guardadas con «—» (el estudiante envió antes de que cargara su número): se completa
+  // con su única radicación vigente; si no se puede deducir, no se aprueba a ciegas.
+  if (!numeroRad || numeroRad === "—") {
+    var emailFila = String(sheetActas.getRange(ri, 3).getValue() || emailEstudiante || "").trim();
+    var deducido = numeroRadicacionUnicaPorEmail_(emailFila);
+    if (!deducido) {
+      return { success: false, error: "Esta acta no tiene número de radicación y el estudiante no tiene una única radicación vigente. Escribe el número en la hoja «Acta asesoria» (fila " + ri + ") y vuelve a intentarlo." };
+    }
+    numeroRad = deducido;
+    sheetActas.getRange(ri, 2).setValue(numeroRad);
+  }
+
   sheetActas.getRange(ri, 7).setValue(estado);
   if (motivo) sheetActas.getRange(ri, 8).setValue(motivo);
 
   if (!rechazar && esSolicitudFase2) {
     var sheetF1 = getSheet("Fase1");
-    var numeroRad = String(sheetActas.getRange(ri, 2).getValue() || "").trim();
     var dataF1  = sheetF1.getDataRange().getValues();
     
     for (var i = 1; i < dataF1.length; i++) {

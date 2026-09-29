@@ -1414,6 +1414,19 @@ function contarActas(emailEstudiante) {
 // Buscar o filtrar por estado siempre busca en todas.
 let verTodasActas = false;
 
+/** Algunas actas quedaron guardadas con «—» en vez del número (el estudiante envió antes de
+ *  que cargara su radicación). Se deduce por correo si tiene una sola radicación vigente. */
+function numeroActaDeducido(a) {
+  const n = String(a.numero || '').trim();
+  if (n && n !== '—') return { numero: n, deducido: false };
+  const em = String(a.emailEstudiante || '').trim().toLowerCase();
+  const nums = [...new Set(radicaciones
+    .filter(r => String(r.estado || '') !== 'Cancelado'
+      && [r.emailEstudiante, r.email1, r.email2, r.email3].some(e => String(e || '').trim().toLowerCase() === em))
+    .map(r => String(r.numero || '').trim()))];
+  return nums.length === 1 ? { numero: nums[0], deducido: true } : { numero: '', deducido: false };
+}
+
 function actaPorRevisar(a) {
   return a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2';
 }
@@ -1428,12 +1441,13 @@ function renderActas() {
   const fE = document.getElementById('fEstActas').value;
   const soloPendientes = !verTodasActas && !q && !fE;
   const visibles = actas.filter(a => {
-    const rad = radicaciones.find(r => String(r.numero||'').trim() === String(a.numero||'').trim());
+    const numA = numeroActaDeducido(a).numero;
+    const rad = radicaciones.find(r => String(r.numero||'').trim() === numA);
     return !(rad && esTerminado(rad));
   });
   const filtered = visibles.filter(a => {
     if (soloPendientes && !actaPorRevisar(a)) return false;
-    const txt = [a.numero, a.emailEstudiante, a.nombreArchivo].join(' ').toLowerCase();
+    const txt = [a.numero, numeroActaDeducido(a).numero, a.emailEstudiante, a.nombreArchivo].join(' ').toLowerCase();
     return (!q || txt.includes(q)) && (!fE || a.estado === fE);
   });
   const btnTodas = document.getElementById('btnVerTodasActas');
@@ -1470,7 +1484,13 @@ const esPendiente = a.estado === 'Pendiente revisión' && !esSolicitud;
 
     return `<tr>
       <td style="font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace">${fmtFecha(a.fechaCarga)}</td>
-      <td><div class="num-rad">${esc(a.numero||'')}</div></td>
+      <td>${(() => {
+        const nd = numeroActaDeducido(a);
+        if (!nd.numero) return '<div class="num-rad">—</div><div style="font-size:10px;color:#fbbf24">⚠️ Sin número en la hoja</div>';
+        return `<div class="num-rad">${esc(nd.numero)}</div>` + (nd.deducido
+          ? '<div style="font-size:10px;color:#fbbf24" title="En la hoja «Acta asesoria» esta fila tiene «—». Número deducido por el correo del estudiante; corrígelo en la hoja.">⚠️ Falta en la hoja</div>'
+          : '');
+      })()}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.emailEstudiante||'')}</td>
       <td style="font-size:12px">📄 ${esc(a.nombreArchivo||'')}</td>
       <td>${badgeActa}</td>
