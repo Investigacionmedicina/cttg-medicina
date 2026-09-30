@@ -186,19 +186,45 @@
 <link rel="stylesheet" href="tema.css">
 </head>
 <body>
-<header>
-  <div class="hdr-l">
-    <div class="logo">👩‍💼</div>
-    <div><h1>CTTG Medicina · Coordinación</h1><p>Panel de Gestión de Radicaciones</p></div>
-  </div>
-  <div class="hdr-r">
-    <div class="sync"><span class="dot loading" id="syncDot"></span><span id="syncLbl">Conectando...</span></div>
-    <div class="user-chip" id="userChip">—</div>
-    <button class="btn-out" onclick="salir()">Salir</button>
-  </div>
-</header>
-
-<main>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-marca"><div class="sb-sello">M</div><div><b>CTTG Medicina</b><span>Coordinación</span></div></div>
+    <div class="sb-grupo"><h6>General</h6><nav class="sb-nav">
+        <button class="main-tab on" id="tabInicio" data-panel="inicio" onclick="switchPanel('inicio', this)"><svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
+    </nav></div>
+    <div class="sb-grupo"><h6>Proceso</h6><nav class="sb-nav">
+        <button class="main-tab" id="tabRad" data-panel="rad" onclick="switchPanel('rad', this)"><span class="sb-n">1</span>Radicaciones</button>
+        <button class="main-tab" id="tabActas" data-panel="actas" onclick="switchPanel('actas', this)"><span class="sb-n">2</span>Actas de asesoría</button>
+        <button class="main-tab" id="tabProtocolo" data-panel="protocolo" onclick="switchPanel('protocolo', this)"><span class="sb-n">3</span>Protocolo</button>
+        <button class="main-tab" id="tabComite" data-panel="comite" onclick="switchPanel('comite', this)"><span class="sb-n">4</span>Comité técnico</button>
+        <button class="main-tab" id="tabFase3" data-panel="fase3" onclick="switchPanel('fase3', this)"><span class="sb-n">5</span>Sustentación</button>
+        <button class="main-tab" id="tabTerminados" data-panel="terminados" onclick="switchPanel('terminados', this)"><svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4a1 1 0 0 1 1-1h12l-2 4 2 4H5"/></svg>Terminados<span class="badge-count" id="badgeTerminados" style="display:none"></span></button>
+    </nav></div>
+    <div class="sb-grupo"><h6>Gestión</h6><nav class="sb-nav">
+        <button class="main-tab" id="tabAlertas" data-panel="alertas" onclick="switchPanel('alertas', this)"><svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Alertas<span class="badge-count" style="display:none"></span></button>
+        <button class="main-tab" id="tabTutores" data-panel="tutores" onclick="switchPanel('tutores', this)"><svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>Tutores</button>
+        <button class="main-tab" id="tabSolicitudesCambio" data-panel="solicitudesCambio" onclick="switchPanel('solicitudesCambio', this)"><svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Cambios y cancelaciones<span class="badge-count" id="badgeSolicitudesCambio" style="display:none"></span><span class="badge-count" id="badgeCancelaciones" style="display:none;margin-left:2px"></span></button>
+        <button class="main-tab" id="tabDiplomado" data-panel="diplomado" onclick="switchPanel('diplomado', this)"><svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Diplomado<span class="badge-count" id="badgeDiplomado" style="display:none"></span></button>
+        <button class="main-tab" id="tabSeguimiento" data-panel="seguimiento" onclick="switchPanel('seguimiento', this)"><svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>Seguimiento</button>
+        <button class="main-tab" id="tabFiltros" data-panel="filtros" onclick="switchPanel('filtros', this)"><svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></svg>Filtros</button>
+        <button class="main-tab" id="tabInformes" data-panel="informes" onclick="switchPanel('informes', this)"><svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 16v-5M12 16V8M17 16v-3"/></svg>Informes</button>
+    </nav></div>
+    <div class="sb-pie"><div class="sync"><span class="dot loading" id="syncDot"></span><span id="syncLbl">Conectando...</span></div></div>
+  </aside>
+  <div class="app-main">
+    <header class="topbar">
+      <button class="menu-movil" type="button" aria-label="Abrir menú">☰</button>
+      <div><h1 id="tituloVista" data-saludo="1" data-quien="Coordinación">Inicio</h1><div class="sub">Comité de Trabajos de Grado · Facultad de Salud</div></div>
+      <div class="hdr-r"><div class="user-chip" id="userChip">—</div><button class="btn-out" onclick="salir()">Salir</button></div>
+    </header>
+    <main>
+  <section class="panel on" id="pan-inicio">
+    <div class="metrics-caption" style="margin-top:0!important">Resumen</div>
+    <div class="metrics">
+    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en Fase 1</div></div>
+    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div><div class="mh">Sin aval de tutor/diplomado aún</div></div>
+    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⏰ Plazo crítico</div><div class="mv" id="mCritico">—</div><div class="mh">Clic: abrir tab Alertas (&gt;60% tiempo de avance sin cierre)</div></div>
+   </div>
     <!-- ── GESTIONES INSTITUCIONALES (prioridad coordinación) ── -->
     <div class="gestiones-hero" id="bloqueGestionesCoord">
       <div class="gestiones-hero-hdr">
@@ -221,13 +247,9 @@
       </div>
     </div>
 
-    <div class="metrics-caption">Resumen rápido</div>
-    <div class="metrics">
-    <div class="mc c1"><div class="ml">Total</div><div class="mv" id="mTot">—</div><div class="mh">Todos los registros en Fase 1</div></div>
-    <div class="mc c3"><div class="ml">Radicadas</div><div class="mv" id="mRad">—</div><div class="mh">Sin aval de tutor/diplomado aún</div></div>
-    <div class="mc c4 mc-go" tabindex="0" role="button" onclick="var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();var b=document.getElementById('tabAlertas');if(b)switchPanel('alertas',b);}"><div class="ml">⏰ Plazo crítico</div><div class="mv" id="mCritico">—</div><div class="mh">Clic: abrir tab Alertas (&gt;60% tiempo de avance sin cierre)</div></div>
-   </div>
-    <div class="metrics-caption">¿A qué parte del panel ir? · Clic en la tarjeta</div>
+    <div class="ini-fila">
+      <div>
+    <div class="metrics-caption">Radicaciones por etapa <span style="font-weight:500;color:#7a8699;font-size:13px">· clic para ir a la sección</span></div>
     <div class="metrics">
     <div class="mc c6 mc-go" id="metricGoAvTutor" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'',excludeDiplomado:true});}"><div class="ml">Validar tutores</div><div class="mv" id="mAvTutor">—</div><div class="mh">Radicadas sin Diplomado · tab Radicaciones (lista filtrada)</div></div>
     <div class="mc c5 mc-go" id="metricGoAvDip" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Radicado',fMod:'diplomado'});}"><div class="ml">Aval Diplomado</div><div class="mv" id="mAvDip">—</div><div class="mh">Diplomado en Radicado · tab Radicaciones</div></div>
@@ -242,39 +264,15 @@
     <div class="mc c6 mc-go" tabindex="0" role="button" onclick="irMetricaRuta('rad',{fEstRad:'Revisión'})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();irMetricaRuta('rad',{fEstRad:'Revisión'});}"><div class="ml">En revisión</div><div class="mv" id="mRev">—</div><div class="mh">Estado Revisión · tab Radicaciones</div></div>
    </div>
 
-    <!-- ── SECCIÓN: POR MODALIDAD ─────────────────────────── -->
-    <div class="metrics-caption">Por Modalidad · Clic para filtrar</div>
-    <div id="modGridWrap" class="metrics" style="min-height:64px"></div>
-
- <div class="tab-grupos">
-  <div class="tab-grupo-titulo">Proceso paso a paso</div>
-  <div class="main-tabs proceso">
-    <button class="main-tab on" id="tabRad" onclick="switchPanel('rad', this)"><span class="paso-n">1</span>📋 Radicaciones</button>
-    <span class="paso-flecha" aria-hidden="true">›</span>
-    <button class="main-tab" id="tabActas" onclick="switchPanel('actas', this)"><span class="paso-n">2</span>📄 Actas de Asesoría</button>
-    <span class="paso-flecha" aria-hidden="true">›</span>
-    <button class="main-tab" id="tabProtocolo" onclick="switchPanel('protocolo', this)"><span class="paso-n">3</span>📖 Protocolo</button>
-    <span class="paso-flecha" aria-hidden="true">›</span>
-    <button class="main-tab" id="tabComite" onclick="switchPanel('comite', this)"><span class="paso-n">4</span>📅 Comité Técnico</button>
-    <span class="paso-flecha" aria-hidden="true">›</span>
-    <button class="main-tab" id="tabFase3" onclick="switchPanel('fase3', this)"><span class="paso-n">5</span>🎓 Sustentación</button>
-    <span class="paso-flecha" aria-hidden="true">›</span>
-    <button class="main-tab" id="tabTerminados" onclick="switchPanel('terminados', this)">🏁 Terminados<span class="badge-count" id="badgeTerminados" style="display:none"></span></button>
-  </div>
-  <div class="tab-grupo-titulo" style="margin-top:10px">Gestión y consulta</div>
-  <div class="main-tabs">
-    <button class="main-tab" id="tabAlertas" onclick="switchPanel('alertas', this)">🚨 Alertas<span class="badge-count" style="display:none"></span></button>
-    <button class="main-tab" id="tabTutores" onclick="switchPanel('tutores', this)">👨‍🏫 Tutores</button>
-    <button class="main-tab" id="tabSolicitudesCambio" onclick="switchPanel('solicitudesCambio', this)">✏️ Cambios y Cancelaciones<span class="badge-count" id="badgeSolicitudesCambio" style="display:none"></span><span class="badge-count" id="badgeCancelaciones" style="display:none;margin-left:2px"></span></button>
-    <button class="main-tab" id="tabDiplomado" onclick="switchPanel('diplomado', this)">📚 Diplomado<span class="badge-count" id="badgeDiplomado" style="display:none"></span></button>
-    <button class="main-tab" id="tabSeguimiento" onclick="switchPanel('seguimiento', this)">📊 Seguimiento</button>
-    <button class="main-tab" id="tabFiltros" onclick="switchPanel('filtros', this)">🔍 Filtros</button>
-    <button class="main-tab" id="tabInformes" onclick="switchPanel('informes', this)">📈 Informes</button>
-  </div>
- </div>
+      </div>
+      <div class="ini-lateral"><h3>Por modalidad</h3>
+        <div id="modGridWrap" class="metrics"></div>
+      </div>
+    </div>
+</section>
 
   <!-- PANEL RADICACIONES -->
-  <div class="panel on" id="pan-rad">
+  <div class="panel" id="pan-rad">
     <div class="filters">
       <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="limpiarFiltroMetrica();renderTabla()">
       <select id="fMod" onchange="limpiarFiltroMetrica();renderTabla()"><option value="">Todas las modalidades</option></select>
@@ -914,6 +912,8 @@
   </div>
 
  </main>
+  </div>
+</div>
 
 <!-- MODAL RESULTADO DIPLOMADO -->
 <div class="modal-bg" id="modalResultadoDip">
@@ -4683,5 +4683,6 @@ async function resolverCancelacion(decision) {
 
 
 </script>
+<script src="tema.js"></script>
 </body>
 </html>

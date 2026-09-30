@@ -17,7 +17,7 @@ const htmlContent = fs.readFileSync(HTML_PATH, 'utf8');
 // ── helpers ─────────────────────────────────────────────────────────────────
 
 function extractBodyHtml() {
-  const m = htmlContent.match(/<body>([\s\S]*?)<\/body>/i);
+  const m = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   if (!m) return '';
   // Strip all <script> blocks so eval controls execution
   return m[1].replace(/<script[\s\S]*?<\/script>/gi, '');

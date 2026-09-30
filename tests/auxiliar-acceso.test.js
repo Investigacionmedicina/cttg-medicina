@@ -14,7 +14,7 @@ const MOCK_TOKEN = 'tok-staff-999';
 
 function loadPage(filename) {
   const html = fs.readFileSync(path.join(__dirname, '..', filename), 'utf8');
-  const bodyMatch = html.match(/<body>([\s\S]*?)<\/body>/i);
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   const body = bodyMatch ? bodyMatch[1].replace(/<script[\s\S]*?<\/script>/gi, '') : '';
   const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>\s*<\/body>/i);
   const script = scriptMatch ? scriptMatch[1] : '';
