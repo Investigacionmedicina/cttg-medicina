@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Outfit',sans-serif;background:#0a0f1a;color:#e2e8f0;min-height:100vh}
+  body{font-family:'Outfit',sans-serif;background:linear-gradient(160deg,#053b2e 0%,#06533f 38%,#0b4a57 72%,#16304f 100%);background-color:#06402f;background-attachment:fixed;color:#e2e8f0;min-height:100vh}
   header{background:linear-gradient(135deg,#064e3b,#059669 80%,#1a3a5c);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
   .hdr-l{display:flex;align-items:center;gap:10px}
   .logo{width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
@@ -53,14 +53,14 @@
   /* MODAL */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
-  .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
+  .modal{background:#0b3a3a;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
   @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
   .mfg{margin-bottom:14px}
   .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);margin-bottom:5px}
   .mfg input,.mfg select,.mfg textarea{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
-  .mfg select option{background:#111827}
+  .mfg select option{background:#0b3a3a}
   .mfg input.ro-lock,.mfg textarea.ro-lock{background:rgba(255,255,255,.03);color:rgba(255,255,255,.85)}
   .hint-j{font-size:11px;color:rgba(255,255,255,.45);line-height:1.35;margin:-6px 0 10px}
   .msec{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;margin:14px 0 8px;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:4px}

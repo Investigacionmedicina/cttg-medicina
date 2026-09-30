@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Outfit',sans-serif;background:#0a0f1a;color:#e2e8f0;min-height:100vh}
+  body{font-family:'Outfit',sans-serif;background:linear-gradient(160deg,#053b2e 0%,#06533f 38%,#0b4a57 72%,#16304f 100%);background-color:#06402f;background-attachment:fixed;color:#e2e8f0;min-height:100vh}
   header{background:linear-gradient(135deg,#064e3b,#059669 80%,#1a3a5c);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
   .hdr-l{display:flex;align-items:center;gap:10px}
   .logo{width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
@@ -55,7 +55,7 @@
   .filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
   .filters input,.filters select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:12px;padding:7px 11px;outline:none}
   .filters input{min-width:200px}.filters input::placeholder{color:rgba(255,255,255,.3)}
-  .filters select option{background:#111827}
+  .filters select option{background:#0b3a3a}
   .tbl-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto}
   table{width:100%;border-collapse:collapse;min-width:700px}
   thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
@@ -103,7 +103,7 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
-  .modal{background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
+  .modal{background:#0b3a3a;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
   .modal.wide{max-width:680px}
   @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -111,7 +111,7 @@
   .mfg{margin-bottom:14px}
   .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);margin-bottom:5px}
   .mfg select,.mfg textarea,.mfg input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
-  .mfg select option{background:#111827}
+  .mfg select option{background:#0b3a3a}
   .mfg textarea{min-height:80px;resize:vertical}
   .det-row{display:flex;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;gap:8px}
   .det-label{min-width:130px;font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;flex-shrink:0}
@@ -148,7 +148,7 @@
   .seg-card .v{font-size:13px;color:#e2e8f0;font-weight:600}
   .seg-history{border-left:1px solid rgba(255,255,255,.12);margin:4px 0 14px 7px;padding-left:14px;display:flex;flex-direction:column;gap:10px}
   .seg-event{position:relative;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px}
-  .seg-event::before{content:'';position:absolute;left:-22px;top:13px;width:12px;height:12px;border-radius:50%;background:#10b981;border:2px solid #0a0f1a}
+  .seg-event::before{content:'';position:absolute;left:-22px;top:13px;width:12px;height:12px;border-radius:50%;background:#10b981;border:2px solid #0b3a3a}
   .seg-event .date{font-family:'DM Mono',monospace;font-size:11px;color:#93c5fd;margin-bottom:4px}
   .seg-event .what{font-size:13px;color:#fff;font-weight:600}
   .seg-event .detail{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
