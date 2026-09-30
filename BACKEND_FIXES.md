@@ -192,7 +192,17 @@ No toca radicaciones en Cancelado, Sustentado, Reprobado, Completado o Fase 2 De
 
 ---
 
-## Cómo aplicar Fix 6 a 11 (obligatorio: el backend NO se actualiza solo)
+## Fix 12 — Cambios y cancelaciones: fila equivocada y doble resolución
+
+**Problema 1:** las solicitudes de cambio/cancelación guardan la fila de Fase1 del momento en que se crearon. Si después se borran filas en Fase1, al aprobar se modificaba (o se cancelaba) **otra radicación**.
+**Problema 2:** sin lock, dos clics seguidos resolvían la misma solicitud dos veces (quedaba «devolver» con los cambios aplicados).
+**Problema 3:** `getRange(fila, 1, fila, N)` leía `fila` filas en vez de 1 (lento, y falla con filas altas).
+
+**Corrección:** `filaFase1PorNumero_` ubica la radicación por su número (usa la fila guardada solo si coincide); los listados devuelven la fila real; `resolverSolicitudModRad`, `resolverSolicitudModRadComite` y `resolverSolicitudCancelarRad` corren con `LockService`; `getRange(fila, 1, 1, N)`.
+
+---
+
+## Cómo aplicar Fix 6 a 12 (obligatorio: el backend NO se actualiza solo)
 
 1. Abrir el proyecto de Apps Script del Web App.
 2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.
