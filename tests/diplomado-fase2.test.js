@@ -105,7 +105,7 @@ describe('dashboard — Fase 2 habilitada para diplomado con Fase 2 Desbloqueada
   const htmlContent = fs.readFileSync(HTML_PATH, 'utf8');
 
   function extractBodyHtml() {
-    const m = htmlContent.match(/<body>([\s\S]*?)<\/body>/i);
+    const m = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
     if (!m) return '';
     return m[1].replace(/<script[\s\S]*?<\/script>/gi, '');
   }

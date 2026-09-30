@@ -27,6 +27,11 @@ describe.each(paginas)('%s', (archivo) => {
     expect(html).toContain('<link rel="stylesheet" href="tema.css">');
   });
 
+  test('paneles y páginas internas cargan tema.js', () => {
+    if (/^(index|coordinadora_login|estudiante_login)\.html$/.test(archivo)) return;
+    expect(html).toContain('<script src="tema.js"></script>');
+  });
+
   test('sin los negros del tema anterior', () => {
     expect(html).not.toMatch(/#0a0f1a|#0f0f1a|#111827|#1a1f2e/i);
   });
