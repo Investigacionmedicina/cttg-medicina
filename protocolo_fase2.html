@@ -7,77 +7,77 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Outfit',sans-serif;background:linear-gradient(160deg,#1c0838 0%,#2a1560 42%,#1b2d57 100%);background-color:#1f0d43;background-attachment:fixed;color:#e2e8f0;min-height:100vh}
-  header{background:linear-gradient(135deg,#1a0533,#2d1b69);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+  body{font-family:'Outfit',sans-serif;background:#ffffff;color:#0f172a;min-height:100vh}
+  header{background:#ffffff;box-shadow:0 1px 3px rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.1);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
   .hdr-l{display:flex;align-items:center;gap:10px}
   .logo{width:38px;height:38px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px}
-  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
-  .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
+  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:17px;color:#0f172a}
+  .hdr-l p{font-size:11px;color:rgba(15,23,42,.73)}
   .hdr-r{display:flex;align-items:center;gap:10px}
-  .user-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
-  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .user-chip{background:rgba(15,23,42,.07);border:1px solid rgba(15,23,42,.14);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(15,23,42,.91)}
+  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#b91c1c;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
   main{padding:24px 28px;max-width:900px;margin:0 auto}
-  .tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:4px;width:fit-content}
-  .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(15,23,42,.05);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:4px;width:fit-content}
+  .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(15,23,42,.78);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
   .tab.on{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 2px 10px rgba(102,126,234,.4)}
   .panel{display:none}.panel.on{display:block}
-  .back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
-  .back:hover{color:#fff}
-  .tbl-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto;margin-top:4px}
+  .back{display:inline-flex;align-items:center;gap:6px;color:rgba(15,23,42,.78);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
+  .back:hover{color:#0f172a}
+  .tbl-wrap{background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:14px;overflow:auto;margin-top:4px}
   table{width:100%;border-collapse:collapse;min-width:520px}
-  thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
-  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);white-space:nowrap}
-  td{padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;font-size:13px}
+  thead tr{background:rgba(15,23,42,.04);border-bottom:1px solid rgba(15,23,42,.1)}
+  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.73);white-space:nowrap}
+  td{padding:10px 13px;border-bottom:1px solid rgba(15,23,42,.1);vertical-align:middle;font-size:13px}
   tr:last-child td{border-bottom:none}
   .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700}
-  .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
-  .b-aprobada{background:rgba(16,185,129,.2);color:#6ee7b7}
-  .b-rechazada{background:rgba(239,68,68,.2);color:#fca5a5}
-  .b-comite{background:rgba(59,130,246,.2);color:#93c5fd}
-  .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
-  .form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:24px;margin-bottom:18px}
-  .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .b-pend{background:rgba(245,158,11,.2);color:#b45309}
+  .b-aprobada{background:rgba(16,185,129,.2);color:#047857}
+  .b-rechazada{background:rgba(239,68,68,.2);color:#b91c1c}
+  .b-comite{background:rgba(59,130,246,.2);color:#1d4ed8}
+  .empty{text-align:center;padding:40px;color:rgba(15,23,42,.69);font-size:14px}
+  .form-card{background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.11);border-radius:16px;padding:24px;margin-bottom:18px}
+  .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#0f172a;margin-bottom:4px;display:flex;align-items:center;gap:8px}
   .form-card h3 .dot{width:7px;height:7px;background:#a78bfa;border-radius:50%}
-  .form-card p{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px}
+  .form-card p{font-size:12px;color:rgba(15,23,42,.73);margin-bottom:16px}
   .fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-  label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45)}
-  input,textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
-  input::placeholder,textarea::placeholder{color:rgba(255,255,255,.25)}
+  label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.75)}
+  input,textarea{background:rgba(15,23,42,.07);border:1px solid rgba(15,23,42,.14);border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
+  input::placeholder,textarea::placeholder{color:rgba(15,23,42,.4)}
   textarea{min-height:65px;resize:vertical}
   .pasos{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
-  .paso{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px}
+  .paso{display:flex;align-items:flex-start;gap:12px;background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:14px}
   .paso-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
-  .paso-txt strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
-  .paso-txt span{font-size:12px;color:rgba(255,255,255,.4)}
+  .paso-txt strong{display:block;font-size:13px;color:#0f172a;margin-bottom:2px}
+  .paso-txt span{font-size:12px;color:rgba(15,23,42,.73)}
   .paso.done .paso-num{background:linear-gradient(135deg,#059669,#10b981)}
   .btn-forms{display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#0078d4,#106ebe);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:none;width:100%;justify-content:center;margin-bottom:14px;transition:all .2s}
   .btn-forms:hover{transform:translateY(-1px)}
   .btn-rad{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(102,126,234,.4);transition:all .2s;width:100%}
   .btn-rad:hover{transform:translateY(-1px)}
   .btn-rad:disabled{opacity:.6;cursor:not-allowed;transform:none}
-  .sep{display:flex;align-items:center;gap:10px;margin:16px 0;color:rgba(255,255,255,.2);font-size:12px}
-  .sep::before,.sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
+  .sep{display:flex;align-items:center;gap:10px;margin:16px 0;color:rgba(15,23,42,.64);font-size:12px}
+  .sep::before,.sep::after{content:'';flex:1;height:1px;background:rgba(15,23,42,.08)}
   .success-box{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:20px;text-align:center;display:none;margin-top:16px}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(15,23,42,.22);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}.toast.err{background:rgba(239,68,68,.9);color:#fff}
-  .dip-banner{display:none;font-size:12px;line-height:1.45;color:rgba(255,255,255,.65);margin:-6px 0 18px;padding:12px 14px;background:rgba(102,126,234,.12);border:1px solid rgba(102,126,234,.28);border-radius:12px}
-  .dip-banner strong{color:#c4b5fd}
-  .resumen-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:20px;margin-bottom:16px}
-  .resumen-card h4{font-size:14px;font-weight:600;color:#fff;margin-bottom:14px}
+  .dip-banner{display:none;font-size:12px;line-height:1.45;color:rgba(15,23,42,.84);margin:-6px 0 18px;padding:12px 14px;background:rgba(102,126,234,.12);border:1px solid rgba(102,126,234,.28);border-radius:12px}
+  .dip-banner strong{color:#6d28d9}
+  .resumen-card{background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.11);border-radius:16px;padding:20px;margin-bottom:16px}
+  .resumen-card h4{font-size:14px;font-weight:600;color:#0f172a;margin-bottom:14px}
   .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-  .stat-box{background:rgba(255,255,255,.05);border-radius:10px;padding:12px;text-align:center}
+  .stat-box{background:rgba(15,23,42,.05);border-radius:10px;padding:12px;text-align:center}
   .stat-box .n{font-size:24px;font-weight:700;font-family:'DM Serif Display',serif}
-  .stat-box .l{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
-  .n-total{color:#a78bfa}.n-aprobadas{color:#34d399}.n-pendientes{color:#fcd34d}
-  .detalle-protocolo{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:20px;margin-bottom:16px}
-  .detalle-protocolo h4{font-size:13px;font-weight:600;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;margin-top:0}
-  .detalle-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+  .stat-box .l{font-size:10px;color:rgba(15,23,42,.73);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  .n-total{color:#6d28d9}.n-aprobadas{color:#047857}.n-pendientes{color:#b45309}
+  .detalle-protocolo{background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.11);border-radius:16px;padding:20px;margin-bottom:16px}
+  .detalle-protocolo h4{font-size:13px;font-weight:600;color:rgba(15,23,42,.82);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;margin-top:0}
+  .detalle-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(15,23,42,.1);font-size:13px}
   .detalle-row:last-child{border-bottom:none}
-  .detalle-row .label{color:rgba(255,255,255,.4)}
-  .detalle-row .value{color:#a78bfa;font-weight:600}
+  .detalle-row .label{color:rgba(15,23,42,.73)}
+  .detalle-row .value{color:#6d28d9;font-weight:600}
 </style>
 </head>
 <body>
@@ -159,8 +159,8 @@
       <!-- ESTADO: EVALUADO POR COMITÉ -->
       <div id="estadoEvaluado" style="display:none;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:12px;padding:20px;text-align:center;margin-top:16px">
         <div style="font-size:28px;margin-bottom:8px">📋</div>
-        <div style="font-size:15px;font-weight:600;color:#c4b5fd;margin-bottom:8px">Resultado del Comité Técnico</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.6">
+        <div style="font-size:15px;font-weight:600;color:#6d28d9;margin-bottom:8px">Resultado del Comité Técnico</div>
+        <div style="font-size:12px;color:rgba(15,23,42,.84);line-height:1.6">
           Revisa la decisión y las observaciones. Si fue devuelto, carga la versión corregida para solicitar una nueva valoración.
         </div>
       </div>
@@ -203,16 +203,16 @@
 
       <div class="sep">una vez enviado el formulario</div>
 
-      <div class="form-card" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);padding:20px;margin-bottom:0">
+      <div class="form-card" style="background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.11);padding:20px;margin-bottom:0">
         <h3 id="f2ConfirmaTit"><span class="dot"></span>Confirma tu carga</h3>
 
-        <div id="f2DocReqBox" style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:16px;line-height:1.6">
-          <strong id="f2DocTit" style="color:#a5b4fc">📋 Documentación requerida:</strong>
+        <div id="f2DocReqBox" style="background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(15,23,42,.91);margin-bottom:16px;line-height:1.6">
+          <strong id="f2DocTit" style="color:#4338ca">📋 Documentación requerida:</strong>
           <span id="f2DocLista"></span>
         </div>
 
-        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px">
-          <label style="margin-bottom:10px;color:rgba(255,255,255,.6)">🔍 Confirma qué incluiste en tu PDF *</label>
+        <div style="background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:14px;margin-bottom:14px">
+          <label style="margin-bottom:10px;color:rgba(15,23,42,.82)">🔍 Confirma qué incluiste en tu PDF *</label>
           
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
             <input type="checkbox" id="check1" style="width:auto">
@@ -239,8 +239,8 @@
 
         <div class="success-box" id="successBox">
           <div style="font-size:28px;margin-bottom:8px">🎉</div>
-          <div id="f2SuccessTit" style="font-size:15px;font-weight:600;color:#fff">¡Protocolo registrado exitosamente!</div>
-          <div id="f2SuccessTxt" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px">La coordinadora revisará tu protocolo y recibirás un correo cuando sea evaluado.</div>
+          <div id="f2SuccessTit" style="font-size:15px;font-weight:600;color:#0f172a">¡Protocolo registrado exitosamente!</div>
+          <div id="f2SuccessTxt" style="font-size:12px;color:rgba(15,23,42,.78);margin-top:6px">La coordinadora revisará tu protocolo y recibirás un correo cuando sea evaluado.</div>
           <button id="btnF2IrLista" class="btn-rad" style="margin-top:14px;width:auto;padding:10px 24px" onclick="switchTab('mis-protocolos',document.getElementById('tabF2Lista'))">Ver mis protocolos</button>
         </div>
       </div>
@@ -350,11 +350,11 @@ function aplicarEtiquetasModalidadFase2() {
       ? `<br>✓ Producto/work final del diplomado y soporte institucional requerido<br>
       ✓ Consentimiento/asentimiento o parental cuando aplique<br>
       ✓ Cualquier anexo solicitado por lineamientos CTTG vigentes<br>
-      <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Unir todo en un solo PDF · Máximo 100MB</span>`
+      <span style="font-size:11px;color:rgba(15,23,42,.78);">⚠️ Unir todo en un solo PDF · Máximo 100MB</span>`
       : `<br>✓ Archivo 1: Propuesta de trabajo (Anexo A3 o A10 según modalidad)<br>
       ✓ Archivo 2: Consentimiento/Asentimiento/Parental (si aplica)<br>
       ✓ Archivo 3: Protocolo de Investigación o Monografía completo<br>
-      <span style="font-size:11px;color:rgba(255,255,255,.5);">⚠️ Unir todos en 1 PDF · Máximo 100MB</span>`;
+      <span style="font-size:11px;color:rgba(15,23,42,.78);">⚠️ Unir todos en 1 PDF · Máximo 100MB</span>`;
   }
 
   const hConf = document.getElementById('f2ConfirmaTit');
@@ -543,11 +543,11 @@ async function cargarProtocolos() {
 
     tbody.innerHTML = misProtocolos.map(p => `
       <tr>
-        <td style="font-size:12px;color:rgba(255,255,255,.5)">${fmtFecha(p.fechaCarga)}</td>
-        <td style="font-size:12px;color:#a78bfa;font-weight:600">${esc(p.numero||'—')}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.5)">${esc(p.anexoCambio||'—')}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.78)">${fmtFecha(p.fechaCarga)}</td>
+        <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero||'—')}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.78)">${esc(p.anexoCambio||'—')}</td>
         <td><span class="badge ${badgeClass(p.estado)}">${esc(p.estado||'Cargado')}</span></td>
-        <td><button style="background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#a78bfa;padding:6px 12px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif" onclick="mostrarDetalle(${p.rowIndex})">👁 Ver</button></td>
+        <td><button style="background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#6d28d9;padding:6px 12px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif" onclick="mostrarDetalle(${p.rowIndex})">👁 Ver</button></td>
       </tr>`).join('');
 
     aplicarEtiquetasModalidadFase2();
