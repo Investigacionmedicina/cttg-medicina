@@ -135,6 +135,24 @@ function cttgLogLoginResp(kind, meta) {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+/** Cuando Apps Script no devuelve JSON (página HTML de Google), explica el motivo en pantalla. */
+function cttgMotivoRespuestaNoJson(raw, httpStatus) {
+  const txt = String(raw || '');
+  if (!txt.trim()) return 'El servidor respondió vacío (HTTP ' + httpStatus + ').';
+  if (/accounts\.google\.com|ServiceLogin|Iniciar sesi[oó]n|Sign in/i.test(txt)) {
+    return 'Google está pidiendo iniciar sesión: en Apps Script → Implementar → Administrar implementaciones → ✏️ Editar, «Quién tiene acceso» debe ser «Cualquier usuario».';
+  }
+  if (/doPost/.test(txt)) {
+    return 'El Apps Script no tiene la función doPost: el código no quedó guardado completo. Vuelve a pegar appscript.gs, guarda y crea una nueva versión.';
+  }
+  const visible = txt
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ').trim();
+  return 'Google respondió (HTTP ' + httpStatus + '): «' + visible.slice(0, 220) + (visible.length > 220 ? '…' : '') + '»';
+}
+
 async function login() {
   const email = document.getElementById('email').value.trim();
   const pass = document.getElementById('pass').value.trim();
@@ -165,7 +183,7 @@ async function login() {
         primerosChars: raw ? raw.slice(0, 900) : '(vacío)',
         errorParse: String(pe.message || pe)
       });
-      err.textContent = 'Respuesta del servidor ilegible. Abre DevTools → Consola y revisa «CTTG login».';
+      err.textContent = 'No se pudo iniciar sesión. ' + cttgMotivoRespuestaNoJson(raw, res.status);
       err.style.display = 'block';
       return;
     }
