@@ -7,46 +7,46 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Outfit',sans-serif;background:linear-gradient(160deg,#053b2e 0%,#06533f 38%,#0b4a57 72%,#16304f 100%);background-color:#06402f;background-attachment:fixed;color:#e2e8f0;min-height:100vh}
-  header{background:linear-gradient(135deg,#064e3b,#059669 80%,#1a3a5c);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+  body{font-family:'Outfit',sans-serif;background:#ffffff;color:#0f172a;min-height:100vh}
+  header{background:#ffffff;box-shadow:0 1px 3px rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.1);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
   .hdr-l{display:flex;align-items:center;gap:10px}
   .logo{width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
-  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:18px;color:#fff}
-  .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
+  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:18px;color:#0f172a}
+  .hdr-l p{font-size:11px;color:rgba(15,23,42,.73)}
   .hdr-r{display:flex;align-items:center;gap:10px}
-  .user-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
-  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .user-chip{background:rgba(15,23,42,.08);border:1px solid rgba(15,23,42,.14);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(15,23,42,.91)}
+  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#b91c1c;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
   main{padding:24px 28px;max-width:760px;margin:0 auto}
-  .back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
-  .back:hover{color:#fff}
-  .info-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-bottom:18px}
-  .info-card .num{font-family:'DM Mono',monospace;font-size:12px;color:#34d399;font-weight:600;margin-bottom:4px}
-  .info-card .titulo{font-size:15px;font-weight:600;color:#fff;margin-bottom:6px}
-  .info-card .meta{font-size:12px;color:rgba(255,255,255,.4)}
-  .form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:24px;margin-bottom:18px}
-  .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .back{display:inline-flex;align-items:center;gap:6px;color:rgba(15,23,42,.78);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
+  .back:hover{color:#0f172a}
+  .info-card{background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.1);border-radius:12px;padding:16px;margin-bottom:18px}
+  .info-card .num{font-family:'DM Mono',monospace;font-size:12px;color:#047857;font-weight:600;margin-bottom:4px}
+  .info-card .titulo{font-size:15px;font-weight:600;color:#0f172a;margin-bottom:6px}
+  .info-card .meta{font-size:12px;color:rgba(15,23,42,.73)}
+  .form-card{background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.11);border-radius:16px;padding:24px;margin-bottom:18px}
+  .form-card h3{font-family:'DM Serif Display',serif;font-size:16px;color:#0f172a;margin-bottom:4px;display:flex;align-items:center;gap:8px}
   .form-card h3 .dot{width:7px;height:7px;background:#34d399;border-radius:50%}
-  .form-card p{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px}
+  .form-card p{font-size:12px;color:rgba(15,23,42,.73);margin-bottom:16px}
   .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
   .fg{display:flex;flex-direction:column;gap:5px}
   .fg.full{grid-column:1/-1}
-  label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45)}
-  input,select,textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
-  input::placeholder{color:rgba(255,255,255,.25)}
-  input:focus,select:focus,textarea:focus{border-color:rgba(52,211,153,.6);background:rgba(255,255,255,.1)}
-  select option{background:#0b3a3a}
+  label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.75)}
+  input,select,textarea{background:rgba(15,23,42,.07);border:1px solid rgba(15,23,42,.14);border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;width:100%}
+  input::placeholder{color:rgba(15,23,42,.4)}
+  input:focus,select:focus,textarea:focus{border-color:rgba(52,211,153,.6);background:rgba(15,23,42,.1)}
+  select option{background:#ffffff}
   textarea{min-height:65px;resize:vertical}
-  .info-box{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#6ee7b7;margin-top:8px}
+  .info-box{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:#047857;margin-top:8px}
   .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 4px 15px rgba(16,185,129,.4);transition:all .2s}
   .btn-action:hover{transform:translateY(-1px)}
   .btn-action:disabled{opacity:.6;transform:none;cursor:not-allowed}
-  .btn-sec{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:12px 20px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  .btn-sec{background:rgba(15,23,42,.07);border:1px solid rgba(15,23,42,.14);color:rgba(15,23,42,.82);padding:12px 20px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(15,23,42,.22);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
-  .empty{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px}
+  .empty{text-align:center;padding:40px;color:rgba(15,23,42,.69);font-size:14px}
   @media(max-width:600px){main{padding:16px}.form-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -293,9 +293,9 @@ function poblarFormulario() {
     const modoLabel = esCttg  ? '🏛 Comité CTTG asigna evaluador'
                     : esTutor ? '👥 Tutor sugirió jurado'
                     : '⚠️ Sin modo registrado';
-    const row = (label, val) => val ? `<div style="display:flex;gap:8px;margin:4px 0;font-size:13px"><span style="color:rgba(255,255,255,.45);min-width:140px">${label}</span><span style="color:#e2e8f0">${val}</span></div>` : '';
+    const row = (label, val) => val ? `<div style="display:flex;gap:8px;margin:4px 0;font-size:13px"><span style="color:rgba(15,23,42,.75);min-width:140px">${label}</span><span style="color:#0f172a">${val}</span></div>` : '';
     const juradoHtml = esCttg
-      ? `<div style="margin-top:8px;padding:10px 12px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:8px;font-size:13px;color:#fcd34d">El Comité Técnico de Trabajos de Grado asignará al evaluador definitivo.</div>`
+      ? `<div style="margin-top:8px;padding:10px 12px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:8px;font-size:13px;color:#b45309">El Comité Técnico de Trabajos de Grado asignará al evaluador definitivo.</div>`
       : [
           row('Jurado 1',        r.dipJurado1Nombre),
           row('Email J1',        r.dipJurado1Email),
@@ -308,12 +308,12 @@ function poblarFormulario() {
           row('Jurado 3',        r.dipJurado3Nombre),
           row('Email J3',        r.dipJurado3Email),
           row('Teléfono J3',     r.dipJurado3Telefono),
-        ].join('') || `<div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:6px">(Sin datos de jurado en la radicación — revise columnas Dip en Fase 1)</div>`;
+        ].join('') || `<div style="font-size:13px;color:rgba(15,23,42,.73);margin-top:6px">(Sin datos de jurado en la radicación — revise columnas Dip en Fase 1)</div>`;
     document.getElementById('dipDetalleCoord').innerHTML =
-      `<div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px">Sin tutores ni actas: al avalar, el estudiante pasa a Fase 2 (producto ante el Comité Técnico).</div>
+      `<div style="font-size:12px;color:rgba(15,23,42,.73);margin-bottom:6px">Sin tutores ni actas: al avalar, el estudiante pasa a Fase 2 (producto ante el Comité Técnico).</div>
        ${row('Inicio diplomado', fmtFechaCoord(di))}${row('Fin diplomado', fmtFechaCoord(df))}
-       <div style="margin-top:10px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.3)">Jurado / Evaluador</div>
-       <div style="margin:4px 0 6px;font-size:13px;font-weight:600;color:#a78bfa">${modoLabel}</div>
+       <div style="margin-top:10px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:rgba(15,23,42,.69)">Jurado / Evaluador</div>
+       <div style="margin:4px 0 6px;font-size:13px;font-weight:600;color:#6d28d9">${modoLabel}</div>
        ${juradoHtml}`;
   }
 

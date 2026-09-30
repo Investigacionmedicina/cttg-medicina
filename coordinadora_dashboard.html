@@ -7,180 +7,180 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Outfit',sans-serif;background:linear-gradient(160deg,#053b2e 0%,#06533f 38%,#0b4a57 72%,#16304f 100%);background-color:#06402f;background-attachment:fixed;color:#e2e8f0;min-height:100vh}
-  header{background:linear-gradient(135deg,#064e3b,#059669 80%,#1a3a5c);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+  body{font-family:'Outfit',sans-serif;background:#ffffff;color:#0f172a;min-height:100vh}
+  header{background:#ffffff;box-shadow:0 1px 3px rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.1);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
   .hdr-l{display:flex;align-items:center;gap:10px}
   .logo{width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
-  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:18px;color:#fff}
-  .hdr-l p{font-size:11px;color:rgba(255,255,255,.4)}
+  .hdr-l h1{font-family:'DM Serif Display',serif;font-size:18px;color:#0f172a}
+  .hdr-l p{font-size:11px;color:rgba(15,23,42,.73)}
   .hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .sync{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)}
+  .sync{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(15,23,42,.78)}
   .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0}
   .dot.loading{background:#f59e0b;animation:pulse 1s infinite}.dot.error{background:#ef4444}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  .user-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(255,255,255,.8)}
-  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .user-chip{background:rgba(15,23,42,.08);border:1px solid rgba(15,23,42,.14);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(15,23,42,.91)}
+  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#b91c1c;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
   main{padding:24px 28px;max-width:1500px;margin:0 auto}
   .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
-  .metrics-caption{font-size:11px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.75px;margin:14px 0 8px;font-family:'DM Mono',monospace}
+  .metrics-caption{font-size:11px;color:rgba(15,23,42,.72);text-transform:uppercase;letter-spacing:.75px;margin:14px 0 8px;font-family:'DM Mono',monospace}
   .metrics-caption:first-of-type{margin-top:0}
-  .mc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;position:relative;overflow:hidden}
+  .mc{background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.1);border-radius:12px;padding:14px;position:relative;overflow:hidden}
   .mc-go{cursor:pointer;transition:border-color .15s,background .15s}
-  .mc-go:hover{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.055)}
+  .mc-go:hover{border-color:rgba(15,23,42,.17);background:rgba(15,23,42,.06)}
   .mc-go:active{transform:scale(.985)}
-  .mc .mh{font-size:10px;color:rgba(255,255,255,.45);margin-top:10px;line-height:1.4;font-family:'Outfit',sans-serif;font-weight:400;text-transform:none;letter-spacing:0}
+  .mc .mh{font-size:10px;color:rgba(15,23,42,.75);margin-top:10px;line-height:1.4;font-family:'Outfit',sans-serif;font-weight:400;text-transform:none;letter-spacing:0}
   .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
   .mc.c1::before{background:#3b82f6}.mc.c2::before{background:#10b981}.mc.c3::before{background:#f59e0b}.mc.c4::before{background:#ef4444}.mc.c5::before{background:#a78bfa}.mc.c6::before{background:#00c3a5}
-  .mc .ml{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:6px;font-family:'DM Mono',monospace}
+  .mc .ml{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.73);margin-bottom:6px;font-family:'DM Mono',monospace}
   .mc .mv{font-size:26px;font-weight:700;font-family:'DM Serif Display',serif}
-  .mc.c1 .mv{color:#60a5fa}.mc.c2 .mv{color:#34d399}.mc.c3 .mv{color:#fcd34d}.mc.c4 .mv{color:#fca5a5}.mc.c5 .mv{color:#c4b5fd}.mc.c6 .mv{color:#00c3a5}
+  .mc.c1 .mv{color:#1d4ed8}.mc.c2 .mv{color:#047857}.mc.c3 .mv{color:#b45309}.mc.c4 .mv{color:#b91c1c}.mc.c5 .mv{color:#6d28d9}.mc.c6 .mv{color:#0f766e}
   /* TABS */
-  .main-tabs{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:4px;width:fit-content}
+  .main-tabs{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;align-items:center;background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:4px;width:fit-content}
   /* Pestañas en dos grupos: proceso paso a paso y gestión/consulta */
   .tab-grupos{margin-bottom:20px}
-  .tab-grupo-titulo{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);font-weight:600;margin:0 0 6px 4px}
+  .tab-grupo-titulo{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(15,23,42,.71);font-weight:600;margin:0 0 6px 4px}
   .main-tabs.proceso .main-tab{padding-left:14px}
-  .paso-n{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.1);font-size:10px;font-weight:700;margin-right:6px}
-  .main-tab.on .paso-n{background:rgba(255,255,255,.25)}
-  .paso-flecha{color:rgba(255,255,255,.25);font-size:12px;user-select:none}
-  .main-tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;position:relative}
+  .paso-n{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(15,23,42,.1);font-size:10px;font-weight:700;margin-right:6px}
+  .main-tab.on .paso-n{background:rgba(15,23,42,.12)}
+  .paso-flecha{color:rgba(15,23,42,.66);font-size:12px;user-select:none}
+  .main-tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(15,23,42,.78);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;position:relative}
   .main-tab.on{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.4)}
   .main-tab .badge-count{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:99px;min-width:16px;text-align:center}
   .panel{display:none}.panel.on{display:block}
   .filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-  .filters input,.filters select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e2e8f0;font-family:'Outfit',sans-serif;font-size:12px;padding:7px 11px;outline:none}
-  .filters input{min-width:200px}.filters input::placeholder{color:rgba(255,255,255,.3)}
-  .filters select option{background:#0b3a3a}
-  .tbl-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto}
+  .filters input,.filters select{background:rgba(15,23,42,.06);border:1px solid rgba(15,23,42,.12);border-radius:8px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:12px;padding:7px 11px;outline:none}
+  .filters input{min-width:200px}.filters input::placeholder{color:rgba(15,23,42,.4)}
+  .filters select option{background:#ffffff}
+  .tbl-wrap{background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:14px;overflow:auto}
   table{width:100%;border-collapse:collapse;min-width:700px}
-  thead tr{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07)}
-  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;white-space:nowrap}
-  td{padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;font-size:13px}
+  thead tr{background:rgba(15,23,42,.04);border-bottom:1px solid rgba(15,23,42,.1)}
+  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.73);font-family:'DM Mono',monospace;white-space:nowrap}
+  td{padding:10px 13px;border-bottom:1px solid rgba(15,23,42,.1);vertical-align:middle;font-size:13px}
   tr:last-child td{border-bottom:none}
-  tr:hover td{background:rgba(255,255,255,.02)}
-  .num-rad{font-family:'DM Mono',monospace;font-size:12px;color:#a78bfa;font-weight:600}
+  tr:hover td{background:rgba(15,23,42,.02)}
+  .num-rad{font-family:'DM Mono',monospace;font-size:12px;color:#6d28d9;font-weight:600}
   .badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap}
-  .b-radicado{background:rgba(102,126,234,.2);color:#a5b4fc}
-  .b-revision{background:rgba(245,158,11,.2);color:#fcd34d}
-  .b-comite{background:rgba(167,139,250,.2);color:#c4b5fd}
-  .b-aprobado{background:rgba(16,185,129,.2);color:#6ee7b7}
-  .b-devuelto{background:rgba(239,68,68,.2);color:#fca5a5}
-  .b-tutores{background:rgba(52,211,153,.2);color:#6ee7b7}
-  .b-pend{background:rgba(245,158,11,.2);color:#fcd34d}
-  .b-solicitud{background:rgba(59,130,246,.2);color:#93c5fd}
-  .pill-diplomado{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(167,139,250,.22);color:#c4b5fd;border:1px solid rgba(167,139,250,.35);line-height:1.35;max-width:160px}
-  .btn.dip-acc{color:#c4b5fd;border-color:rgba(167,139,250,.45)}.btn.dip-acc:hover{background:rgba(167,139,250,.12)}
+  .b-radicado{background:rgba(102,126,234,.2);color:#4338ca}
+  .b-revision{background:rgba(245,158,11,.2);color:#b45309}
+  .b-comite{background:rgba(167,139,250,.2);color:#6d28d9}
+  .b-aprobado{background:rgba(16,185,129,.2);color:#047857}
+  .b-devuelto{background:rgba(239,68,68,.2);color:#b91c1c}
+  .b-tutores{background:rgba(52,211,153,.2);color:#047857}
+  .b-pend{background:rgba(245,158,11,.2);color:#b45309}
+  .b-solicitud{background:rgba(59,130,246,.2);color:#1d4ed8}
+  .pill-diplomado{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(167,139,250,.22);color:#6d28d9;border:1px solid rgba(167,139,250,.35);line-height:1.35;max-width:160px}
+  .btn.dip-acc{color:#6d28d9;border-color:rgba(167,139,250,.45)}.btn.dip-acc:hover{background:rgba(167,139,250,.12)}
   .act{display:flex;gap:4px;flex-wrap:wrap}
-  .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
-  .btn:hover{background:rgba(255,255,255,.07);color:#fff}
-  .btn.gr{color:#34d399;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
-  .btn.bl{color:#60a5fa;border-color:rgba(96,165,250,.3)}.btn.bl:hover{background:rgba(96,165,250,.1)}
-  .btn.am{color:#fcd34d;border-color:rgba(252,211,77,.3)}.btn.am:hover{background:rgba(252,211,77,.1)}
-  .btn.rd{color:#fca5a5;border-color:rgba(239,68,68,.3)}.btn.rd:hover{background:rgba(239,68,68,.1)}
+  .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(15,23,42,.12);background:transparent;color:rgba(15,23,42,.78);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
+  .btn:hover{background:rgba(15,23,42,.07);color:#0f172a}
+  .btn.gr{color:#047857;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
+  .btn.bl{color:#1d4ed8;border-color:rgba(96,165,250,.3)}.btn.bl:hover{background:rgba(96,165,250,.1)}
+  .btn.am{color:#b45309;border-color:rgba(252,211,77,.3)}.btn.am:hover{background:rgba(252,211,77,.1)}
+  .btn.rd{color:#b91c1c;border-color:rgba(239,68,68,.3)}.btn.rd:hover{background:rgba(239,68,68,.1)}
   .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
   .btn-action:hover{transform:translateY(-1px)}
   .btn-action:disabled{opacity:.6;transform:none;cursor:not-allowed}
-  .empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
-  .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+  .empty{padding:48px;text-align:center;color:rgba(15,23,42,.69);font-size:13px}
+  .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(15,23,42,.22);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
   @keyframes spin{to{transform:rotate(360deg)}}
   /* ── TIMELINE HISTORIAL ── */
-  .hist-event{display:grid;grid-template-columns:160px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}
+  .hist-event{display:grid;grid-template-columns:160px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid rgba(15,23,42,.1);font-size:12px}
   .hist-event:last-child{border-bottom:none}
-  .hist-ts{font-family:monospace;font-size:10px;color:rgba(255,255,255,.4);line-height:1.6}
-  .hist-fase-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(96,165,250,.15);color:#93c5fd;margin-top:3px;letter-spacing:.4px}
-  .hist-accion{font-weight:600;color:#e2e8f0;margin-bottom:5px;font-size:13px;text-transform:capitalize}
+  .hist-ts{font-family:monospace;font-size:10px;color:rgba(15,23,42,.73);line-height:1.6}
+  .hist-fase-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(96,165,250,.15);color:#1d4ed8;margin-top:3px;letter-spacing:.4px}
+  .hist-accion{font-weight:600;color:#0f172a;margin-bottom:5px;font-size:13px;text-transform:capitalize}
   .hist-states{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
-  .hist-state-old{background:rgba(239,68,68,.12);color:#fca5a5;border-radius:4px;padding:2px 7px;font-size:11px}
-  .hist-state-new{background:rgba(16,185,129,.12);color:#6ee7b7;border-radius:4px;padding:2px 7px;font-size:11px}
-  .hist-arrow{color:rgba(255,255,255,.3)}
-  .hist-motivo{color:rgba(255,255,255,.6);font-size:11px;font-style:italic;margin-top:3px}
-  .hist-detail{color:rgba(255,255,255,.35);font-size:10px;font-family:monospace;margin-top:3px}
-  .hist-actor{color:rgba(255,255,255,.3);font-size:10px;font-family:monospace;margin-top:4px}
-  .hist-empty{padding:48px;text-align:center;color:rgba(255,255,255,.3);font-size:13px}
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .hist-state-old{background:rgba(239,68,68,.12);color:#b91c1c;border-radius:4px;padding:2px 7px;font-size:11px}
+  .hist-state-new{background:rgba(16,185,129,.12);color:#047857;border-radius:4px;padding:2px 7px;font-size:11px}
+  .hist-arrow{color:rgba(15,23,42,.69)}
+  .hist-motivo{color:rgba(15,23,42,.82);font-size:11px;font-style:italic;margin-top:3px}
+  .hist-detail{color:rgba(15,23,42,.71);font-size:10px;font-family:monospace;margin-top:3px}
+  .hist-actor{color:rgba(15,23,42,.69);font-size:10px;font-family:monospace;margin-top:4px}
+  .hist-empty{padding:48px;text-align:center;color:rgba(15,23,42,.69);font-size:13px}
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
-  .modal{background:#0b3a3a;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
+  .modal{background:#ffffff;border:1px solid rgba(15,23,42,.12);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
   .modal.wide{max-width:680px}
   @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#fff}
+  .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#0f172a}
   .mfg{margin-bottom:14px}
-  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);margin-bottom:5px}
-  .mfg select,.mfg textarea,.mfg input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
-  .mfg select option{background:#0b3a3a}
+  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);margin-bottom:5px}
+  .mfg select,.mfg textarea,.mfg input{width:100%;background:rgba(15,23,42,.07);border:1px solid rgba(15,23,42,.14);border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
+  .mfg select option{background:#ffffff}
   .mfg textarea{min-height:80px;resize:vertical}
-  .det-row{display:flex;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;gap:8px}
-  .det-label{min-width:130px;font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;flex-shrink:0}
-  .det-val{color:#e2e8f0;flex:1}
-  .alerta-plazo{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#fca5a5;margin-top:4px}
-  .solicitud-badge{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.35);border-radius:8px;padding:6px 10px;font-size:11px;color:#93c5fd;display:inline-flex;align-items:center;gap:4px}
-  .b-sustentado{background:rgba(16,185,129,.25);color:#bbf7d0;border:1px solid rgba(16,185,129,.4)}
-  .b-reprobado{background:rgba(239,68,68,.2);color:#fca5a5}
-  .b-cancelado{background:rgba(100,116,139,.2);color:#94a3b8}
- .b-cargado{background:rgba(96,165,250,.2);color:#93c5fd}
-  .b-revisado{background:rgba(102,126,234,.2);color:#a5b4fc}
-  .b-ensolicitud{background:rgba(59,130,246,.2);color:#93c5fd}
-  .b-evaluacion{background:rgba(167,139,250,.2);color:#c4b5fd}
-  .b-aprobadocomite{background:rgba(16,185,129,.2);color:#6ee7b7}
+  .det-row{display:flex;padding:8px 0;border-bottom:1px solid rgba(15,23,42,.1);font-size:13px;gap:8px}
+  .det-label{min-width:130px;font-size:11px;color:rgba(15,23,42,.73);font-family:'DM Mono',monospace;flex-shrink:0}
+  .det-val{color:#0f172a;flex:1}
+  .alerta-plazo{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#b91c1c;margin-top:4px}
+  .solicitud-badge{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.35);border-radius:8px;padding:6px 10px;font-size:11px;color:#1d4ed8;display:inline-flex;align-items:center;gap:4px}
+  .b-sustentado{background:rgba(16,185,129,.25);color:#166534;border:1px solid rgba(16,185,129,.4)}
+  .b-reprobado{background:rgba(239,68,68,.2);color:#b91c1c}
+  .b-cancelado{background:rgba(100,116,139,.2);color:#475569}
+ .b-cargado{background:rgba(96,165,250,.2);color:#1d4ed8}
+  .b-revisado{background:rgba(102,126,234,.2);color:#4338ca}
+  .b-ensolicitud{background:rgba(59,130,246,.2);color:#1d4ed8}
+  .b-evaluacion{background:rgba(167,139,250,.2);color:#6d28d9}
+  .b-aprobadocomite{background:rgba(16,185,129,.2);color:#047857}
   .alert-badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700}
-  .alert-critico{background:rgba(239,68,68,.3);color:#fca5a5}
-  .alert-s12{background:rgba(245,158,11,.3);color:#fcd34d}
-  .alert-gestion{background:rgba(59,130,246,.3);color:#93c5fd}
-  .progress-bar{width:100%;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+  .alert-critico{background:rgba(239,68,68,.3);color:#b91c1c}
+  .alert-s12{background:rgba(245,158,11,.3);color:#b45309}
+  .alert-gestion{background:rgba(59,130,246,.3);color:#1d4ed8}
+  .progress-bar{width:100%;height:6px;background:rgba(15,23,42,.1);border-radius:3px;overflow:hidden}
   .progress-fill{height:100%;background:linear-gradient(90deg,#059669,#10b981);border-radius:3px}
-  .timeline-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;margin-bottom:12px}
-  .timeline-title{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.5);margin-bottom:10px}
+  .timeline-box{background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:14px;margin-bottom:12px}
+  .timeline-title{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:rgba(15,23,42,.78);margin-bottom:10px}
   .timeline-steps{display:flex;flex-direction:column;gap:8px}
   .timeline-step{display:flex;align-items:flex-start;gap:10px}
   .timeline-dot{width:14px;height:14px;border-radius:50%;margin-top:2px;flex-shrink:0;border:2px solid transparent}
   .timeline-dot.done{background:#10b981;border-color:#34d399}
   .timeline-dot.current{background:#f59e0b;border-color:#fcd34d}
-  .timeline-dot.pending{background:transparent;border-color:rgba(255,255,255,.25)}
-  .timeline-step .label{font-size:13px;color:#e2e8f0}
-  .timeline-step .meta{font-size:11px;color:rgba(255,255,255,.5)}
+  .timeline-dot.pending{background:transparent;border-color:rgba(15,23,42,.22)}
+  .timeline-step .label{font-size:13px;color:#0f172a}
+  .timeline-step .meta{font-size:11px;color:rgba(15,23,42,.78)}
   .seg-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
-  .seg-title{font-size:15px;font-weight:700;color:#fff}
-  .seg-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:3px}
+  .seg-title{font-size:15px;font-weight:700;color:#0f172a}
+  .seg-sub{font-size:12px;color:rgba(15,23,42,.78);margin-top:3px}
   .seg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:14px}
-  .seg-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px}
-  .seg-card .k{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);margin-bottom:5px}
-  .seg-card .v{font-size:13px;color:#e2e8f0;font-weight:600}
-  .seg-history{border-left:1px solid rgba(255,255,255,.12);margin:4px 0 14px 7px;padding-left:14px;display:flex;flex-direction:column;gap:10px}
-  .seg-event{position:relative;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px}
-  .seg-event::before{content:'';position:absolute;left:-22px;top:13px;width:12px;height:12px;border-radius:50%;background:#10b981;border:2px solid #0b3a3a}
-  .seg-event .date{font-family:'DM Mono',monospace;font-size:11px;color:#93c5fd;margin-bottom:4px}
-  .seg-event .what{font-size:13px;color:#fff;font-weight:600}
-  .seg-event .detail{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
-  .seg-event .state{font-size:11px;color:#bbf7d0;margin-top:6px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:7px;padding:6px 8px}
-  .seg-det-plain{font-size:12px;color:rgba(255,255,255,.72);line-height:1.45}
-  .seg-det-list{margin:8px 0 0 16px;padding:0;font-size:12px;color:rgba(255,255,255,.78);line-height:1.45}
+  .seg-card{background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:10px}
+  .seg-card .k{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(15,23,42,.71);margin-bottom:5px}
+  .seg-card .v{font-size:13px;color:#0f172a;font-weight:600}
+  .seg-history{border-left:1px solid rgba(15,23,42,.14);margin:4px 0 14px 7px;padding-left:14px;display:flex;flex-direction:column;gap:10px}
+  .seg-event{position:relative;background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:10px}
+  .seg-event::before{content:'';position:absolute;left:-22px;top:13px;width:12px;height:12px;border-radius:50%;background:#10b981;border:2px solid #ffffff}
+  .seg-event .date{font-family:'DM Mono',monospace;font-size:11px;color:#1d4ed8;margin-bottom:4px}
+  .seg-event .what{font-size:13px;color:#0f172a;font-weight:600}
+  .seg-event .detail{font-size:12px;color:rgba(15,23,42,.82);margin-top:4px}
+  .seg-event .state{font-size:11px;color:#166534;margin-top:6px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:7px;padding:6px 8px}
+  .seg-det-plain{font-size:12px;color:rgba(15,23,42,.87);line-height:1.45}
+  .seg-det-list{margin:8px 0 0 16px;padding:0;font-size:12px;color:rgba(15,23,42,.9);line-height:1.45}
   .seg-det-list li{margin:4px 0}
-  .seg-det-empty{font-size:11px;color:rgba(255,255,255,.35);font-style:italic}
-  .seg-mod-tag{display:inline-block;font-size:9px;text-transform:uppercase;letter-spacing:.5px;background:rgba(167,139,250,.12);color:#c4b5fd;border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle}
-  .seg-acc-tag{font-size:10px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace}
+  .seg-det-empty{font-size:11px;color:rgba(15,23,42,.71);font-style:italic}
+  .seg-mod-tag{display:inline-block;font-size:9px;text-transform:uppercase;letter-spacing:.5px;background:rgba(167,139,250,.12);color:#6d28d9;border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+  .seg-acc-tag{font-size:10px;color:rgba(15,23,42,.73);font-family:'DM Mono',monospace}
   .seg-td-det{min-width:260px;max-width:400px;vertical-align:top!important}
-  .seg-help{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#bfdbfe;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px}
-  .seg-search-info{display:none;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:12px}
+  .seg-help{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#1e40af;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px}
+  .seg-search-info{display:none;background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.1);border-radius:12px;padding:12px;margin-bottom:12px}
   .seg-search-info.show{display:block}
-  .seg-choice{display:flex;justify-content:space-between;gap:10px;align-items:center;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 10px;margin-top:8px}
-  .seg-choice .main{font-size:13px;color:#fff;font-weight:600}
-  .seg-choice .sub{font-size:11px;color:rgba(255,255,255,.48);margin-top:2px}
-  .seg-pill{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;background:rgba(96,165,250,.14);color:#93c5fd;border:1px solid rgba(96,165,250,.28);border-radius:99px;padding:3px 8px;margin-bottom:6px}
+  .seg-choice{display:flex;justify-content:space-between;gap:10px;align-items:center;background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:9px 10px;margin-top:8px}
+  .seg-choice .main{font-size:13px;color:#0f172a;font-weight:600}
+  .seg-choice .sub{font-size:11px;color:rgba(15,23,42,.77);margin-top:2px}
+  .seg-pill{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.8px;background:rgba(96,165,250,.14);color:#1d4ed8;border:1px solid rgba(96,165,250,.28);border-radius:99px;padding:3px 8px;margin-bottom:6px}
  .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:280px}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}  .toast.info{background:rgba(59,130,246,.9);color:#fff}
   @media(max-width:680px){main{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column;align-items:flex-start}}
   /* COLA GESTIONES COORDINACIÓN (hero) */
-  .gestiones-hero{background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(45,212,191,.28);border-radius:16px;padding:18px 20px 20px;margin-bottom:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+  .gestiones-hero{background:linear-gradient(145deg,rgba(15,23,42,.08),rgba(15,23,42,.03));border:1px solid rgba(45,212,191,.28);border-radius:16px;padding:18px 20px 20px;margin-bottom:22px;box-shadow:0 8px 32px rgba(15,23,42,.10)}
   .gestiones-hero-hdr{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap}
-  .gh-title{font-size:13px;color:#fcd34d;text-transform:uppercase;letter-spacing:.8px;font-family:'DM Mono',monospace;font-weight:700}
-  .gh-count{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace;margin-top:2px}
-  .gh-help{font-size:11px;color:rgba(255,255,255,.42);line-height:1.45;max-width:820px;margin-top:6px}
-  .gestiones-hero-wrap{background:rgba(0,0,0,.12);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:auto;max-height:min(52vh,480px)}
+  .gh-title{font-size:13px;color:#b45309;text-transform:uppercase;letter-spacing:.8px;font-family:'DM Mono',monospace;font-weight:700}
+  .gh-count{font-size:12px;color:rgba(15,23,42,.75);font-family:'DM Mono',monospace;margin-top:2px}
+  .gh-help{font-size:11px;color:rgba(15,23,42,.74);line-height:1.45;max-width:820px;margin-top:6px}
+  .gestiones-hero-wrap{background:rgba(0,0,0,.12);border:1px solid rgba(15,23,42,.1);border-radius:14px;overflow:auto;max-height:min(52vh,480px)}
   .gestiones-hero-wrap table{min-width:720px;width:100%;border-collapse:collapse}
-  .gestiones-hero-wrap thead tr{background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.09)}
-  .gh-gestion{font-size:12px;font-weight:600;color:#e2e8f0;line-height:1.35;max-width:220px}
-  .gh-sub{font-size:10px;color:rgba(255,255,255,.38);font-weight:400;margin-top:3px}
+  .gestiones-hero-wrap thead tr{background:rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.11)}
+  .gh-gestion{font-size:12px;font-weight:600;color:#0f172a;line-height:1.35;max-width:220px}
+  .gh-sub{font-size:10px;color:rgba(15,23,42,.72);font-weight:400;margin-top:3px}
 </style>
 </head>
 <body>
@@ -346,38 +346,38 @@
     <div style="margin-bottom:16px">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
         <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px">
-          <div style="font-size:11px;text-transform:uppercase;color:rgba(239,68,68,.6);margin-bottom:6px">⚠️ CRÍTICO: >60% Plazo</div>
-          <div style="font-size:24px;font-weight:700;color:#fca5a5" id="countCritico">—</div>
+          <div style="font-size:11px;text-transform:uppercase;color:rgb(239,68,68);margin-bottom:6px">⚠️ CRÍTICO: >60% Plazo</div>
+          <div style="font-size:24px;font-weight:700;color:#b91c1c" id="countCritico">—</div>
           <button class="btn rd" style="margin-top:8px;width:100%" onclick="switchToFilterAlertas('critico')">Ver detalles</button>
         </div>
         <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:14px">
-          <div style="font-size:11px;text-transform:uppercase;color:rgba(245,158,11,.6);margin-bottom:6px">⚡ SEMESTRE 12</div>
-          <div style="font-size:24px;font-weight:700;color:#fcd34d" id="countS12">—</div>
+          <div style="font-size:11px;text-transform:uppercase;color:#704805;margin-bottom:6px">⚡ SEMESTRE 12</div>
+          <div style="font-size:24px;font-weight:700;color:#b45309" id="countS12">—</div>
           <button class="btn am" style="margin-top:8px;width:100%" onclick="switchToFilterAlertas('s12')">Ver detalles</button>
         </div>
         <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:14px">
-          <div style="font-size:11px;text-transform:uppercase;color:rgba(59,130,246,.6);margin-bottom:6px">ℹ️ GESTIÓN</div>
-          <div style="font-size:24px;font-weight:700;color:#93c5fd" id="countGestion">—</div>
+          <div style="font-size:11px;text-transform:uppercase;color:#245098;margin-bottom:6px">ℹ️ GESTIÓN</div>
+          <div style="font-size:24px;font-weight:700;color:#1d4ed8" id="countGestion">—</div>
           <button class="btn bl" style="margin-top:8px;width:100%" onclick="switchToFilterAlertas('gestion')">Ver detalles</button>
         </div>
       </div>
     </div>
    <!-- ALERTAS DE VENCIMIENTO POR FASE -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;border-top:1px solid rgba(15,23,42,.1);padding-top:20px">
           <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:12px">
-            <div style="font-size:10px;text-transform:uppercase;color:rgba(167,139,250,.5);margin-bottom:6px">⏱️ Coordinación (&gt;15 d. hábiles)</div>
-            <div style="font-size:20px;font-weight:700;color:#c4b5fd" id="countVencTutores">0</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">validación tutores o aval diplomado</div>
+            <div style="font-size:10px;text-transform:uppercase;color:#53457d;margin-bottom:6px">⏱️ Coordinación (&gt;15 d. hábiles)</div>
+            <div style="font-size:20px;font-weight:700;color:#6d28d9" id="countVencTutores">0</div>
+            <div style="font-size:10px;color:rgba(15,23,42,.73);margin-top:4px">validación tutores o aval diplomado</div>
           </div>
           <div style="background:rgba(252,211,77,.08);border:1px solid rgba(252,211,77,.2);border-radius:10px;padding:12px">
-            <div style="font-size:10px;text-transform:uppercase;color:rgba(252,211,77,.5);margin-bottom:6px">📄 Actas (8 días)</div>
-            <div style="font-size:20px;font-weight:700;color:#fcd34d" id="countVencActas">0</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+            <div style="font-size:10px;text-transform:uppercase;color:#5b4c1c;margin-bottom:6px">📄 Actas (8 días)</div>
+            <div style="font-size:20px;font-weight:700;color:#b45309" id="countVencActas">0</div>
+            <div style="font-size:10px;color:rgba(15,23,42,.73);margin-top:4px">vencidos</div>
           </div>
           <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px">
-            <div style="font-size:10px;text-transform:uppercase;color:rgba(59,130,246,.5);margin-bottom:6px">📖 Protocolo (8 días)</div>
-            <div style="font-size:20px;font-weight:700;color:#93c5fd" id="countVencProtocolo">0</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">vencidos</div>
+            <div style="font-size:10px;text-transform:uppercase;color:#245098;margin-bottom:6px">📖 Protocolo (8 días)</div>
+            <div style="font-size:20px;font-weight:700;color:#1d4ed8" id="countVencProtocolo">0</div>
+            <div style="font-size:10px;color:rgba(15,23,42,.73);margin-top:4px">vencidos</div>
           </div>
         </div>
     <div class="tbl-wrap">
@@ -401,7 +401,7 @@
 
     <!-- Activos: pendientes de acción -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;flex-wrap:wrap;gap:8px">
-      <span style="font-family:'DM Serif Display',serif;font-size:15px;color:#fff">📋 Pendientes de acción <span class="badge b-radicado" id="chipProtActivos" style="font-size:12px;margin-left:6px">—</span></span>
+      <span style="font-family:'DM Serif Display',serif;font-size:15px;color:#0f172a">📋 Pendientes de acción <span class="badge b-radicado" id="chipProtActivos" style="font-size:12px;margin-left:6px">—</span></span>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -416,7 +416,7 @@
 
     <!-- Historial: procesados -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin:32px 0 10px;flex-wrap:wrap;gap:8px">
-      <span style="font-family:'DM Serif Display',serif;font-size:15px;color:#fff">📂 Historial de protocolos <span class="badge b-aprobado" id="chipProtHistorial" style="font-size:12px;margin-left:6px">—</span></span>
+      <span style="font-family:'DM Serif Display',serif;font-size:15px;color:#0f172a">📂 Historial de protocolos <span class="badge b-aprobado" id="chipProtHistorial" style="font-size:12px;margin-left:6px">—</span></span>
       <button class="toggle-hist" id="btnToggleProtHist" onclick="toggleProtHistorial()">▼ Mostrar historial</button>
     </div>
     <div class="hist-wrap" id="histProtWrap">
@@ -440,10 +440,10 @@
         <button class="btn" onclick="closeModal('modalProtocolo')">✕</button>
       </div>
       
-      <div id="protocoloInfo" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px">
-        <div style="font-size:12px;color:rgba(255,255,255,.5)">
-          Radicación: <strong style="color:#a78bfa" id="pNum">—</strong>
-          | Estudiante: <strong style="color:#a78bfa" id="pEst">—</strong>
+      <div id="protocoloInfo" style="background:rgba(15,23,42,.05);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;color:rgba(15,23,42,.78)">
+          Radicación: <strong style="color:#6d28d9" id="pNum">—</strong>
+          | Estudiante: <strong style="color:#6d28d9" id="pEst">—</strong>
         </div>
       </div>
 
@@ -479,13 +479,13 @@
         <div id="seccionComite" style="display:none">
           <div class="mfg" style="margin-bottom:18px">
             <label>Evaluador sugerido por el estudiante</label>
-            <div id="pEvalSugeridoContenido" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.22);border-radius:10px;padding:12px 14px;font-size:13px;color:rgba(255,255,255,.82)">
+            <div id="pEvalSugeridoContenido" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.22);border-radius:10px;padding:12px 14px;font-size:13px;color:rgba(15,23,42,.92)">
               —
             </div>
           </div>
           <div class="mfg">
             <label>Evaluador asignado por coordinación *</label>
-            <div style="font-size:11px;color:rgba(255,255,255,.4);margin:-2px 0 6px">Puede ser la misma persona que figuró como sugerencia u otra de la lista (o la opción «Sugerencia del estudiante» si no está en el catálogo).</div>
+            <div style="font-size:11px;color:rgba(15,23,42,.73);margin:-2px 0 6px">Puede ser la misma persona que figuró como sugerencia u otra de la lista (o la opción «Sugerencia del estudiante» si no está en el catálogo).</div>
             <select id="pEvaluador" onchange="cargarEmailEval()">
               <option value="">— Selecciona evaluador —</option>
             </select>
@@ -509,7 +509,7 @@
         </div>
       </div>
 
-      <div id="errProtocolo" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div>
+      <div id="errProtocolo" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div>
 
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
         <button class="btn" onclick="closeModal('modalProtocolo')">Cancelar</button>
@@ -549,27 +549,27 @@
   </div>
  <!-- PANEL COMITÉ TÉCNICO -->
   <div class="panel" id="pan-comite">
-    <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
-    <a href="comite_tecnico.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:14px;text-decoration:none;color:#fff;transition:background .2s" onmouseover="this.style.background='rgba(102,126,234,.2)'" onmouseout="this.style.background='rgba(102,126,234,.1)'">
+    <h2 style="font-size:18px;font-weight:600;color:#0f172a;margin-bottom:20px">📅 Comité Técnico de Investigación</h2>
+    <a href="comite_tecnico.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.3);border-radius:14px;text-decoration:none;color:#0f172a;transition:background .2s" onmouseover="this.style.background='rgba(102,126,234,.2)'" onmouseout="this.style.background='rgba(102,126,234,.1)'">
       <span style="font-size:32px">📅</span>
       <div style="flex:1">
         <div style="font-size:15px;font-weight:600">Abrir Comité Técnico</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:3px">Gestionar sesiones de comité, registrar evaluaciones y resultados</div>
+        <div style="font-size:12px;color:rgba(15,23,42,.78);margin-top:3px">Gestionar sesiones de comité, registrar evaluaciones y resultados</div>
       </div>
-      <span style="font-size:20px;color:rgba(255,255,255,.35)">→</span>
+      <span style="font-size:20px;color:rgba(15,23,42,.71)">→</span>
     </a>
   </div>
 
   <!-- PANEL SUSTENTACIÓN -->
   <div class="panel" id="pan-fase3">
-    <h2 style="font-size:18px;font-weight:600;color:#fff;margin-bottom:20px">🎓 Sustentación</h2>
-    <a href="coordinadora_fase3.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.3);border-radius:14px;text-decoration:none;color:#fff;transition:background .2s" onmouseover="this.style.background='rgba(5,150,105,.2)'" onmouseout="this.style.background='rgba(5,150,105,.1)'">
+    <h2 style="font-size:18px;font-weight:600;color:#0f172a;margin-bottom:20px">🎓 Sustentación</h2>
+    <a href="coordinadora_fase3.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.3);border-radius:14px;text-decoration:none;color:#0f172a;transition:background .2s" onmouseover="this.style.background='rgba(5,150,105,.2)'" onmouseout="this.style.background='rgba(5,150,105,.1)'">
       <span style="font-size:32px">🎓</span>
       <div style="flex:1">
         <div style="font-size:15px;font-weight:600">Abrir Gestión de Sustentaciones</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:3px">Revisar solicitudes, asignar jurados y registrar resultados de sustentación</div>
+        <div style="font-size:12px;color:rgba(15,23,42,.78);margin-top:3px">Revisar solicitudes, asignar jurados y registrar resultados de sustentación</div>
       </div>
-      <span style="font-size:20px;color:rgba(255,255,255,.35)">→</span>
+      <span style="font-size:20px;color:rgba(15,23,42,.71)">→</span>
     </a>
   </div>
 
@@ -577,7 +577,7 @@
   <div class="panel" id="pan-filtros">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px">
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">🎓 Semestre</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">🎓 Semestre</label>
         <select id="fSem" onchange="renderFiltros()">
   <option value="">— Todos —</option>
   <option value="7">7</option>
@@ -589,7 +589,7 @@
 </select>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📋 Estado</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">📋 Estado</label>
         <select id="fEst" onchange="renderFiltros()">
           <option value="">— Todos —</option>
           <option value="Radicado">Radicado</option>
@@ -602,7 +602,7 @@
         </select>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">⏰ Plazo</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">⏰ Plazo</label>
         <select id="fPlazo" onchange="renderFiltros()">
           <option value="">— Todos —</option>
           <option value="vencido">🔴 Vencido</option>
@@ -612,7 +612,7 @@
         </select>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">👨‍🏫 Tutor</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">👨‍🏫 Tutor</label>
         <select id="fTutor" onchange="renderFiltros()">
           <option value="">— Todos —</option>
           <option value="con">✅ Con tutor</option>
@@ -620,7 +620,7 @@
         </select>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📄 Actas</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">📄 Actas</label>
         <select id="fActas" onchange="renderFiltros()">
           <option value="">— Todos —</option>
           <option value="nocargadas">❌ No cargadas</option>
@@ -630,7 +630,7 @@
         </select>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">🔎 Buscar</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">🔎 Buscar</label>
         <input id="searchFiltros" type="text" placeholder="Número, nombre..." oninput="renderFiltros()">
       </div>
     </div>
@@ -656,21 +656,21 @@
     <!-- Sección cambios -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:16px;font-weight:600;color:#fff">✏️ Solicitudes de Cambio de Radicación</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Los estudiantes pueden solicitar modificar datos de su radicación. Usted decide si aprueba directamente o lo eleva al Comité Técnico.</div>
+        <div style="font-size:16px;font-weight:600;color:#0f172a">✏️ Solicitudes de Cambio de Radicación</div>
+        <div style="font-size:12px;color:rgba(15,23,42,.75);margin-top:2px">Los estudiantes pueden solicitar modificar datos de su radicación. Usted decide si aprueba directamente o lo eleva al Comité Técnico.</div>
       </div>
       <button class="btn" onclick="cargarSolicitudesCambio()">↺ Actualizar</button>
     </div>
-    <div id="sc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
+    <div id="sc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(15,23,42,.69)">Cargando solicitudes…</div></div>
 
     <!-- Separador -->
-    <div style="border-top:1px solid rgba(255,255,255,.08);margin:28px 0 20px"></div>
+    <div style="border-top:1px solid rgba(15,23,42,.1);margin:28px 0 20px"></div>
 
     <!-- Sección cancelación directa — acción principal de la coordinadora -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Cancelar radicación</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Como coordinadora puedes cancelar directamente cualquier radicación activa. Las que tienen <span style="color:#fca5a5">⚠ duplicado</span> aparecen resaltadas automáticamente.</div>
+        <div style="font-size:16px;font-weight:600;color:#b91c1c">🗑 Cancelar radicación</div>
+        <div style="font-size:12px;color:rgba(15,23,42,.75);margin-top:2px">Como coordinadora puedes cancelar directamente cualquier radicación activa. Las que tienen <span style="color:#b91c1c">⚠ duplicado</span> aparecen resaltadas automáticamente.</div>
       </div>
       <button class="btn" onclick="renderCancelDirecta()">↺ Actualizar</button>
     </div>
@@ -680,37 +680,37 @@
     <div id="cancelDirecta_lista"></div>
 
     <!-- Separador -->
-    <div style="border-top:1px solid rgba(255,255,255,.08);margin:28px 0 20px"></div>
+    <div style="border-top:1px solid rgba(15,23,42,.1);margin:28px 0 20px"></div>
 
     <!-- Sección solicitudes de cancelación enviadas por estudiantes -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:15px;font-weight:600;color:rgba(255,255,255,.6)">📨 Solicitudes de cancelación enviadas por estudiantes</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px">Solicitudes que el estudiante generó desde el portal. Puedes aprobarlas o rechazarlas.</div>
+        <div style="font-size:15px;font-weight:600;color:rgba(15,23,42,.82)">📨 Solicitudes de cancelación enviadas por estudiantes</div>
+        <div style="font-size:12px;color:rgba(15,23,42,.71);margin-top:2px">Solicitudes que el estudiante generó desde el portal. Puedes aprobarlas o rechazarlas.</div>
       </div>
       <button class="btn" onclick="cargarSolicitudesCancelacion()">↺ Actualizar</button>
     </div>
-    <div id="scc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando solicitudes…</div></div>
+    <div id="scc_lista"><div class="empty" style="padding:32px;text-align:center;color:rgba(15,23,42,.69)">Cargando solicitudes…</div></div>
   </div>
 
   <!-- MODAL RESOLVER SOLICITUD DE CAMBIO -->
-  <div id="modalSolicitudCambio" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;overflow-y:auto;padding:20px">
-    <div style="background:#0b3a3a;border:1px solid rgba(255,255,255,.12);border-radius:16px;max-width:620px;margin:40px auto;padding:28px">
+  <div id="modalSolicitudCambio" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1000;overflow-y:auto;padding:20px">
+    <div style="background:#ffffff;border:1px solid rgba(15,23,42,.14);border-radius:16px;max-width:620px;margin:40px auto;padding:28px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <div style="font-size:16px;font-weight:600;color:#fff">Revisar solicitud de cambio</div>
-        <button onclick="cerrarModalSolicitudCambio()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
+        <div style="font-size:16px;font-weight:600;color:#0f172a">Revisar solicitud de cambio</div>
+        <button onclick="cerrarModalSolicitudCambio()" style="background:none;border:none;color:rgba(15,23,42,.78);font-size:20px;cursor:pointer">✕</button>
       </div>
-      <div id="sc_modal_detalle" style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:20px"></div>
+      <div id="sc_modal_detalle" style="font-size:13px;color:rgba(15,23,42,.91);line-height:1.7;margin-bottom:20px"></div>
       <div style="margin-bottom:14px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Observaciones / nota para el estudiante</label>
-        <textarea id="sc_obs" rows="3" placeholder="Opcional para aprobación directa. Obligatorio si devuelve o envía a comité." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600;display:block;margin-bottom:6px">Observaciones / nota para el estudiante</label>
+        <textarea id="sc_obs" rows="3" placeholder="Opcional para aprobación directa. Obligatorio si devuelve o envía a comité." style="width:100%;background:rgba(15,23,42,.06);border:1px solid rgba(15,23,42,.14);border-radius:8px;padding:10px;color:#0f172a;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn" style="background:linear-gradient(135deg,#059669,#10b981);flex:1;min-width:140px" data-accion="aprobar_directo" onclick="resolverSolicitudCambio('aprobar_directo')">Aprobar directamente</button>
         <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);flex:1;min-width:140px" data-accion="derivar_ct" onclick="resolverSolicitudCambio('derivar_ct')">Enviar a Comité Técnico</button>
         <button class="btn" style="background:linear-gradient(135deg,#b45309,#d97706);flex:1;min-width:140px" data-accion="devolver" onclick="resolverSolicitudCambio('devolver')">Devolver al estudiante</button>
       </div>
-      <div id="sc_modal_error" style="margin-top:12px;color:#f87171;font-size:13px;display:none"></div>
+      <div id="sc_modal_error" style="margin-top:12px;color:#dc2626;font-size:13px;display:none"></div>
     </div>
   </div>
 
@@ -724,12 +724,12 @@
         <h3>🗑 Cancelar radicación</h3>
         <button class="btn" onclick="closeModal('modalCancelDirecta')">✕</button>
       </div>
-      <div id="mCancelDirectaInfo" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:9px;padding:12px 14px;font-size:13px;color:rgba(255,255,255,.8);margin-bottom:16px"></div>
+      <div id="mCancelDirectaInfo" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:9px;padding:12px 14px;font-size:13px;color:rgba(15,23,42,.91);margin-bottom:16px"></div>
       <div class="mfg">
         <label>Motivo / observación (opcional)</label>
-        <textarea id="mCancelDirectaObs" rows="3" placeholder="Ej: Duplicado — se conserva la radicación XXXX" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+        <textarea id="mCancelDirectaObs" rows="3" placeholder="Ej: Duplicado — se conserva la radicación XXXX" style="width:100%;background:rgba(15,23,42,.06);border:1px solid rgba(15,23,42,.14);border-radius:8px;padding:10px;color:#0f172a;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
       </div>
-      <div id="mCancelDirectaError" style="color:#f87171;font-size:13px;display:none;margin-bottom:10px"></div>
+      <div id="mCancelDirectaError" style="color:#dc2626;font-size:13px;display:none;margin-bottom:10px"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
         <button class="btn" onclick="closeModal('modalCancelDirecta')">Cancelar</button>
         <button class="btn rd" id="btnConfirmarCancelDirecta" onclick="confirmarCancelDirecta()">🗑 Confirmar cancelación</button>
@@ -738,22 +738,22 @@
   </div>
 
   <!-- MODAL RESOLVER CANCELACIÓN -->
-  <div id="modalCancelacion" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;overflow-y:auto;padding:20px">
-    <div style="background:#0b3a3a;border:1px solid rgba(239,68,68,.25);border-radius:16px;max-width:560px;margin:40px auto;padding:28px">
+  <div id="modalCancelacion" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1000;overflow-y:auto;padding:20px">
+    <div style="background:#ffffff;border:1px solid rgba(239,68,68,.25);border-radius:16px;max-width:560px;margin:40px auto;padding:28px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <div style="font-size:16px;font-weight:600;color:#fca5a5">🗑 Resolver solicitud de cancelación</div>
-        <button onclick="cerrarModalCancelacion()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
+        <div style="font-size:16px;font-weight:600;color:#b91c1c">🗑 Resolver solicitud de cancelación</div>
+        <button onclick="cerrarModalCancelacion()" style="background:none;border:none;color:rgba(15,23,42,.78);font-size:20px;cursor:pointer">✕</button>
       </div>
-      <div id="scc_modal_detalle" style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:20px"></div>
+      <div id="scc_modal_detalle" style="font-size:13px;color:rgba(15,23,42,.91);line-height:1.7;margin-bottom:20px"></div>
       <div style="margin-bottom:14px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600;display:block;margin-bottom:6px">Observaciones para el estudiante</label>
-        <textarea id="scc_obs" rows="3" placeholder="Obligatorio si rechaza (mín. 12 caracteres). Opcional si aprueba." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600;display:block;margin-bottom:6px">Observaciones para el estudiante</label>
+        <textarea id="scc_obs" rows="3" placeholder="Obligatorio si rechaza (mín. 12 caracteres). Opcional si aprueba." style="width:100%;background:rgba(15,23,42,.06);border:1px solid rgba(15,23,42,.14);border-radius:8px;padding:10px;color:#0f172a;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn" style="background:linear-gradient(135deg,#dc2626,#ef4444);flex:1;min-width:140px" data-accion="aprobar" onclick="resolverCancelacion('aprobar')">✅ Aprobar cancelación</button>
         <button class="btn" style="background:linear-gradient(135deg,#b45309,#d97706);flex:1;min-width:140px" data-accion="rechazar" onclick="resolverCancelacion('rechazar')">❌ Rechazar</button>
       </div>
-      <div id="scc_modal_error" style="margin-top:12px;color:#f87171;font-size:13px;display:none"></div>
+      <div id="scc_modal_error" style="margin-top:12px;color:#dc2626;font-size:13px;display:none"></div>
     </div>
   </div>
 
@@ -761,7 +761,7 @@
   <div class="panel" id="pan-informes">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px">
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">🎓 Semestre</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">🎓 Semestre</label>
         <select id="infSemestre" onchange="renderInformes()">
           <option value="">— Todos —</option>
           <option value="7">7</option>
@@ -773,7 +773,7 @@
         </select>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📌 Fase</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">📌 Fase</label>
         <select id="infFase" onchange="renderInformes()">
           <option value="">— Todas —</option>
           <option value="1">Fase 1</option>
@@ -783,13 +783,13 @@
         </select>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">👨‍🏫 Tutor</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">👨‍🏫 Tutor</label>
         <select id="infTutor" onchange="renderInformes()">
           <option value="">— Todos —</option>
         </select>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);font-weight:600">📋 Estado</label>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600">📋 Estado</label>
         <select id="infEstado" onchange="renderInformes()">
           <option value="">— Todos —</option>
           <option value="Radicado">Radicado</option>
@@ -820,7 +820,7 @@
       <div class="mc c4"><div class="ml">Devueltos</div><div class="mv" id="infDevueltos">0</div></div>
     </div>
 
-    <h3 style="font-size:15px;font-weight:600;color:#fff;margin:16px 0 10px">Carga por tutor</h3>
+    <h3 style="font-size:15px;font-weight:600;color:#0f172a;margin:16px 0 10px">Carga por tutor</h3>
     <div class="tbl-wrap" style="margin-bottom:18px">
       <table>
         <thead><tr>
@@ -832,7 +832,7 @@
       </table>
     </div>
 
-    <h3 style="font-size:15px;font-weight:600;color:#fff;margin:16px 0 10px">Estudiantes</h3>
+    <h3 style="font-size:15px;font-weight:600;color:#0f172a;margin:16px 0 10px">Estudiantes</h3>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -850,8 +850,8 @@
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);border-radius:10px">
       <span style="font-size:18px">📚</span>
       <div>
-        <div style="font-size:13px;font-weight:600;color:#c4b5fd">Modalidad Diplomado</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px">Seguimiento exclusivo de radicaciones Diplomado. Una vez aprobados por Comité Técnico, registre el acta y la nota para completar el proceso.</div>
+        <div style="font-size:13px;font-weight:600;color:#6d28d9">Modalidad Diplomado</div>
+        <div style="font-size:11px;color:rgba(15,23,42,.75);margin-top:2px">Seguimiento exclusivo de radicaciones Diplomado. Una vez aprobados por Comité Técnico, registre el acta y la nota para completar el proceso.</div>
       </div>
     </div>
     <div class="filters">
@@ -882,8 +882,8 @@
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:10px">
       <span style="font-size:18px">🏁</span>
       <div>
-        <div style="font-size:13px;font-weight:600;color:#6ee7b7">Procesos completados</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px">Radicaciones que finalizaron todo su proceso: sustentadas, reprobadas, canceladas o diplomados aprobados.</div>
+        <div style="font-size:13px;font-weight:600;color:#047857">Procesos completados</div>
+        <div style="font-size:11px;color:rgba(15,23,42,.75);margin-top:2px">Radicaciones que finalizaron todo su proceso: sustentadas, reprobadas, canceladas o diplomados aprobados.</div>
       </div>
     </div>
     <div class="filters">
@@ -920,7 +920,7 @@
       <h3>📋 Registrar Acta y Nota — Diplomado</h3>
       <button class="btn" onclick="closeModal('modalResultadoDip')">✕</button>
     </div>
-    <div id="mDipInfo" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:9px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:16px"></div>
+    <div id="mDipInfo" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:9px;padding:10px 14px;font-size:12px;color:rgba(15,23,42,.86);margin-bottom:16px"></div>
     <div class="mfg">
       <label>Nota de calificación * (0 – 5)</label>
       <input type="number" id="mDipNota" min="0" max="5" step="0.1" placeholder="Ej: 4.5" style="width:100%">
@@ -929,7 +929,7 @@
       <label>Número de Acta *</label>
       <input type="text" id="mDipActa" placeholder="Ej: ACTA-001-2025">
     </div>
-    <div id="mDipError" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px;display:none"></div>
+    <div id="mDipError" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px;display:none"></div>
     <input type="hidden" id="mDipRowIndex">
     <input type="hidden" id="mDipNumero">
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
@@ -946,7 +946,7 @@
       <h3>Cambiar Estado</h3>
       <button class="btn" onclick="closeModal('modalEst')">✕</button>
     </div>
-    <p id="mEstLabel" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></p>
+    <p id="mEstLabel" style="font-size:12px;color:rgba(15,23,42,.73);margin-bottom:14px"></p>
     <div class="mfg">
       <label>Nuevo estado *</label>
       <select id="mEstado">
@@ -992,7 +992,7 @@
       <h3 id="modalActaTitulo">Revisar Acta</h3>
       <button class="btn" onclick="closeModal('modalActa')">✕</button>
     </div>
-    <div id="modalActaInfo" style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px"></div>
+    <div id="modalActaInfo" style="font-size:12px;color:rgba(15,23,42,.73);margin-bottom:14px"></div>
     <div class="mfg">
       <label>Motivo / Observaciones (opcional para aprobar, requerido para rechazar)</label>
       <textarea id="mActaMotivo" placeholder="Observaciones sobre el acta..."></textarea>
@@ -1026,7 +1026,7 @@
 <div class="modal-bg" id="modalHistorial">
   <div class="modal" style="max-width:780px">
     <div class="modal-hdr">
-      <h3>📜 Historial · <span id="modalHistorialNum" style="font-family:monospace;color:#a78bfa"></span></h3>
+      <h3>📜 Historial · <span id="modalHistorialNum" style="font-family:monospace;color:#6d28d9"></span></h3>
       <button class="btn" onclick="closeModal('modalHistorial')">✕</button>
     </div>
     <div id="modalHistorialBody" style="max-height:68vh;overflow-y:auto;padding-top:8px"></div>
@@ -1322,14 +1322,14 @@ function htmlBloqueDiplomadoEnProtocoloInfo(numeroRad) {
   const modoLabel = modo === 'cttg_asigna' ? 'CTTG asigna jurados' : (modo === 'tutor_sugiere' ? 'Tutor propone jurados' : (modo || '—'));
   const jur = [rad.dipJurado1Nombre, rad.dipJurado2Nombre, rad.dipJurado3Nombre].map(String).map(s => s.trim()).filter(Boolean);
   const jurHtml = jur.length
-    ? '<div style="margin-top:8px;font-size:12px;color:rgba(226,232,240,.82)">' + jur.map(function(j, i) {
+    ? '<div style="margin-top:8px;font-size:12px;color:#334155">' + jur.map(function(j, i) {
       return '<div>Jurado ' + (i + 1) + ': ' + esc(j) + '</div>';
     }).join('') + '</div>'
     : '';
-  return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)">'
-    + '<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(167,139,250,.9);margin-bottom:6px">Diplomado (Fase 1)</div>'
-    + '<div style="font-size:12px;color:rgba(255,255,255,.75)">Periodo: <strong style="color:#e2e8f0">' + esc(periodo) + '</strong></div>'
-    + '<div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:4px">Modo jurado: ' + esc(modoLabel) + '</div>'
+  return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(15,23,42,.12)">'
+    + '<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#53457d;margin-bottom:6px">Diplomado (Fase 1)</div>'
+    + '<div style="font-size:12px;color:rgba(15,23,42,.89)">Periodo: <strong style="color:#0f172a">' + esc(periodo) + '</strong></div>'
+    + '<div style="font-size:12px;color:rgba(15,23,42,.84);margin-top:4px">Modo jurado: ' + esc(modoLabel) + '</div>'
     + jurHtml
     + '</div>';
 }
@@ -1337,9 +1337,9 @@ function htmlBloqueDiplomadoEnProtocoloInfo(numeroRad) {
 function aplicarHtmlProtocoloInfo(p, numeroVisible, textoEstudiante) {
   const box = document.getElementById('protocoloInfo');
   if (!box) return;
-  box.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,.55)">'
-    + 'Radicación: <strong style="color:#a78bfa" id="pNum">' + esc(numeroVisible || '') + '</strong>'
-    + ' · Estudiante / correo: <strong style="color:#a78bfa" id="pEst">' + esc(textoEstudiante || '—') + '</strong>'
+  box.innerHTML = '<div style="font-size:12px;color:rgba(15,23,42,.8)">'
+    + 'Radicación: <strong style="color:#6d28d9" id="pNum">' + esc(numeroVisible || '') + '</strong>'
+    + ' · Estudiante / correo: <strong style="color:#6d28d9" id="pEst">' + esc(textoEstudiante || '—') + '</strong>'
     + '</div>'
     + htmlBloqueDiplomadoEnProtocoloInfo(numeroVisible || (p && p.numero));
 }
@@ -1488,7 +1488,7 @@ function renderModalidadGrid() {
   const wrap = document.getElementById('modGridWrap');
   if (!wrap) return;
   if (!entries.length) {
-    wrap.innerHTML = '<div class="mc" style="opacity:.4;font-size:12px;padding:14px;color:rgba(255,255,255,.35)">Sin datos de modalidades aún</div>';
+    wrap.innerHTML = '<div class="mc" style="opacity:.4;font-size:12px;padding:14px;color:rgba(15,23,42,.71)">Sin datos de modalidades aún</div>';
     return;
   }
   wrap.innerHTML = entries.map(([mod, s], i) => {
@@ -1556,7 +1556,7 @@ function renderTabla() {
     const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join('<br>') || '—';
     const correoRad = r.emailEstudiante || r.email1 || '';
     const esDuplicado = correoRad && (emailCount[correoRad.toLowerCase()]||0) > 1;
-    const correoEstilo = esDuplicado ? 'color:#fca5a5;font-weight:600' : 'color:rgba(255,255,255,.35)';
+    const correoEstilo = esDuplicado ? 'color:#b91c1c;font-weight:600' : 'color:rgba(15,23,42,.71)';
     const correoHtml = correoRad
       ? '<div style="font-size:10px;margin-top:3px;' + correoEstilo + '">' + (esDuplicado ? '⚠ ' : '') + esc(correoRad) + '</div>'
       : '';
@@ -1568,16 +1568,16 @@ function renderTabla() {
       <td><div class="num-rad">${esc(r.numero||'')}</div></td>
       <td style="font-size:12px;max-width:160px">${nombres}${correoHtml}</td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(r.modalidad||'—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.5);max-width:180px">${celdaTutor}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaRadicacion)}</td>
+      <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(r.modalidad||'—')}</td>
+      <td style="font-size:12px;color:rgba(15,23,42,.78);max-width:180px">${celdaTutor}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(15,23,42,.73)">${fmtFecha(r.fechaRadicacion)}</td>
       <td>${badgeEst(estado)}</td>
       <td><div class="act">
         <button class="btn bl" onclick="verDetalle(${r.rowIndex})">👁 Ver</button>
         <button class="btn am" onclick="abrirModalEst(${r.rowIndex},'${esc(r.numero||'')}','${esc(estado)}')">✎ Estado</button>
         <button class="${btnAvalCls}" title="${esModalidadDiplomadoDash(r) ? 'Abrir aval de Diplomado (sin tutores/actas)' : 'Validar tutores'}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${btnAvalTxt}</button>
         <button class="btn" onclick="abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Seguimiento</button>
-        <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
+        <button class="btn" style="color:#6d28d9;border-color:rgba(167,139,250,.35)" onclick="abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1627,35 +1627,35 @@ function renderTablaTerminados() {
     // Integrantes con cédula
     const integrantes = [[r.nombre1,r.cedula1],[r.nombre2,r.cedula2],[r.nombre3,r.cedula3]]
       .filter(([n]) => n)
-      .map(([n,c]) => { const cedSpan = c ? '<br><span style="font-family:\'DM Mono\',monospace;font-size:10px;color:rgba(255,255,255,.4)">' + esc(c) + '</span>' : ''; return `${esc(n)}${cedSpan}`; })
-      .join('<hr style="border:none;border-top:1px solid rgba(255,255,255,.06);margin:3px 0">');
+      .map(([n,c]) => { const cedSpan = c ? '<br><span style="font-family:\'DM Mono\',monospace;font-size:10px;color:rgba(15,23,42,.73)">' + esc(c) + '</span>' : ''; return `${esc(n)}${cedSpan}`; })
+      .join('<hr style="border:none;border-top:1px solid rgba(15,23,42,.1);margin:3px 0">');
     // Tutores
     const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).map(t => esc(t)).join('<br>') || '—';
     // Jurados: Diplomado usa campos dipJurado, no-Diplomado usa Fase 3
     const jurados = esDip
-      ? [r.dipJurado1Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(255,255,255,.3)">—</span>'
-      : [f3.jurado1Nombre, f3.jurado2Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(255,255,255,.3)">—</span>';
+      ? [r.dipJurado1Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(15,23,42,.69)">—</span>'
+      : [f3.jurado1Nombre, f3.jurado2Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:rgba(15,23,42,.69)">—</span>';
     // Fecha sustentación: Diplomado usa dipFechaResultado; no-Diplomado usa fechaSustentacion de Fase3
     const fechaSust = esDip
-      ? (r.dipFechaResultado ? fmtFecha(r.dipFechaResultado) : '<span style="color:rgba(255,255,255,.3)">—</span>')
-      : (f3.fechaSustentacion ? fmtFecha(f3.fechaSustentacion) : '<span style="color:rgba(255,255,255,.3)">—</span>');
+      ? (r.dipFechaResultado ? fmtFecha(r.dipFechaResultado) : '<span style="color:rgba(15,23,42,.69)">—</span>')
+      : (f3.fechaSustentacion ? fmtFecha(f3.fechaSustentacion) : '<span style="color:rgba(15,23,42,.69)">—</span>');
     // Nota: Diplomado usa dipNota; no-Diplomado usa f3.nota
     const notaVal = esDip ? r.dipNota : f3.nota;
-    const notaTxt = notaVal != null && notaVal !== '' ? `<span style="font-weight:700;color:${parseFloat(notaVal)>=3?'#6ee7b7':'#fca5a5'}">${esc(String(notaVal))}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    const notaTxt = notaVal != null && notaVal !== '' ? `<span style="font-weight:700;color:${parseFloat(notaVal)>=3?'#6ee7b7':'#fca5a5'}">${esc(String(notaVal))}</span>` : '<span style="color:rgba(15,23,42,.69)">—</span>';
     // Acta: Diplomado usa dipActa; no-Diplomado usa f3.numeroActa
     const actaVal = esDip ? r.dipActa : f3.numeroActa;
-    const actaTxt = actaVal ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#c4b5fd">${esc(actaVal)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    const actaTxt = actaVal ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#6d28d9">${esc(actaVal)}</span>` : '<span style="color:rgba(15,23,42,.69)">—</span>';
     // Documento acta (solo sustentación)
-    const docActa = f3.urlAnexoA7 ? `<a href="${escAttr(f3.urlAnexoA7)}" target="_blank" class="btn bl" style="font-size:11px;padding:3px 8px">📄 Acta</a>` : '<span style="color:rgba(255,255,255,.3);font-size:11px">—</span>';
+    const docActa = f3.urlAnexoA7 ? `<a href="${escAttr(f3.urlAnexoA7)}" target="_blank" class="btn bl" style="font-size:11px;padding:3px 8px">📄 Acta</a>` : '<span style="color:rgba(15,23,42,.69);font-size:11px">—</span>';
     const correoTerminado = r.emailEstudiante || r.email1 || '';
-    const correoTerminadoHtml = correoTerminado ? '<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px;word-break:break-all">' + esc(correoTerminado) + '</div>' : '';
+    const correoTerminadoHtml = correoTerminado ? '<div style="font-size:10px;color:rgba(15,23,42,.69);margin-top:2px;word-break:break-all">' + esc(correoTerminado) + '</div>' : '';
     return `<tr>
-      <td><div class="num-rad">${esc(r.numero||'')}</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px">${fmtFecha(r.fechaRadicacion)}</div>${correoTerminadoHtml}</td>
+      <td><div class="num-rad">${esc(r.numero||'')}</div><div style="font-size:10px;color:rgba(15,23,42,.71);margin-top:3px">${fmtFecha(r.fechaRadicacion)}</div>${correoTerminadoHtml}</td>
       <td style="max-width:200px;font-size:12px;overflow:hidden;text-overflow:ellipsis" title="${escAttr(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.55)">${esc(r.modalidad||'—')}</td>
+      <td style="font-size:12px;color:rgba(15,23,42,.8)">${esc(r.modalidad||'—')}</td>
       <td style="font-size:12px;max-width:160px">${integrantes}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${tutores}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.65);max-width:140px">${jurados}</td>
+      <td style="font-size:12px;color:rgba(15,23,42,.84);max-width:140px">${tutores}</td>
+      <td style="font-size:12px;color:rgba(15,23,42,.84);max-width:140px">${jurados}</td>
       <td style="text-align:center;font-size:12px">${fechaSust}</td>
       <td style="text-align:center">${notaTxt}</td>
       <td style="text-align:center">${actaTxt}</td>
@@ -1691,26 +1691,26 @@ function renderTablaDiplomado() {
     const est = String(r.estado || '');
     const correoDip = r.emailEstudiante || r.email1 || '';
     const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).map(n => esc(n)).join('<br>') || '—';
-    const nombresConCorreo = nombres + (correoDip ? '<br><span style="font-size:10px;color:rgba(255,255,255,.3)">' + esc(correoDip) + '</span>' : '');
-    const jurado = r.dipJurado1Nombre ? esc(r.dipJurado1Nombre) + (r.dipJurado1Especialidad ? `<br><span style="font-size:10px;color:rgba(255,255,255,.4)">${esc(r.dipJurado1Especialidad)}</span>` : '') : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    const nombresConCorreo = nombres + (correoDip ? '<br><span style="font-size:10px;color:rgba(15,23,42,.69)">' + esc(correoDip) + '</span>' : '');
+    const jurado = r.dipJurado1Nombre ? esc(r.dipJurado1Nombre) + (r.dipJurado1Especialidad ? `<br><span style="font-size:10px;color:rgba(15,23,42,.73)">${esc(r.dipJurado1Especialidad)}</span>` : '') : '<span style="color:rgba(15,23,42,.69)">—</span>';
     const periodo = [r.diplomadoFechaInicio, r.diplomadoFechaFin].filter(Boolean).join(' → ') || '—';
-    const notaTxt = r.dipNota ? `<span style="font-weight:700;color:${parseFloat(r.dipNota)>=3?'#6ee7b7':'#fca5a5'}">${esc(r.dipNota)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
-    const actaTxt = r.dipActa ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#c4b5fd">${esc(r.dipActa)}</span>` : '<span style="color:rgba(255,255,255,.3)">—</span>';
+    const notaTxt = r.dipNota ? `<span style="font-weight:700;color:${parseFloat(r.dipNota)>=3?'#6ee7b7':'#fca5a5'}">${esc(r.dipNota)}</span>` : '<span style="color:rgba(15,23,42,.69)">—</span>';
+    const actaTxt = r.dipActa ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#6d28d9">${esc(r.dipActa)}</span>` : '<span style="color:rgba(15,23,42,.69)">—</span>';
     const badgeDip = est === 'Completado'
       ? '<span class="badge b-sustentado">Completado ✓</span>'
       : esDiplomadoPendienteResultado(r)
-        ? '<span class="badge" style="background:rgba(252,211,77,.2);color:#fcd34d;border:1px solid rgba(252,211,77,.35)">⏳ Pendiente acta</span>'
+        ? '<span class="badge" style="background:rgba(252,211,77,.2);color:#b45309;border:1px solid rgba(252,211,77,.35)">⏳ Pendiente acta</span>'
         : badgeEst(est);
     const btnAccion = esDiplomadoPendienteResultado(r)
-      ? `<button class="btn" style="color:#fcd34d;border-color:rgba(252,211,77,.4);font-weight:600" onclick="abrirResultadoDiplomado(${r.rowIndex},'${esc(r.numero||'')}','${esc([r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', '))}')">📋 Registrar acta/nota</button>`
+      ? `<button class="btn" style="color:#b45309;border-color:rgba(252,211,77,.4);font-weight:600" onclick="abrirResultadoDiplomado(${r.rowIndex},'${esc(r.numero||'')}','${esc([r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', '))}')">📋 Registrar acta/nota</button>`
       : '';
     return `<tr>
       <td><div class="num-rad">${esc(r.numero||'')}</div></td>
       <td style="font-size:12px;max-width:150px">${nombresConCorreo}</td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${escAttr(r.titulo||'')}">${esc(r.titulo||'—')}</td>
-      <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(periodo)}</td>
+      <td style="font-size:11px;color:rgba(15,23,42,.8)">${esc(periodo)}</td>
       <td style="font-size:12px;max-width:140px">${jurado}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fmtFecha(r.fechaAprobacion)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(15,23,42,.73)">${fmtFecha(r.fechaAprobacion)}</td>
       <td style="text-align:center">${notaTxt}</td>
       <td style="text-align:center">${actaTxt}</td>
       <td>${badgeDip}</td>
@@ -1753,8 +1753,8 @@ function abrirResultadoDiplomado(rowIndex, numero, nombreEstudiantes) {
   document.getElementById('mDipActa').value = '';
   document.getElementById('mDipError').style.display = 'none';
   document.getElementById('mDipInfo').innerHTML =
-    `<strong style="color:#c4b5fd">${esc(numero)}</strong> · ${esc(nombreEstudiantes)}<br>
-     <span style="font-size:11px;color:rgba(255,255,255,.45)">Aprobado por Comité Técnico · Registre la nota y número de acta para completar el proceso.</span>`;
+    `<strong style="color:#6d28d9">${esc(numero)}</strong> · ${esc(nombreEstudiantes)}<br>
+     <span style="font-size:11px;color:rgba(15,23,42,.75)">Aprobado por Comité Técnico · Registre la nota y número de acta para completar el proceso.</span>`;
   document.getElementById('modalResultadoDip').classList.add('open');
 }
 
@@ -1946,16 +1946,16 @@ async function abrirHistorialRadicacion(numero) {
     window._lastHistorialExport = { numero, d };
 
     let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-      <span style="font-size:11px;color:rgba(255,255,255,.35)">
+      <span style="font-size:11px;color:rgba(15,23,42,.71)">
         ${eventos.length} eventos · ${realesCount > 0 ? realesCount + ' registros exactos · ' : ''}${reconstrCount > 0 ? reconstrCount + ' inferidos desde hojas' : ''}
       </span>
-      <button onclick="exportarInformeModal('${esc(numero)}')" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">📥 Exportar PDF</button>
+      <button onclick="exportarInformeModal('${esc(numero)}')" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#1d4ed8;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">📥 Exportar PDF</button>
     </div>`;
 
     html += eventos.map(ev => {
       const faseLabel = faseLabelMap[ev.fase] || ev.fase || '—';
       const accionLabel = accionLabelMap[ev.accion] || String(ev.accion || '').replace(/_/g, ' ').toLowerCase();
-      const reconBadge = ev.reconstruido ? ' <span style="font-size:9px;color:rgba(251,191,36,.5)" title="Inferido desde estado actual">≈</span>' : '';
+      const reconBadge = ev.reconstruido ? ' <span style="font-size:9px;color:#634b0e" title="Inferido desde estado actual">≈</span>' : '';
       const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
         <div class="hist-states">
           ${ev.estadoAnterior ? '<span class="hist-state-old">' + esc(ev.estadoAnterior) + '</span><span class="hist-arrow">→</span>' : ''}
@@ -2031,7 +2031,7 @@ function verDetalle(ri) {
                         : esTutor ? '👥 Tutor sugirió jurado'
                         : modo   ? modo : '—';
         const juradoRows = esCttg
-          ? `<div class="det-row"><span class="det-label">Evaluador</span><span class="det-val" style="color:#fcd34d">El Comité Técnico de Trabajos de Grado asignará al evaluador</span></div>`
+          ? `<div class="det-row"><span class="det-label">Evaluador</span><span class="det-val" style="color:#b45309">El Comité Técnico de Trabajos de Grado asignará al evaluador</span></div>`
           : [
               fila('Jurado 1',       r.dipJurado1Nombre),
               fila('Email J1',       r.dipJurado1Email),
@@ -2045,12 +2045,12 @@ function verDetalle(ri) {
               fila('Email J3',       r.dipJurado3Email),
               fila('Tel. J3',        r.dipJurado3Telefono),
             ].join('');
-        return `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Diplomado · Jurado</div>
+        return `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.69);margin:12px 0 6px">Diplomado · Jurado</div>
           <div class="det-row"><span class="det-label">Tutores</span><span class="det-val">No aplica · modalidad Diplomado</span></div>
           ${fila('Modo jurado', modoLabel)}
           ${juradoRows}`;
       })()
-    : `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Tutores</div>
+    : `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.69);margin:12px 0 6px">Tutores</div>
        ${fila('Tutor 1', r.tutor1Nombre ? r.tutor1Nombre+' ('+r.tutor1Relacion+')' : '')}
        ${fila('Email T1',r.tutor1Email)}
        ${fila('Tutor 2', r.tutor2Nombre ? r.tutor2Nombre+' ('+r.tutor2Relacion+')' : '')}`;
@@ -2058,25 +2058,25 @@ function verDetalle(ri) {
   const avalLbl = esDip ? '🎓 Avalar diplomado' : '✅ Validar tutores';
   document.getElementById('modalDetBody').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div><div style="font-family:'DM Mono',monospace;font-size:13px;color:#a78bfa;margin-bottom:4px">${esc(r.numero)}</div>
-      <div style="font-size:16px;font-weight:600;color:#fff">${esc(r.titulo||'Sin título')}</div></div>
+      <div><div style="font-family:'DM Mono',monospace;font-size:13px;color:#6d28d9;margin-bottom:4px">${esc(r.numero)}</div>
+      <div style="font-size:16px;font-weight:600;color:#0f172a">${esc(r.titulo||'Sin título')}</div></div>
       ${badgeEst(r.estado)}
     </div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:6px">Proyecto</div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.69);margin-bottom:6px">Proyecto</div>
     ${fila('Modalidad',r.modalidad)}${esDip ? fila('Periodo del diplomado', periodoDipStr) : fila('Área',r.area)}
     ${fila('F. Radicación',fmtFecha(r.fechaRadicacion))}${fila('F. Aprobación',fmtFecha(r.fechaAprobacion))}
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin:12px 0 6px">Estudiantes</div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.69);margin:12px 0 6px">Estudiantes</div>
     ${fila('Estudiante 1', r.nombre1 ? r.nombre1+' · Ced: '+r.cedula1+' · Sem. '+r.semestre1 : '')}
     ${fila('Email 1',r.email1)}${fila('Teléfono 1',r.telefono1)}
     ${fila('Estudiante 2', r.nombre2 ? r.nombre2+' · Ced: '+r.cedula2+' · Sem. '+r.semestre2 : '')}
     ${fila('Estudiante 3', r.nombre3 ? r.nombre3+' · Ced: '+r.cedula3+' · Sem. '+r.semestre3 : '')}
     ${tutorBlock}
-    ${r.notas ? '<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#fcd34d">📝 </span>' + esc(r.notas) + '</div>' : ''}
+    ${r.notas ? '<div style="margin-top:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px"><span style="font-weight:600;color:#b45309">📝 </span>' + esc(r.notas) + '</div>' : ''}
     <div style="margin-top:14px">
       <button class="btn am" onclick="closeModal('modalDet');abrirModalEst(${r.rowIndex},'${esc(r.numero)}','${esc(r.estado||'Radicado')}')">✎ Cambiar estado</button>
       <button class="${avalCls}" onclick="window.location.href='coordinadora_validar_tutores.html?row=${r.rowIndex}'">${avalLbl}</button>
       <button class="btn bl" onclick="closeModal('modalDet');abrirSeguimientoRad('${esc(r.numero||'')}')">🕒 Ver trazabilidad</button>
-      <button class="btn" style="color:#c4b5fd;border-color:rgba(167,139,250,.35)" onclick="closeModal('modalDet');abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial completo</button>
+      <button class="btn" style="color:#6d28d9;border-color:rgba(167,139,250,.35)" onclick="closeModal('modalDet');abrirHistorialRadicacion('${esc(r.numero||'')}')">📜 Historial completo</button>
     </div>`;
   document.getElementById('modalDet').classList.add('open');
 }
@@ -2216,26 +2216,26 @@ function renderActas() {
     const total = contarActas(a.emailEstudiante);
     const plazoHtml = plazo.alerta
       ? `<div class="alerta-plazo">${esc(plazo.texto)}</div>`
-      : `<span style="font-size:12px;color:rgba(255,255,255,.5)">${esc(plazo.texto)}</span>`;
+      : `<span style="font-size:12px;color:rgba(15,23,42,.78)">${esc(plazo.texto)}</span>`;
 
     const esSolicitud = a.nombreArchivo === 'Solicitud activación Fase 2';
 const esPendiente = a.estado === 'Pendiente revisión' && !esSolicitud;
     const urlBtn = a.urlArchivo ? `<a href="${esc(a.urlArchivo)}" target="_blank" class="btn bl">👁 Ver PDF</a>` : '';
 
     return `<tr>
-      <td style="font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace">${fmtFecha(a.fechaCarga)}</td>
+      <td style="font-size:11px;color:rgba(15,23,42,.73);font-family:'DM Mono',monospace">${fmtFecha(a.fechaCarga)}</td>
       <td>${(() => {
         const nd = numeroActaDeducido(a);
-        if (!nd.numero) return '<div class="num-rad">—</div><div style="font-size:10px;color:#fbbf24">⚠️ Sin número en la hoja</div>';
+        if (!nd.numero) return '<div class="num-rad">—</div><div style="font-size:10px;color:#b45309">⚠️ Sin número en la hoja</div>';
         return `<div class="num-rad">${esc(nd.numero)}</div>` + (nd.deducido
-          ? '<div style="font-size:10px;color:#fbbf24" title="En la hoja «Acta asesoria» esta fila tiene «—». Número deducido por el correo del estudiante; corrígelo en la hoja.">⚠️ Falta en la hoja</div>'
+          ? '<div style="font-size:10px;color:#b45309" title="En la hoja «Acta asesoria» esta fila tiene «—». Número deducido por el correo del estudiante; corrígelo en la hoja.">⚠️ Falta en la hoja</div>'
           : '');
       })()}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.emailEstudiante||'')}</td>
+      <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(a.emailEstudiante||'')}</td>
       <td style="font-size:12px">📄 ${esc(a.nombreArchivo||'')}</td>
       <td>${badgeActa}</td>
       <td>${plazoHtml}</td>
-      <td style="text-align:center"><span style="font-size:14px;font-weight:600;color:#a78bfa">${total}</span></td>
+      <td style="text-align:center"><span style="font-size:14px;font-weight:600;color:#6d28d9">${total}</span></td>
       <td><div class="act">
         ${urlBtn}
         ${esPendiente ? `<button class="btn gr" onclick="abrirModalActa(${a.rowIndex},'${esc(a.emailEstudiante)}','aprobar','${esc(a.numero||'')}','${esc(a.nombreArchivo||'')}')">✅ Aprobar</button>
@@ -2252,7 +2252,7 @@ function abrirModalActa(ri, email, accion, numero, archivo) {
   document.getElementById('mActaAccion').value   = accion;
   document.getElementById('mActaMotivo').value   = '';
   document.getElementById('modalActaTitulo').textContent = accion === 'aprobar' ? '✅ Aprobar Acta' : '✕ Rechazar Acta';
-  document.getElementById('modalActaInfo').innerHTML = `<span style="color:rgba(255,255,255,.5);font-size:12px">Radicación: <strong style="color:#a78bfa">${esc(numero)}</strong> · ${esc(archivo)}</span>`;
+  document.getElementById('modalActaInfo').innerHTML = `<span style="color:rgba(15,23,42,.78);font-size:12px">Radicación: <strong style="color:#6d28d9">${esc(numero)}</strong> · ${esc(archivo)}</span>`;
   const btn = document.getElementById('btnActaConfirm');
   btn.style.background = accion === 'aprobar' ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#b91c1c,#ef4444)';
   btn.textContent = accion === 'aprobar' ? 'Confirmar aprobación' : 'Confirmar rechazo';
@@ -2290,31 +2290,31 @@ function abrirModalSolicitud(ri, email, numero) {
   const rechazadas = misActas.filter(a => a.estado === 'Rechazada').length;
   const pendientes = misActas.filter(a => a.estado === 'Pendiente revisión').length;
   const filasActas = misActas.map(a => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px">
-      <span style="color:rgba(255,255,255,.6)">${esc(a.nombreArchivo||'Acta')}</span>
-      <span style="color:rgba(255,255,255,.4);font-size:11px">${fmtFecha(a.fechaCarga)}</span>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(15,23,42,.1);font-size:12px">
+      <span style="color:rgba(15,23,42,.82)">${esc(a.nombreArchivo||'Acta')}</span>
+      <span style="color:rgba(15,23,42,.73);font-size:11px">${fmtFecha(a.fechaCarga)}</span>
       <span class="badge ${{Aprobada:'b-aprobado',Rechazada:'b-devuelto'}[a.estado]||'b-pend'}">${esc(a.estado)}</span>
     </div>`).join('');
   document.getElementById('modalSolicitudInfo').innerHTML = `
     <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:14px;margin-bottom:12px">
-      <div style="font-size:13px;color:#93c5fd;margin-bottom:8px">📨 El estudiante solicita avanzar a Fase 2</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6)">Radicación: <strong style="color:#a78bfa">${esc(numero)}</strong></div>
+      <div style="font-size:13px;color:#1d4ed8;margin-bottom:8px">📨 El estudiante solicita avanzar a Fase 2</div>
+      <div style="font-size:12px;color:rgba(15,23,42,.82)">Radicación: <strong style="color:#6d28d9">${esc(numero)}</strong></div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
-        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
-          <div style="font-size:18px;font-weight:700;color:#a78bfa">${misActas.length}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.4)">Total actas</div>
+        <div style="background:rgba(15,23,42,.05);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#6d28d9">${misActas.length}</div>
+          <div style="font-size:10px;color:rgba(15,23,42,.73)">Total actas</div>
         </div>
-        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
-          <div style="font-size:18px;font-weight:700;color:#34d399">${aprobadas}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.4)">Aprobadas</div>
+        <div style="background:rgba(15,23,42,.05);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#047857">${aprobadas}</div>
+          <div style="font-size:10px;color:rgba(15,23,42,.73)">Aprobadas</div>
         </div>
-        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
-          <div style="font-size:18px;font-weight:700;color:#fcd34d">${pendientes}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.4)">Pendientes</div>
+        <div style="background:rgba(15,23,42,.05);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#b45309">${pendientes}</div>
+          <div style="font-size:10px;color:rgba(15,23,42,.73)">Pendientes</div>
         </div>
       </div>
     </div>
-    <div style="max-height:200px;overflow-y:auto">${filasActas || '<div style="text-align:center;color:rgba(255,255,255,.3);padding:12px;font-size:12px">Sin actas registradas</div>'}</div>`;
+    <div style="max-height:200px;overflow-y:auto">${filasActas || '<div style="text-align:center;color:rgba(15,23,42,.69);padding:12px;font-size:12px">Sin actas registradas</div>'}</div>`;
   document.getElementById('modalSolicitud').classList.add('open');
 }
 
@@ -2514,14 +2514,14 @@ function renderTutores() {
     return `<tr>
     <td style="font-weight:600">
       ${esc(t.nombre||'—')}
-      ${(t.nombresOriginales || []).length > 1 ? '<div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:400;margin-top:3px">Unido: ' + t.nombresOriginales.map(esc).join(' · ') + '</div>' : ''}
+      ${(t.nombresOriginales || []).length > 1 ? '<div style="font-size:10px;color:rgba(15,23,42,.73);font-weight:400;margin-top:3px">Unido: ' + t.nombresOriginales.map(esc).join(' · ') + '</div>' : ''}
     </td>
-    <td><span style="font-size:16px;font-weight:700;color:#a78bfa">${enCurso}</span></td>
-    <td><span style="font-size:14px;font-weight:600;color:#6ee7b7">${terminados}</span></td>
+    <td><span style="font-size:16px;font-weight:700;color:#6d28d9">${enCurso}</span></td>
+    <td><span style="font-size:14px;font-weight:600;color:#047857">${terminados}</span></td>
     <td>
       <div style="display:flex;align-items:center;gap:6px">
         <div class="progress-bar" style="width:100px"><div class="progress-fill" style="width:${(t.promAvance||0)}%"></div></div>
-        <span style="font-size:11px;color:rgba(255,255,255,.5)">${(t.promAvance||0).toFixed(0)}%</span>
+        <span style="font-size:11px;color:rgba(15,23,42,.78)">${(t.promAvance||0).toFixed(0)}%</span>
       </div>
     </td>
     <td><span class="badge b-radicado">${t.enRadicacion||0}</span></td>
@@ -2538,17 +2538,17 @@ function abrirDetallesTutor(nombre) {
   if (!t) return;
   const trabajos = (t.trabajos || []).sort((a, b) => String(a.fase || '').localeCompare(String(b.fase || '')));
   const trabajosHtml = trabajos.length ? trabajos.map(tr => `
-    <div style="border:1px solid rgba(255,255,255,.08);border-radius:9px;padding:10px;background:rgba(255,255,255,.03)">
+    <div style="border:1px solid rgba(15,23,42,.1);border-radius:9px;padding:10px;background:rgba(15,23,42,.03)">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap">
         <div>
           <div class="num-rad">${esc(tr.numero || 'Sin radicación')}</div>
-          <div style="font-size:12px;color:#fff;font-weight:600;margin-top:3px">${esc(tr.titulo || 'Sin título')}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:3px">${esc(tr.estudiante || '—')}</div>
+          <div style="font-size:12px;color:#0f172a;font-weight:600;margin-top:3px">${esc(tr.titulo || 'Sin título')}</div>
+          <div style="font-size:11px;color:rgba(15,23,42,.75);margin-top:3px">${esc(tr.estudiante || '—')}</div>
         </div>
         ${badgeEst(tr.estado || 'Radicado')}
       </div>
-      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:11px;color:rgba(255,255,255,.55)">
-        <span>Fase: <strong style="color:#fcd34d">${esc(tr.fase || faseTrabajoTutor(tr))}</strong></span>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:11px;color:rgba(15,23,42,.8)">
+        <span>Fase: <strong style="color:#b45309">${esc(tr.fase || faseTrabajoTutor(tr))}</strong></span>
         <span>${Number(tr.avance || 0).toFixed(0)}%</span>
       </div>
     </div>
@@ -2560,42 +2560,42 @@ function abrirDetallesTutor(nombre) {
   document.getElementById('modalDetBody').innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
       <div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:12px;text-align:center">
-        <div style="font-size:18px;font-weight:700;color:#a78bfa">${_enCurso}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4)">En Curso</div>
+        <div style="font-size:18px;font-weight:700;color:#6d28d9">${_enCurso}</div>
+        <div style="font-size:10px;color:rgba(15,23,42,.73)">En Curso</div>
       </div>
       <div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:12px;text-align:center">
-        <div style="font-size:18px;font-weight:700;color:#6ee7b7">${_term}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4)">Terminados</div>
+        <div style="font-size:18px;font-weight:700;color:#047857">${_term}</div>
+        <div style="font-size:10px;color:rgba(15,23,42,.73)">Terminados</div>
       </div>
-      <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
-        <div style="font-size:18px;font-weight:700;color:#fcd34d">${t.promAvance||0}%</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4)">Avance</div>
+      <div style="background:rgba(15,23,42,.05);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#b45309">${t.promAvance||0}%</div>
+        <div style="font-size:10px;color:rgba(15,23,42,.73)">Avance</div>
       </div>
-      <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
-        <div style="font-size:18px;font-weight:700;color:#fca5a5">${t.pendientes||0}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4)">Pendientes</div>
+      <div style="background:rgba(15,23,42,.05);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#b91c1c">${t.pendientes||0}</div>
+        <div style="font-size:10px;color:rgba(15,23,42,.73)">Pendientes</div>
       </div>
     </div>
     <div style="margin-top:14px">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:8px">Distribución</div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.69);margin-bottom:8px">Distribución</div>
       <div style="display:flex;flex-direction:column;gap:6px">
         <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
           <span>En Radicación</span>
-          <span style="color:#a78bfa;font-weight:600">${t.enRadicacion||0}</span>
+          <span style="color:#6d28d9;font-weight:600">${t.enRadicacion||0}</span>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
           <span>En Fase 2</span>
-          <span style="color:#fcd34d;font-weight:600">${t.enFase2||0}</span>
+          <span style="color:#b45309;font-weight:600">${t.enFase2||0}</span>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
           <span>Aprobados</span>
-          <span style="color:#34d399;font-weight:600">${t.aprobados||0}</span>
+          <span style="color:#047857;font-weight:600">${t.aprobados||0}</span>
         </div>
       </div>
     </div>
-    ${(t.nombresOriginales || []).length > 1 ? '<div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:9px;padding:10px;font-size:12px;color:#93c5fd;margin-top:14px">Nombres unidos: ' + (t.nombresOriginales || []).map(esc).join(' · ') + '</div>' : ''}
+    ${(t.nombresOriginales || []).length > 1 ? '<div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:9px;padding:10px;font-size:12px;color:#1d4ed8;margin-top:14px">Nombres unidos: ' + (t.nombresOriginales || []).map(esc).join(' · ') + '</div>' : ''}
     <div style="margin-top:14px">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:8px">Trabajos y fase actual</div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.69);margin-bottom:8px">Trabajos y fase actual</div>
       <div style="display:flex;flex-direction:column;gap:8px">${trabajosHtml}</div>
     </div>`;
   document.getElementById('modalDet').classList.add('open');
@@ -2790,7 +2790,7 @@ function renderAlertas() {
     let badgeAlert = '';
     if (a.tipo === 'critico') badgeAlert = '<span class="alert-badge alert-critico">⚠️ >60% PLAZO</span>';
     else if (a.tipo === 's12') badgeAlert = '<span class="alert-badge alert-s12">⚡ SEMESTRE 12</span>';
-    else if (a.tipo === 'protocolo_vencido') badgeAlert = '<span class="alert-badge" style="background:rgba(239,68,68,.3);color:#fca5a5">🔴 PROTOCOLO VENCIDO</span>';
+    else if (a.tipo === 'protocolo_vencido') badgeAlert = '<span class="alert-badge" style="background:rgba(239,68,68,.3);color:#b91c1c">🔴 PROTOCOLO VENCIDO</span>';
     else badgeAlert = '<span class="alert-badge alert-gestion">ℹ️ GESTIÓN</span>';
     
     const emailBtn = (a.tipo === 'critico' || a.tipo === 's12')
@@ -2799,10 +2799,10 @@ function renderAlertas() {
     return `<tr>
       <td>${badgeAlert}</td>
       <td><div class="num-rad">${esc(a.numero||'')}</div></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(a.estudiante||'—')}<br><span style="font-size:11px;color:rgba(255,255,255,.3)">${esc(a.emailEstudiante||'')}</span></td>
+      <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(a.estudiante||'—')}<br><span style="font-size:11px;color:rgba(15,23,42,.69)">${esc(a.emailEstudiante||'')}</span></td>
       <td><span class="badge ${a.tipo === 'protocolo_vencido' ? 'b-devuelto' : 'b-aprobado'}">${esc(a.estado||'—')}</span></td>
       <td style="font-size:12px">${esc(a.plazo||'—')}</td>
-      <td style="font-size:11px;color:rgba(255,255,255,.5)">${esc(a.detalles||'—')}</td>
+      <td style="font-size:11px;color:rgba(15,23,42,.78)">${esc(a.detalles||'—')}</td>
       <td>
         <button class="btn bl" onclick="verDetalle(${a.rowIndex||0})">👁 Ver</button>
         ${emailBtn}
@@ -3001,15 +3001,15 @@ function renderColaGestionesCoord() {
       <td class="gh-gestion"><div>${esc(it.gestionTit)}</div>${sub}</td>
       <td><div class="num-rad">${esc(it.numero || '')}</div></td>
       <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(it.estudiantes)}">${esc(it.estudiantes)}</td>
-      <td style="font-size:11px;color:rgba(255,255,255,.5);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(it.contexto)}">${ctxHtml}</td>
+      <td style="font-size:11px;color:rgba(15,23,42,.78);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(it.contexto)}">${ctxHtml}</td>
       <td>${it.badge}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4)">${fechaRef}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(15,23,42,.73)">${fechaRef}</td>
       <td><div class="act">${acciones}</div></td>
     </tr>`;
   }).join('');
 
   if (tot > COLA_GESTIONES_MAX) {
-    tbody.innerHTML += `<tr><td colspan="7" style="text-align:center;padding:12px;font-size:12px;color:rgba(255,255,255,.45)">
+    tbody.innerHTML += `<tr><td colspan="7" style="text-align:center;padding:12px;font-size:12px;color:rgba(15,23,42,.75)">
       Mostrando ${COLA_GESTIONES_MAX} de ${tot}. Usa las pestañas <strong>Radicaciones</strong>, <strong>Actas</strong> y <strong>Protocolo</strong> para el detalle completo.
     </td></tr>`;
   }
@@ -3070,11 +3070,11 @@ function renderProtocolo() {
       const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
       return `<tr>
         <td><div class="num-rad">${esc(p.numero||'')}</div></td>
-        <td style="font-size:12px;color:rgba(255,255,255,.85)">${esc(nombreEstudianteDesdeRad(p))}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.emailEstudiante||'—')}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.anexoCambio||'—')}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaComite ? fmtFecha(p.fechaComite) : '—'}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.93)">${esc(nombreEstudianteDesdeRad(p))}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(p.emailEstudiante||'—')}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(p.anexoCambio||'—')}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(p.evaluador||'—')}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.78)">${p.fechaComite ? fmtFecha(p.fechaComite) : '—'}</td>
         <td><span class="badge ${protEstadoBadge(p.estado)}">${esc(p.estado||'Cargado')}</span></td>
         <td><div class="act">
           ${esPendiente ? `<button class="btn gr" onclick="abrirModalProtocolo(${p.rowIndex},'aprobar','${esc(p.numero||'')}')">✅ Aprobar</button>
@@ -3097,12 +3097,12 @@ function renderProtocolo() {
       const motivo = p.motivo || p.observaciones || '—';
       return `<tr>
         <td><div class="num-rad">${esc(p.numero||'')}</div></td>
-        <td style="font-size:12px;color:rgba(255,255,255,.85)">${esc(nombreEstudianteDesdeRad(p))}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.emailEstudiante||'—')}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(p.evaluador||'—')}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.5)">${p.fechaComite ? fmtFecha(p.fechaComite) : '—'}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.93)">${esc(nombreEstudianteDesdeRad(p))}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(p.emailEstudiante||'—')}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(p.evaluador||'—')}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.78)">${p.fechaComite ? fmtFecha(p.fechaComite) : '—'}</td>
         <td>${badge}</td>
-        <td style="font-size:12px;color:rgba(255,255,255,.55);max-width:200px;word-break:break-word">${esc(motivo)}</td>
+        <td style="font-size:12px;color:rgba(15,23,42,.8);max-width:200px;word-break:break-word">${esc(motivo)}</td>
       </tr>`;
     }).join('');
   }
@@ -3132,30 +3132,30 @@ function rellenarBloqueEvaluadorSugerido(p) {
   if (p.esDiplomado) {
     const modo = String(p.diplomadoJuradoModo || '').toLowerCase();
     if (modo === 'cttg_asigna') {
-      el.innerHTML = '<p style="margin:0;line-height:1.55;color:rgba(255,255,255,.78)">El estudiante eligió que el <strong>Comité Técnico de Trabajos de Grado</strong> asigne el evaluador; <strong>no registró jurado sugerido</strong>. Asigne evaluador y fecha en los campos de abajo.</p>';
+      el.innerHTML = '<p style="margin:0;line-height:1.55;color:rgba(15,23,42,.9)">El estudiante eligió que el <strong>Comité Técnico de Trabajos de Grado</strong> asigne el evaluador; <strong>no registró jurado sugerido</strong>. Asigne evaluador y fecha en los campos de abajo.</p>';
       return;
     }
     const jur = p.juradosSugeridosDiplomado || [];
     if (jur.length === 0) {
-      el.innerHTML = '<p style="margin:0;color:rgba(252,211,77,.85)">No hay datos de jurado sugerido en la radicación.</p>';
+      el.innerHTML = '<p style="margin:0;color:#5b4c1c">No hay datos de jurado sugerido en la radicación.</p>';
       return;
     }
     const j0 = jur[0];
-    let html = '<div style="line-height:1.55;color:rgba(255,255,255,.9)">';
-    html += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.4);margin-bottom:6px">Sugerencia en radicación (tutor / estudiante)</div>';
-    html += '<strong style="color:#c4b5fd">' + esc(j0.nombre || '—') + '</strong>';
-    if (j0.especialidad) html += '<br><span style="color:rgba(255,255,255,.48)">Especialidad o área:</span> ' + esc(j0.especialidad);
-    if (j0.email) html += '<br><span style="color:rgba(255,255,255,.48)">Correo:</span> ' + esc(j0.email);
-    if (j0.telefono) html += '<br><span style="color:rgba(255,255,255,.48)">Teléfono:</span> ' + esc(j0.telefono);
-    if (j0.aceptaPropuesta) html += '<br><span style="color:rgba(255,255,255,.48)">Aceptación ante propuesta:</span> ' + esc(j0.aceptaPropuesta);
+    let html = '<div style="line-height:1.55;color:rgba(15,23,42,.96)">';
+    html += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:rgba(15,23,42,.73);margin-bottom:6px">Sugerencia en radicación (tutor / estudiante)</div>';
+    html += '<strong style="color:#6d28d9">' + esc(j0.nombre || '—') + '</strong>';
+    if (j0.especialidad) html += '<br><span style="color:rgba(15,23,42,.77)">Especialidad o área:</span> ' + esc(j0.especialidad);
+    if (j0.email) html += '<br><span style="color:rgba(15,23,42,.77)">Correo:</span> ' + esc(j0.email);
+    if (j0.telefono) html += '<br><span style="color:rgba(15,23,42,.77)">Teléfono:</span> ' + esc(j0.telefono);
+    if (j0.aceptaPropuesta) html += '<br><span style="color:rgba(15,23,42,.77)">Aceptación ante propuesta:</span> ' + esc(j0.aceptaPropuesta);
     html += '</div>';
     if (jur.length > 1) {
-      html += '<p style="margin:10px 0 0;font-size:12px;color:rgba(255,255,255,.45)">En radicación constan también <strong>' + (jur.length - 1) + '</strong> jurado(s) adicional(es); para comité cuenta la persona que asigne usted abajo.</p>';
+      html += '<p style="margin:10px 0 0;font-size:12px;color:rgba(15,23,42,.75)">En radicación constan también <strong>' + (jur.length - 1) + '</strong> jurado(s) adicional(es); para comité cuenta la persona que asigne usted abajo.</p>';
     }
     el.innerHTML = html;
     return;
   }
-  el.innerHTML = '<p style="margin:0;line-height:1.55;color:rgba(255,255,255,.72)">En modalidades distintas a <strong>Diplomado</strong> no se guarda en la radicación un evaluador sugerido. Use el siguiente campo para indicar quién evaluará en el comité.</p>';
+  el.innerHTML = '<p style="margin:0;line-height:1.55;color:rgba(15,23,42,.87)">En modalidades distintas a <strong>Diplomado</strong> no se guarda en la radicación un evaluador sugerido. Use el siguiente campo para indicar quién evaluará en el comité.</p>';
 }
 
 function correoRadicacionPareceValidoCliente(em) {
@@ -3442,7 +3442,7 @@ async function cargarSeguimiento() {
   // Mostrar historial enriquecido (nueva hoja Historial) + trazabilidad como respaldo
   if (histPanel) {
     histPanel.style.display = 'block';
-    histPanel.innerHTML = '<div style="padding:24px;text-align:center;color:rgba(255,255,255,.4)"><span class="spinner"></span> Cargando historial...</div>';
+    histPanel.innerHTML = '<div style="padding:24px;text-align:center;color:rgba(15,23,42,.73)"><span class="spinner"></span> Cargando historial...</div>';
   }
   if (tblWrap) tblWrap.style.display = 'none';
 
@@ -3454,7 +3454,7 @@ async function cargarSeguimiento() {
     renderSugerenciasSeguimiento(qRaw);
     renderHistorialSegPanel(histPanel, radMatch, numeroConsulta, rHist, rTraz);
   } catch(e) {
-    if (histPanel) histPanel.innerHTML = `<div style="padding:24px;color:#fca5a5">Error cargando historial: ${esc(e.message)}</div>`;
+    if (histPanel) histPanel.innerHTML = `<div style="padding:24px;color:#b91c1c">Error cargando historial: ${esc(e.message)}</div>`;
     toast('Error cargando historial: ' + e.message, 'err');
   }
 }
@@ -3476,10 +3476,10 @@ function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
   };
   const faseLabelMap = { FASE1:'Fase 1 · Radicación', FASE2:'Fase 2 · Protocolo', ACTAS:'Actas de asesoría', FASE3:'Fase 3 · Sustentación' };
   const faseColorMap = {
-    FASE1: { bg:'rgba(167,139,250,.15)', color:'#c4b5fd' },
-    FASE2: { bg:'rgba(96,165,250,.15)', color:'#93c5fd' },
-    ACTAS: { bg:'rgba(52,211,153,.15)', color:'#6ee7b7' },
-    FASE3: { bg:'rgba(251,191,36,.15)', color:'#fcd34d' }
+    FASE1: { bg:'rgba(167,139,250,.15)', color:'#6d28d9' },
+    FASE2: { bg:'rgba(96,165,250,.15)', color:'#1d4ed8' },
+    ACTAS: { bg:'rgba(52,211,153,.15)', color:'#047857' },
+    FASE3: { bg:'rgba(251,191,36,.15)', color:'#b45309' }
   };
 
   const eventos = (rHist && rHist.success ? rHist.eventos || [] : []).filter(ev => !fFase || ev.fase === fFase);
@@ -3492,23 +3492,23 @@ function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
   const modalidad = rad ? esc(rad.modalidad || '') : '';
   const area = rad ? esc(rad.area || '') : '';
 
-  let html = `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;margin-bottom:18px">
+  let html = `<div style="background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.1);border-radius:12px;padding:18px;margin-bottom:18px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-family:monospace;font-size:13px;color:#a78bfa;font-weight:700;margin-bottom:4px">${esc(numero)}</div>
-        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:3px">${titulo}</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">${nombre}</div>
-        ${modalidad ? '<div style="font-size:11px;color:rgba(255,255,255,.35)">Modalidad: ' + modalidad + (area ? ' · Área: '+area : '') + '</div>' : ''}
+        <div style="font-family:monospace;font-size:13px;color:#6d28d9;font-weight:700;margin-bottom:4px">${esc(numero)}</div>
+        <div style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:3px">${titulo}</div>
+        <div style="font-size:12px;color:rgba(15,23,42,.78);margin-bottom:4px">${nombre}</div>
+        ${modalidad ? '<div style="font-size:11px;color:rgba(15,23,42,.71)">Modalidad: ' + modalidad + (area ? ' · Área: '+area : '') + '</div>' : ''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-        <span style="background:rgba(167,139,250,.15);color:#c4b5fd;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600">${estado}</span>
-        <button onclick="exportarInformeRadicacion('${esc(numero)}', event)" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">📥 Exportar informe PDF</button>
+        <span style="background:rgba(167,139,250,.15);color:#6d28d9;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600">${estado}</span>
+        <button onclick="exportarInformeRadicacion('${esc(numero)}', event)" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#1d4ed8;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">📥 Exportar informe PDF</button>
       </div>
     </div>
   </div>`;
 
   if (!eventos.length) {
-    html += `<div style="padding:40px;text-align:center;color:rgba(255,255,255,.35);font-size:13px">
+    html += `<div style="padding:40px;text-align:center;color:rgba(15,23,42,.71);font-size:13px">
       No se encontraron eventos para esta radicación. Puede que el estudiante aún no haya hecho ninguna acción.
     </div>`;
     panel.innerHTML = html;
@@ -3517,32 +3517,32 @@ function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
 
   const realesCount = eventos.filter(e => !e.reconstruido).length;
   const reconstrCount = eventos.filter(e => e.reconstruido).length;
-  html += `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);margin-bottom:12px;font-weight:700">
+  html += `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.69);margin-bottom:12px;font-weight:700">
     📋 Historial de decisiones · ${eventos.length} eventos
-    ${realesCount > 0 ? '<span style="color:rgba(167,139,250,.7);margin-left:8px">' + realesCount + ' registros exactos</span>' : ''}
-    ${reconstrCount > 0 ? '<span style="color:rgba(251,191,36,.5);margin-left:8px">' + reconstrCount + ' inferidos desde hojas</span>' : ''}
+    ${realesCount > 0 ? '<span style="color:#53457d;margin-left:8px">' + realesCount + ' registros exactos</span>' : ''}
+    ${reconstrCount > 0 ? '<span style="color:#634b0e;margin-left:8px">' + reconstrCount + ' inferidos desde hojas</span>' : ''}
   </div>`;
 
   html += eventos.map(ev => {
-    const fc = faseColorMap[ev.fase] || { bg:'rgba(255,255,255,.08)', color:'rgba(255,255,255,.6)' };
+    const fc = faseColorMap[ev.fase] || { bg:'rgba(15,23,42,.08)', color:'rgba(15,23,42,.3)' };
     const accionLabel = accionLabelMap[ev.accion] || String(ev.accion||'').replace(/_/g,' ').toLowerCase();
     const faseLabel = faseLabelMap[ev.fase] || ev.fase || '';
-    const reconBadge = ev.reconstruido ? `<span style="font-size:9px;color:rgba(251,191,36,.5);margin-left:6px;vertical-align:middle" title="Inferido desde el estado actual del registro">≈</span>` : '';
+    const reconBadge = ev.reconstruido ? `<span style="font-size:9px;color:#634b0e;margin-left:6px;vertical-align:middle" title="Inferido desde el estado actual del registro">≈</span>` : '';
     const stateChange = (ev.estadoAnterior || ev.estadoNuevo) ? `
       <div style="display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap">
-        ${ev.estadoAnterior ? '<span style="background:rgba(239,68,68,.15);color:#fca5a5;border-radius:4px;padding:3px 9px;font-size:11px">' + esc(ev.estadoAnterior) + '</span><span style="color:rgba(255,255,255,.3);font-size:14px">→</span>' : ''}
-        ${ev.estadoNuevo ? '<span style="background:rgba(16,185,129,.15);color:#6ee7b7;border-radius:4px;padding:3px 9px;font-size:11px">' + esc(ev.estadoNuevo) + '</span>' : ''}
+        ${ev.estadoAnterior ? '<span style="background:rgba(239,68,68,.15);color:#b91c1c;border-radius:4px;padding:3px 9px;font-size:11px">' + esc(ev.estadoAnterior) + '</span><span style="color:rgba(15,23,42,.69);font-size:14px">→</span>' : ''}
+        ${ev.estadoNuevo ? '<span style="background:rgba(16,185,129,.15);color:#047857;border-radius:4px;padding:3px 9px;font-size:11px">' + esc(ev.estadoNuevo) + '</span>' : ''}
       </div>` : '';
-    const motivoHtml = ev.motivo ? `<div style="background:rgba(251,191,36,.08);border-left:3px solid rgba(251,191,36,.5);padding:8px 12px;border-radius:0 6px 6px 0;margin-top:6px;font-size:12px;color:#fde68a;line-height:1.5"><strong>💬 Motivo / Observación:</strong><br>${esc(ev.motivo)}</div>` : '';
-    const detalleHtml = ev.detalle ? `<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:5px;font-family:monospace">📋 ${esc(ev.detalle)}</div>` : '';
-    const actorHtml = ev.actor ? `<div style="font-size:10px;color:rgba(255,255,255,.3);font-family:monospace;margin-top:6px">👤 ${esc(ev.actor)}</div>` : '';
-    return `<div style="display:grid;grid-template-columns:185px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+    const motivoHtml = ev.motivo ? `<div style="background:rgba(251,191,36,.08);border-left:3px solid rgba(251,191,36,.5);padding:8px 12px;border-radius:0 6px 6px 0;margin-top:6px;font-size:12px;color:#92400e;line-height:1.5"><strong>💬 Motivo / Observación:</strong><br>${esc(ev.motivo)}</div>` : '';
+    const detalleHtml = ev.detalle ? `<div style="font-size:11px;color:rgba(15,23,42,.71);margin-top:5px;font-family:monospace">📋 ${esc(ev.detalle)}</div>` : '';
+    const actorHtml = ev.actor ? `<div style="font-size:10px;color:rgba(15,23,42,.69);font-family:monospace;margin-top:6px">👤 ${esc(ev.actor)}</div>` : '';
+    return `<div style="display:grid;grid-template-columns:185px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid rgba(15,23,42,.1)">
       <div>
-        <div style="font-family:monospace;font-size:11px;color:rgba(255,255,255,.5);line-height:1.6">${esc(ev.timestamp||'—')}</div>
+        <div style="font-family:monospace;font-size:11px;color:rgba(15,23,42,.78);line-height:1.6">${esc(ev.timestamp||'—')}</div>
         <span style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;background:${fc.bg};color:${fc.color};margin-top:4px">${esc(faseLabel)}</span>
       </div>
       <div>
-        <div style="font-weight:700;color:#e2e8f0;font-size:13px;margin-bottom:3px">${esc(accionLabel)}${reconBadge}</div>
+        <div style="font-weight:700;color:#0f172a;font-size:13px;margin-bottom:3px">${esc(accionLabel)}${reconBadge}</div>
         ${stateChange}
         ${motivoHtml}
         ${detalleHtml}
@@ -3553,10 +3553,10 @@ function renderHistorialSegPanel(panel, rad, numero, rHist, rTraz) {
 
   // Trazabilidad del sistema como respaldo colapsable
   if (trazas.length && !fFase) {
-    html += `<details style="margin-top:20px;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px">
-      <summary style="cursor:pointer;font-size:11px;color:rgba(255,255,255,.3);font-weight:600;text-transform:uppercase;letter-spacing:1px">🗂 Registro del sistema (${trazas.length} entradas — autenticaciones, notificaciones)</summary>
-      <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.4)">
-        ${trazas.slice(0,50).map(s => '<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-family:monospace;color:rgba(255,255,255,.25)">' + esc(String(s.timestamp||'').slice(0,16)) + '</span> · <strong>' + esc(s.accion||'') + '</strong> · ' + esc(s.detalle||'') + '</div>').join('')}
+    html += `<details style="margin-top:20px;border:1px solid rgba(15,23,42,.1);border-radius:8px;padding:12px">
+      <summary style="cursor:pointer;font-size:11px;color:rgba(15,23,42,.69);font-weight:600;text-transform:uppercase;letter-spacing:1px">🗂 Registro del sistema (${trazas.length} entradas — autenticaciones, notificaciones)</summary>
+      <div style="margin-top:12px;font-size:11px;color:rgba(15,23,42,.73)">
+        ${trazas.slice(0,50).map(s => '<div style="padding:5px 0;border-bottom:1px solid rgba(15,23,42,.1)"><span style="font-family:monospace;color:rgba(15,23,42,.66)">' + esc(String(s.timestamp||'').slice(0,16)) + '</span> · <strong>' + esc(s.accion||'') + '</strong> · ' + esc(s.detalle||'') + '</div>').join('')}
       </div>
     </details>`;
   }
@@ -3591,7 +3591,7 @@ function exportarInformeRadicacion(numero, evt) {
   const rows = eventos.map(ev => `
     <tr>
       <td style="font-family:monospace;font-size:11px;color:#555;white-space:nowrap">${esc(ev.timestamp||'—')}</td>
-      <td><span style="background:${faseColorPrint[ev.fase]||'#333'};color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${esc(faseLabelMap[ev.fase]||ev.fase||'')}</span></td>
+      <td><span style="background:${faseColorPrint[ev.fase]||'#333'};color:#0f172a;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${esc(faseLabelMap[ev.fase]||ev.fase||'')}</span></td>
       <td style="font-weight:600">${esc(accionLabelMap[ev.accion]||String(ev.accion||'').replace(/_/g,' '))}</td>
       <td style="font-size:11px;color:#333">${ev.estadoAnterior ? '<span style="color:#c00">' + esc(ev.estadoAnterior) + '</span> → ' : ''}<span style="color:#16a34a;font-weight:600">${esc(ev.estadoNuevo||'')}</span></td>
       <td style="font-size:11px;color:#333">${ev.motivo ? '<em style="color:#7c4f00">' + esc(ev.motivo) + '</em>' : ''}</td>
@@ -3610,7 +3610,7 @@ function exportarInformeRadicacion(numero, evt) {
       .meta strong{display:block;font-size:15px;margin-bottom:4px}
       .meta span{font-size:11px;color:#555;display:block;margin-top:2px}
       table{width:100%;border-collapse:collapse;font-size:12px}
-      th{background:#1e1e2e;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+      th{background:#ffffff;color:#0f172a;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
       td{padding:8px 10px;border-bottom:1px solid #e5e7eb;vertical-align:top}
       tr:nth-child(even) td{background:#f9f9fb}
       .footer{margin-top:30px;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:12px}
@@ -3665,11 +3665,11 @@ function renderSeguimiento() {
     const hito = describirHitoSeguimiento(s);
     const hitoClass = hito.clase || 'b-pend';
     return `<tr>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5)">${esc(fmtFechaHoraSeguimiento(s.timestamp))}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(15,23,42,.78)">${esc(fmtFechaHoraSeguimiento(s.timestamp))}</td>
       <td><div class="num-rad">${esc(s.numeroRadicacion||'—')}</div></td>
-      <td style="font-size:11px;color:rgba(255,255,255,.55)">${esc(etiquetaModuloSeguimiento(s.modulo))}</td>
+      <td style="font-size:11px;color:rgba(15,23,42,.8)">${esc(etiquetaModuloSeguimiento(s.modulo))}</td>
       <td><span class="badge ${hitoClass}">${esc(hito.texto)}</span><span class="seg-mod-tag">${esc(String(s.accion||'').replace(/_/g,'·'))}</span></td>
-      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esc(s.email||'—')}</td>
+      <td style="font-size:12px;color:rgba(15,23,42,.84)">${esc(s.email||'—')}</td>
       <td class="seg-td-det">${htmlDetalleSeguimientoCell(s)}</td>
     </tr>`;
   }).join('');
@@ -3782,7 +3782,7 @@ function renderResumenTimeline(registros) {
       <div class="progress-bar" style="max-width:260px;min-width:180px">
         <div class="progress-fill" style="width:${porcentaje}%;background:${colorBarra}"></div>
       </div>
-      <div style="font-size:12px;color:rgba(255,255,255,.7)">${completadas}/${totalEtapas} etapas · <strong style="color:${colorBarra}">${porcentaje}%</strong></div>
+      <div style="font-size:12px;color:rgba(15,23,42,.86)">${completadas}/${totalEtapas} etapas · <strong style="color:${colorBarra}">${porcentaje}%</strong></div>
     </div>
     <div class="timeline-steps">${rows}</div>`;
 }
@@ -3829,7 +3829,7 @@ function renderSugerenciasSeguimiento(q, forzar) {
   if (!matches.length) {
     if (forzar) {
       box.classList.add('show');
-      box.innerHTML = `<span class="seg-pill">Búsqueda</span><div style="font-size:13px;color:#fecaca">No encontré un trabajo con "${esc(needle)}". Intenta con número de radicación, nombre del estudiante o parte del título.</div>`;
+      box.innerHTML = `<span class="seg-pill">Búsqueda</span><div style="font-size:13px;color:#991b1b">No encontré un trabajo con "${esc(needle)}". Intenta con número de radicación, nombre del estudiante o parte del título.</div>`;
     } else {
       box.classList.remove('show');
       box.innerHTML = '';
@@ -3847,7 +3847,7 @@ function renderSugerenciasSeguimiento(q, forzar) {
   }
   box.classList.add('show');
   box.innerHTML = `<span class="seg-pill">${matches.length === 1 ? 'Trabajo encontrado' : 'Coincidencias'}</span>
-    <div style="font-size:13px;color:rgba(255,255,255,.72);margin-bottom:4px">${matches.length === 1 ? 'Selecciona el trabajo para ver la historia completa.' : 'Hay varios trabajos posibles. Selecciona uno para ver su historia por fechas.'}</div>
+    <div style="font-size:13px;color:rgba(15,23,42,.87);margin-bottom:4px">${matches.length === 1 ? 'Selecciona el trabajo para ver la historia completa.' : 'Hay varios trabajos posibles. Selecciona uno para ver su historia por fechas.'}</div>
     ${matches.map(r => `<div class="seg-choice">
       <div><div class="main">${esc(r.numero || '—')} · ${esc(r.titulo || 'Sin título')}</div><div class="sub">${esc([r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ') || r.emailEstudiante || 'Sin estudiante')} · Estado actual: ${esc(r.estado || 'Radicado')}</div></div>
       <button class="btn bl" onclick="seleccionarSeguimiento('${encodeURIComponent(r.numero || '')}')">Ver seguimiento</button>
@@ -4041,10 +4041,10 @@ function infRiesgo(r) {
   let diasRestantes = Number(r.diasRestantes);
   const diasHabiles = r.fechaRadicacion ? calcularDiasHabilesDesdeHoy(r.fechaRadicacion) : Number(r.diasTranscurridos || 0);
   if (!Number.isFinite(diasRestantes)) diasRestantes = 120 - diasHabiles;
-  if (diasRestantes < 0) return { texto: '🔴 VENCIDO', nivel: 'VENCIDO', estilo: 'color:#fca5a5;font-weight:700' };
-  if (diasRestantes < 30) return { texto: '🔴 CRÍTICO', nivel: 'CRITICO', estilo: 'color:#fca5a5;font-weight:700' };
-  if (diasRestantes < 60) return { texto: '🟡 MEDIO', nivel: 'MEDIO', estilo: 'color:#fcd34d;font-weight:700' };
-  return { texto: '🟢 BAJO', nivel: 'BAJO', estilo: 'color:#6ee7b7;font-weight:700' };
+  if (diasRestantes < 0) return { texto: '🔴 VENCIDO', nivel: 'VENCIDO', estilo: 'color:#b91c1c;font-weight:700' };
+  if (diasRestantes < 30) return { texto: '🔴 CRÍTICO', nivel: 'CRITICO', estilo: 'color:#b91c1c;font-weight:700' };
+  if (diasRestantes < 60) return { texto: '🟡 MEDIO', nivel: 'MEDIO', estilo: 'color:#b45309;font-weight:700' };
+  return { texto: '🟢 BAJO', nivel: 'BAJO', estilo: 'color:#047857;font-weight:700' };
 }
 
 function infTutoresDeRadicacion(r) {
@@ -4125,7 +4125,7 @@ function renderInformes() {
   const tutoresOrdenados = [...mapaTutores.values()].sort((a, b) => b.total - a.total || a.nombre.localeCompare(b.nombre));
   tbodyTut.innerHTML = tutoresOrdenados.length ? tutoresOrdenados.map(t => `<tr>
     <td style="font-weight:600">${esc(t.nombre)}</td>
-    <td><span style="font-size:16px;font-weight:700;color:#a78bfa">${t.total}</span></td>
+    <td><span style="font-size:16px;font-weight:700;color:#6d28d9">${t.total}</span></td>
     <td><span class="badge b-radicado">${t.f1}</span></td>
     <td><span class="badge b-revision">${t.f2}</span></td>
     <td><span class="badge b-comite">${t.f3}</span></td>
@@ -4144,12 +4144,12 @@ function renderInformes() {
     return `<tr>
       <td><div class="num-rad">${esc(r.numero || '')}</div></td>
       <td style="font-size:12px;max-width:240px">${esc(estudiantes)}</td>
-      <td style="text-align:center;font-weight:700;color:#a78bfa">${esc(semMax)}</td>
+      <td style="text-align:center;font-weight:700;color:#6d28d9">${esc(semMax)}</td>
       <td><span class="badge ${fase === 'terminado' ? 'b-aprobado' : fase === '2' ? 'b-revision' : fase === '3' ? 'b-comite' : 'b-radicado'}">${infFaseTexto(fase)}</span></td>
       <td>${badgeEst(estado)}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esModalidadDiplomadoDash(r) ? '<span class="pill-diplomado" style="max-width:none">🎓 Sin tutores</span>' : esc(r.tutor1Nombre || '—')}</td>
-      <td style="font-size:12px;color:rgba(255,255,255,.65)">${esModalidadDiplomadoDash(r) ? '—' : esc(r.tutor2Nombre || '—')}</td>
-      <td style="text-align:center;color:rgba(255,255,255,.55)">${diasHabiles || 0}</td>
+      <td style="font-size:12px;color:rgba(15,23,42,.84)">${esModalidadDiplomadoDash(r) ? '<span class="pill-diplomado" style="max-width:none">🎓 Sin tutores</span>' : esc(r.tutor1Nombre || '—')}</td>
+      <td style="font-size:12px;color:rgba(15,23,42,.84)">${esModalidadDiplomadoDash(r) ? '—' : esc(r.tutor2Nombre || '—')}</td>
+      <td style="text-align:center;color:rgba(15,23,42,.8)">${diasHabiles || 0}</td>
       <td style="${riesgo.estilo}">${riesgo.texto}</td>
     </tr>`;
   }).join('') : '<tr><td colspan="9" class="empty">Sin estudiantes para el filtro activo.</td></tr>';
@@ -4226,15 +4226,15 @@ function renderFiltros() {
     const actasEste = actas.filter(a => a.numero === r.numero);
     const actasTexto = actasEste.length === 0 ? '❌ 0' : `${actasEste.length} (${actasEste.filter(a => a.estado === 'Aprobada').length}✅)`;
     const dias = r.diasRestantes || 0;
-    let riesgoTexto = '🟢 BAJO', riesgoColor = 'color:#6ee7b7';
-    if (dias < 0) { riesgoTexto = '🔴 VENCIDO'; riesgoColor = 'color:#fca5a5'; }
-    else if (dias < 30) { riesgoTexto = '🔴 CRÍTICO'; riesgoColor = 'color:#fca5a5'; }
-    else if (dias < 60) { riesgoTexto = '🟡 MEDIO'; riesgoColor = 'color:#fcd34d'; }
+    let riesgoTexto = '🟢 BAJO', riesgoColor = 'color:#047857';
+    if (dias < 0) { riesgoTexto = '🔴 VENCIDO'; riesgoColor = 'color:#b91c1c'; }
+    else if (dias < 30) { riesgoTexto = '🔴 CRÍTICO'; riesgoColor = 'color:#b91c1c'; }
+    else if (dias < 60) { riesgoTexto = '🟡 MEDIO'; riesgoColor = 'color:#b45309'; }
     const nombres = [r.nombre1, r.nombre2, r.nombre3].filter(Boolean).join(', ');
     const estado = r.estado || 'Radicado';
     const estadoClass = estado === 'Radicado' ? 'b-radicado' : estado === 'Tutores Avalados' ? 'b-tutores' : estado === 'Pendiente Comité Técnico' ? 'b-comite' : estado === 'Aprobado' ? 'b-aprobado' : 'b-devuelto';
     const celdaT1 = esModalidadDiplomadoDash(r) ? '<span class="pill-diplomado" style="max-width:none">🎓 Diplomado</span>' : esc(r.tutor1Nombre || '—');
-    return `<tr><td><div class="num-rad">${esc(r.numero||'')}</div></td><td style="font-size:12px">${esc(nombres)}</td><td style="text-align:center;font-weight:600;color:#a78bfa">${semMax}</td><td><span class="badge ${estadoClass}">${esc(estado)}</span></td><td style="font-size:12px;color:rgba(255,255,255,.6)">${celdaT1}</td><td style="font-size:11px">${actasTexto}</td><td style="text-align:center;color:rgba(255,255,255,.5)">${r.diasTranscurridos||0}</td><td style="text-align:center;font-weight:600;color:#fcd34d">${dias < 0 ? 'Vencido' : dias + ' d'}</td><td style="${riesgoColor};font-weight:600">${riesgoTexto}</td><td><button class="btn bl" style="padding:4px 8px;font-size:11px" onclick="verDetalle(${r.rowIndex})">👁 Ver</button></td></tr>`;
+    return `<tr><td><div class="num-rad">${esc(r.numero||'')}</div></td><td style="font-size:12px">${esc(nombres)}</td><td style="text-align:center;font-weight:600;color:#6d28d9">${semMax}</td><td><span class="badge ${estadoClass}">${esc(estado)}</span></td><td style="font-size:12px;color:rgba(15,23,42,.82)">${celdaT1}</td><td style="font-size:11px">${actasTexto}</td><td style="text-align:center;color:rgba(15,23,42,.78)">${r.diasTranscurridos||0}</td><td style="text-align:center;font-weight:600;color:#b45309">${dias < 0 ? 'Vencido' : dias + ' d'}</td><td style="${riesgoColor};font-weight:600">${riesgoTexto}</td><td><button class="btn bl" style="padding:4px 8px;font-size:11px" onclick="verDetalle(${r.rowIndex})">👁 Ver</button></td></tr>`;
   }).join('');
 }
 
@@ -4338,9 +4338,9 @@ function bloquearAccionesModal(modalId, bloquear) {
  *  filas, esa fila es de OTRA radicación: se avisa y no se permite aplicar la solicitud. */
 function estadoRadicacionSolicitud(s) {
   const rad = radicaciones.find(r => String(r.numero || '').trim().toUpperCase() === String(s.numero || '').trim().toUpperCase());
-  if (!rad) return '<span style="color:#fca5a5">⚠️ La radicación ya no existe en Fase1</span>';
+  if (!rad) return '<span style="color:#b91c1c">⚠️ La radicación ya no existe en Fase1</span>';
   const est = String(rad.estado || 'Radicado');
-  return 'Estado actual: ' + badgeEst(est) + (est === 'Cancelado' ? ' <span style="color:#fca5a5">— la radicación está cancelada; lo normal es devolver la solicitud</span>' : '');
+  return 'Estado actual: ' + badgeEst(est) + (est === 'Cancelado' ? ' <span style="color:#b91c1c">— la radicación está cancelada; lo normal es devolver la solicitud</span>' : '');
 }
 
 function avisoFilaDesplazada(s) {
@@ -4348,13 +4348,13 @@ function avisoFilaDesplazada(s) {
   const rad = radicaciones.find(r => String(r.numero || '').trim().toUpperCase() === String(s.numero || '').trim().toUpperCase());
   if (!guardada || !rad || rad.rowIndex === guardada) return '';
   const otra = radicaciones.find(r => r.rowIndex === guardada);
-  return `<div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#fecaca">
+  return `<div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#991b1b">
     ⛔ <strong>No apruebes todavía.</strong> Esta solicitud apunta a la fila ${guardada} de Fase1${otra ? ` (hoy es <strong>${esc(otra.numero)}</strong>)` : ''}, pero ${esc(s.numero)} está en la fila <strong>${rad.rowIndex}</strong> (se borraron filas en Fase1).
     Corrige la columna C (RowFase1) de esta solicitud a <strong>${rad.rowIndex}</strong> en la hoja, o redespliega el Apps Script actualizado, que ya lo corrige solo.</div>`;
 }
 
 async function cargarSolicitudesCambio() {
-  document.getElementById('sc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando…</div>';
+  document.getElementById('sc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(15,23,42,.69)">Cargando…</div>';
   try {
     const res = await fetch(URL_APP, { method:'POST',
       body: JSON.stringify({ action:'getSolicitudesModRadPendientes', token: localStorage.getItem('cttg_token')||'' }) });
@@ -4365,7 +4365,7 @@ async function cargarSolicitudesCambio() {
     renderSolicitudesCambio();
   } catch(e) {
     console.error('[cargarSolicitudesCambio] Error:', e);
-    document.getElementById('sc_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${esc(e.message)}<br><small style="opacity:.6">${esc(e.stack||'')}</small></div>`;
+    document.getElementById('sc_lista').innerHTML = `<div style="color:#dc2626;padding:20px">Error: ${esc(e.message)}<br><small style="opacity:.6">${esc(e.stack||'')}</small></div>`;
     return;
   }
   try { renderColaGestionesCoord(); } catch(e2) { console.error('[renderColaGestionesCoord]', e2); }
@@ -4374,23 +4374,23 @@ async function cargarSolicitudesCambio() {
 function renderSolicitudesCambio() {
   const el = document.getElementById('sc_lista');
   if (!solicitudesCambio.length) {
-    el.innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">No hay solicitudes de cambio pendientes.</div>';
+    el.innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(15,23,42,.69)">No hay solicitudes de cambio pendientes.</div>';
     return;
   }
   el.innerHTML = solicitudesCambio.map(s => {
     const cambiosKeys = Object.keys(s.cambios || {});
     const resumen = cambiosKeys.map(k => LABELS_CAMPO[k] || k).join(', ') || 'Sin detalle';
-    return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px;margin-bottom:12px">
+    return `<div style="background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.12);border-radius:12px;padding:16px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-weight:600;color:#fff;font-size:14px">${esc(s.numero)}</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">${esc(s.emailEstudiante)} · ${esc(s.tsCreacion)}</div>
+          <div style="font-weight:600;color:#0f172a;font-size:14px">${esc(s.numero)}</div>
+          <div style="font-size:12px;color:rgba(15,23,42,.75);margin-top:2px">${esc(s.emailEstudiante)} · ${esc(s.tsCreacion)}</div>
         </div>
         <button class="btn" style="font-size:12px;padding:6px 14px" onclick="abrirModalSolicitudCambio(${s.rowSol})">Ver y resolver</button>
       </div>
-      <div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.6)">${estadoRadicacionSolicitud(s)}</div>
-      <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.7)"><strong>Campos a cambiar:</strong> ${esc(resumen)}</div>
-      <div style="margin-top:4px;font-size:12px;color:rgba(255,255,255,.5)"><strong>Motivo:</strong> ${esc(s.motivoEstudiante)}</div>
+      <div style="margin-top:8px;font-size:12px;color:rgba(15,23,42,.82)">${estadoRadicacionSolicitud(s)}</div>
+      <div style="margin-top:10px;font-size:12px;color:rgba(15,23,42,.86)"><strong>Campos a cambiar:</strong> ${esc(resumen)}</div>
+      <div style="margin-top:4px;font-size:12px;color:rgba(15,23,42,.78)"><strong>Motivo:</strong> ${esc(s.motivoEstudiante)}</div>
     </div>`;
   }).join('');
 }
@@ -4401,16 +4401,16 @@ function abrirModalSolicitudCambio(rowSol) {
   solicitudCambioActual = s;
   const cambios = s.cambios || {};
   const filas = Object.entries(cambios).map(([k, v]) =>
-    `<tr><td style="padding:4px 8px;color:rgba(255,255,255,.5);white-space:nowrap">${esc(LABELS_CAMPO[k]||k)}</td><td style="padding:4px 8px;color:#fff">${esc(String(v))}</td></tr>`
+    `<tr><td style="padding:4px 8px;color:rgba(15,23,42,.78);white-space:nowrap">${esc(LABELS_CAMPO[k]||k)}</td><td style="padding:4px 8px;color:#0f172a">${esc(String(v))}</td></tr>`
   ).join('');
   const avisoCambio = avisoFilaDesplazada(s);
   document.getElementById('sc_modal_detalle').innerHTML = avisoCambio + `
-    <div style="margin-bottom:12px"><strong style="color:rgba(255,255,255,.5)">Radicación:</strong> ${esc(s.numero)}<br>
-    <strong style="color:rgba(255,255,255,.5)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
+    <div style="margin-bottom:12px"><strong style="color:rgba(15,23,42,.78)">Radicación:</strong> ${esc(s.numero)}<br>
+    <strong style="color:rgba(15,23,42,.78)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
     ${estadoRadicacionSolicitud(s)}<br>
-    <strong style="color:rgba(255,255,255,.5)">Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
-    <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Cambios solicitados</div>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;background:rgba(255,255,255,.03);border-radius:8px;overflow:hidden">${filas}</table>`;
+    <strong style="color:rgba(15,23,42,.78)">Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
+    <div style="font-size:12px;color:rgba(15,23,42,.73);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Cambios solicitados</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;background:rgba(15,23,42,.03);border-radius:8px;overflow:hidden">${filas}</table>`;
   document.getElementById('sc_obs').value = '';
   document.getElementById('sc_modal_error').style.display = 'none';
   bloquearAccionesModal('modalSolicitudCambio', false);
@@ -4499,8 +4499,8 @@ function renderCancelDirecta() {
 
   if (!filas.length) {
     el.innerHTML = q
-      ? '<div class="empty" style="padding:20px;text-align:center;color:rgba(255,255,255,.3)">Sin radicaciones activas que coincidan.</div>'
-      : '<div class="empty" style="padding:20px;text-align:center;color:rgba(255,255,255,.3)">✅ No se detectan radicaciones duplicadas activas.</div>';
+      ? '<div class="empty" style="padding:20px;text-align:center;color:rgba(15,23,42,.69)">Sin radicaciones activas que coincidan.</div>'
+      : '<div class="empty" style="padding:20px;text-align:center;color:rgba(15,23,42,.69)">✅ No se detectan radicaciones duplicadas activas.</div>';
     return;
   }
 
@@ -4520,10 +4520,10 @@ function renderCancelDirecta() {
       return '<div style="background:rgba(252,211,77,.04);border:1px solid rgba(252,211,77,' + (esDup?'.25':'.1') + ');border-radius:12px;padding:14px 16px;margin-bottom:10px">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">' +
           '<div>' +
-            '<div style="font-weight:600;color:#fff;font-size:14px">' + esc(r.numero||'') + (esDup ? ' <span style="font-size:11px;color:#fca5a5;font-weight:400">⚠ duplicado</span>' : '') + '</div>' +
-            '<div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">' + esc(correo) + '</div>' +
-            '<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:3px">' + esc(nombres) + '</div>' +
-            '<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">' + esc(r.modalidad||'') + ' · ' + badgeEst(r.estado||'Radicado') + '</div>' +
+            '<div style="font-weight:600;color:#0f172a;font-size:14px">' + esc(r.numero||'') + (esDup ? ' <span style="font-size:11px;color:#b91c1c;font-weight:400">⚠ duplicado</span>' : '') + '</div>' +
+            '<div style="font-size:12px;color:rgba(15,23,42,.75);margin-top:2px">' + esc(correo) + '</div>' +
+            '<div style="font-size:12px;color:rgba(15,23,42,.82);margin-top:3px">' + esc(nombres) + '</div>' +
+            '<div style="font-size:11px;color:rgba(15,23,42,.71);margin-top:2px">' + esc(r.modalidad||'') + ' · ' + badgeEst(r.estado||'Radicado') + '</div>' +
           '</div>' +
           '<button class="btn rd" style="font-size:12px;padding:6px 14px" onclick="abrirCancelDirecta(' + r.rowIndex + ')">🗑 Cancelar</button>' +
         '</div>' +
@@ -4537,9 +4537,9 @@ function abrirCancelDirecta(rowIndex) {
   if (!r) return;
   cancelDirectaActual = r;
   document.getElementById('mCancelDirectaInfo').innerHTML =
-    '<strong style="color:#fca5a5">' + esc(r.numero||'') + '</strong> · ' + esc([r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', ')) +
-    '<br><span style="font-size:11px;color:rgba(255,255,255,.45)">Estado actual: ' + esc(r.estado||'Radicado') + ' · ' + esc(r.emailEstudiante||r.email1||'') + '</span>' +
-    '<br><span style="font-size:11px;color:#fca5a5;margin-top:4px;display:block">Esta acción cambiará el estado a <strong>Cancelado</strong> y saldrá del panel principal.</span>';
+    '<strong style="color:#b91c1c">' + esc(r.numero||'') + '</strong> · ' + esc([r.nombre1,r.nombre2,r.nombre3].filter(Boolean).join(', ')) +
+    '<br><span style="font-size:11px;color:rgba(15,23,42,.75)">Estado actual: ' + esc(r.estado||'Radicado') + ' · ' + esc(r.emailEstudiante||r.email1||'') + '</span>' +
+    '<br><span style="font-size:11px;color:#b91c1c;margin-top:4px;display:block">Esta acción cambiará el estado a <strong>Cancelado</strong> y saldrá del panel principal.</span>';
   document.getElementById('mCancelDirectaObs').value = '';
   document.getElementById('mCancelDirectaError').style.display = 'none';
   document.getElementById('btnConfirmarCancelDirecta').disabled = false;
@@ -4582,7 +4582,7 @@ let cancelacionActual = null;
 let resolviendoCancelacion = false;
 
 async function cargarSolicitudesCancelacion() {
-  document.getElementById('scc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando…</div>';
+  document.getElementById('scc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(15,23,42,.69)">Cargando…</div>';
   try {
     const res = await fetch(URL_APP, { method:'POST',
       body: JSON.stringify({ action:'getSolicitudesCancelarRadPendientes', token: localStorage.getItem('cttg_token')||'' }) });
@@ -4592,7 +4592,7 @@ async function cargarSolicitudesCancelacion() {
     actualizarBadgeCancelaciones();
     renderSolicitudesCancelacion();
   } catch(e) {
-    document.getElementById('scc_lista').innerHTML = `<div style="color:#f87171;padding:20px">Error: ${esc(e.message)}</div>`;
+    document.getElementById('scc_lista').innerHTML = `<div style="color:#dc2626;padding:20px">Error: ${esc(e.message)}</div>`;
   }
 }
 
@@ -4607,19 +4607,19 @@ function actualizarBadgeCancelaciones() {
 function renderSolicitudesCancelacion() {
   const el = document.getElementById('scc_lista');
   if (!solicitudesCancelacion.length) {
-    el.innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">No hay solicitudes de cancelación pendientes.</div>';
+    el.innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(15,23,42,.69)">No hay solicitudes de cancelación pendientes.</div>';
     return;
   }
   el.innerHTML = solicitudesCancelacion.map(s => `
     <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:16px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-weight:600;color:#fca5a5;font-size:14px">${esc(s.numero)}</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">${esc(s.emailEstudiante)} · ${esc(s.tsCreacion)}</div>
+          <div style="font-weight:600;color:#b91c1c;font-size:14px">${esc(s.numero)}</div>
+          <div style="font-size:12px;color:rgba(15,23,42,.75);margin-top:2px">${esc(s.emailEstudiante)} · ${esc(s.tsCreacion)}</div>
         </div>
         <button class="btn" style="font-size:12px;padding:6px 14px" onclick="abrirModalCancelacion(${s.rowSol})">Ver y resolver</button>
       </div>
-      <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.7)"><strong>Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
+      <div style="margin-top:10px;font-size:12px;color:rgba(15,23,42,.86)"><strong>Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
     </div>`).join('');
 }
 
@@ -4632,9 +4632,9 @@ function abrirModalCancelacion(rowSol) {
     <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px">
       ⚠️ Si aprueba, la radicación <strong>${esc(s.numero)}</strong> quedará en estado <strong>Cancelado</strong> y el estudiante podrá crear una nueva radicación.
     </div>
-    <strong style="color:rgba(255,255,255,.5)">Radicación:</strong> ${esc(s.numero)}<br>
-    <strong style="color:rgba(255,255,255,.5)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
-    <strong style="color:rgba(255,255,255,.5)">Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}`;
+    <strong style="color:rgba(15,23,42,.78)">Radicación:</strong> ${esc(s.numero)}<br>
+    <strong style="color:rgba(15,23,42,.78)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
+    <strong style="color:rgba(15,23,42,.78)">Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}`;
   document.getElementById('scc_obs').value = '';
   document.getElementById('scc_modal_error').style.display = 'none';
   bloquearAccionesModal('modalCancelacion', false);
