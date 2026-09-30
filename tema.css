@@ -1,0 +1,206 @@
+/* ==========================================================================
+   CTTG Medicina — sistema de diseño (tema claro)
+   Se carga DESPUÉS del <style> de cada página: redefine los componentes
+   comunes (encabezado, tarjetas, pestañas, tablas, botones, formularios,
+   modales) con una sola paleta y tipografía.
+   ========================================================================== */
+
+:root{
+  --fondo:#f4f6fa;
+  --superficie:#ffffff;
+  --superficie-2:#f8fafc;
+  --borde:#e4e8ef;
+  --borde-fuerte:#d3d9e3;
+  --texto:#0f172a;
+  --texto-2:#334155;
+  --texto-3:#64748b;
+  --primario:#2451c7;          /* azul institucional */
+  --primario-hover:#1d43a8;
+  --primario-suave:#eaf0ff;
+  --primario-borde:#c9d6fb;
+  --exito:#15803d;  --exito-suave:#e8f7ee;
+  --aviso:#b45309;  --aviso-suave:#fff4e0;
+  --peligro:#c62828; --peligro-suave:#fdecec;
+  --violeta:#6d28d9; --violeta-suave:#f1ebff;
+  --radio:12px;
+  --radio-sm:8px;
+  --sombra-1:0 1px 2px rgba(15,23,42,.05),0 1px 3px rgba(15,23,42,.06);
+  --sombra-2:0 4px 12px rgba(15,23,42,.07),0 1px 3px rgba(15,23,42,.05);
+  --sombra-3:0 20px 40px rgba(15,23,42,.14),0 4px 12px rgba(15,23,42,.08);
+  --fuente:'Plus Jakarta Sans','Outfit',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+
+/* ---------- Base ---------- */
+html{-webkit-font-smoothing:antialiased}
+body{background:var(--fondo)!important;color:var(--texto)!important;font-family:var(--fuente)!important;font-size:14px;line-height:1.5}
+button,input,select,textarea{font-family:var(--fuente)!important}
+::selection{background:var(--primario-suave)}
+
+/* Títulos: una sola familia tipográfica, sin serif decorativa */
+h1,h2,h3,h4,.modal-hdr h3,.form-card h3,.hdr-l h1{font-family:var(--fuente)!important;letter-spacing:-.01em}
+
+/* ---------- Encabezado ---------- */
+header{background:var(--superficie)!important;border-bottom:1px solid var(--borde)!important;box-shadow:none!important;padding:12px 28px!important}
+.hdr-l h1{font-size:16px!important;font-weight:700!important;color:var(--texto)!important}
+.hdr-l p{font-size:12px!important;color:var(--texto-3)!important}
+.logo{background:var(--primario)!important;border-radius:10px!important;box-shadow:none!important;color:#fff!important}
+.user-chip{background:var(--superficie-2)!important;border:1px solid var(--borde)!important;color:var(--texto-2)!important;font-weight:500}
+.btn-out{background:var(--superficie)!important;border:1px solid var(--borde-fuerte)!important;color:var(--texto-2)!important;font-weight:500}
+.btn-out:hover{border-color:#f3b4b4!important;color:var(--peligro)!important;background:var(--peligro-suave)!important}
+.sync{color:var(--texto-3)!important}
+
+main{padding:28px!important}
+
+/* ---------- Pestañas (control segmentado) ---------- */
+.main-tabs,.tabs{background:#eceff5!important;border:none!important;border-radius:12px!important;padding:4px!important;gap:2px!important}
+.main-tab,.tab{color:var(--texto-3)!important;font-weight:500!important;border-radius:9px!important;padding:8px 16px!important;transition:background .15s,color .15s,box-shadow .15s}
+.main-tab:hover,.tab:hover{color:var(--texto)!important;background:rgba(255,255,255,.6)!important}
+.main-tab.on,.tab.on{background:var(--superficie)!important;color:var(--primario)!important;box-shadow:var(--sombra-1)!important;font-weight:600!important}
+.tab-grupo-titulo{color:var(--texto-3)!important;font-size:11px!important;letter-spacing:.06em!important}
+.paso-n{background:#dfe4ec!important;color:var(--texto-2)!important}
+.main-tab.on .paso-n{background:var(--primario)!important;color:#fff!important}
+.paso-flecha{color:#b8c0cc!important}
+.main-tab .badge-count{background:var(--peligro)!important;box-shadow:0 0 0 2px #eceff5}
+
+/* ---------- Tarjetas de métricas ---------- */
+.metrics-caption{font-family:var(--fuente)!important;color:var(--texto-3)!important;font-size:12px!important;font-weight:600!important;letter-spacing:.04em!important;text-transform:none!important;margin:22px 0 10px!important}
+.mc{background:var(--superficie)!important;border:1px solid var(--borde)!important;border-radius:var(--radio)!important;box-shadow:var(--sombra-1)!important;padding:16px!important}
+.mc-go:hover{border-color:var(--primario-borde)!important;box-shadow:var(--sombra-2)!important;background:var(--superficie)!important}
+.mc::before{top:18px!important;left:auto!important;right:16px!important;width:8px!important;height:8px!important;border-radius:50%!important}
+.mc .ml{font-family:var(--fuente)!important;color:var(--texto-3)!important;font-size:11px!important;font-weight:600!important;letter-spacing:.04em!important;padding-right:14px}
+.mc .mv{font-family:var(--fuente)!important;font-weight:700!important;font-size:28px!important;color:var(--texto)!important;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.mc .mh{color:var(--texto-3)!important;font-size:11px!important}
+
+/* ---------- Cola de gestiones (inicio) ---------- */
+.gestiones-hero{background:var(--superficie)!important;border:1px solid var(--borde)!important;box-shadow:var(--sombra-1)!important;border-radius:16px!important;padding:20px 22px!important}
+.gh-title{font-family:var(--fuente)!important;color:var(--texto)!important;font-size:16px!important;text-transform:none!important;letter-spacing:-.01em!important}
+.gh-count{font-family:var(--fuente)!important;color:var(--primario)!important;font-weight:600}
+.gh-help{color:var(--texto-3)!important}
+.gestiones-hero-wrap{background:var(--superficie)!important;border:1px solid var(--borde)!important}
+
+/* ---------- Tablas ---------- */
+.tbl-wrap{background:var(--superficie)!important;border:1px solid var(--borde)!important;border-radius:var(--radio)!important;box-shadow:var(--sombra-1)!important}
+thead tr{background:var(--superficie-2)!important;border-bottom:1px solid var(--borde)!important}
+th{font-family:var(--fuente)!important;color:var(--texto-3)!important;font-size:11px!important;font-weight:600!important;letter-spacing:.04em!important;padding:12px 14px!important;background:var(--superficie-2)}
+td{border-bottom:1px solid #eef1f5!important;padding:12px 14px!important;color:var(--texto-2)}
+tr:hover td{background:#f8faff!important}
+.num-rad{font-family:var(--fuente)!important;color:var(--primario)!important;font-weight:700!important;font-variant-numeric:tabular-nums}
+.empty{color:var(--texto-3)!important}
+
+/* ---------- Etiquetas de estado ---------- */
+.badge,.alert-badge{border-radius:999px!important;padding:3px 10px!important;font-size:11px!important;font-weight:600!important;border:none!important}
+.b-radicado,.b-revisado{background:var(--primario-suave)!important;color:var(--primario)!important}
+.b-revision,.b-pend{background:var(--aviso-suave)!important;color:var(--aviso)!important}
+.b-comite,.b-evaluacion{background:var(--violeta-suave)!important;color:var(--violeta)!important}
+.b-aprobado,.b-tutores,.b-aprobadocomite,.b-sustentado{background:var(--exito-suave)!important;color:var(--exito)!important}
+.b-devuelto,.b-reprobado{background:var(--peligro-suave)!important;color:var(--peligro)!important}
+.b-cancelado{background:#eef1f5!important;color:var(--texto-3)!important}
+.b-solicitud,.b-cargado,.b-ensolicitud{background:#e7f1ff!important;color:#1d5fbf!important}
+.alert-critico{background:var(--peligro-suave)!important;color:var(--peligro)!important}
+.alert-s12{background:var(--aviso-suave)!important;color:var(--aviso)!important}
+.alert-gestion{background:var(--primario-suave)!important;color:var(--primario)!important}
+
+/* ---------- Botones ---------- */
+.btn{background:var(--superficie)!important;border:1px solid var(--borde-fuerte)!important;color:var(--texto-2)!important;border-radius:var(--radio-sm)!important;padding:6px 12px!important;font-weight:500!important;box-shadow:0 1px 1px rgba(15,23,42,.03)}
+.btn:hover{background:var(--superficie-2)!important;border-color:#b9c2cf!important;color:var(--texto)!important}
+.btn.gr{color:var(--exito)!important}.btn.gr:hover{background:var(--exito-suave)!important;border-color:#b7e2c6!important}
+.btn.bl{color:var(--primario)!important}.btn.bl:hover{background:var(--primario-suave)!important;border-color:var(--primario-borde)!important}
+.btn.am{color:var(--aviso)!important}.btn.am:hover{background:var(--aviso-suave)!important;border-color:#f3d39c!important}
+.btn.rd{color:var(--peligro)!important}.btn.rd:hover{background:var(--peligro-suave)!important;border-color:#f3b4b4!important}
+.btn.dip-acc{color:var(--violeta)!important}
+/* Botones con fondo de color definido en línea (acciones principales de los modales) */
+.btn[style*="gradient"],button[style*="gradient"]{border:none!important;color:#fff!important;box-shadow:var(--sombra-1)}
+.btn-action,.btn-rad,.btn-primary,button.primary,.ne.on{background:var(--primario)!important;color:#fff!important;border:none!important;box-shadow:var(--sombra-1)!important;border-radius:10px!important}
+.btn-action:hover,.btn-rad:hover{background:var(--primario-hover)!important;transform:none!important}
+.btn-sec,.btn-close{background:var(--superficie)!important;border:1px solid var(--borde-fuerte)!important;color:var(--texto-2)!important}
+.btn-det{background:var(--primario-suave)!important;border:1px solid var(--primario-borde)!important;color:var(--primario)!important}
+.btn-traza{background:var(--exito-suave)!important;border:1px solid #b7e2c6!important;color:var(--exito)!important}
+.ne{background:var(--superficie)!important;border:1px solid var(--borde-fuerte)!important;color:var(--texto-2)!important}
+
+/* ---------- Formularios ---------- */
+.filters input,.filters select,.mfg input,.mfg select,.mfg textarea,
+.fg input,.fg select,.fg textarea,
+main input:not([type=checkbox]):not([type=radio]):not([type=file]),main select,main textarea{
+  background:var(--superficie)!important;border:1px solid var(--borde-fuerte)!important;border-radius:10px!important;color:var(--texto)!important}
+.filters input,.filters select{padding:8px 12px!important;font-size:13px!important}
+input:focus,select:focus,textarea:focus{border-color:var(--primario)!important;box-shadow:0 0 0 3px rgba(36,81,199,.14)!important;outline:none!important;background:var(--superficie)!important}
+input::placeholder,textarea::placeholder{color:#94a3b8!important}
+select option{background:#fff!important;color:var(--texto)!important}
+label{color:var(--texto-3)!important}
+.mfg label,.fg label,.sec-label{font-weight:600!important;letter-spacing:.03em!important}
+
+/* ---------- Tarjetas y cajas ---------- */
+.rad-card,.form-card,.seg-card,.seg-event,.timeline-box,.seg-choice,.seg-search-info,.card{background:var(--superficie)!important;border:1px solid var(--borde)!important;box-shadow:var(--sombra-1)!important;border-radius:14px!important}
+.rad-card .num{font-family:var(--fuente)!important;color:var(--primario)!important;font-weight:700!important}
+.form-card h3 .dot{background:var(--primario)!important}
+.alert-card{background:var(--primario-suave)!important;border:1px solid var(--primario-borde)!important}
+.alert-card h4{color:var(--primario)!important}
+.alert-card p{color:#1e3a8a!important}
+.notas-box{background:var(--aviso-suave)!important;border-color:#f3d39c!important}
+.time-box{background:var(--primario-suave)!important;border-color:var(--primario-borde)!important}
+.success-box{background:var(--exito-suave)!important;border-color:#b7e2c6!important}
+.progress-fill{background:var(--primario)!important}
+.progress-bar{background:#e6eaf1!important}
+.det-label{font-family:var(--fuente)!important;color:var(--texto-3)!important}
+.det-row{border-bottom-color:#eef1f5!important}
+
+/* ---------- Modales ---------- */
+.modal-bg{background:rgba(15,23,42,.4)!important;backdrop-filter:blur(3px)}
+.modal{background:var(--superficie)!important;border:none!important;border-radius:16px!important;box-shadow:var(--sombra-3)!important}
+.modal-hdr h3{font-size:17px!important;font-weight:700!important;color:var(--texto)!important}
+
+/* ---------- Avisos flotantes ---------- */
+.toast{border-radius:10px!important;box-shadow:var(--sombra-2)!important;font-weight:500}
+.toast.ok{background:var(--exito)!important;color:#fff!important}
+.toast.err{background:var(--peligro)!important;color:#fff!important}
+.toast.warn{background:#d97706!important;color:#fff!important}
+.toast.info{background:var(--primario)!important;color:#fff!important}
+
+.spinner{border-color:rgba(15,23,42,.15)!important;border-top-color:var(--primario)!important}
+button .spinner,.btn-action .spinner,.btn-rad .spinner{border-color:rgba(255,255,255,.35)!important;border-top-color:#fff!important}
+
+/* Barras de desplazamiento discretas */
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-thumb{background:#cfd6e0;border-radius:10px;border:2px solid var(--fondo)}
+*::-webkit-scrollbar-track{background:transparent}
+
+/* ==========================================================================
+   Pantallas de acceso (inicio y logins)
+   ========================================================================== */
+.pag-acceso{background:
+  radial-gradient(1200px 500px at 50% -10%,#e3eafc 0%,rgba(227,234,252,0) 60%),var(--fondo)!important}
+.pag-acceso .glow,.pag-acceso .glow2{display:none!important}
+.pag-acceso .logo{width:64px!important;height:64px!important;border-radius:16px!important;font-size:30px!important;font-weight:800;font-family:var(--fuente)!important;box-shadow:0 8px 24px rgba(36,81,199,.25)!important}
+.pag-acceso h1{font-size:26px!important;font-weight:800!important;color:var(--texto)!important;letter-spacing:-.02em!important}
+.pag-acceso .sub{color:var(--texto-3)!important;font-size:14px!important}
+.pag-acceso .card{background:var(--superficie)!important;border:1px solid var(--borde)!important;box-shadow:var(--sombra-2)!important;border-radius:18px!important;backdrop-filter:none!important}
+.pag-acceso .card>p{color:var(--texto-3)!important;font-weight:500}
+.pag-acceso .footer{color:var(--texto-3)!important}
+.pag-acceso .back{color:var(--texto-3)!important;font-weight:500}
+.pag-acceso .back:hover{color:var(--primario)!important}
+.pag-acceso label{text-transform:none!important;font-size:13px!important;letter-spacing:0!important;color:var(--texto-2)!important}
+.pag-acceso input{background:var(--superficie)!important;border:1px solid var(--borde-fuerte)!important;border-radius:10px!important;color:var(--texto)!important}
+/* Botón principal de los logins */
+.pag-acceso button.btn,.pag-acceso #btn{background:var(--primario)!important;color:#fff!important;border:none!important;border-radius:10px!important;padding:13px!important;font-weight:600!important;box-shadow:var(--sombra-1)!important}
+.pag-acceso button.btn:hover,.pag-acceso #btn:hover{background:var(--primario-hover)!important;transform:none!important}
+/* Selector de perfil en el inicio: tarjetas de opción */
+.pag-acceso a.btn{background:var(--superficie)!important;border:1px solid var(--borde)!important;color:var(--texto)!important;box-shadow:none!important;border-radius:14px!important;padding:16px 18px!important;transition:border-color .15s,box-shadow .15s,transform .15s!important}
+.pag-acceso a.btn:hover{border-color:var(--primario-borde)!important;box-shadow:var(--sombra-2)!important;transform:translateY(-1px)!important}
+.pag-acceso a.btn .btn-icon{width:42px!important;height:42px!important;border-radius:12px!important;font-size:20px!important}
+.pag-acceso a.btn-est .btn-icon{background:var(--primario-suave)!important}
+.pag-acceso a.btn-coord .btn-icon{background:#eef1f5!important}
+.pag-acceso a.btn .btn-text{font-weight:700!important;color:var(--texto)!important}
+.pag-acceso a.btn .btn-text span{color:var(--texto-3)!important;font-weight:500!important;opacity:1!important}
+.pag-acceso a.btn>span{color:var(--primario)!important;font-weight:700}
+
+/* Tablas dentro de modales: sin ancho mínimo (el global es 700px) */
+.modal table,#sc_modal_detalle table,#scc_modal_detalle table,[id*="modal"] table{min-width:0!important}
+/* Accesos por fase en el portal del estudiante */
+#btnActas,#btnFase2,#btnFase3{transition:border-color .15s,box-shadow .15s}
+#btnActas:hover,#btnFase2:hover,#btnFase3:hover{border-color:var(--primario-borde)!important;box-shadow:var(--sombra-2)!important}
+
+/* Selectores y campos sueltos dentro del contenido: mismo alto y relleno */
+main select{padding:8px 34px 8px 12px!important;min-height:38px;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:right 12px center!important;cursor:pointer}
+main input:not([type=checkbox]):not([type=radio]):not([type=file]){min-height:38px}

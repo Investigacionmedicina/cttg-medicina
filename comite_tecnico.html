@@ -8,80 +8,82 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Outfit',sans-serif;background:#ffffff;color:#0f172a;min-height:100vh}
-  header{background:#ffffff;box-shadow:0 1px 3px rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.1);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+  header{background:#ffffff;box-shadow:0 1px 3px rgba(15,23,42,.06);border-bottom:1px solid #e4e8ef;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
   .hdr-l{display:flex;align-items:center;gap:10px}
   .logo{width:38px;height:38px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px}
   .hdr-l h1{font-family:'DM Serif Display',serif;font-size:17px;color:#0f172a}
-  .hdr-l p{font-size:11px;color:rgba(15,23,42,.73)}
+  .hdr-l p{font-size:11px;color:#64748b}
   .hdr-r{display:flex;align-items:center;gap:10px}
-  .user-chip{background:rgba(15,23,42,.07);border:1px solid rgba(15,23,42,.14);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(15,23,42,.91)}
-  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#b91c1c;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .user-chip{background:#f1f4f8;border:1px solid #e4e8ef;border-radius:20px;padding:5px 13px;font-size:12px;color:#0f172a}
+  .btn-out{background:#fde3e3;border:1px solid #fac7c7;color:#b91c1c;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
   main{padding:24px 28px;max-width:1000px;margin:0 auto}
-  .back{display:inline-flex;align-items:center;gap:6px;color:rgba(15,23,42,.78);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
+  .back{display:inline-flex;align-items:center;gap:6px;color:#334155;font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
   .back:hover{color:#0f172a}
-  .tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(15,23,42,.05);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:4px;width:fit-content}
-  .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(15,23,42,.78);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:#ffffff;border:1px solid #e4e8ef;border-radius:10px;padding:4px;width:fit-content}
+  .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:#334155;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
   .tab.on{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 2px 10px rgba(102,126,234,.4)}
   .panel{display:none}.panel.on{display:block}
-  .comite-card{background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.11);border-radius:16px;padding:20px;margin-bottom:16px;cursor:pointer;transition:all .2s}
-  .comite-card:hover{background:rgba(15,23,42,.06);border-color:rgba(15,23,42,.18)}
+  .comite-card{background:#ffffff;border:1px solid #e4e8ef;border-radius:16px;padding:20px;margin-bottom:16px;cursor:pointer;transition:all .2s}
+  .comite-card:hover{background:#ffffff;border-color:#d3d9e3}
   .comite-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
   .comite-fecha{font-size:16px;font-weight:600;color:#0f172a}
-  .comite-hora{font-size:13px;color:rgba(15,23,42,.78)}
+  .comite-hora{font-size:13px;color:#334155}
   .badge-estado{display:inline-block;padding:4px 12px;border-radius:8px;font-size:11px;font-weight:700}
-  .badge-pendiente{background:rgba(245,158,11,.2);color:#b45309}
-  .badge-realizada{background:rgba(16,185,129,.2);color:#047857}
+  .badge-pendiente{background:#fdecce;color:#b45309}
+  .badge-realizada{background:#cff1e6;color:#047857}
   .evaluadores{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
-  .evaluador-tag{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#6d28d9;padding:6px 12px;border-radius:6px;font-size:11px}
-  .protocolos-list{background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:12px;margin-top:12px}
-  .protocolo-item{padding:8px;border-bottom:1px solid rgba(15,23,42,.1);font-size:12px;color:rgba(15,23,42,.91)}
+  .evaluador-tag{background:#f2eefe;border:1px solid #e5dcfe;color:#6d28d9;padding:6px 12px;border-radius:6px;font-size:11px}
+  .protocolos-list{background:#ffffff;border:1px solid #e4e8ef;border-radius:10px;padding:12px;margin-top:12px}
+  .protocolo-item{padding:8px;border-bottom:1px solid #e4e8ef;font-size:12px;color:#0f172a}
   .protocolo-item:last-child{border-bottom:none}
   .protocolo-numero{color:#6d28d9;font-weight:600}
-  .tbl-wrap{background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:14px;overflow:auto;margin-bottom:20px}
+  .tbl-wrap{background:#ffffff;border:1px solid #e4e8ef;border-radius:14px;overflow:auto;margin-bottom:20px}
   table{width:100%;border-collapse:collapse;min-width:520px}
-  thead tr{background:rgba(15,23,42,.04);border-bottom:1px solid rgba(15,23,42,.1)}
-  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.73);white-space:nowrap}
-  td{padding:10px 13px;border-bottom:1px solid rgba(15,23,42,.1);vertical-align:middle;font-size:13px}
+  thead tr{background:#ffffff;border-bottom:1px solid #e4e8ef}
+  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748b;white-space:nowrap}
+  td{padding:10px 13px;border-bottom:1px solid #e4e8ef;vertical-align:middle;font-size:13px}
   tr:last-child td{border-bottom:none}
   .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700}
-  .b-aprobada{background:rgba(16,185,129,.2);color:#047857}
-  .b-rechazada{background:rgba(239,68,68,.2);color:#b91c1c}
-  .b-pend{background:rgba(245,158,11,.2);color:#b45309}
-  .empty{text-align:center;padding:40px;color:rgba(15,23,42,.69);font-size:14px}
-  .detalle-comite{background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.11);border-radius:16px;padding:20px;margin-top:20px}
-  .detalle-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(15,23,42,.1);font-size:13px}
+  .b-aprobada{background:#cff1e6;color:#047857}
+  .b-rechazada{background:#fcdada;color:#b91c1c}
+  .b-pend{background:#fdecce;color:#b45309}
+  .empty{text-align:center;padding:40px;color:#64748b;font-size:14px}
+  .detalle-comite{background:#ffffff;border:1px solid #e4e8ef;border-radius:16px;padding:20px;margin-top:20px}
+  .detalle-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #e4e8ef;font-size:13px}
   .detalle-row:last-child{border-bottom:none}
-  .detalle-label{color:rgba(15,23,42,.73)}
+  .detalle-label{color:#64748b}
   .detalle-value{color:#6d28d9;font-weight:600}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(15,23,42,.22);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #d3d9e3;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:13px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
   .toast.show{transform:translateY(0);opacity:1}
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}
   .sec-sub{font-size:15px;font-weight:600;color:#0f172a;margin:24px 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .sec-sub span.hint{font-size:12px;font-weight:400;color:rgba(15,23,42,.75)}
-  .tag-segunda{background:rgba(245,158,11,.22);border:1px solid rgba(245,158,11,.4);color:#b45309;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap}
-  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .sec-sub span.hint{font-size:12px;font-weight:400;color:#64748b}
+  .tag-segunda{background:#fdeac9;border:1px solid #fbd89d;color:#b45309;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap}
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.42);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
-  .modal{background:#ffffff;border:1px solid rgba(15,23,42,.12);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
+  .modal{background:#ffffff;border:1px solid #e4e8ef;border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
   @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#0f172a}
   .mfg{margin-bottom:14px}
-  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);margin-bottom:5px}
-  .mfg select,.mfg textarea,.mfg input{width:100%;background:rgba(15,23,42,.07);border:1px solid rgba(15,23,42,.14);border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
+  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#64748b;margin-bottom:5px}
+  .mfg select,.mfg textarea,.mfg input{width:100%;background:#f1f4f8;border:1px solid #e4e8ef;border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
   .mfg select option{background:#ffffff}
   .mfg textarea{min-height:80px;resize:vertical}
   .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
   .btn-action:hover{transform:translateY(-1px)}
   .btn-action:disabled{opacity:.6;cursor:not-allowed;transform:none}
-  .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(15,23,42,.12);background:transparent;color:rgba(15,23,42,.78);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
-  .btn:hover{background:rgba(15,23,42,.07);color:#0f172a}
-  .btn.gr{color:#047857;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
+  .btn{padding:4px 10px;border-radius:7px;border:1px solid #e4e8ef;background:transparent;color:#334155;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
+  .btn:hover{background:#f1f4f8;color:#0f172a}
+  .btn.gr{color:#047857;border-color:#c2f2e0}.btn.gr:hover{background:#ebfbf5}
   body.in-iframe header{display:none!important}
   body.in-iframe .back{display:none!important}
   body.in-iframe main{padding-top:12px}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tema.css">
 </head>
 <body>
 
@@ -147,10 +149,10 @@
           <span class="detalle-value" id="detLugar">—</span>
         </div>
 
-        <h4 style="font-size:13px;font-weight:600;color:rgba(15,23,42,.82);text-transform:uppercase;letter-spacing:.7px;margin:20px 0 12px">👥 Evaluadores</h4>
+        <h4 style="font-size:13px;font-weight:600;color:#334155;text-transform:uppercase;letter-spacing:.7px;margin:20px 0 12px">👥 Evaluadores</h4>
         <div id="detEvaluadores" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px"></div>
 
-        <h4 style="font-size:13px;font-weight:600;color:rgba(15,23,42,.82);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">📋 Protocolos a Presentar</h4>
+        <h4 style="font-size:13px;font-weight:600;color:#334155;text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">📋 Protocolos a Presentar</h4>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
@@ -170,28 +172,28 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
       <div>
         <h2 style="font-size:18px;font-weight:600;color:#0f172a">Solicitudes de Cambio derivadas al Comité</h2>
-        <div style="font-size:12px;color:rgba(15,23,42,.73);margin-top:2px">Estas solicitudes fueron enviadas por coordinación para que el Comité las revise y decida.</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px">Estas solicitudes fueron enviadas por coordinación para que el Comité las revise y decida.</div>
       </div>
       <button type="button" class="btn gr" onclick="cargarSolCambioComite()">↻ Actualizar</button>
     </div>
-    <div id="sc_comite_lista"><div style="text-align:center;padding:40px;color:rgba(15,23,42,.69)">Cargando…</div></div>
+    <div id="sc_comite_lista"><div style="text-align:center;padding:40px;color:#64748b">Cargando…</div></div>
   </div>
 
   <!-- MODAL RESOLVER SOLICITUD (COMITÉ) -->
-  <div class="modal-bg" id="modalSolCambioComite" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1000;overflow-y:auto;padding:20px">
-    <div style="background:#ffffff;border:1px solid rgba(15,23,42,.14);border-radius:16px;max-width:620px;margin:40px auto;padding:28px">
+  <div class="modal-bg" id="modalSolCambioComite" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.42);z-index:1000;overflow-y:auto;padding:20px">
+    <div style="background:#ffffff;border:1px solid #e4e8ef;border-radius:16px;max-width:620px;margin:40px auto;padding:28px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
         <div style="font-size:16px;font-weight:600;color:#0f172a">Decisión del Comité Técnico</div>
-        <button onclick="cerrarModalSolCambioComite()" style="background:none;border:none;color:rgba(15,23,42,.78);font-size:20px;cursor:pointer">✕</button>
+        <button onclick="cerrarModalSolCambioComite()" style="background:none;border:none;color:#334155;font-size:20px;cursor:pointer">✕</button>
       </div>
-      <div id="sc_comite_modal_detalle" style="font-size:13px;color:rgba(15,23,42,.91);line-height:1.7;margin-bottom:20px"></div>
+      <div id="sc_comite_modal_detalle" style="font-size:13px;color:#0f172a;line-height:1.7;margin-bottom:20px"></div>
       <div style="margin-bottom:14px">
-        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);font-weight:600;display:block;margin-bottom:6px">Observaciones del comité</label>
-        <textarea id="sc_comite_obs" rows="3" placeholder="Obligatorio si rechaza. Opcional si aprueba." style="width:100%;background:rgba(15,23,42,.06);border:1px solid rgba(15,23,42,.14);border-radius:8px;padding:10px;color:#0f172a;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#64748b;font-weight:600;display:block;margin-bottom:6px">Observaciones del comité</label>
+        <textarea id="sc_comite_obs" rows="3" placeholder="Obligatorio si rechaza. Opcional si aprueba." style="width:100%;background:#ffffff;border:1px solid #e4e8ef;border-radius:8px;padding:10px;color:#0f172a;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn" style="background:linear-gradient(135deg,#059669,#10b981);flex:1;min-width:140px" data-accion="1" onclick="resolverSolCambioComite('aprobar')">Aprobar cambios</button>
-        <button class="btn" style="background:linear-gradient(135deg,#dc2626,#ef4444);flex:1;min-width:140px" data-accion="1" onclick="resolverSolCambioComite('rechazar')">Rechazar cambios</button>
+        <button class="btn" style="background:#15803d!important;color:#fff!important;border-color:transparent!important;flex:1;min-width:140px" data-accion="1" onclick="resolverSolCambioComite('aprobar')">Aprobar cambios</button>
+        <button class="btn" style="background:#c62828!important;color:#fff!important;border-color:transparent!important;flex:1;min-width:140px" data-accion="1" onclick="resolverSolCambioComite('rechazar')">Rechazar cambios</button>
       </div>
       <div id="sc_comite_modal_error" style="margin-top:12px;color:#dc2626;font-size:13px;display:none"></div>
     </div>
@@ -222,18 +224,18 @@
       <button class="btn" onclick="closeModal('modalDecision')">✕</button>
     </div>
     
-    <div style="background:rgba(15,23,42,.05);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="font-size:12px;color:rgba(15,23,42,.78)">
+    <div style="background:#ffffff;border:1px solid #e4e8ef;border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;color:#334155">
         Radicación: <strong style="color:#6d28d9" id="decNum">—</strong>
         | Estudiante: <strong style="color:#6d28d9" id="decEst">—</strong>
       </div>
     </div>
-    <div style="background:rgba(102,126,234,.08);border:1px solid rgba(102,126,234,.28);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;line-height:1.5;display:none;color:#3730a3" id="decHistorialBanner">
+    <div style="background:#f3f5fd;border:1px solid #d4dbf9;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;line-height:1.5;display:none;color:#3730a3" id="decHistorialBanner">
       <strong>Segunda o posterior valoración:</strong>
       El evaluador que participó en la devolución anterior fue <strong id="decEvAnt">—</strong>.
       <span id="decMotivoAnt" style="display:block;margin-top:6px;opacity:.9"></span>
     </div>
-    <div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.35);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;line-height:1.5;display:none;color:#065f46" id="decDiplomadoBanner">
+    <div style="background:#e7f8f2;border:1px solid #abe6d3;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;line-height:1.5;display:none;color:#065f46" id="decDiplomadoBanner">
       <strong>Modalidad Diplomado:</strong> no hay tutores ni sustentación. El estudiante puede haber registrado jurado sugerido por el tutor o dejar que el Comité Técnico asigne evaluador. El aval del comité técnico cierra el trámite. Los campos de acta CCEB no son obligatorios aquí; se registrará referencia interna automática.
     </div>
 
@@ -277,7 +279,7 @@
       <textarea id="obsText" placeholder="Comentarios adicionales..."></textarea>
     </div>
 
-    <div id="errDecision" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div>
+    <div id="errDecision" style="background:#fde3e3;border:1px solid #fac7c7;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none"></div>
 
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
       <button class="btn" onclick="closeModal('modalDecision')">Cancelar</button>
@@ -393,7 +395,7 @@ function fmtJuradosDip(p) {
   }
   const arr = p.juradosSugeridosDiplomado;
   if (!arr || !arr.length) return '<span style="opacity:.5;font-size:11px">Sin datos</span>';
-  return arr.map((j, i) => '<div style="font-size:10px;line-height:1.35;color:rgba(15,23,42,.84)">' +
+  return arr.map((j, i) => '<div style="font-size:10px;line-height:1.35;color:#334155">' +
     esc(String(i + 1) + '. ' + [j.nombre, j.email, j.telefono, j.especialidad ? 'Esp.: ' + j.especialidad : '', j.aceptaPropuesta ? 'Acuerdo: ' + j.aceptaPropuesta : ''].filter(Boolean).join(' · ')) +
     '</div>').join('');
 }
@@ -411,11 +413,11 @@ function renderSinFecha(protocolos) {
     const segunda = p.esSegundaValoracion ? '<span class="tag-segunda">2ª valoración</span>' : '—';
     return `<tr>
       <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}</td>
-      <td style="font-size:11px;color:rgba(15,23,42,.84)">${esc(p.emailEstudiante || '—')}</td>
+      <td style="font-size:11px;color:#334155">${esc(p.emailEstudiante || '—')}</td>
       <td>${esc(p.estado || '—')}${segunda !== '—' ? ' ' + segunda : ''}</td>
-      <td style="font-size:11px;color:rgba(15,23,42,.8)">${esc(p.evaluador || '—')}</td>
+      <td style="font-size:11px;color:#334155">${esc(p.evaluador || '—')}</td>
       <td style="font-size:11px;color:#b45309">${esc(p.evaluadorAnteriorComite || '—')}</td>
-      <td style="font-size:11px;color:rgba(15,23,42,.75);max-width:200px">${esc(truncTxt(p.motivoUltimaDevolucion || p.observaciones, 120))}</td>
+      <td style="font-size:11px;color:#64748b;max-width:200px">${esc(truncTxt(p.motivoUltimaDevolucion || p.observaciones, 120))}</td>
       <td style="max-width:170px;vertical-align:top">${fmtJuradosDip(p)}</td>
     </tr>`;
   }).join('');
@@ -435,9 +437,9 @@ function renderDevueltos(protocolos) {
       <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}</td>
       <td style="font-size:11px">${esc(p.emailEstudiante || '—')}</td>
       <td>${esc(p.estado)}</td>
-      <td style="font-family:monospace;font-size:11px;color:rgba(15,23,42,.73)">${p.rowIndex}</td>
+      <td style="font-family:monospace;font-size:11px;color:#64748b">${p.rowIndex}</td>
       <td style="font-size:11px;color:#b45309">${esc(p.evaluador || '—')}</td>
-      <td style="font-size:11px;color:rgba(15,23,42,.8);max-width:220px">${esc(truncTxt(p.observaciones || p.motivoUltimaDevolucion, 140))}</td>
+      <td style="font-size:11px;color:#334155;max-width:220px">${esc(truncTxt(p.observaciones || p.motivoUltimaDevolucion, 140))}</td>
       <td style="max-width:170px;vertical-align:top">${fmtJuradosDip(p)}</td>
     </tr>`).join('');
 }
@@ -481,7 +483,7 @@ async function cargarReuniones() {
           </div>
           <span class="badge-estado badge-pendiente">Pendiente decisión</span>
         </div>
-        <div style="margin:12px 0;font-size:12px;color:rgba(15,23,42,.82)">
+        <div style="margin:12px 0;font-size:12px;color:#334155">
           <strong>${r.protocolos.length}</strong> protocolo${r.protocolos.length !== 1 ? 's' : ''}
         </div>
         <div class="evaluadores">
@@ -529,8 +531,8 @@ function mostrarDetalleReunion(fecha) {
         const histHtml = hist.length ? hist.join(' ') : '<span style="opacity:.45">—</span>';
         return `<tr>
           <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}</td>
-          <td style="font-size:12px;color:rgba(15,23,42,.91)">${esc(p.emailEstudiante || '—')}</td>
-          <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(p.evaluador || '—')}</td>
+          <td style="font-size:12px;color:#0f172a">${esc(p.emailEstudiante || '—')}</td>
+          <td style="font-size:12px;color:#334155">${esc(p.evaluador || '—')}</td>
           <td style="max-width:180px;vertical-align:top">${fmtJuradosDip(p)}</td>
           <td>${histHtml}</td>
           <td><span class="badge b-pend">⏱ ${esc(p.estado)}</span></td>
@@ -567,12 +569,12 @@ async function cargarDecisiones() {
       const estadoTexto = p.estado;
       return `
         <tr>
-          <td style="font-size:12px;color:rgba(15,23,42,.78)">${fmtFecha(p.fechaComite)}</td>
+          <td style="font-size:12px;color:#334155">${fmtFecha(p.fechaComite)}</td>
           <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero||'—')}</td>
-          <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(p.emailEstudiante||'—')}</td>
-          <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(p.evaluador||'—')}</td>
+          <td style="font-size:12px;color:#334155">${esc(p.emailEstudiante||'—')}</td>
+          <td style="font-size:12px;color:#334155">${esc(p.evaluador||'—')}</td>
           <td><span class="badge ${estadoBadge}">${esc(estadoTexto)}</span></td>
-          <td style="font-size:12px;color:rgba(15,23,42,.78)">${esc(p.observaciones||'—')}</td>
+          <td style="font-size:12px;color:#334155">${esc(p.observaciones||'—')}</td>
         </tr>
       `;
     }).join('');
@@ -738,7 +740,7 @@ const LABELS_CAMPO_CT = {
 let solCambioComiteActual = null;
 
 async function cargarSolCambioComite() {
-  document.getElementById('sc_comite_lista').innerHTML = '<div style="text-align:center;padding:40px;color:rgba(15,23,42,.69)">Cargando…</div>';
+  document.getElementById('sc_comite_lista').innerHTML = '<div style="text-align:center;padding:40px;color:#64748b">Cargando…</div>';
   try {
     const res = await fetch(URL_APP, { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'getSolicitudesModRadComite', token: localStorage.getItem('cttg_token')||'' }) });
@@ -749,22 +751,22 @@ async function cargarSolCambioComite() {
     if (lista.length > 0) { badge.textContent = lista.length; badge.style.display = 'inline'; }
     else badge.style.display = 'none';
     if (!lista.length) {
-      document.getElementById('sc_comite_lista').innerHTML = '<div style="text-align:center;padding:40px;color:rgba(15,23,42,.69)">No hay solicitudes pendientes de revisión por el Comité.</div>';
+      document.getElementById('sc_comite_lista').innerHTML = '<div style="text-align:center;padding:40px;color:#64748b">No hay solicitudes pendientes de revisión por el Comité.</div>';
       return;
     }
     document.getElementById('sc_comite_lista').innerHTML = lista.map(s => {
       const cambios = s.cambios || {};
       const resumen = Object.keys(cambios).map(k => LABELS_CAMPO_CT[k] || k).join(', ') || 'Sin detalle';
-      return `<div style="background:rgba(15,23,42,.04);border:1px solid rgba(124,58,237,.3);border-radius:12px;padding:16px;margin-bottom:12px">
+      return `<div style="background:#ffffff;border:1px solid #d8c4fa;border-radius:12px;padding:16px;margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
           <div>
             <div style="font-weight:600;color:#0f172a;font-size:14px">${esc(s.numero)}</div>
-            <div style="font-size:12px;color:rgba(15,23,42,.75);margin-top:2px">${esc(s.emailEstudiante)} · Enviado por coordinación: ${esc(s.tsResolucion||s.tsCreacion)}</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px">${esc(s.emailEstudiante)} · Enviado por coordinación: ${esc(s.tsResolucion||s.tsCreacion)}</div>
           </div>
-          <button class="btn" style="font-size:12px;padding:6px 14px;background:linear-gradient(135deg,#7c3aed,#8b5cf6)" onclick="abrirModalSolCambioComite(${s.rowSol})">Revisar y decidir</button>
+          <button class="btn" style="font-size:12px;padding:6px 14px;background:#6d28d9!important;color:#fff!important;border-color:transparent!important" onclick="abrirModalSolCambioComite(${s.rowSol})">Revisar y decidir</button>
         </div>
-        <div style="margin-top:10px;font-size:12px;color:rgba(15,23,42,.86)"><strong>Campos a cambiar:</strong> ${esc(resumen)}</div>
-        <div style="margin-top:4px;font-size:12px;color:rgba(15,23,42,.78)"><strong>Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
+        <div style="margin-top:10px;font-size:12px;color:#334155"><strong>Campos a cambiar:</strong> ${esc(resumen)}</div>
+        <div style="margin-top:4px;font-size:12px;color:#334155"><strong>Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
         ${s.obsCoord ? `<div style="margin-top:4px;font-size:12px;color:#53457d"><strong>Nota coordinación:</strong> ${esc(s.obsCoord)}</div>` : ''}
       </div>`;
     }).join('');
@@ -781,14 +783,14 @@ function abrirModalSolCambioComite(rowSol) {
   solCambioComiteActual = s;
   const cambios = s.cambios || {};
   const filas = Object.entries(cambios).map(([k, v]) =>
-    `<tr><td style="padding:4px 8px;color:rgba(15,23,42,.78);white-space:nowrap">${esc(LABELS_CAMPO_CT[k]||k)}</td><td style="padding:4px 8px;color:#0f172a">${esc(String(v))}</td></tr>`
+    `<tr><td style="padding:4px 8px;color:#334155;white-space:nowrap">${esc(LABELS_CAMPO_CT[k]||k)}</td><td style="padding:4px 8px;color:#0f172a">${esc(String(v))}</td></tr>`
   ).join('');
   document.getElementById('sc_comite_modal_detalle').innerHTML = `
-    <div style="margin-bottom:12px"><strong style="color:rgba(15,23,42,.78)">Radicación:</strong> ${esc(s.numero)}<br>
-    <strong style="color:rgba(15,23,42,.78)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
-    <strong style="color:rgba(15,23,42,.78)">Motivo:</strong> ${esc(s.motivoEstudiante)}${s.obsCoord ? `<br><strong style="color:#53457d">Nota coordinación:</strong> ${esc(s.obsCoord)}` : ''}</div>
-    <div style="font-size:12px;color:rgba(15,23,42,.73);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Cambios solicitados</div>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;background:rgba(15,23,42,.03);border-radius:8px;overflow:hidden">${filas}</table>`;
+    <div style="margin-bottom:12px"><strong style="color:#334155">Radicación:</strong> ${esc(s.numero)}<br>
+    <strong style="color:#334155">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
+    <strong style="color:#334155">Motivo:</strong> ${esc(s.motivoEstudiante)}${s.obsCoord ? `<br><strong style="color:#53457d">Nota coordinación:</strong> ${esc(s.obsCoord)}` : ''}</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Cambios solicitados</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;background:#ffffff;border-radius:8px;overflow:hidden">${filas}</table>`;
   document.getElementById('sc_comite_obs').value = '';
   document.getElementById('sc_comite_modal_error').style.display = 'none';
   document.getElementById('modalSolCambioComite').style.display = 'block';

@@ -23,6 +23,10 @@ describe.each(paginas)('%s', (archivo) => {
     expect(lum(m[1])).toBeGreaterThan(0.9);
   });
 
+  test('carga el sistema de diseño compartido', () => {
+    expect(html).toContain('<link rel="stylesheet" href="tema.css">');
+  });
+
   test('sin los negros del tema anterior', () => {
     expect(html).not.toMatch(/#0a0f1a|#0f0f1a|#111827|#1a1f2e/i);
   });
