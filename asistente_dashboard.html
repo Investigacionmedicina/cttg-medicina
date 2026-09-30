@@ -931,7 +931,7 @@ function switchPanel(name, btn) {
   document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('on'));
   document.getElementById('pan-' + name).classList.add('on');
   btn.classList.add('on');
-  if (name === 'actas') cargarActas();
+  if (name === 'actas') mostrarPanelActas();
   else if (name === 'tutores') cargarTutores();
   else if (name === 'alertas') cargarAlertas();
   else if (name === 'protocolo') cargarProtocolo();
@@ -1358,14 +1358,33 @@ function verDetalle(ri) {
 }
 
 // ── ACTAS ────────────────────────────────────────────────────
+// Las actas ya se cargan al abrir el panel: entrar a la pestaña no vuelve a pedirlas al servidor.
+// «↻ Actualizar» y aprobar/rechazar sí recargan.
+let actasCargadas = false;
+
+function mostrarPanelActas() {
+  if (actasCargadas) renderActas();
+  else cargarActas();
+}
+
 async function cargarActas() {
   const tbody = document.getElementById('tbodyActas');
-  tbody.innerHTML = '<tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>';
+  const habiaActas = actasCargadas;
+  if (!habiaActas) tbody.innerHTML = '<tr><td colspan="8" class="empty"><span class="spinner"></span>Cargando actas...</td></tr>';
   try {
-    const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getActasAsesoria', token: coordToken() }) });
-    const d = await res.json();
-    if (!d.success) throw new Error(d.error);
+    let d;
+    try {
+      const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'getActasAsesoria', token: coordToken() }) });
+      const raw = await res.text();
+      try { d = JSON.parse(raw); }
+      catch (_) { throw new Error('el servidor (Apps Script) no respondió datos válidos; revisa la implementación del Apps Script'); }
+    } catch (eRed) {
+      if (eRed instanceof TypeError) throw new Error('sin conexión con el servidor');
+      throw eRed;
+    }
+    if (!d.success) throw new Error(d.error || 'respuesta sin éxito');
     actas = d.actas || [];
+    actasCargadas = true;
 
     // contar pendientes para badge
     const pendientes = actas.filter(a => a.estado === 'Pendiente revisión' || a.estado === 'Solicitud Fase 2').length;
@@ -1381,7 +1400,14 @@ async function cargarActas() {
 
     renderActas();
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty">Error al cargar actas.</td></tr>';
+    const motivo = esc(e && e.message ? e.message : String(e));
+    if (habiaActas) {
+      // Conserva la lista anterior en pantalla en vez de borrarla.
+      renderActas();
+      toast('No se pudieron actualizar las actas: ' + (e && e.message ? e.message : e), 'err');
+      return;
+    }
+    tbody.innerHTML = `<tr><td colspan="8" class="empty">Error al cargar actas: ${motivo}.<br><button class="btn" style="margin-top:8px" onclick="cargarActas()">↻ Reintentar</button></td></tr>`;
   }
 }
 
