@@ -706,9 +706,9 @@
         <textarea id="sc_obs" rows="3" placeholder="Opcional para aprobación directa. Obligatorio si devuelve o envía a comité." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn" style="background:linear-gradient(135deg,#059669,#10b981);flex:1;min-width:140px" onclick="resolverSolicitudCambio('aprobar_directo')">Aprobar directamente</button>
-        <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);flex:1;min-width:140px" onclick="resolverSolicitudCambio('derivar_ct')">Enviar a Comité Técnico</button>
-        <button class="btn" style="background:linear-gradient(135deg,#b45309,#d97706);flex:1;min-width:140px" onclick="resolverSolicitudCambio('devolver')">Devolver al estudiante</button>
+        <button class="btn" style="background:linear-gradient(135deg,#059669,#10b981);flex:1;min-width:140px" data-accion="aprobar_directo" onclick="resolverSolicitudCambio('aprobar_directo')">Aprobar directamente</button>
+        <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);flex:1;min-width:140px" data-accion="derivar_ct" onclick="resolverSolicitudCambio('derivar_ct')">Enviar a Comité Técnico</button>
+        <button class="btn" style="background:linear-gradient(135deg,#b45309,#d97706);flex:1;min-width:140px" data-accion="devolver" onclick="resolverSolicitudCambio('devolver')">Devolver al estudiante</button>
       </div>
       <div id="sc_modal_error" style="margin-top:12px;color:#f87171;font-size:13px;display:none"></div>
     </div>
@@ -750,8 +750,8 @@
         <textarea id="scc_obs" rows="3" placeholder="Obligatorio si rechaza (mín. 12 caracteres). Opcional si aprueba." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn" style="background:linear-gradient(135deg,#dc2626,#ef4444);flex:1;min-width:140px" onclick="resolverCancelacion('aprobar')">✅ Aprobar cancelación</button>
-        <button class="btn" style="background:linear-gradient(135deg,#b45309,#d97706);flex:1;min-width:140px" onclick="resolverCancelacion('rechazar')">❌ Rechazar</button>
+        <button class="btn" style="background:linear-gradient(135deg,#dc2626,#ef4444);flex:1;min-width:140px" data-accion="aprobar" onclick="resolverCancelacion('aprobar')">✅ Aprobar cancelación</button>
+        <button class="btn" style="background:linear-gradient(135deg,#b45309,#d97706);flex:1;min-width:140px" data-accion="rechazar" onclick="resolverCancelacion('rechazar')">❌ Rechazar</button>
       </div>
       <div id="scc_modal_error" style="margin-top:12px;color:#f87171;font-size:13px;display:none"></div>
     </div>
@@ -4311,6 +4311,7 @@ function exportarFiltrosCSV() {
 // ── SOLICITUDES DE CAMBIO DE RADICACIÓN ──────────────────────
 let solicitudesCambio = [];
 let solicitudCambioActual = null;
+let resolviendoCambio = false;
 
 const LABELS_CAMPO = {
   titulo:'Título del trabajo', modalidad:'Modalidad', area:'Área',
@@ -4322,6 +4323,35 @@ const LABELS_CAMPO = {
   dipJurado1Nombre:'Nombre jurado sugerido', dipJurado1Email:'Email jurado sugerido', dipJurado1Telefono:'Tel. jurado sugerido',
   dipJurado1Especialidad:'Especialidad jurado', dipJurado1AceptaPropuesta:'Jurado acepta', diplomadoJuradoModo:'Modo asignación jurado'
 };
+
+/** Bloquea los botones de acción de un modal mientras el servidor responde (el Apps Script tarda
+ *  varios segundos y un segundo clic resolvía la misma solicitud dos veces). */
+function bloquearAccionesModal(modalId, bloquear) {
+  document.querySelectorAll('#' + modalId + ' button[data-accion]').forEach(b => {
+    b.disabled = bloquear;
+    b.style.opacity = bloquear ? '.5' : '';
+    b.style.cursor = bloquear ? 'wait' : '';
+  });
+}
+
+/** Las solicitudes guardan la fila de Fase1 del momento en que se crearon. Si luego se borraron
+ *  filas, esa fila es de OTRA radicación: se avisa y no se permite aplicar la solicitud. */
+function estadoRadicacionSolicitud(s) {
+  const rad = radicaciones.find(r => String(r.numero || '').trim().toUpperCase() === String(s.numero || '').trim().toUpperCase());
+  if (!rad) return '<span style="color:#fca5a5">⚠️ La radicación ya no existe en Fase1</span>';
+  const est = String(rad.estado || 'Radicado');
+  return 'Estado actual: ' + badgeEst(est) + (est === 'Cancelado' ? ' <span style="color:#fca5a5">— la radicación está cancelada; lo normal es devolver la solicitud</span>' : '');
+}
+
+function avisoFilaDesplazada(s) {
+  const guardada = parseInt(s.rowFase1, 10) || 0;
+  const rad = radicaciones.find(r => String(r.numero || '').trim().toUpperCase() === String(s.numero || '').trim().toUpperCase());
+  if (!guardada || !rad || rad.rowIndex === guardada) return '';
+  const otra = radicaciones.find(r => r.rowIndex === guardada);
+  return `<div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#fecaca">
+    ⛔ <strong>No apruebes todavía.</strong> Esta solicitud apunta a la fila ${guardada} de Fase1${otra ? ` (hoy es <strong>${esc(otra.numero)}</strong>)` : ''}, pero ${esc(s.numero)} está en la fila <strong>${rad.rowIndex}</strong> (se borraron filas en Fase1).
+    Corrige la columna C (RowFase1) de esta solicitud a <strong>${rad.rowIndex}</strong> en la hoja, o redespliega el Apps Script actualizado, que ya lo corrige solo.</div>`;
+}
 
 async function cargarSolicitudesCambio() {
   document.getElementById('sc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando…</div>';
@@ -4358,6 +4388,7 @@ function renderSolicitudesCambio() {
         </div>
         <button class="btn" style="font-size:12px;padding:6px 14px" onclick="abrirModalSolicitudCambio(${s.rowSol})">Ver y resolver</button>
       </div>
+      <div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.6)">${estadoRadicacionSolicitud(s)}</div>
       <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.7)"><strong>Campos a cambiar:</strong> ${esc(resumen)}</div>
       <div style="margin-top:4px;font-size:12px;color:rgba(255,255,255,.5)"><strong>Motivo:</strong> ${esc(s.motivoEstudiante)}</div>
     </div>`;
@@ -4372,14 +4403,23 @@ function abrirModalSolicitudCambio(rowSol) {
   const filas = Object.entries(cambios).map(([k, v]) =>
     `<tr><td style="padding:4px 8px;color:rgba(255,255,255,.5);white-space:nowrap">${esc(LABELS_CAMPO[k]||k)}</td><td style="padding:4px 8px;color:#fff">${esc(String(v))}</td></tr>`
   ).join('');
-  document.getElementById('sc_modal_detalle').innerHTML = `
+  const avisoCambio = avisoFilaDesplazada(s);
+  document.getElementById('sc_modal_detalle').innerHTML = avisoCambio + `
     <div style="margin-bottom:12px"><strong style="color:rgba(255,255,255,.5)">Radicación:</strong> ${esc(s.numero)}<br>
     <strong style="color:rgba(255,255,255,.5)">Estudiante:</strong> ${esc(s.emailEstudiante)}<br>
+    ${estadoRadicacionSolicitud(s)}<br>
     <strong style="color:rgba(255,255,255,.5)">Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}</div>
     <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Cambios solicitados</div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;background:rgba(255,255,255,.03);border-radius:8px;overflow:hidden">${filas}</table>`;
   document.getElementById('sc_obs').value = '';
   document.getElementById('sc_modal_error').style.display = 'none';
+  bloquearAccionesModal('modalSolicitudCambio', false);
+  // Con la fila desplazada, aprobar cambiaría otra radicación: solo se permite devolver.
+  ['aprobar_directo', 'derivar_ct'].forEach(dec => {
+    const b = document.querySelector('#modalSolicitudCambio button[data-accion="' + dec + '"]');
+    if (b && avisoCambio) { b.disabled = true; b.style.opacity = '.4'; b.title = 'Corrige primero la fila de Fase1 (ver aviso)'; }
+    else if (b) b.title = '';
+  });
   document.getElementById('modalSolicitudCambio').style.display = 'block';
 }
 
@@ -4389,10 +4429,12 @@ function cerrarModalSolicitudCambio() {
 }
 
 async function resolverSolicitudCambio(decision) {
-  if (!solicitudCambioActual) return;
+  if (!solicitudCambioActual || resolviendoCambio) return;
   const obs = document.getElementById('sc_obs').value.trim();
   const errEl = document.getElementById('sc_modal_error');
   errEl.style.display = 'none';
+  resolviendoCambio = true;
+  bloquearAccionesModal('modalSolicitudCambio', true);
   try {
     const res = await fetch(URL_APP, { method:'POST',
       body: JSON.stringify({ action:'resolverSolicitudModRad', token: localStorage.getItem('cttg_token')||'',
@@ -4404,6 +4446,20 @@ async function resolverSolicitudCambio(decision) {
     toast(msgs[decision] || 'Resuelto', 'ok');
     await cargarSolicitudesCambio();
   } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+  finally {
+    resolviendoCambio = false;
+    // Si el modal sigue abierto (hubo error), reactiva los botones respetando el aviso de fila.
+    if (solicitudCambioActual) abrirModalSolicitudCambioConservandoObs();
+  }
+}
+
+function abrirModalSolicitudCambioConservandoObs() {
+  const obs = document.getElementById('sc_obs').value;
+  const err = document.getElementById('sc_modal_error');
+  const errTxt = err.textContent, errVis = err.style.display;
+  abrirModalSolicitudCambio(solicitudCambioActual.rowSol);
+  document.getElementById('sc_obs').value = obs;
+  err.textContent = errTxt; err.style.display = errVis;
 }
 
 // ── CANCELAR DIRECTA (coordinadora cancela sin solicitud del estudiante) ──
@@ -4523,6 +4579,7 @@ async function confirmarCancelDirecta() {
 // ── CANCELACIONES DE RADICACIÓN ──────────────────────────────
 let solicitudesCancelacion = [];
 let cancelacionActual = null;
+let resolviendoCancelacion = false;
 
 async function cargarSolicitudesCancelacion() {
   document.getElementById('scc_lista').innerHTML = '<div class="empty" style="padding:32px;text-align:center;color:rgba(255,255,255,.3)">Cargando…</div>';
@@ -4570,7 +4627,8 @@ function abrirModalCancelacion(rowSol) {
   const s = solicitudesCancelacion.find(x => x.rowSol === rowSol);
   if (!s) return;
   cancelacionActual = s;
-  document.getElementById('scc_modal_detalle').innerHTML = `
+  const avisoCancel = avisoFilaDesplazada(s);
+  document.getElementById('scc_modal_detalle').innerHTML = avisoCancel + `
     <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px">
       ⚠️ Si aprueba, la radicación <strong>${esc(s.numero)}</strong> quedará en estado <strong>Cancelado</strong> y el estudiante podrá crear una nueva radicación.
     </div>
@@ -4579,6 +4637,11 @@ function abrirModalCancelacion(rowSol) {
     <strong style="color:rgba(255,255,255,.5)">Motivo del estudiante:</strong> ${esc(s.motivoEstudiante)}`;
   document.getElementById('scc_obs').value = '';
   document.getElementById('scc_modal_error').style.display = 'none';
+  bloquearAccionesModal('modalCancelacion', false);
+  // Con la fila desplazada, aprobar cancelaría la radicación de otra persona.
+  const bApr = document.querySelector('#modalCancelacion button[data-accion="aprobar"]');
+  if (bApr && avisoCancel) { bApr.disabled = true; bApr.style.opacity = '.4'; bApr.title = 'Corrige primero la fila de Fase1 (ver aviso)'; }
+  else if (bApr) bApr.title = '';
   document.getElementById('modalCancelacion').style.display = 'block';
 }
 
@@ -4588,10 +4651,12 @@ function cerrarModalCancelacion() {
 }
 
 async function resolverCancelacion(decision) {
-  if (!cancelacionActual) return;
+  if (!cancelacionActual || resolviendoCancelacion) return;
   const obs = document.getElementById('scc_obs').value.trim();
   const errEl = document.getElementById('scc_modal_error');
   errEl.style.display = 'none';
+  resolviendoCancelacion = true;
+  bloquearAccionesModal('modalCancelacion', true);
   try {
     const res = await fetch(URL_APP, { method:'POST',
       body: JSON.stringify({ action:'resolverSolicitudCancelarRad', token: localStorage.getItem('cttg_token')||'',
@@ -4602,6 +4667,16 @@ async function resolverCancelacion(decision) {
     toast(decision === 'aprobar' ? 'Cancelación aprobada. El estudiante puede radicar nuevamente.' : 'Solicitud rechazada.', 'ok');
     await cargarSolicitudesCancelacion();
   } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+  finally {
+    resolviendoCancelacion = false;
+    if (cancelacionActual) {
+      const obsC = document.getElementById('scc_obs').value;
+      const errTxt = errEl.textContent, errVis = errEl.style.display;
+      abrirModalCancelacion(cancelacionActual.rowSol);
+      document.getElementById('scc_obs').value = obsC;
+      errEl.textContent = errTxt; errEl.style.display = errVis;
+    }
+  }
 }
 
 

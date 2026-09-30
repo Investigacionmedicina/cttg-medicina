@@ -190,8 +190,8 @@
         <textarea id="sc_comite_obs" rows="3" placeholder="Obligatorio si rechaza. Opcional si aprueba." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn" style="background:linear-gradient(135deg,#059669,#10b981);flex:1;min-width:140px" onclick="resolverSolCambioComite('aprobar')">Aprobar cambios</button>
-        <button class="btn" style="background:linear-gradient(135deg,#dc2626,#ef4444);flex:1;min-width:140px" onclick="resolverSolCambioComite('rechazar')">Rechazar cambios</button>
+        <button class="btn" style="background:linear-gradient(135deg,#059669,#10b981);flex:1;min-width:140px" data-accion="1" onclick="resolverSolCambioComite('aprobar')">Aprobar cambios</button>
+        <button class="btn" style="background:linear-gradient(135deg,#dc2626,#ef4444);flex:1;min-width:140px" data-accion="1" onclick="resolverSolCambioComite('rechazar')">Rechazar cambios</button>
       </div>
       <div id="sc_comite_modal_error" style="margin-top:12px;color:#f87171;font-size:13px;display:none"></div>
     </div>
@@ -799,11 +799,22 @@ function cerrarModalSolCambioComite() {
   solCambioComiteActual = null;
 }
 
+let resolviendoSolComite = false;
+
+function bloquearAccionesSolComite(bloquear) {
+  document.querySelectorAll('#modalSolCambioComite button[data-accion]').forEach(b => {
+    b.disabled = bloquear; b.style.opacity = bloquear ? '.5' : ''; b.style.cursor = bloquear ? 'wait' : '';
+  });
+}
+
 async function resolverSolCambioComite(decision) {
-  if (!solCambioComiteActual) return;
+  // Un segundo clic mientras el servidor responde resolvía la solicitud dos veces.
+  if (!solCambioComiteActual || resolviendoSolComite) return;
   const obs = document.getElementById('sc_comite_obs').value.trim();
   const errEl = document.getElementById('sc_comite_modal_error');
   errEl.style.display = 'none';
+  resolviendoSolComite = true;
+  bloquearAccionesSolComite(true);
   try {
     const res = await fetch(URL_APP, { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'resolverSolicitudModRadComite', token: localStorage.getItem('cttg_token')||'',
@@ -814,6 +825,7 @@ async function resolverSolCambioComite(decision) {
     toast(decision === 'aprobar' ? 'Cambios aprobados y aplicados.' : 'Solicitud rechazada. El estudiante fue notificado.', 'ok');
     await cargarSolCambioComite();
   } catch(e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+  finally { resolviendoSolComite = false; bloquearAccionesSolComite(false); }
 }
 
 // Badge inicial al cargar

@@ -1802,7 +1802,7 @@ function crearSolicitudModificarRad(sesion, body) {
   if (!ri || ri < 2) return { success: false, error: "Fila Fase 1 inválida." };
   var lastF1 = sheetF1.getLastRow();
   if (ri > lastF1) return { success: false, error: "Fila Fase 1 fuera de rango." };
-  var rowVals = sheetF1.getRange(ri, 1, ri, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
+  var rowVals = sheetF1.getRange(ri, 1, 1, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
   if (!emailEstudiantePerteneceFilaFase1(emailEst, rowVals)) return { success: false, error: "No autorizado sobre esta radicación." };
   var numero = String(rowVals[1] || "").trim();
   if (!numero) return { success: false, error: "Sin número de radicación." };
@@ -1861,6 +1861,49 @@ function getMisSolicitudesModRad(sesion) {
   return { success: true, solicitudes: lista };
 }
 
+/** Fila actual de la radicación en Fase1. Las solicitudes guardan el número de fila del momento en
+ *  que se crearon; si luego se borran filas en Fase1, esa fila apunta a OTRA radicación. Se usa la
+ *  fila guardada solo si su columna B sigue siendo el mismo número; si no, se busca por número. */
+function filaFase1PorNumero_(sheetF1, numero, filaGuardada) {
+  var num = String(numero || "").trim().toUpperCase();
+  if (!sheetF1 || !num) return 0;
+  var fg = parseInt(filaGuardada, 10);
+  if (fg >= 2 && fg <= sheetF1.getLastRow() &&
+      String(sheetF1.getRange(fg, 2).getValue() || "").trim().toUpperCase() === num) return fg;
+  var colB = sheetF1.getRange(1, 2, sheetF1.getLastRow(), 1).getValues();
+  for (var i = 1; i < colB.length; i++) {
+    if (String(colB[i][0] || "").trim().toUpperCase() === num) return i + 1;
+  }
+  return 0;
+}
+
+/** Corrige rowFase1 de una lista de solicitudes para que la pantalla vea la fila real. */
+function corregirFilasFase1Solicitudes_(lista) {
+  if (!lista.length) return lista;
+  var sheetF1 = getSheet("Fase1");
+  if (!sheetF1) return lista;
+  var colB = sheetF1.getRange(1, 2, sheetF1.getLastRow(), 1).getValues();
+  var mapa = {};
+  for (var i = 1; i < colB.length; i++) {
+    var n = String(colB[i][0] || "").trim().toUpperCase();
+    if (n && !mapa[n]) mapa[n] = i + 1;
+  }
+  lista.forEach(function(s) {
+    var real = mapa[String(s.numero || "").trim().toUpperCase()];
+    if (real) s.rowFase1 = real;
+  });
+  return lista;
+}
+
+/** Evita que la misma solicitud se resuelva dos veces si llegan dos clics a la vez. */
+function conLockSolicitudes_(fn) {
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) {
+    return { success: false, error: "El sistema está ocupado resolviendo otra solicitud. Intenta de nuevo en unos segundos." };
+  }
+  try { return fn(); } finally { lock.releaseLock(); }
+}
+
 function getSolicitudesModRadPendientes(sesion) {
   if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
   var sheet = getSheet(NOMBRE_HOJA_SOL_MOD_RAD);
@@ -1872,10 +1915,15 @@ function getSolicitudesModRadPendientes(sesion) {
     if (est !== "pendiente") continue;
     lista.push(filaSolModRadToObj_(data[i], i + 1));
   }
+  corregirFilasFase1Solicitudes_(lista);
   return { success: true, solicitudes: lista, totalPendientes: lista.length };
 }
 
 function resolverSolicitudModRad(sesion, body) {
+  return conLockSolicitudes_(function() { return resolverSolicitudModRadSinLock_(sesion, body); });
+}
+
+function resolverSolicitudModRadSinLock_(sesion, body) {
   if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
   var sheet = getSheet(NOMBRE_HOJA_SOL_MOD_RAD);
   if (!sheet) return { success: false, error: "Hoja solicitudes no disponible." };
@@ -1886,13 +1934,14 @@ function resolverSolicitudModRad(sesion, body) {
   var last = sheet.getLastRow();
   if (rs > last) return { success: false, error: "Solicitud no encontrada." };
 
-  var r = sheet.getRange(rs, 1, rs, 12).getValues()[0];
+  var r = sheet.getRange(rs, 1, 1, 12).getValues()[0];
   var estSol = String(r[4] || "").trim().toLowerCase();
   if (estSol !== "pendiente") return { success: false, error: "Esta solicitud ya fue resuelta." };
   var emailCoord = String(sesion.email || "").trim();
 
-  var rowF1 = parseInt(r[2], 10);
   var numero = String(r[3] || "").trim();
+  var rowF1 = filaFase1PorNumero_(getSheet("Fase1"), numero, r[2]);
+  if (!rowF1) return { success: false, error: "No se encontró la radicación " + numero + " en Fase1." };
   var cambiosJson = String(r[6] || "{}");
   var deltas = {};
   try { deltas = JSON.parse(cambiosJson); } catch (ex) {
@@ -1949,7 +1998,7 @@ function resolverSolicitudModRad(sesion, body) {
   var sheetF1 = getSheet("Fase1");
   if (!sheetF1) return { success: false, error: "Fase 1 no encontrada" };
   asegurarColumnasFase1DiplomadoJurados(sheetF1);
-  var rowVals = sheetF1.getRange(rowF1, 1, rowF1, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
+  var rowVals = sheetF1.getRange(rowF1, 1, 1, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
   var deltasFinales = sanitizarYFiltrarCambiosModRad_(deltas, rowVals);
   if (!Object.keys(deltasFinales).length) {
     return { success: false, error: "Los datos ya coinciden con la hoja (nada que aplicar). Devuelva la solicitud con una nota aclaratoria si es necesario." };
@@ -2002,10 +2051,15 @@ function getSolicitudesModRadComite(sesion) {
     if (est !== "pendiente_comite") continue;
     lista.push(filaSolModRadToObj_(data[i], i + 1));
   }
+  corregirFilasFase1Solicitudes_(lista);
   return { success: true, solicitudes: lista, total: lista.length };
 }
 
 function resolverSolicitudModRadComite(sesion, body) {
+  return conLockSolicitudes_(function() { return resolverSolicitudModRadComiteSinLock_(sesion, body); });
+}
+
+function resolverSolicitudModRadComiteSinLock_(sesion, body) {
   if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
   var sheet = getSheet(NOMBRE_HOJA_SOL_MOD_RAD);
   if (!sheet) return { success: false, error: "Hoja solicitudes no disponible." };
@@ -2015,12 +2069,13 @@ function resolverSolicitudModRadComite(sesion, body) {
   if (!rs || rs < 2) return { success: false, error: "Fila de solicitud inválida." };
   if (rs > sheet.getLastRow()) return { success: false, error: "Solicitud no encontrada." };
 
-  var r = sheet.getRange(rs, 1, rs, 12).getValues()[0];
+  var r = sheet.getRange(rs, 1, 1, 12).getValues()[0];
   if (String(r[4] || "").trim().toLowerCase() !== "pendiente_comite") return { success: false, error: "Esta solicitud no está en estado pendiente de comité." };
 
   var emailCoord = String(sesion.email || "").trim();
-  var rowF1 = parseInt(r[2], 10);
   var numero = String(r[3] || "").trim();
+  var rowF1 = filaFase1PorNumero_(getSheet("Fase1"), numero, r[2]);
+  if (!rowF1) return { success: false, error: "No se encontró la radicación " + numero + " en Fase1." };
   var deltas = {};
   try { deltas = JSON.parse(String(r[6] || "{}")); } catch(ex) { return { success: false, error: "JSON de cambios inválido." }; }
 
@@ -2048,7 +2103,7 @@ function resolverSolicitudModRadComite(sesion, body) {
   var sheetF1 = getSheet("Fase1");
   if (!sheetF1) return { success: false, error: "Fase 1 no encontrada" };
   asegurarColumnasFase1DiplomadoJurados(sheetF1);
-  var rowVals = sheetF1.getRange(rowF1, 1, rowF1, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
+  var rowVals = sheetF1.getRange(rowF1, 1, 1, Math.max(sheetF1.getLastColumn(), 52)).getValues()[0];
   var deltasFinales = sanitizarYFiltrarCambiosModRad_(deltas, rowVals);
   if (!Object.keys(deltasFinales).length) {
     return { success: false, error: "Los datos ya coinciden con la hoja. Rechace la solicitud con una nota aclaratoria." };
@@ -2194,10 +2249,15 @@ function getSolicitudesCancelarRadPendientes(sesion) {
     if (String(data[i][4] || "").trim().toLowerCase() !== "pendiente") continue;
     lista.push(filaSolCancelRadToObj_(data[i], i + 1));
   }
+  corregirFilasFase1Solicitudes_(lista);
   return { success: true, solicitudes: lista, totalPendientes: lista.length };
 }
 
 function resolverSolicitudCancelarRad(sesion, body) {
+  return conLockSolicitudes_(function() { return resolverSolicitudCancelarRadSinLock_(sesion, body); });
+}
+
+function resolverSolicitudCancelarRadSinLock_(sesion, body) {
   if (!sesionEsCoordinadoraOAsistente(sesion)) return { success: false, error: "No autorizado" };
   var sheet = getSheet(NOMBRE_HOJA_SOL_CANCEL_RAD);
   if (!sheet) return { success: false, error: "Hoja de solicitudes no disponible." };
@@ -2209,8 +2269,9 @@ function resolverSolicitudCancelarRad(sesion, body) {
   var r = sheet.getRange(rs, 1, 1, 10).getValues()[0];
   if (String(r[4] || "").trim().toLowerCase() !== "pendiente") return { success: false, error: "Esta solicitud ya fue resuelta." };
   var emailCoord = String(sesion.email || "").trim();
-  var rowF1 = parseInt(r[2], 10);
   var numero = String(r[3] || "").trim();
+  var rowF1 = filaFase1PorNumero_(getSheet("Fase1"), numero, r[2]);
+  if (!rowF1) return { success: false, error: "No se encontró la radicación " + numero + " en Fase1." };
   var emailEst = String(r[1] || "").trim();
   var ts = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
 
