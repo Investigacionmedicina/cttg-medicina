@@ -8,26 +8,28 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Outfit',sans-serif;min-height:100vh;background:#f4f6fb;display:flex;align-items:center;justify-content:center;padding:20px}
-  .card{background:#ffffff;border:1px solid rgba(15,23,42,.08);border-radius:20px;padding:36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(15,23,42,.10)}
-  .back{color:rgba(15,23,42,.78);font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:24px;transition:color .2s}
+  .card{background:#ffffff;border:1px solid #e4e8ef;border-radius:20px;padding:36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(15,23,42,.10)}
+  .back{color:#334155;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:24px;transition:color .2s}
   .back:hover{color:#0f172a}
   .logo{width:56px;height:56px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px}
   h2{font-family:'DM Serif Display',serif;font-size:22px;color:#0f172a;margin-bottom:4px}
-  .desc{color:rgba(15,23,42,.78);font-size:13px;margin-bottom:24px}
+  .desc{color:#334155;font-size:13px;margin-bottom:24px}
   .fg{margin-bottom:16px}
-  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:rgba(15,23,42,.78);margin-bottom:6px}
-  input{width:100%;background:#ffffff;border:1px solid rgba(15,23,42,.18);border-radius:10px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:14px;padding:12px 14px;outline:none;transition:border-color .2s}
-  input::placeholder{color:rgba(15,23,42,.4)}
+  label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#334155;margin-bottom:6px}
+  input{width:100%;background:#ffffff;border:1px solid #d3d9e3;border-radius:10px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:14px;padding:12px 14px;outline:none;transition:border-color .2s}
+  input::placeholder{color:#64748b}
   input:focus{border-color:rgba(102,126,234,.7);background:#ffffff}
-  .err{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+  .err{background:#fde3e3;border:1px solid #fac7c7;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
   .btn{width:100%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:13px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;box-shadow:0 4px 15px rgba(102,126,234,.4)}
   .btn:hover{transform:translateY(-1px)}
   .btn:disabled{opacity:.6;transform:none;cursor:not-allowed}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(15,23,42,.22);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #d3d9e3;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tema.css">
 </head>
-<body>
+<body class="pag-acceso">
 <div class="card">
   <a href="index.html" class="back">← Volver</a>
   <div class="logo">🎓</div>

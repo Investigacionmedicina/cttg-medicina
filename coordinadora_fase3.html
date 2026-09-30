@@ -8,62 +8,62 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Outfit',sans-serif;background:#ffffff;color:#0f172a;min-height:100vh}
-  header{background:#ffffff;box-shadow:0 1px 3px rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.1);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
+  header{background:#ffffff;box-shadow:0 1px 3px rgba(15,23,42,.06);border-bottom:1px solid #e4e8ef;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px}
   .hdr-l{display:flex;align-items:center;gap:10px}
   .logo{width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
   .hdr-l h1{font-family:'DM Serif Display',serif;font-size:18px;color:#0f172a}
-  .hdr-l p{font-size:11px;color:rgba(15,23,42,.73)}
+  .hdr-l p{font-size:11px;color:#64748b}
   .hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .user-chip{background:rgba(15,23,42,.08);border:1px solid rgba(15,23,42,.14);border-radius:20px;padding:5px 13px;font-size:12px;color:rgba(15,23,42,.91)}
-  .btn-out{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#b91c1c;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+  .user-chip{background:#f1f4f8;border:1px solid #e4e8ef;border-radius:20px;padding:5px 13px;font-size:12px;color:#0f172a}
+  .btn-out{background:#fde3e3;border:1px solid #fac7c7;color:#b91c1c;padding:5px 13px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
   main{padding:24px 28px;max-width:1300px;margin:0 auto}
-  .back{display:inline-flex;align-items:center;gap:6px;color:rgba(15,23,42,.78);font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
+  .back{display:inline-flex;align-items:center;gap:6px;color:#334155;font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
   .back:hover{color:#0f172a}
-  .tabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(15,23,42,.05);border:1px solid rgba(15,23,42,.1);border-radius:10px;padding:4px;width:fit-content}
-  .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:rgba(15,23,42,.78);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:#ffffff;border:1px solid #e4e8ef;border-radius:10px;padding:4px;width:fit-content}
+  .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:#334155;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
   .tab.on{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.4)}
   .panel{display:none}.panel.on{display:block}
   .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
   .sec-hdr h2{font-family:'DM Serif Display',serif;font-size:17px;color:#0f172a}
-  .sec-hdr p{font-size:12px;color:rgba(15,23,42,.73)}
-  .btn-ref{background:rgba(15,23,42,.06);border:1px solid rgba(15,23,42,.12);border-radius:8px;color:rgba(15,23,42,.82);font-family:'Outfit',sans-serif;font-size:12px;padding:7px 13px;cursor:pointer}
-  .tbl-wrap{background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:14px;overflow:auto}
+  .sec-hdr p{font-size:12px;color:#64748b}
+  .btn-ref{background:#ffffff;border:1px solid #e4e8ef;border-radius:8px;color:#334155;font-family:'Outfit',sans-serif;font-size:12px;padding:7px 13px;cursor:pointer}
+  .tbl-wrap{background:#ffffff;border:1px solid #e4e8ef;border-radius:14px;overflow:auto}
   table{width:100%;border-collapse:collapse;min-width:700px}
-  thead tr{background:rgba(15,23,42,.04);border-bottom:1px solid rgba(15,23,42,.1)}
-  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.73);font-family:'DM Mono',monospace;white-space:nowrap}
-  td{padding:10px 13px;border-bottom:1px solid rgba(15,23,42,.1);vertical-align:middle;font-size:13px}
+  thead tr{background:#ffffff;border-bottom:1px solid #e4e8ef}
+  th{padding:10px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-family:'DM Mono',monospace;white-space:nowrap}
+  td{padding:10px 13px;border-bottom:1px solid #e4e8ef;vertical-align:middle;font-size:13px}
   tr:last-child td{border-bottom:none}
-  tr:hover td{background:rgba(15,23,42,.02)}
+  tr:hover td{background:#ffffff}
   .num-rad{font-family:'DM Mono',monospace;font-size:12px;color:#047857;font-weight:600}
-  .alert-s12{display:inline-block;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);color:#b91c1c;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;margin-left:6px}
-  .btn{padding:4px 10px;border-radius:7px;border:1px solid rgba(15,23,42,.12);background:transparent;color:rgba(15,23,42,.78);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
-  .btn:hover{background:rgba(15,23,42,.07);color:#0f172a}
-  .btn.gr{color:#047857;border-color:rgba(52,211,153,.3)}.btn.gr:hover{background:rgba(52,211,153,.1)}
-  .btn.bl{color:#1d4ed8;border-color:rgba(96,165,250,.3)}.btn.bl:hover{background:rgba(96,165,250,.1)}
-  .btn.am{color:#b45309;border-color:rgba(252,211,77,.3)}.btn.am:hover{background:rgba(252,211,77,.1)}
-  .btn.rd{color:#b91c1c;border-color:rgba(239,68,68,.3)}.btn.rd:hover{background:rgba(239,68,68,.1)}
+  .alert-s12{display:inline-block;background:#fcdada;border:1px solid #f9b4b4;color:#b91c1c;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;margin-left:6px}
+  .btn{padding:4px 10px;border-radius:7px;border:1px solid #e4e8ef;background:transparent;color:#334155;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
+  .btn:hover{background:#f1f4f8;color:#0f172a}
+  .btn.gr{color:#047857;border-color:#c2f2e0}.btn.gr:hover{background:#ebfbf5}
+  .btn.bl{color:#1d4ed8;border-color:#cfe4fe}.btn.bl:hover{background:#eff6fe}
+  .btn.am{color:#b45309;border-color:#fef2ca}.btn.am:hover{background:#fffbed}
+  .btn.rd{color:#b91c1c;border-color:#fac7c7}.btn.rd:hover{background:#fdecec}
   .badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap}
-  .b-pend{background:rgba(245,158,11,.2);color:#b45309}
-  .b-revisada{background:rgba(59,130,246,.2);color:#1d4ed8}
-  .b-devuelta{background:rgba(239,68,68,.2);color:#b91c1c}
+  .b-pend{background:#fdecce;color:#b45309}
+  .b-revisada{background:#d8e6fd;color:#1d4ed8}
+  .b-devuelta{background:#fcdada;color:#b91c1c}
   .act{display:flex;gap:4px;flex-wrap:wrap}
-  .empty{padding:48px;text-align:center;color:rgba(15,23,42,.69);font-size:13px}
-  .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(15,23,42,.22);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+  .empty{padding:48px;text-align:center;color:#64748b;font-size:13px}
+  .spinner{display:inline-block;width:13px;height:13px;border:2px solid #d3d9e3;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
   @keyframes spin{to{transform:rotate(360deg)}}
   /* MODAL */
-  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.42);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-bg.open{display:flex}
-  .modal{background:#ffffff;border:1px solid rgba(15,23,42,.12);border-radius:16px;padding:24px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
+  .modal{background:#ffffff;border:1px solid #e4e8ef;border-radius:16px;padding:24px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
   @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
   .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .modal-hdr h3{font-family:'DM Serif Display',serif;font-size:17px;color:#0f172a}
   .mfg{margin-bottom:14px}
-  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:rgba(15,23,42,.73);margin-bottom:5px}
-  .mfg input,.mfg select,.mfg textarea{width:100%;background:rgba(15,23,42,.07);border:1px solid rgba(15,23,42,.14);border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
+  .mfg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#64748b;margin-bottom:5px}
+  .mfg input,.mfg select,.mfg textarea{width:100%;background:#f1f4f8;border:1px solid #e4e8ef;border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:10px 13px;outline:none}
   .mfg select option{background:#ffffff}
-  .mfg input.ro-lock,.mfg textarea.ro-lock{background:rgba(15,23,42,.03);color:rgba(15,23,42,.93)}
-  .hint-j{font-size:11px;color:rgba(15,23,42,.75);line-height:1.35;margin:-6px 0 10px}
-  .msec{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(15,23,42,.69);font-family:'DM Mono',monospace;margin:14px 0 8px;border-bottom:1px solid rgba(15,23,42,.1);padding-bottom:4px}
+  .mfg input.ro-lock,.mfg textarea.ro-lock{background:#ffffff;color:#0f172a}
+  .hint-j{font-size:11px;color:#64748b;line-height:1.35;margin:-6px 0 10px}
+  .msec{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-family:'DM Mono',monospace;margin:14px 0 8px;border-bottom:1px solid #e4e8ef;padding-bottom:4px}
   .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .btn-action{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
   .btn-action:hover{transform:translateY(-1px)}
@@ -73,6 +73,8 @@
   .toast.ok{background:rgba(16,185,129,.9);color:#fff}.toast.err{background:rgba(239,68,68,.9);color:#fff}.toast.warn{background:rgba(245,158,11,.9);color:#000}
   @media(max-width:680px){main{padding:16px}}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tema.css">
 </head>
 <body>
 <header>
@@ -95,18 +97,18 @@
     <button type="button" class="tab" id="tabTodas" onclick="switchTab('todas',this)">📋 Todas las solicitudes</button>
   </div>
 
-  <div class="filtro-estado-f3" style="margin:10px 0 18px;padding:12px 14px;background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.1);border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-    <input id="searchFase3" type="search" placeholder="🔍 Buscar por radicación, estudiante, jurado, tutor..." autocomplete="off" oninput="renderTablas()" style="min-width:240px;flex:1;max-width:420px;background:rgba(15,23,42,.06);border:1px solid rgba(15,23,42,.12);border-radius:8px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none">
-    <label for="filtroEstadoF3" style="font-size:12px;color:rgba(15,23,42,.8);flex:1;min-width:220px">
+  <div class="filtro-estado-f3" style="margin:10px 0 18px;padding:12px 14px;background:#ffffff;border:1px solid #e4e8ef;border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+    <input id="searchFase3" type="search" placeholder="🔍 Buscar por radicación, estudiante, jurado, tutor..." autocomplete="off" oninput="renderTablas()" style="min-width:240px;flex:1;max-width:420px;background:#ffffff;border:1px solid #e4e8ef;border-radius:8px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none">
+    <label for="filtroEstadoF3" style="font-size:12px;color:#334155;flex:1;min-width:220px">
       Filtrar por texto exacto de <strong style="color:#0f172a;font-weight:600">Estado solicitud</strong> (columna AC del Excel). «Observaciones estado» se muestra en las tablas (columna AD); los valores posibles salen de lo que haya en la hoja más los estándar del sistema.
     </label>
-    <select id="filtroEstadoF3" autocomplete="off" onchange="renderTablas()" style="min-width:300px;max-width:100%;background:rgba(15,23,42,.07);border:1px solid rgba(15,23,42,.14);border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
-    <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(15,23,42,.87);cursor:pointer;max-width:340px;line-height:1.35">
+    <select id="filtroEstadoF3" autocomplete="off" onchange="renderTablas()" style="min-width:300px;max-width:100%;background:#f1f4f8;border:1px solid #e4e8ef;border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
+    <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#334155;cursor:pointer;max-width:340px;line-height:1.35">
       <input type="checkbox" id="chkFase3SinDedupe" checked onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;margin-top:2px;flex-shrink:0" />
       <span><strong style="color:#0f172a;font-weight:600">Sin agrupar</strong> por radicación (recomendado: lista cada fila del Excel). Desmárquelo si solo quiere la fila más reciente por número.</span>
     </label>
     <button type="button" class="btn-ref" onclick="diagnosticoFase3()" style="flex-shrink:0" title="Compara filas API vs escaneo columna B en Sheets">🔧 Diagnóstico lectura</button>
-    <p style="font-size:11px;color:rgba(15,23,42,.72);margin:0;width:100%;line-height:1.45">Si en la hoja hay más solicitudes radicadas (por ejemplo CONTARA en columna B) que filas en «Todas»: deje el filtro en «Todos los estados», mantenga «Sin agrupar» activo y pulse Diagnóstico para verificar que el script usa el mismo libro y pestaña que su archivo.</p>
+    <p style="font-size:11px;color:#64748b;margin:0;width:100%;line-height:1.45">Si en la hoja hay más solicitudes radicadas (por ejemplo CONTARA en columna B) que filas en «Todas»: deje el filtro en «Todos los estados», mantenga «Sin agrupar» activo y pulse Diagnóstico para verificar que el script usa el mismo libro y pestaña que su archivo.</p>
   </div>
 
   <!-- VISTA 1: ASIGNAR JURADOS -->
@@ -171,12 +173,12 @@
       <div>
         <h2>Todas las solicitudes</h2>
         <p>Listado completo cargado desde el sistema (incluye cerradas y programadas). Las pestañas anteriores solo muestran pendientes de acción.</p>
-        <p style="font-size:11px;color:rgba(15,23,42,.71);margin-top:6px">Con la casilla «sin agrupar» desactivada, si hay varias filas con el mismo número de radicación solo se muestra la más reciente. Actívela arriba para listar cada fila del Excel.</p>
+        <p style="font-size:11px;color:#64748b;margin-top:6px">Con la casilla «sin agrupar» desactivada, si hay varias filas con el mismo número de radicación solo se muestra la más reciente. Actívela arriba para listar cada fila del Excel.</p>
       </div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
     <div class="filters" style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <input id="searchTodasF3" type="search" placeholder="🔍 Buscar radicación, estudiante o correo..." style="min-width:240px;flex:1;max-width:420px;background:rgba(15,23,42,.06);border:1px solid rgba(15,23,42,.12);border-radius:8px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none" oninput="renderTablas()">
+      <input id="searchTodasF3" type="search" placeholder="🔍 Buscar radicación, estudiante o correo..." style="min-width:240px;flex:1;max-width:420px;background:#ffffff;border:1px solid #e4e8ef;border-radius:8px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none" oninput="renderTablas()">
     </div>
     <div class="tbl-wrap">
       <table>
@@ -207,7 +209,7 @@
       <h3>👥 Aprobar / Asignar Jurados</h3>
       <button class="btn" onclick="closeModal('modalAsignar')">✕</button>
     </div>
-    <p id="mAsignarInfo" style="font-size:12px;color:rgba(15,23,42,.73);margin-bottom:14px"></p>
+    <p id="mAsignarInfo" style="font-size:12px;color:#64748b;margin-bottom:14px"></p>
 
     <div class="msec">Jurado 1</div>
     <div class="hint-j" id="hintJ1"></div>
@@ -252,7 +254,7 @@
       <h3>📅 Asignar Fecha y Hora de Sustentación</h3>
       <button class="btn" onclick="closeModal('modalFecha')">✕</button>
     </div>
-    <p id="mFechaInfo" style="font-size:12px;color:rgba(15,23,42,.73);margin-bottom:14px"></p>
+    <p id="mFechaInfo" style="font-size:12px;color:#64748b;margin-bottom:14px"></p>
     <div class="mgrid" style="margin-bottom:14px">
       <div class="mfg"><label>Fecha Sustentación *</label><input type="date" id="mFecha"></div>
       <div class="mfg"><label>Hora *</label><input type="time" id="mHora"></div>
@@ -273,7 +275,7 @@
       <h3>↩ Devolver Solicitud</h3>
       <button class="btn" onclick="closeModal('modalDevolver')">✕</button>
     </div>
-    <p id="mDevolverInfo" style="font-size:12px;color:rgba(15,23,42,.73);margin-bottom:14px"></p>
+    <p id="mDevolverInfo" style="font-size:12px;color:#64748b;margin-bottom:14px"></p>
     <div class="mfg">
       <label>Motivo de devolución *</label>
       <textarea id="mMotivoDevolucion" placeholder="Explica qué documentación debe corregir o completar el estudiante..."></textarea>
@@ -293,7 +295,7 @@
       <h3>🎓 Registrar Resultado</h3>
       <button class="btn" onclick="closeModal('modalResultado')">✕</button>
     </div>
-    <p id="mResultadoInfo" style="font-size:12px;color:rgba(15,23,42,.73);margin-bottom:14px"></p>
+    <p id="mResultadoInfo" style="font-size:12px;color:#64748b;margin-bottom:14px"></p>
 
     <div class="mgrid">
       <div class="mfg"><label>Nota Final * (0 - 5)</label><input type="number" id="mNota" min="0" max="5" step="0.1" placeholder="Ej: 4.5"></div>
@@ -462,9 +464,9 @@ function badgeEstadoSheet(estadoTxt) {
 
 function truncObsHtml(obs, max) {
   const raw = String(obs || '').trim();
-  if (!raw) return '<span style="color:rgba(15,23,42,.71)">—</span>';
+  if (!raw) return '<span style="color:#64748b">—</span>';
   const short = raw.length <= max ? raw : raw.slice(0, max) + '…';
-  return `<span style="font-size:11px;color:rgba(15,23,42,.84);line-height:1.35;cursor:default" title="${escAttr(raw)}">${esc(short)}</span>`;
+  return `<span style="font-size:11px;color:#334155;line-height:1.35;cursor:default" title="${escAttr(raw)}">${esc(short)}</span>`;
 }
 
 function coincideFiltroEstadoSheet(r) {
@@ -582,7 +584,7 @@ function htmlBadgesEstadoSugerenciaJurados(r) {
     if (dip) {
       const modo = String(dip.diplomadoJuradoModo || '').trim().toLowerCase();
       if (modo === 'cttg_asigna') {
-        const chip = `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:rgba(167,139,250,.2);border:1px solid rgba(167,139,250,.42);color:#6d28d9;font-size:11px;font-weight:600">Diplomado: Comité Técnico asigna evaluador</span>`;
+        const chip = `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:#ede8fe;border:1px solid rgba(167,139,250,.42);color:#6d28d9;font-size:11px;font-weight:600">Diplomado: Comité Técnico asigna evaluador</span>`;
         return `<div style="margin-bottom:6px">${chip}</div><div><span style="color:#6d28d9;font-size:11px;font-weight:600">● El estudiante indicó que el Comité Técnico debe asignar el evaluador</span></div>`;
       }
     }
@@ -591,8 +593,8 @@ function htmlBadgesEstadoSugerenciaJurados(r) {
   const j2 = tieneSugerenciaJuradoN(2, r);
   const chip = (lbl, tiene) =>
     tiene
-      ? `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:rgba(52,211,153,.2);border:1px solid rgba(52,211,153,.42);color:#15803d;font-size:11px;font-weight:600">${lbl}: tiene sugerencia</span>`
-      : `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.38);color:#b91c1c;font-size:11px;font-weight:600">${lbl}: sin sugerencia del estudiante</span>`;
+      ? `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:#d6f6eb;border:1px solid rgba(52,211,153,.42);color:#15803d;font-size:11px;font-weight:600">${lbl}: tiene sugerencia</span>`
+      : `<span style="display:inline-block;padding:2px 8px;margin:0 6px 4px 0;border-radius:5px;background:#fce1e1;border:1px solid #f9b8b8;color:#b91c1c;font-size:11px;font-weight:600">${lbl}: sin sugerencia del estudiante</span>`;
   let resumen;
   if (j1 && j2) resumen = '<span style="color:#166534;font-size:11px;font-weight:600">● Ambos jurados tienen datos sugeridos</span>';
   else if (!j1 && !j2) resumen = '<span style="color:#b91c1c;font-size:11px;font-weight:600">● El estudiante no envió jurados sugeridos</span>';
@@ -603,7 +605,7 @@ function htmlBadgesEstadoSugerenciaJurados(r) {
 function celdaTablaColumnaSugerencias(r) {
   const linea = esc(lineaTablaJuradosSugeridos(r));
   const detalle = linea === '—'
-    ? '<span style="color:rgba(15,23,42,.74);font-size:11px">Ningún nombre, correo ni teléfono sugeridos en esta fila.</span>'
+    ? '<span style="color:#64748b;font-size:11px">Ningún nombre, correo ni teléfono sugeridos en esta fila.</span>'
     : linea;
   return `<td style="max-width:340px;vertical-align:top">${htmlBadgesEstadoSugerenciaJurados(r)}<div style="margin-top:8px;font-size:12px;color:#334155;line-height:1.4;word-break:break-word">${detalle}</div></td>`;
 }
@@ -657,16 +659,16 @@ function modalidadDeNumeroFase1(numero) {
 
 function celdaModalidadF3(numeroRad) {
   const m = modalidadDeNumeroFase1(numeroRad);
-  if (!m) return '<td style="font-size:11px;color:rgba(15,23,42,.69)" title="Sin modalidad en Fase 1 para este número (no enlazado o libro distinto).">—</td>';
+  if (!m) return '<td style="font-size:11px;color:#64748b" title="Sin modalidad en Fase 1 para este número (no enlazado o libro distinto).">—</td>';
   const diplomado = esModalidadDiplomadoTxt(m);
-  const style = diplomado ? 'background:rgba(167,139,250,.1);border-radius:6px;max-width:150px;line-height:1.25;color:#0f172a' : 'max-width:150px;line-height:1.25;color:rgba(15,23,42,.86)';
+  const style = diplomado ? 'background:#f6f3fe;border-radius:6px;max-width:150px;line-height:1.25;color:#0f172a' : 'max-width:150px;line-height:1.25;color:#334155';
   const shortText = esc(m.length > 32 ? m.slice(0, 30) + '…' : m);
   return `<td style="${style}" title="${escAttr(m)}">${shortText}</td>`;
 }
 
 function bloqueKv(label, texto) {
   const v = String(texto ?? '').trim();
-  const inner = v ? esc(v).replace(/\n/g, '<br>') : '<span style="color:rgba(15,23,42,.71)">—</span>';
+  const inner = v ? esc(v).replace(/\n/g, '<br>') : '<span style="color:#64748b">—</span>';
   return `<div class="mfg" style="margin-bottom:11px"><label>${esc(label)}</label>` +
     `<div style="white-space:pre-wrap;word-break:break-word;color:#334155;font-size:13px;line-height:1.45;margin-top:3px">${inner}</div></div>`;
 }
@@ -686,7 +688,7 @@ function campoDocPortal(label, val) {
 function htmlDetalleCompletoEnvioF3(r) {
   const mod = modalidadDeNumeroFase1(r.numero);
   let h = `<p style="font-size:12px;line-height:1.45;color:#594b32;margin:-2px 0 14px">${mod ? 'Modalidad Fase 1: <strong>' + esc(mod) + '</strong>' : '⚠ Modalidad no enlazada con Fase 1 para esta radicación (no se marca diplomado).'}</p>`;
-  h += '<div style="margin-bottom:16px;background:rgba(15,23,42,.04);border-radius:10px;padding:12px;border:1px solid rgba(15,23,42,.1)">' + htmlBadgesEstadoSugerenciaJurados(r) + '</div>';
+  h += '<div style="margin-bottom:16px;background:#ffffff;border-radius:10px;padding:12px;border:1px solid #e4e8ef">' + htmlBadgesEstadoSugerenciaJurados(r) + '</div>';
   h += '<div class="msec">Lo registrado desde el estudiante</div>';
   h += campoDocPortal('Campo 1 (Anexo/producto equiv.)', r.urlAnexoA7);
   h += campoDocPortal('Campo 2', r.urlArticulo);
@@ -699,7 +701,7 @@ function htmlDetalleCompletoEnvioF3(r) {
   h += bloqueKv('Semestre (hoja)', r.semestre || '');
   h += bloqueKv('Alerta semestre 12', r.alertaS12 || '');
   h += '<div class="msec">Jurados · sugerencia del estudiante</div>';
-  h += `<p style="font-size:11px;line-height:1.4;color:rgba(15,23,42,.78);margin:-4px 0 8px">${esc(lineaTablaJuradosSugeridos(r))}</p>`;
+  h += `<p style="font-size:11px;line-height:1.4;color:#334155;margin:-4px 0 8px">${esc(lineaTablaJuradosSugeridos(r))}</p>`;
   const modDet = modalidadDeNumeroFase1(r.numero);
   if (esModalidadDiplomadoTxt(modDet)) {
     const dip = dipDatosParaRad(r.numero);
@@ -949,11 +951,11 @@ function renderTablas() {
       const estaDevuelta = esEstadoDevueltaSheet(estSh);
       return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      <td style="font-size:12px;color:#334155">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
       ${celdaModalidadF3(r.numero)}
       <td style="font-size:13px">${esc(String(r.semestre ?? ''))}${String(r.alertaS12 || '').trim() === 'SÍ' ? '<span class="alert-s12">⚠️ S12</span>' : ''}</td>
       <td style="font-size:12px;color:${parseFloat(r.pctTurnitin)>=20?'#fca5a5':'#6ee7b7'}">${r.pctTurnitin||'—'}%</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(15,23,42,.73)">${fmtFecha(r.fechaCarga)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:#64748b">${fmtFecha(r.fechaCarga)}</td>
       ${celdaTablaColumnaSugerencias(r)}
       <td>${badgeEstadoSheet(estSh)}</td>
       <td>${truncObsHtml(r.observacionesEstado, 56)}</td>
@@ -980,12 +982,12 @@ function renderTablas() {
   } else {
     tbR.innerHTML = conFecha.map(r => `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      <td style="font-size:12px;color:#334155">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
       ${celdaModalidadF3(r.numero)}
       <td style="font-family:'DM Mono',monospace;font-size:12px;color:#b45309">${fmtFecha(fechaProgramacionPrimaria(r))}</td>
-      <td style="font-size:12px;color:rgba(15,23,42,.78)">${r.horaSustentacion||'—'}</td>
-      <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(r.jurado1Nombre||'—')}</td>
-      <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(r.jurado2Nombre||'—')}</td>
+      <td style="font-size:12px;color:#334155">${r.horaSustentacion||'—'}</td>
+      <td style="font-size:12px;color:#334155">${esc(r.jurado1Nombre||'—')}</td>
+      <td style="font-size:12px;color:#334155">${esc(r.jurado2Nombre||'—')}</td>
       <td>${badgeEstadoSheet(estadoSheetRaw(r))}</td>
       <td>${truncObsHtml(r.observacionesEstado, 44)}</td>
       ${celdaBotonDetalleCompleto(r.rowIndex)}
@@ -1013,9 +1015,9 @@ function renderTablas() {
         const estSh = estadoSheetRaw(r);
         return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
-      <td style="font-size:12px;color:rgba(15,23,42,.82)">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
+      <td style="font-size:12px;color:#334155">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
       ${celdaModalidadF3(r.numero)}
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(15,23,42,.73)">${fmtFecha(r.fechaCarga)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:#64748b">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:#b45309">${fmtFecha(fechaProgramacionPrimaria(r))}</td>
       <td style="font-size:12px">${esc(notaTxt || '—')}</td>
       <td>${badgeEstadoSheet(estSh)}</td>
