@@ -30,7 +30,7 @@ function handleRequest(e, body) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1','resolverSolicitudModRad','resolverSolicitudModRadComite','resolverSolicitudCancelarRad','enviarEmailAlertaCritica'];
+    var accionesCoord = ['updateEstado','validarTutores','avalarProtocoloFase2','actualizarProtocolo','aprobarActasAsesoria','registrarDecisionComite','updateFase3Estado','updateFase3Asignacion','completarFase3','repararEstadosFase1','resolverSolicitudModRad','resolverSolicitudModRadComite','resolverSolicitudCancelarRad','enviarEmailAlertaCritica','cambiarEvaluadorProtocolo'];
 
     if (accionesCoord.indexOf(action) !== -1 && !sesionEsCoordinadoraOAsistente(sesion)) {
       return ContentService
@@ -68,6 +68,7 @@ function handleRequest(e, body) {
       case "getFase2":             result = obtenerFase2(sesion); break;
       case "avalarProtocoloFase2": result = avalarProtocoloFase2(body.rowIndex, body.estado, body.motivo, body.evaluador, body.emailEvaluador, body.fechaComite, body.observaciones, body.emailCoord); break;
       case "registrarDecisionComite": result = registrarDecisionComite(body.rowIndex, body.estado, body.motivoDevolucion || body.motivoDevoluccion, body.emailEvaluador, body.evaluador, body.numeroActa, body.avalCCEB, body.observaciones); break;
+      case "cambiarEvaluadorProtocolo": result = cambiarEvaluadorProtocolo(body.rowIndex, body.evaluador, body.emailEvaluador, body.emailCoord || (sesion && sesion.email)); break;
       case "actualizarProtocolo":  result = actualizarEstadoProtocolo(body.rowIndex, body.estado, body.evaluador, body.emailEvaluador, body.fechaReunion, body.decision, body.motivo, body.emailCoord); break;
       case "crearActasAsesoria":   result = crearActasAsesoria(body.numeroRadicacion, body.emailEstudiante, body.nombreArchivo, body.base64, body.observaciones, sesion); break;
       case "getActasAsesoria":     result = obtenerActasAsesoria(sesion); break;
@@ -1612,7 +1613,8 @@ function obtenerFase1PorEmail(email, sesion) {
       
       // ── PROTOCOLO (8 días hábiles) ──
       var protocolos = todosProtocolos;
-      var protocoloEste = protocolos.find(p => String(p.numero) === String(rad.numero));
+      // El envío más reciente (el último en la hoja): los anteriores pueden tener un evaluador ya reemplazado.
+      var protocoloEste = protocolos.filter(p => String(p.numero) === String(rad.numero)).pop();
       if (protocoloEste) {
         rad.protocoloEstado = protocoloEste.estado;
         rad.protocoloDiasRestantes = protocoloEste.diasRestantes;
@@ -2855,6 +2857,40 @@ function actualizarEstadoProtocolo(rowIndex, estado, evaluador, emailEvaluador, 
   registrarHistorial(numRadProt, "FASE2", "ACTUALIZAR_PROTOCOLO", estadoAnteriorF2, estado || "", emailCoord || "", motivo || decision || "", "Evaluador: " + (evaluador || "") + " | Reunión: " + (fechaReunion || ""));
   return { success: true };
 }
+/**
+ * Cambia solo el evaluador asignado (Fase2 col G) sin tocar el estado ni la fecha de comité.
+ * Sirve, p. ej., en Diplomado: el estudiante sugiere un jurado pero la coordinación decide quién evalúa.
+ */
+function cambiarEvaluadorProtocolo(rowIndex, evaluador, emailEvaluador, emailCoord) {
+  var ri = parseInt(rowIndex);
+  var nombre = String(evaluador || "").trim();
+  if (!ri || ri < 2) return { success: false, error: "Fila inválida" };
+  if (!nombre) return { success: false, error: "Indica el nombre del evaluador" };
+  var sheet = getSheet("Fase2");
+  var numRad = String(sheet.getRange(ri, 2).getValue() || "").trim();
+  if (!numRad) return { success: false, error: "No se encontró el protocolo" };
+  var anterior = String(sheet.getRange(ri, 7).getValue() || "").trim();
+  var fechaComite = sheet.getRange(ri, 8).getValue();
+  sheet.getRange(ri, 7).setValue(nombre);
+  try {
+    var mail = String(emailEvaluador || "").trim();
+    if (mail && mail.indexOf("@") > 0 && nombre !== anterior) {
+      MailApp.sendEmail({
+        to: mail,
+        subject: "📋 Asignación como evaluador · Comité CTTG · " + numRad,
+        body:
+          "Estimado/a " + nombre + ",\n\n" +
+          "Se le ha asignado la evaluación del trabajo: " + numRad +
+          "\nFecha del comité: " + (fechaComite ? Utilities.formatDate(new Date(fechaComite), Session.getScriptTimeZone(), "dd/MM/yyyy") : "Por confirmar") +
+          "\n\nComité de Trabajos de Grado — Medicina USC"
+      });
+    }
+  } catch (e) { Logger.log("Error correo evaluador: " + e); }
+  registrarAuditoria(emailCoord, "CAMBIAR_EVALUADOR_PROTOCOLO", numRad + " | Fila " + ri + " | " + anterior + " → " + nombre);
+  registrarHistorial(numRad, "FASE2", "CAMBIAR_EVALUADOR", "", "", emailCoord || "", "", "Evaluador: " + (anterior || "—") + " → " + nombre);
+  return { success: true, evaluador: nombre, anterior: anterior };
+}
+
 // ── ACTAS DE ASESORÍA ────────────────────────────────────────
 // Hoja Acta asesoria: A(1)=ID | B(2)=Número Radicación | C(3)=Email Estudiante
 // D(4)=Nombre Archivo | E(5)=URL Archivo | F(6)=Fecha Carga | G(7)=Estado | H(8)=Observaciones

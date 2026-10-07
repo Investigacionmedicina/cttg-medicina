@@ -874,7 +874,7 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Inicio / Fin Diplomado</th><th>Jurado evaluador</th><th>F. Aprobación CT</th><th>Nota</th><th>N° Acta</th><th>Estado</th><th>Acciones</th>
+          <th>N° Radicación</th><th>Estudiante(s)</th><th>Título</th><th>Inicio / Fin Diplomado</th><th>Evaluador asignado</th><th>F. Aprobación CT</th><th>Nota</th><th>N° Acta</th><th>Estado</th><th>Acciones</th>
         </tr></thead>
         <tbody id="tbodyDiplomado">
           <tr><td colspan="10" class="empty"><span class="spinner"></span>Cargando...</td></tr>
@@ -1155,6 +1155,23 @@ function escAttr(s) { return esc(s).replace(/"/g,'&quot;'); }
 function esModalidadDiplomadoDash(r) {
   const s = String((r && r.modalidad) || '').trim().toLowerCase();
   return s.includes('diplomado') || s.includes('diplom');
+}
+
+/* Diplomado: el estudiante sugiere jurado, pero vale el evaluador que asigna la coordinación (Fase 2). */
+function evaluadorAsignadoDe(r) {
+  const num = String((r && r.numero) || '');
+  let lista = [];
+  try { lista = protocolos || []; } catch (e) {}
+  const filas = lista.filter(p => String(p.numero || '') === num && String(p.evaluador || '').trim());
+  if (filas.length) return String(filas.reduce((a, b) => (Number(b.rowIndex) > Number(a.rowIndex) ? b : a)).evaluador).trim();
+  return String((r && r.protocoloEvaluador) || '').trim();
+}
+function juradoDiplomadoHtml(r) {
+  const ev = evaluadorAsignadoDe(r);
+  const sug = String((r && r.dipJurado1Nombre) || '').trim();
+  const mismo = ev && sug && ev.toLowerCase() === sug.toLowerCase();
+  if (ev) return esc(ev) + (sug && !mismo ? '<div style="font-size:10px;color:#64748b">Sugerido por el estudiante: ' + esc(sug) + '</div>' : '');
+  return sug ? '<span style="color:#64748b">Sugerido por el estudiante: ' + esc(sug) + '<br>(sin evaluador asignado)</span>' : '<span style="color:#64748b">—</span>';
 }
 
 /* ---- Diferenciar Diplomado de las demás modalidades (se valoran distinto) ---- */
@@ -1664,7 +1681,7 @@ function renderTablaTerminados() {
     const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).map(t => esc(t)).join('<br>') || '—';
     // Jurados: Diplomado usa campos dipJurado, no-Diplomado usa Fase 3
     const jurados = esDip
-      ? [r.dipJurado1Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:#64748b">—</span>'
+      ? juradoDiplomadoHtml(r)
       : [f3.jurado1Nombre, f3.jurado2Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:#64748b">—</span>';
     // Fecha sustentación: Diplomado usa dipFechaResultado; no-Diplomado usa fechaSustentacion de Fase3
     const fechaSust = esDip
@@ -1723,7 +1740,7 @@ function renderTablaDiplomado() {
     const correoDip = r.emailEstudiante || r.email1 || '';
     const nombres = [r.nombre1,r.nombre2,r.nombre3].filter(Boolean).map(n => esc(n)).join('<br>') || '—';
     const nombresConCorreo = nombres + (correoDip ? '<br><span style="font-size:10px;color:#64748b">' + esc(correoDip) + '</span>' : '');
-    const jurado = r.dipJurado1Nombre ? esc(r.dipJurado1Nombre) + (r.dipJurado1Especialidad ? `<br><span style="font-size:10px;color:#64748b">${esc(r.dipJurado1Especialidad)}</span>` : '') : '<span style="color:#64748b">—</span>';
+    const jurado = juradoDiplomadoHtml(r);
     const periodo = [r.diplomadoFechaInicio, r.diplomadoFechaFin].filter(Boolean).join(' → ') || '—';
     const notaTxt = r.dipNota ? `<span style="font-weight:700;color:${parseFloat(r.dipNota)>=3?'#6ee7b7':'#fca5a5'}">${esc(r.dipNota)}</span>` : '<span style="color:#64748b">—</span>';
     const actaTxt = r.dipActa ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:#6d28d9">${esc(r.dipActa)}</span>` : '<span style="color:#64748b">—</span>';
@@ -1901,7 +1918,7 @@ function exportCSVTerminados() {
       const nota = esDip ? (r.dipNota||'') : (f3.nota||'');
       const acta = esDip ? (r.dipActa||'') : (f3.numeroActa||'');
       const fechaSust = esDip ? (r.dipFechaResultado||'') : (f3.fechaSustentacion||f3.fechaAsignada||'');
-      const j1Nom = esDip ? (r.dipJurado1Nombre||'') : (f3.jurado1Nombre||'');
+      const j1Nom = esDip ? (evaluadorAsignadoDe(r) || r.dipJurado1Nombre || '') : (f3.jurado1Nombre||'');
       const j1Email = esDip ? '' : (f3.jurado1Email||'');
       const j2Nom = esDip ? '' : (f3.jurado2Nombre||'');
       const j2Email = esDip ? '' : (f3.jurado2Email||'');
@@ -2066,20 +2083,21 @@ function verDetalle(ri) {
         const juradoRows = esCttg
           ? `<div class="det-row"><span class="det-label">Evaluador</span><span class="det-val" style="color:#b45309">El Comité Técnico de Trabajos de Grado asignará al evaluador</span></div>`
           : [
-              fila('Jurado 1',       r.dipJurado1Nombre),
+              fila('Jurado sugerido 1', r.dipJurado1Nombre),
               fila('Email J1',       r.dipJurado1Email),
               fila('Tel. J1',        r.dipJurado1Telefono),
               fila('Especialidad J1',r.dipJurado1Especialidad),
               fila('Acuerdo eval.',  r.dipJurado1AceptaPropuesta),
-              fila('Jurado 2',       r.dipJurado2Nombre),
+              fila('Jurado sugerido 2', r.dipJurado2Nombre),
               fila('Email J2',       r.dipJurado2Email),
               fila('Tel. J2',        r.dipJurado2Telefono),
-              fila('Jurado 3',       r.dipJurado3Nombre),
+              fila('Jurado sugerido 3', r.dipJurado3Nombre),
               fila('Email J3',       r.dipJurado3Email),
               fila('Tel. J3',        r.dipJurado3Telefono),
             ].join('');
         return `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin:12px 0 6px">Diplomado · Jurado</div>
           <div class="det-row"><span class="det-label">Tutores</span><span class="det-val">No aplica · modalidad Diplomado</span></div>
+          <div class="det-row"><span class="det-label">Evaluador asignado</span><span class="det-val" style="font-weight:700">${esc(evaluadorAsignadoDe(r) || 'Aún no asignado')}</span></div>
           ${fila('Modo jurado', modoLabel)}
           ${juradoRows}`;
       })()

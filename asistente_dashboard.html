@@ -1015,6 +1015,23 @@ function esModalidadDiplomadoDash(r) {
   return String((r && r.modalidad) || '').trim().toLowerCase() === 'diplomado';
 }
 
+/* Diplomado: el estudiante sugiere jurado, pero vale el evaluador que asigna la coordinación (Fase 2). */
+function evaluadorAsignadoDe(r) {
+  const num = String((r && r.numero) || '');
+  let lista = [];
+  try { lista = protocolos || []; } catch (e) {}
+  const filas = lista.filter(p => String(p.numero || '') === num && String(p.evaluador || '').trim());
+  if (filas.length) return String(filas.reduce((a, b) => (Number(b.rowIndex) > Number(a.rowIndex) ? b : a)).evaluador).trim();
+  return String((r && r.protocoloEvaluador) || '').trim();
+}
+function juradoDiplomadoHtml(r) {
+  const ev = evaluadorAsignadoDe(r);
+  const sug = String((r && r.dipJurado1Nombre) || '').trim();
+  const mismo = ev && sug && ev.toLowerCase() === sug.toLowerCase();
+  if (ev) return esc(ev) + (sug && !mismo ? '<div style="font-size:10px;color:#64748b">Sugerido por el estudiante: ' + esc(sug) + '</div>' : '');
+  return sug ? '<span style="color:#64748b">Sugerido por el estudiante: ' + esc(sug) + '<br>(sin evaluador asignado)</span>' : '<span style="color:#64748b">—</span>';
+}
+
 /* ---- Diferenciar Diplomado de las demás modalidades (se valoran distinto) ---- */
 function etiquetaModalidad(r) {
   if (esModalidadDiplomadoDash(r)) return '<span class="mod-tag mod-dip" title="Diplomado: aval de coordinación sin tutores ni actas → producto final al Comité Técnico. Sin sustentación.">🎓 Diplomado</span>';
@@ -3256,7 +3273,7 @@ function renderTablaTerminados() {
       .join('<hr style="border:none;border-top:1px solid #e4e8ef;margin:3px 0">');
     const tutores = [r.tutor1Nombre, r.tutor2Nombre].filter(Boolean).map(t => esc(t)).join('<br>') || '—';
     const jurados = esDip
-      ? [r.dipJurado1Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:#64748b">—</span>'
+      ? juradoDiplomadoHtml(r)
       : [f3.jurado1Nombre, f3.jurado2Nombre].filter(Boolean).map(j => esc(j)).join('<br>') || '<span style="color:#64748b">—</span>';
     const fechaSust = esDip
       ? (r.dipFechaResultado ? fmtFecha(r.dipFechaResultado) : '<span style="color:#64748b">—</span>')

@@ -110,7 +110,7 @@
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>N° Radicación</th><th>Estudiante</th><th>Estado Fase 2</th><th>Evaluador actual</th><th>Eval. anterior (último comité)</th><th>Motivo última devolución</th><th>Jurado (diplomado)</th>
+            <th>N° Radicación</th><th>Estudiante</th><th>Estado Fase 2</th><th>Evaluador actual</th><th>Eval. anterior (último comité)</th><th>Motivo última devolución</th><th>Sugerido por el estudiante (diplomado)</th>
           </tr></thead>
           <tbody id="tbodySinFecha"></tbody>
         </table>
@@ -156,7 +156,7 @@
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>N° Radicación</th><th>Estudiante</th><th>Evaluador propuesto</th><th>Jurado (radicación diplomado)</th><th>Historial</th><th>Estado</th><th>Acción</th>
+              <th>N° Radicación</th><th>Estudiante</th><th>Evaluador propuesto</th><th>Sugerido por el estudiante (diplomado)</th><th>Historial</th><th>Estado</th><th>Acción</th>
             </tr></thead>
             <tbody id="detProtocolos">
               <tr><td colspan="7" class="empty">Cargando protocolos...</td></tr>
@@ -215,6 +215,32 @@
     </div>
   </div>
 </main>
+
+<!-- MODAL CAMBIAR EVALUADOR -->
+<div class="modal-bg" id="modalEvaluador">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>✏️ Cambiar evaluador</h3>
+      <button class="btn" onclick="closeModal('modalEvaluador')">✕</button>
+    </div>
+    <p style="font-size:12px;color:#334155;margin-bottom:12px">Radicación: <strong id="evNum">—</strong> · Evaluador actual: <strong id="evActual">—</strong></p>
+    <div id="evSugerido" style="display:none;background:#f0eaff;border:1px solid #d7c8fa;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#3b2477"></div>
+    <div class="mfg">
+      <label>Nuevo evaluador *</label>
+      <input id="evNombre" list="evLista" placeholder="Escribe o elige de la lista" oninput="autocompletarEmailEvaluador()">
+      <datalist id="evLista"></datalist>
+    </div>
+    <div class="mfg">
+      <label>Correo del evaluador (opcional: se le avisa por correo)</label>
+      <input id="evEmail" type="email" placeholder="evaluador@usc.edu.co">
+    </div>
+    <div id="errEvaluador" style="display:none;color:#b91c1c;font-size:12px;margin-bottom:10px"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('modalEvaluador')">Cancelar</button>
+      <button class="btn gr" id="btnGuardarEvaluador" onclick="guardarCambioEvaluador()">Guardar evaluador</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL REGISTRAR DECISIÓN -->
 <div class="modal-bg" id="modalDecision">
@@ -396,7 +422,7 @@ function fmtJuradosDip(p) {
   }
   const arr = p.juradosSugeridosDiplomado;
   if (!arr || !arr.length) return '<span style="opacity:.5;font-size:11px">Sin datos</span>';
-  return arr.map((j, i) => '<div style="font-size:10px;line-height:1.35;color:#334155">' +
+  return '<div style="font-size:10px;color:#6a3fd6;font-weight:700;margin-bottom:2px">Solo sugerencia</div>' + arr.map((j, i) => '<div style="font-size:10px;line-height:1.35;color:#334155">' +
     esc(String(i + 1) + '. ' + [j.nombre, j.email, j.telefono, j.especialidad ? 'Esp.: ' + j.especialidad : '', j.aceptaPropuesta ? 'Acuerdo: ' + j.aceptaPropuesta : ''].filter(Boolean).join(' · ')) +
     '</div>').join('');
 }
@@ -416,7 +442,7 @@ function renderSinFecha(protocolos) {
       <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}${p.esDiplomado ? '<div style="margin-top:4px"><span class="mod-tag mod-dip">🎓 Diplomado</span></div>' : ''}</td>
       <td style="font-size:11px;color:#334155">${esc(p.emailEstudiante || '—')}</td>
       <td>${esc(p.estado || '—')}${segunda !== '—' ? ' ' + segunda : ''}</td>
-      <td style="font-size:11px;color:#334155">${esc(p.evaluador || '—')}</td>
+      <td style="font-size:11px;color:#334155">${esc(p.evaluador || '—')}<div><button class="btn" style="margin-top:6px;font-size:11px;padding:4px 8px" onclick="abrirCambioEvaluador(${p.rowIndex})">✏️ Cambiar</button></div></td>
       <td style="font-size:11px;color:#b45309">${esc(p.evaluadorAnteriorComite || '—')}</td>
       <td style="font-size:11px;color:#64748b;max-width:200px">${esc(truncTxt(p.motivoUltimaDevolucion || p.observaciones, 120))}</td>
       <td style="max-width:170px;vertical-align:top">${fmtJuradosDip(p)}</td>
@@ -504,6 +530,7 @@ async function cargarReuniones() {
 
 function mostrarDetalleReunion(fecha) {
   const fechaEq = String(fecha || '').trim();
+  window._fechaDetalleReunion = fechaEq;
   fetchFase2Json()
     .then(d => {
       if (!d.success || !Array.isArray(d.protocolos)) return;
@@ -533,7 +560,8 @@ function mostrarDetalleReunion(fecha) {
         return `<tr>
           <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}${p.esDiplomado ? '<div style="margin-top:4px"><span class="mod-tag mod-dip">🎓 Diplomado</span></div>' : ''}</td>
           <td style="font-size:12px;color:#0f172a">${esc(p.emailEstudiante || '—')}</td>
-          <td style="font-size:12px;color:#334155">${esc(p.evaluador || '—')}</td>
+          <td style="font-size:12px;color:#334155"><strong>${esc(p.evaluador || '—')}</strong>
+            <div><button class="btn" style="margin-top:6px;font-size:11px;padding:4px 8px" onclick="abrirCambioEvaluador(${p.rowIndex})">✏️ Cambiar evaluador</button></div></td>
           <td style="max-width:180px;vertical-align:top">${fmtJuradosDip(p)}</td>
           <td>${histHtml}</td>
           <td><span class="badge b-pend">⏱ ${esc(p.estado)}</span></td>
@@ -587,6 +615,75 @@ async function cargarDecisiones() {
 let protocoloActual = null;
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Cambiar evaluador (p. ej. Diplomado: el estudiante sugiere, la coordinación decide) ──
+let evaluadorEnEdicion = null;
+let listaEvaluadores = null;
+function protocoloPorFila(rowIndex) {
+  const idx = Number(rowIndex);
+  const fuentes = [window._protocolosComite || [], window._cacheProtocolosF2 || []];
+  for (const l of fuentes) { const p = l.find(x => Number(x.rowIndex) === idx); if (p) return p; }
+  return null;
+}
+async function cargarListaEvaluadores() {
+  if (listaEvaluadores) return listaEvaluadores;
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getEvaluadores', token: localStorage.getItem('cttg_token') || '' }) });
+    const d = await res.json();
+    listaEvaluadores = (d && d.success && d.evaluadores) || [];
+  } catch (e) { listaEvaluadores = []; }
+  document.getElementById('evLista').innerHTML = listaEvaluadores.map(ev => `<option value="${esc(ev.nombre || '')}">${esc(ev.email || '')}</option>`).join('');
+  return listaEvaluadores;
+}
+function autocompletarEmailEvaluador() {
+  const n = document.getElementById('evNombre').value.trim().toLowerCase();
+  const ev = (listaEvaluadores || []).find(x => String(x.nombre || '').trim().toLowerCase() === n);
+  if (ev && ev.email) document.getElementById('evEmail').value = ev.email;
+}
+function abrirCambioEvaluador(rowIndex) {
+  const p = protocoloPorFila(rowIndex);
+  if (!p) return;
+  evaluadorEnEdicion = p;
+  document.getElementById('evNum').textContent = p.numero || '—';
+  document.getElementById('evActual').textContent = p.evaluador || 'Sin asignar';
+  document.getElementById('evNombre').value = '';
+  document.getElementById('evEmail').value = '';
+  document.getElementById('errEvaluador').style.display = 'none';
+  const sug = (p.juradosSugeridosDiplomado || []).map(j => j.nombre).filter(Boolean);
+  const boxSug = document.getElementById('evSugerido');
+  boxSug.style.display = p.esDiplomado ? 'block' : 'none';
+  boxSug.innerHTML = '🎓 <strong>Diplomado.</strong> ' + (sug.length ? 'El estudiante sugirió: <strong>' + esc(sug.join(', ')) + '</strong>. ' : '') + 'Usted decide quién evalúa; el que guarde aquí es el que queda.';
+  cargarListaEvaluadores();
+  document.getElementById('modalEvaluador').classList.add('open');
+}
+async function guardarCambioEvaluador() {
+  const p = evaluadorEnEdicion;
+  if (!p) return;
+  const nombre = document.getElementById('evNombre').value.trim();
+  const email = document.getElementById('evEmail').value.trim();
+  const errEl = document.getElementById('errEvaluador');
+  errEl.style.display = 'none';
+  if (!nombre) { errEl.textContent = 'Escribe o elige el nuevo evaluador'; errEl.style.display = 'block'; return; }
+  const btn = document.getElementById('btnGuardarEvaluador');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
+      action: 'cambiarEvaluadorProtocolo', rowIndex: p.rowIndex, evaluador: nombre, emailEvaluador: email,
+      token: localStorage.getItem('cttg_token') || ''
+    }) });
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error === 'Acción no válida' ? 'Falta actualizar el Apps Script (nueva versión) para usar esta opción' : (d.error || 'No se pudo guardar'));
+    p.evaluador = nombre;
+    closeModal('modalEvaluador');
+    toast('Evaluador actualizado ✓', 'ok');
+    cargarReuniones();
+    if (window._fechaDetalleReunion && document.getElementById('detalleReunion').style.display === 'block') mostrarDetalleReunion(window._fechaDetalleReunion);
+  } catch (e) {
+    errEl.textContent = e.message; errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar evaluador';
+  }
+}
 
 function abrirModalDecision(rowIndex) {
   const idx = parseInt(rowIndex, 10);

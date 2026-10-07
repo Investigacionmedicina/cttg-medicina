@@ -234,7 +234,15 @@ No toca radicaciones en Cancelado, Sustentado, Reprobado, Completado o Fase 2 De
 
 ---
 
-## Cómo aplicar Fix 6 a 16 (obligatorio: el backend NO se actualiza solo)
+## Fix 17 — Cambiar el evaluador (Diplomado: la sugerencia del estudiante no es la decisión)
+
+**Problema:** en Diplomado el estudiante sugiere un jurado, pero la coordinación decide quién evalúa. Varias pantallas mostraban la sugerencia como si fuera el jurado. Además, el evaluador de cada radicación se tomaba del **primer** envío de protocolo y no del más reciente, y no había forma de cambiar el evaluador sin registrar la decisión del comité.
+
+**Corrección:** nueva acción `cambiarEvaluadorProtocolo`, que cambia solo la columna G (Evaluador) de Fase 2, avisa al nuevo evaluador y deja historial. `obtenerFase1` usa el envío más reciente. En Comité Técnico aparece el botón «✏️ Cambiar evaluador», y los paneles muestran el evaluador asignado (la sugerencia queda marcada como «Sugerido por el estudiante»).
+
+---
+
+## Cómo aplicar Fix 6 a 17 (obligatorio: el backend NO se actualiza solo)
 
 1. Abrir el proyecto de Apps Script del Web App.
 2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.
