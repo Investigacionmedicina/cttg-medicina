@@ -1324,11 +1324,11 @@ async function guardarEstado() {
   const est = document.getElementById('mEstado').value;
   const notas = document.getElementById('mNotas').value.trim();
   const btn = document.getElementById('btnGuardar');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Guardando y notificando…';
   try {
     const res = await fetch(URL_APP, { method:'POST', body: JSON.stringify({ action:'updateEstado', rowIndex:ri, estado:est, notas, emailCoord:admin.email, token: coordToken() }) });
     const d = await res.json();
-    if (d.success) { closeModal('modalEst'); await cargar(); toast('Estado actualizado ✓', 'ok'); }
+    if (d.success) { closeModal('modalEst'); toast('Estado actualizado ✓ (enviando correo)', 'ok'); cargar(); } // la tabla se recarga en segundo plano
     else throw new Error(d.error);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
   finally { btn.disabled = false; btn.innerHTML = 'Guardar y notificar'; }

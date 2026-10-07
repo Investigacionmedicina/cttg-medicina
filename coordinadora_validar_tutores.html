@@ -410,8 +410,10 @@ async function guardar() {
       `Estudiante ${i + 1}: ${e.nombre || 'Sin nombre'} · Cédula: ${e.cedula || 'N/D'} · Tel: ${e.telefono || 'N/D'} · Email: ${e.email || 'N/D'}`
     ).join('\n');
 
+    const estado = decision === 'revision' ? (esDipl ? 'Fase 2 Desbloqueada' : 'Tutores Avalados') : 'Devuelto';
     const payloadValidar = {
       action: 'validarTutores',
+      estadoFinal: estado,
       rowIndex,
       tutor1,
       tutor2,
@@ -443,7 +445,8 @@ Este mensaje fue generado automáticamente por el sistema CTTG.`,
       };
     }
 
-    // 1. Guardar tutores / aval (sin correo a tutores en modalidad Diplomado)
+    // 1. Guardar tutores / aval y estado en una sola llamada (sin correo a tutores en modalidad Diplomado)
+    btn.innerHTML = '<span class="spinner"></span>Guardando y enviando correos…';
     const resTutores = await fetch(URL_APP, {
       method: 'POST',
       body: JSON.stringify(payloadValidar)
@@ -451,8 +454,8 @@ Este mensaje fue generado automáticamente por el sistema CTTG.`,
     const dTutores = await resTutores.json();
     if (!dTutores.success) throw new Error(dTutores.error);
 
-    // 2. Actualizar estado
-    const estado = decision === 'revision' ? (esDipl ? 'Fase 2 Desbloqueada' : 'Tutores Avalados') : 'Devuelto';
+    // 2. Actualizar estado (solo si el servidor aún no lo hizo: versión anterior del Apps Script)
+    if (dTutores.estadoAplicado !== estado) {
     const resEstado = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({
       action: 'updateEstado',
       rowIndex,
@@ -463,14 +466,15 @@ Este mensaje fue generado automáticamente por el sistema CTTG.`,
     })});
     const dEstado = await resEstado.json();
     if (!dEstado.success) throw new Error(dEstado.error);
+    }
 
     toast(decision === 'revision'
       ? (esDipl ? 'Diplomado avalado. El estudiante puede continuar en Fase 2 (sin actas).' : 'Tutores avalados ✓ El estudiante puede cargar sus actas de asesoría')
       : 'Propuesta devuelta ✓', 'ok');
-    setTimeout(() => window.location.href = urlPanelStaff(), 2000);
+    setTimeout(() => window.location.href = urlPanelStaff(), 1200);
   } catch(e) {
     toast('Error: ' + e.message, 'err');
-  } finally {
+    // Solo se reactiva si falló: tras guardar, el botón queda bloqueado hasta volver al panel (evita doble envío).
     btn.disabled = false;
     btn.textContent = labelBtnFin;
   }

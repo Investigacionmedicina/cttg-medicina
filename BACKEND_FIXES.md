@@ -226,7 +226,15 @@ No toca radicaciones en Cancelado, Sustentado, Reprobado, Completado o Fase 2 De
 
 ---
 
-## Cómo aplicar Fix 6 a 15 (obligatorio: el backend NO se actualiza solo)
+## Fix 16 — Validar tutores en una sola llamada
+
+**Problema:** al responder una radicación desde «Validar tutores», la página hacía dos llamadas seguidas (`validarTutores` y luego `updateEstado`), cada una con correos, y además esperaba a recargar todo el panel. Tardaba mucho y el botón quedaba bloqueado. Al **devolver** una propuesta, el estudiante recibía primero un correo de «Tutores avalados» y después otro de «Devuelto».
+
+**Corrección:** `validarTutores` recibe `estadoFinal` y aplica el estado ahí mismo (un solo correo, con la decisión real). La página solo hace la segunda llamada si el Apps Script todavía es la versión anterior. El modal «Estado» del panel se cierra apenas se guarda y la tabla se recarga en segundo plano.
+
+---
+
+## Cómo aplicar Fix 6 a 16 (obligatorio: el backend NO se actualiza solo)
 
 1. Abrir el proyecto de Apps Script del Web App.
 2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.
