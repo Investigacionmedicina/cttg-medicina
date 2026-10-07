@@ -1294,6 +1294,35 @@ function enriquecerProtocolosConRadicacionDiplomado(protocolos) {
   return protocolos;
 }
 
+/** Estados de Fase 1 que permiten volver a radicar (igual que en el portal del estudiante). */
+function estadosLiberanNuevaRadicacion_() {
+  return ["aprobado", "devuelto", "cancelado"];
+}
+
+/** Primera radicación activa (estado que no libera) de cualquiera de los correos; null si no hay. */
+function radicacionActivaDeIntegrantes_(sheetF1, correos) {
+  var buscados = {};
+  (correos || []).forEach(function(c) {
+    var e = String(c || "").trim().toLowerCase();
+    if (e && e.indexOf("@") !== -1) buscados[e] = true;
+  });
+  if (!Object.keys(buscados).length) return null;
+  var libera = estadosLiberanNuevaRadicacion_();
+  var data = sheetF1.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    var num = String(data[i][1] || "").trim();
+    if (!num) continue;
+    var estado = String(data[i][32] || "Radicado").trim();
+    if (libera.indexOf(estado.toLowerCase()) !== -1) continue;
+    var cols = [2, 5, 11, 17];
+    for (var c = 0; c < cols.length; c++) {
+      var e = String(data[i][cols[c]] || "").trim().toLowerCase();
+      if (e && buscados[e]) return { numero: num, estado: estado, email: e };
+    }
+  }
+  return null;
+}
+
 function crearRadicacion(datos, emailEstudiante, sesion) {
   if (!sesion || sesion.rol !== "estudiante") {
     return { success: false, error: "No autorizado" };
@@ -1342,6 +1371,14 @@ function crearRadicacion(datos, emailEstudiante, sesion) {
   }
   var numero, newRow;
   try {
+  // Una sola radicación activa por estudiante (incluye a los demás integrantes del grupo).
+  // Se revisa dentro del lock para que dos envíos seguidos no pasen los dos.
+  var choque = radicacionActivaDeIntegrantes_(sheet, [emailEstudiante, datos.email1, datos.email2, datos.email3]);
+  if (choque) {
+    return { success: false, error: "El correo " + choque.email + " ya tiene la radicación " + choque.numero +
+      " en estado «" + choque.estado + "». No se puede radicar otra hasta que esa sea devuelta o cancelada. " +
+      "Si es un error, comunícate con la coordinación." };
+  }
   numero = generarNumero("CTTG", "Fase1", true);
   if (!numero) return { success: false, error: "No se pudo generar el número de radicación. Intenta de nuevo." };
   var fecha  = hoy();

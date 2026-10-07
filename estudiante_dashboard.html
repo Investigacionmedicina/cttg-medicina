@@ -597,6 +597,8 @@ async function leerRespuestaApp(res) {
 let numEst = 1;
 let user = null;
 let bloquearNuevaRad = false;
+// true cuando ya se consultó la lista de radicaciones del estudiante (antes no se sabe si puede radicar)
+let misRadCargadas = false;
 let misRadicaciones = [];
 let misSolicitudesModRad = [];
 
@@ -1362,6 +1364,7 @@ async function cargarMisRad() {
       
       renderAlertasSuperiores(misRadicaciones);
       bloquearNuevaRad = misRadicaciones.some(r => !['Aprobado','Devuelto','Cancelado'].includes(String(r.estado||'')));
+      misRadCargadas = true;
       const bloqueo  = document.getElementById('bloqueoRad');
       const readonly = document.getElementById('readonlyRad');
       const tabNueva = document.getElementById('tabNueva');
@@ -1402,6 +1405,8 @@ async function cargarMisRad() {
     } else {
       misRadicaciones = [];
       bloquearNuevaRad = false;
+      // Solo se considera cargada si el servidor respondió bien (lista vacía real, no un error).
+      misRadCargadas = !!(data && data.success);
       renderAlertasSuperiores([]);
       document.getElementById('bloqueoRad').style.display  = 'none';
       document.getElementById('readonlyRad').style.display = 'none';
@@ -1643,6 +1648,7 @@ function alModoJuradoCambiar() {
 
 async function radicar() {
   if (bloquearNuevaRad) { toast('No puedes radicar hasta recibir respuesta de tu radicación actual.', 'warn'); return; }
+  if (!misRadCargadas) { toast('Espera a que cargue tu información y vuelve a intentarlo.', 'warn'); return; }
   const modalidadVal = (document.getElementById('modalidad')?.value || '').trim();
   const esDip = modalidadVal.toLowerCase() === 'diplomado';
 
@@ -1740,9 +1746,17 @@ async function radicar() {
       document.getElementById('successBox').style.display = 'block';
       document.getElementById('successBox').scrollIntoView({ behavior: 'smooth' });
       btn.style.display = 'none';
+      // Ya tiene una radicación activa: no puede enviar otra aunque vuelva al formulario.
+      bloquearNuevaRad = true;
+      try { cargarMisRad(); } catch (_) {}
     } else if (redirigirSiSesionInvalida(d)) { return; }
     else { toast('Error: ' + (d.error||'Intenta de nuevo'), 'err'); }
-  } catch(e) { toast('Error de conexión', 'err'); }
+  } catch(e) {
+    // La conexión falló, pero el servidor pudo haberla guardado: se revisa antes de permitir reintentar.
+    toast('Error de conexión. Revisa «Mis radicaciones» antes de volver a radicar: puede que ya haya quedado guardada.', 'err');
+    try { await cargarMisRad(); } catch (_) {}
+    if (bloquearNuevaRad) { btn.style.display = 'none'; }
+  }
   finally { btn.disabled = false; if (btn.style.display !== 'none') btn.innerHTML = '📋 Radicar proyecto'; }
 }
 
