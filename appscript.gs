@@ -2672,6 +2672,19 @@ function crearProtocolo(numeroRadicacion, emailEstudiante, nombreArchivo, urlArc
     return { success: false, error: "Hoja Fase2 no encontrada" };
   }
 
+  // Un protocolo en revisión a la vez: un segundo clic o una segunda confirmación del formulario
+  // creaba otra fila «Cargado» que luego parecía un protocolo nuevo pendiente.
+  var enRevision = ["cargado", "enviado", "pendiente comité", "revisado", "en solicitud", "en evaluación"];
+  var dataF2 = sheet.getDataRange().getValues();
+  for (var k = 1; k < dataF2.length; k++) {
+    if (String(dataF2[k][1] || "").trim().toUpperCase() !== String(numeroRadicacion).trim().toUpperCase()) continue;
+    var estF2 = String(dataF2[k][8] || "Cargado").trim();
+    if (enRevision.indexOf(estF2.toLowerCase()) !== -1) {
+      return { success: false, error: "Ya tienes un protocolo en revisión para " + numeroRadicacion + " (estado «" + estF2 + "»). " +
+        "No es necesario enviarlo de nuevo. Si subiste una versión corregida en el formulario, avisa a la coordinación." };
+    }
+  }
+
   var id = sheet.getLastRow();
 
   sheet.appendRow([

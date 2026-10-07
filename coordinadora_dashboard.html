@@ -403,6 +403,7 @@
     <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;flex-wrap:wrap;gap:8px">
       <span style="font-family:'DM Serif Display',serif;font-size:15px;color:#0f172a">📋 Pendientes de acción <span class="badge b-radicado" id="chipProtActivos" style="font-size:12px;margin-left:6px">—</span></span>
     </div>
+    <div id="protRepetidos" style="display:none;background:#fff8e6;border:1px solid #f5d49f;border-radius:12px;padding:12px 14px;font-size:13px;color:#7a4206;margin-bottom:12px"></div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
@@ -3037,6 +3038,18 @@ function protEstadoBadge(estado) {
   }[estado] || 'b-radicado');
 }
 
+/** Envío repetido: un protocolo «Cargado/Enviado» cuya radicación tiene otro envío del mismo día o
+ *  posterior que ya avanzó (pendiente de comité o con decisión). Es el mismo documento que ya se
+ *  evaluó (p. ej. el estudiante confirmó dos veces el formulario), así que no requiere acción.
+ *  Devuelve el envío que sí avanzó, o null. */
+function protocoloEnvioRepetidoDe(p) {
+  if (!(p.estado === 'Cargado' || p.estado === 'Enviado')) return null;
+  const num = String(p.numero || '').trim();
+  const f = String(p.fechaRadicacion || '');
+  return protocolos.find(o => o.rowIndex !== p.rowIndex && String(o.numero || '').trim() === num &&
+    o.estado !== 'Cargado' && o.estado !== 'Enviado' && String(o.fechaRadicacion || '') >= f) || null;
+}
+
 function renderProtocolo() {
   const q = (document.getElementById('searchProtocolo').value || '').toLowerCase();
 
@@ -3044,8 +3057,11 @@ function renderProtocolo() {
   const mapaRad = {};
   radicaciones.forEach(r => { mapaRad[String(r.numero||'')] = r.estado || ''; });
 
+  const repetidos = [];
   const activos = protocolos.filter(p => {
     if (!PROT_ESTADOS_ACTIVOS.includes(p.estado)) return false;
+    const orig = protocoloEnvioRepetidoDe(p);
+    if (orig) { repetidos.push({ p, orig }); return false; }
     if (ESTADOS_RAD_TERMINADOS.includes(mapaRad[String(p.numero||'')])) return false;
     if (!q) return true;
     const nom = nombreEstudianteDesdeRad(p);
@@ -3061,6 +3077,16 @@ function renderProtocolo() {
 
   // Contadores
   document.getElementById('chipProtActivos').textContent   = activos.length;
+  const avisoRep = document.getElementById('protRepetidos');
+  if (avisoRep) {
+    avisoRep.style.display = repetidos.length ? 'block' : 'none';
+    avisoRep.innerHTML = repetidos.length
+      ? '<strong>' + repetidos.length + ' envío(s) repetido(s) sin acción pendiente</strong> — el estudiante confirmó el protocolo más de una vez y el mismo documento ya fue evaluado:<ul style="margin:6px 0 0 18px">' +
+        repetidos.map(({ p, orig }) => '<li><strong>' + esc(p.numero) + '</strong> · envío del ' + esc(fmtFecha(p.fechaRadicacion)) +
+          ' (fila ' + p.rowIndex + ' de Fase2) — el envío de la fila ' + orig.rowIndex + ' ya está en «' + esc(orig.estado) + '».</li>').join('') +
+        '</ul><div style="margin-top:6px">Si el estudiante sube una versión corregida, aparecerá aquí como un envío nuevo.</div>'
+      : '';
+  }
   document.getElementById('chipProtHistorial').textContent = procesados.length;
 
   // --- Tabla activos ---

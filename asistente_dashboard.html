@@ -2113,6 +2113,18 @@ function nombreEstudianteDesdeRad(p) {
   return n || rad.email1 || em || '—';
 }
 
+/** Envío repetido: un protocolo «Cargado/Enviado» cuya radicación tiene otro envío del mismo día o
+ *  posterior que ya avanzó (pendiente de comité o con decisión). Es el mismo documento que ya se
+ *  evaluó (p. ej. el estudiante confirmó dos veces el formulario), así que no requiere acción.
+ *  Devuelve el envío que sí avanzó, o null. */
+function protocoloEnvioRepetidoDe(p) {
+  if (!(p.estado === 'Cargado' || p.estado === 'Enviado')) return null;
+  const num = String(p.numero || '').trim();
+  const f = String(p.fechaRadicacion || '');
+  return protocolos.find(o => o.rowIndex !== p.rowIndex && String(o.numero || '').trim() === num &&
+    o.estado !== 'Cargado' && o.estado !== 'Enviado' && String(o.fechaRadicacion || '') >= f) || null;
+}
+
 function renderProtocolo() {
   const q  = (document.getElementById('searchProtocolo').value || '').toLowerCase();
   const fE = document.getElementById('fEstProtocolo').value;
@@ -2130,8 +2142,9 @@ function renderProtocolo() {
       'Aprobado Directo':'b-aprobado','Aprobado Comité':'b-aprobadocomite'
     }[p.estado] || 'b-radicado';
     
-    const estadoTexto = esc(p.estado||'Cargado');
-    const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
+    const repetidoDe = protocoloEnvioRepetidoDe(p);
+    const estadoTexto = repetidoDe ? 'Envío repetido' : esc(p.estado||'Cargado');
+    const esPendiente = !repetidoDe && (p.estado === 'Cargado' || p.estado === 'Enviado');
     const nomEst = esc(nombreEstudianteDesdeRad(p));
     const fechaReu = p.fechaComite ? fmtFecha(p.fechaComite) : '—';
     
@@ -2142,7 +2155,7 @@ function renderProtocolo() {
       <td style="font-size:12px;color:#334155">${esc(p.anexoCambio||'—')}</td>
       <td style="font-size:12px;color:#334155">${esc(p.evaluador||'—')}</td>
       <td style="font-size:12px;color:#334155">${esc(fechaReu)}</td>
-      <td><span class="badge ${estadoBadge}">${estadoTexto}</span></td>
+      <td><span class="badge ${repetidoDe ? 'b-cancelado' : estadoBadge}" ${repetidoDe ? `title="El mismo protocolo ya fue evaluado (fila ${repetidoDe.rowIndex} de Fase2, «${esc(repetidoDe.estado)}»). No requiere acción."` : ''}>${estadoTexto}</span></td>
       <td><div class="act">
         ${esPendiente ? `<button class="btn gr" onclick="abrirModalProtocolo(${p.rowIndex},'aprobar','${esc(p.numero||'')}')">✅ Aprobar</button>
         <button class="btn rd" onclick="abrirModalProtocolo(${p.rowIndex},'rechazar','${esc(p.numero||'')}')">✕ Rechazar</button>` : ''}
