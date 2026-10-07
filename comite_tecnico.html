@@ -413,7 +413,7 @@ function renderSinFecha(protocolos) {
   tbody.innerHTML = rows.map(p => {
     const segunda = p.esSegundaValoracion ? '<span class="tag-segunda">2ª valoración</span>' : '—';
     return `<tr>
-      <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}</td>
+      <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}${p.esDiplomado ? '<div style="margin-top:4px"><span class="mod-tag mod-dip">🎓 Diplomado</span></div>' : ''}</td>
       <td style="font-size:11px;color:#334155">${esc(p.emailEstudiante || '—')}</td>
       <td>${esc(p.estado || '—')}${segunda !== '—' ? ' ' + segunda : ''}</td>
       <td style="font-size:11px;color:#334155">${esc(p.evaluador || '—')}</td>
@@ -435,7 +435,7 @@ function renderDevueltos(protocolos) {
   bloque.style.display = 'block';
   tbody.innerHTML = rows.map(p => `
     <tr>
-      <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}</td>
+      <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}${p.esDiplomado ? '<div style="margin-top:4px"><span class="mod-tag mod-dip">🎓 Diplomado</span></div>' : ''}</td>
       <td style="font-size:11px">${esc(p.emailEstudiante || '—')}</td>
       <td>${esc(p.estado)}</td>
       <td style="font-family:monospace;font-size:11px;color:#64748b">${p.rowIndex}</td>
@@ -531,7 +531,7 @@ function mostrarDetalleReunion(fecha) {
         if (p.evaluadorAnteriorComite) hist.push('<span style="font-size:10px;display:block;color:#b45309;margin-top:4px">Ant: ' + esc(p.evaluadorAnteriorComite) + '</span>');
         const histHtml = hist.length ? hist.join(' ') : '<span style="opacity:.45">—</span>';
         return `<tr>
-          <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}</td>
+          <td style="font-size:12px;color:#6d28d9;font-weight:600">${esc(p.numero || '—')}${p.esDiplomado ? '<div style="margin-top:4px"><span class="mod-tag mod-dip">🎓 Diplomado</span></div>' : ''}</td>
           <td style="font-size:12px;color:#0f172a">${esc(p.emailEstudiante || '—')}</td>
           <td style="font-size:12px;color:#334155">${esc(p.evaluador || '—')}</td>
           <td style="max-width:180px;vertical-align:top">${fmtJuradosDip(p)}</td>

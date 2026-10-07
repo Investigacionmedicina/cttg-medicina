@@ -301,3 +301,17 @@ main ::-webkit-scrollbar-thumb{background:#d3d9e3;border-radius:10px;border:2px 
 .pag-est:not(.pag-est-inicio){background:linear-gradient(var(--side) 0,var(--side) 150px,var(--bg) 150px)!important}
 .pag-est:not(.pag-est-inicio) main{padding-top:0!important}
 .pag-est:not(.pag-est-inicio) main>.tabs,.pag-est:not(.pag-est-inicio) main>div>.tabs{background:#fff!important;box-shadow:var(--sh)!important}
+
+/* ---- Diplomado vs trabajo de grado: se valoran distinto ---- */
+.mod-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:700;white-space:nowrap;line-height:1.4}
+.mod-dip{background:var(--vio-soft);color:var(--vio);border:1px solid var(--vio-line)}
+.mod-tg{background:var(--brand-soft);color:var(--brand);border:1px solid var(--brand-line)}
+tr.fila-dip>td:first-child{box-shadow:inset 4px 0 0 var(--vio)}
+tr.fila-tg>td:first-child{box-shadow:inset 4px 0 0 var(--brand-line)}
+tr.fila-dip>td{background:#fbf9ff}
+.leyenda-mod{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
+.leyenda-mod .lm{display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+@media (max-width:760px){.leyenda-mod{grid-template-columns:1fr}}
+.ruta-mod{border-radius:10px;padding:10px 14px;margin:0 0 14px;font-size:12.5px;line-height:1.5}
+.ruta-dip{background:var(--vio-soft);border:1px solid var(--vio-line);color:#3b2477}
+.ruta-tg{background:var(--brand-soft);border:1px solid var(--brand-line);color:#173a8f}

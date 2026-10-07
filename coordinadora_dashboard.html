@@ -275,9 +275,14 @@
   <div class="panel" id="pan-rad">
     <div class="filters">
       <input id="search" placeholder="🔍 Buscar por nombre, número, título..." oninput="limpiarFiltroMetrica();renderTabla()">
+      <select id="fTipoMod" onchange="limpiarFiltroMetrica();renderTabla()"><option value="">Diplomado y trabajo de grado</option><option value="dip">🎓 Solo Diplomado</option><option value="tg">📘 Solo trabajo de grado</option></select>
       <select id="fMod" onchange="limpiarFiltroMetrica();renderTabla()"><option value="">Todas las modalidades</option></select>
       <button class="btn" onclick="cargar()">↻ Actualizar</button>
       <button class="btn gr" style="margin-left:auto" onclick="exportCSV()">⬇ Exportar CSV</button>
+    </div>
+    <div class="leyenda-mod">
+      <div class="lm"><span class="mod-tag mod-tg">📘 Trabajo de grado</span><span>Radicación → <b>validar tutores</b> → actas de asesoría → protocolo → Comité Técnico → <b>sustentación</b></span></div>
+      <div class="lm"><span class="mod-tag mod-dip">🎓 Diplomado</span><span>Radicación → <b>aval del diplomado</b> (sin tutores ni actas) → producto final → Comité Técnico, que cierra el trámite. <b>Sin sustentación</b></span></div>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -950,6 +955,7 @@
       <button class="btn" onclick="closeModal('modalEst')">✕</button>
     </div>
     <p id="mEstLabel" style="font-size:12px;color:#64748b;margin-bottom:14px"></p>
+    <div id="mEstRuta"></div>
     <div class="mfg">
       <label>Nuevo estado *</label>
       <select id="mEstado">
@@ -1149,6 +1155,26 @@ function escAttr(s) { return esc(s).replace(/"/g,'&quot;'); }
 function esModalidadDiplomadoDash(r) {
   const s = String((r && r.modalidad) || '').trim().toLowerCase();
   return s.includes('diplomado') || s.includes('diplom');
+}
+
+/* ---- Diferenciar Diplomado de las demás modalidades (se valoran distinto) ---- */
+function etiquetaModalidad(r) {
+  if (esModalidadDiplomadoDash(r)) return '<span class="mod-tag mod-dip" title="Diplomado: aval de coordinación sin tutores ni actas → producto final al Comité Técnico. Sin sustentación.">🎓 Diplomado</span>';
+  return '<span class="mod-tag mod-tg" title="Trabajo de grado: tutores → actas de asesoría → protocolo → Comité Técnico → sustentación.">📘 Trabajo de grado</span>';
+}
+function esDiplomadoPorNumero(p) {
+  if (p && p.esDiplomado) return true;
+  const r = (radicaciones || []).find(x => String(x.numero || '') === String((p && p.numero) || ''));
+  return !!(r && esModalidadDiplomadoDash(r));
+}
+function etiquetaModalidadProt(p) {
+  return esDiplomadoPorNumero(p) ? '<div style="margin-top:4px"><span class="mod-tag mod-dip">🎓 Diplomado</span></div>' : '';
+}
+function claseFilaModalidad(r) { return esModalidadDiplomadoDash(r) ? 'fila-dip' : 'fila-tg'; }
+function rutaModalidadHtml(r) {
+  return esModalidadDiplomadoDash(r)
+    ? '<div class="ruta-mod ruta-dip"><b>🎓 Modalidad Diplomado</b> — se valora así: aval de coordinación <u>sin tutores ni actas</u> → «Fase 2 Desbloqueada» → producto final al Comité Técnico, que cierra el trámite. <u>No hay sustentación.</u></div>'
+    : '<div class="ruta-mod ruta-tg"><b>📘 Trabajo de grado (' + esc((r && r.modalidad) || '—') + ')</b> — se valora así: validar tutores → actas de asesoría → protocolo → Comité Técnico → sustentación.</div>';
 }
 function textoCeldaTutorDashboard(r) {
   if (!r) return '—';
@@ -1540,10 +1566,12 @@ function badgeEst(est) {
 function renderTabla() {
   const q  = (document.getElementById('search').value || '').toLowerCase();
   const fM = document.getElementById('fMod').value;
+  const fTipo = (document.getElementById('fTipoMod') || {}).value || '';
   const filtered = radicaciones.filter(r => {
     if (String(r.estado || 'Radicado') !== 'Radicado') return false;
     const txt = [r.numero,r.nombre1,r.nombre2,r.nombre3,r.titulo,r.emailEstudiante,r.tutor1Nombre,r.modalidad].join(' ').toLowerCase();
     let ok = (!q || txt.includes(q)) && (!fM || r.modalidad === fM);
+    if (ok && fTipo) ok = (fTipo === 'dip') === esModalidadDiplomadoDash(r);
     if (ok && filtroDashboardMetrica && filtroDashboardMetrica.excludeDiplomado && esModalidadDiplomadoDash(r)) ok = false;
     return ok;
   });
@@ -1567,8 +1595,8 @@ function renderTabla() {
     const celdaTutor = textoCeldaTutorDashboard(r);
     const btnAvalCls = clasesBtnAvalDashboard(r);
     const btnAvalTxt = textoBtnAvalDashboard(r);
-    return `<tr${esDuplicado?' style="background:#fef8f8;outline:1px solid rgba(239,68,68,.15)"':''}>
-      <td><div class="num-rad">${esc(r.numero||'')}</div></td>
+    return `<tr class="${claseFilaModalidad(r)}"${esDuplicado?' style="background:#fef8f8;outline:1px solid rgba(239,68,68,.15)"':''}>
+      <td><div class="num-rad">${esc(r.numero||'')}</div><div style="margin-top:5px">${etiquetaModalidad(r)}</div></td>
       <td style="font-size:12px;max-width:160px">${nombres}${correoHtml}</td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
       <td style="font-size:12px;color:#334155">${esc(r.modalidad||'—')}</td>
@@ -1655,7 +1683,7 @@ function renderTablaTerminados() {
     return `<tr>
       <td><div class="num-rad">${esc(r.numero||'')}</div><div style="font-size:10px;color:#64748b;margin-top:3px">${fmtFecha(r.fechaRadicacion)}</div>${correoTerminadoHtml}</td>
       <td style="max-width:200px;font-size:12px;overflow:hidden;text-overflow:ellipsis" title="${escAttr(r.titulo||'')}">${esc(r.titulo||'Sin título')}</td>
-      <td style="font-size:12px;color:#334155">${esc(r.modalidad||'—')}</td>
+      <td style="font-size:12px;color:#334155">${esModalidadDiplomadoDash(r) ? etiquetaModalidad(r) : esc(r.modalidad||'—')}</td>
       <td style="font-size:12px;max-width:160px">${integrantes}</td>
       <td style="font-size:12px;color:#334155;max-width:140px">${tutores}</td>
       <td style="font-size:12px;color:#334155;max-width:140px">${jurados}</td>
@@ -1997,6 +2025,8 @@ function exportarInformeModal(numero) {
 function abrirModalEst(ri, numero, estadoActual) {
   document.getElementById('mRowIndex').value = ri;
   document.getElementById('mEstLabel').textContent = 'Radicación: ' + numero;
+  const radM = radicaciones.find(x => x.rowIndex === ri);
+  document.getElementById('mEstRuta').innerHTML = radM ? rutaModalidadHtml(radM) : '';
   document.getElementById('mEstado').value = estadoActual;
   document.getElementById('mNotas').value = '';
   document.getElementById('modalEst').classList.add('open');
@@ -2065,6 +2095,7 @@ function verDetalle(ri) {
       <div style="font-size:16px;font-weight:600;color:#0f172a">${esc(r.titulo||'Sin título')}</div></div>
       ${badgeEst(r.estado)}
     </div>
+    ${rutaModalidadHtml(r)}
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:6px">Proyecto</div>
     ${fila('Modalidad',r.modalidad)}${esDip ? fila('Periodo del diplomado', periodoDipStr) : fila('Área',r.area)}
     ${fila('F. Radicación',fmtFecha(r.fechaRadicacion))}${fila('F. Aprobación',fmtFecha(r.fechaAprobacion))}
@@ -3097,7 +3128,7 @@ function renderProtocolo() {
     tbody.innerHTML = activos.map(p => {
       const esPendiente = p.estado === 'Cargado' || p.estado === 'Enviado';
       return `<tr>
-        <td><div class="num-rad">${esc(p.numero||'')}</div></td>
+        <td><div class="num-rad">${esc(p.numero||'')}</div>${etiquetaModalidadProt(p)}</td>
         <td style="font-size:12px;color:#0f172a">${esc(nombreEstudianteDesdeRad(p))}</td>
         <td style="font-size:12px;color:#334155">${esc(p.emailEstudiante||'—')}</td>
         <td style="font-size:12px;color:#334155">${esc(p.anexoCambio||'—')}</td>
@@ -3124,7 +3155,7 @@ function renderProtocolo() {
         : `<span class="badge b-devuelto">${esc(p.estado)}</span>`;
       const motivo = p.motivo || p.observaciones || '—';
       return `<tr>
-        <td><div class="num-rad">${esc(p.numero||'')}</div></td>
+        <td><div class="num-rad">${esc(p.numero||'')}</div>${etiquetaModalidadProt(p)}</td>
         <td style="font-size:12px;color:#0f172a">${esc(nombreEstudianteDesdeRad(p))}</td>
         <td style="font-size:12px;color:#334155">${esc(p.emailEstudiante||'—')}</td>
         <td style="font-size:12px;color:#334155">${esc(p.evaluador||'—')}</td>
