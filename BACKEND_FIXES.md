@@ -210,7 +210,15 @@ No toca radicaciones en Cancelado, Sustentado, Reprobado, Completado o Fase 2 De
 
 ---
 
-## Cómo aplicar Fix 6 a 13 (obligatorio: el backend NO se actualiza solo)
+## Fix 14 — Un protocolo en revisión a la vez
+
+**Problema:** si el estudiante confirmaba el envío del protocolo dos veces (p. ej. CTTG-2026-0002 el 15/09 a las 15:46 y 15:48), quedaban dos filas en Fase2. Una seguía el trámite y la otra quedaba «Cargado» y aparecía como protocolo nuevo pendiente aunque el comité ya hubiera decidido.
+
+**Corrección:** `crearProtocolo` rechaza un nuevo envío si la radicación ya tiene un protocolo en Cargado, Enviado, Pendiente Comité, Revisado, En Solicitud o En Evaluación. Tras una devolución sí se puede enviar la versión corregida.
+
+---
+
+## Cómo aplicar Fix 6 a 14 (obligatorio: el backend NO se actualiza solo)
 
 1. Abrir el proyecto de Apps Script del Web App.
 2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.
