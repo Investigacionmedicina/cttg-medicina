@@ -202,7 +202,15 @@ No toca radicaciones en Cancelado, Sustentado, Reprobado, Completado o Fase 2 De
 
 ---
 
-## Cómo aplicar Fix 6 a 12 (obligatorio: el backend NO se actualiza solo)
+## Fix 13 — Una sola radicación activa por estudiante
+
+**Problema:** el límite de «una radicación a la vez» solo existía en el portal. Con conexión lenta (error de conexión pero el servidor sí guardó), recargando la página antes de que cargara la lista, o radicando otro integrante del grupo, se crearon radicaciones repetidas (p. ej. CTTG-2026-0062 a 0065).
+
+**Corrección:** `crearRadicacion` revisa, dentro del lock y antes de generar el número, si alguno de los correos del grupo (quien radica y estudiantes 1–3) ya está en una radicación cuyo estado no sea Aprobado, Devuelto o Cancelado (misma regla del portal). Si la hay, responde con el número y el estado de esa radicación.
+
+---
+
+## Cómo aplicar Fix 6 a 13 (obligatorio: el backend NO se actualiza solo)
 
 1. Abrir el proyecto de Apps Script del Web App.
 2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.
