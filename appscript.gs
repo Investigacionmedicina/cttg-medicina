@@ -58,7 +58,7 @@ function handleRequest(e, body) {
       case "getFase1ByEmail":      result = obtenerFase1PorEmail(body.email, sesion); break;
       case "obtenerDatosEstudiante": result = obtenerDatosEstudiante(body.email, sesion); break;
       case "updateEstado":         result = actualizarEstado(body.rowIndex, body.estado, body.notas, body.emailCoord); break;
-      case "validarTutores":       result = validarTutores(body.rowIndex, body.tutor1, body.tutor2, body.observaciones, body.emailCoord); break;
+      case "validarTutores":       result = validarTutores(body.rowIndex, body.tutor1, body.tutor2, body.observaciones, body.emailCoord, body.estadoFinal); break;
       case "getTutores":           result = obtenerTutores(); break;
       case "getEvaluadores":       result = obtenerEvaluadores(); break;
       case "getJurados":           result = obtenerJurados(); break;
@@ -2490,7 +2490,13 @@ function verificarVencimientosYAlertar(rowIndex) {
   }
 } 
 
-function validarTutores(rowIndex, tutor1, tutor2, observaciones, emailCoord) {
+/**
+ * estadoFinal (opcional): estado con el que termina la gestión ("Tutores Avalados", "Devuelto",
+ * "Fase 2 Desbloqueada"). Si llega, se aplica aquí mismo con actualizarEstado y el estudiante
+ * recibe un solo correo con la decisión real (antes la página hacía una segunda llamada y,
+ * al devolver, el estudiante recibía primero «tutores avalados» y luego «devuelto»).
+ */
+function validarTutores(rowIndex, tutor1, tutor2, observaciones, emailCoord, estadoFinal) {
   var sheet = getSheet("Fase1");
   var ri    = parseInt(rowIndex);
   var numeroRad = String(sheet.getRange(ri, 2).getValue() || "").trim();
@@ -2510,13 +2516,19 @@ function validarTutores(rowIndex, tutor1, tutor2, observaciones, emailCoord) {
   if (observaciones) sheet.getRange(ri, 36).setValue(observaciones);
   var modalidadLower = String(sheet.getRange(ri, 23).getValue() || "").trim().toLowerCase();
   var esDipl = modalidadLower === "diplomado";
-  if (!esDipl) {
+  var final = String(estadoFinal || "").trim();
+  if (!esDipl && !final) {
     sheet.getRange(ri, 33).setValue("Tutores Avalados");
     notificarCambioEstado(ri, "Tutores Avalados", {});
   }
   registrarAuditoria(emailCoord, "VALIDAR_TUTORES", numeroRad + " | Fila " + rowIndex);
-  var estadoNuevoTutores = esDipl ? estadoAnteriorF1 : "Tutores Avalados";
+  var estadoNuevoTutores = final || (esDipl ? estadoAnteriorF1 : "Tutores Avalados");
   registrarHistorial(numeroRad, "FASE1", "VALIDAR_TUTORES", estadoAnteriorF1, estadoNuevoTutores, emailCoord || "", observaciones || "", "T1: " + ((tutor1 && tutor1.nombre) || "") + " | T2: " + ((tutor2 && tutor2.nombre) || ""));
+  if (final) {
+    var r = actualizarEstado(ri, final, observaciones || "", emailCoord);
+    if (!r || !r.success) return r || { success: false, error: "No se pudo actualizar el estado" };
+    return { success: true, estadoAplicado: final };
+  }
   return { success: true };
 }
 
