@@ -218,7 +218,15 @@ No toca radicaciones en Cancelado, Sustentado, Reprobado, Completado o Fase 2 De
 
 ---
 
-## Cómo aplicar Fix 6 a 14 (obligatorio: el backend NO se actualiza solo)
+## Fix 15 — Sin solicitudes repetidas de Fase 2 ni de sustentación
+
+**Problema:** igual que con el protocolo, la «Solicitud activación Fase 2» se podía enviar varias veces (p. ej. CTTG-2026-0002 la envió 4 veces) y la solicitud de sustentación solo se bloqueaba si ya tenía jurados asignados.
+
+**Corrección:** `crearActasAsesoria` rechaza otra solicitud de activación si hay una en revisión o si la Fase 2 ya está activada. `crearFase3` rechaza otra solicitud mientras haya una en curso (no devuelta, cancelada ni rechazada).
+
+---
+
+## Cómo aplicar Fix 6 a 15 (obligatorio: el backend NO se actualiza solo)
 
 1. Abrir el proyecto de Apps Script del Web App.
 2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.

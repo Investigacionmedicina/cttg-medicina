@@ -2862,6 +2862,23 @@ function crearActasAsesoria(numeroRadicacion, emailEstudiante, nombreArchivo, ba
   var sheet = getSheet("Acta asesoria");
   if (!sheet) return { success: false, error: "Hoja Acta asesoria no encontrada" };
 
+  // La solicitud de activación de Fase 2 se envía una sola vez: una repetida mientras la anterior
+  // está en revisión (o con la Fase 2 ya activada) solo duplicaba filas en la cola de coordinación.
+  if (String(nombreArchivo || "").trim() === "Solicitud activación Fase 2") {
+    var faseActiva = ["Fase 2 Desbloqueada", "Pendiente Comité Técnico", "Devuelto por Comité Técnico", "Aprobado"];
+    if (faseActiva.indexOf(estadoRadActa) !== -1) {
+      return { success: false, error: "La Fase 2 de " + numeroRadicacion + " ya está activada. No necesitas volver a solicitarla." };
+    }
+    var dataSol = sheet.getDataRange().getValues();
+    for (var q = 1; q < dataSol.length; q++) {
+      if (String(dataSol[q][1] || "").trim() !== String(numeroRadicacion).trim()) continue;
+      if (String(dataSol[q][3] || "").trim() !== "Solicitud activación Fase 2") continue;
+      if (String(dataSol[q][6] || "Pendiente revisión").trim() === "Pendiente revisión") {
+        return { success: false, error: "Ya enviaste la solicitud de activación de Fase 2 y está en revisión por la coordinación." };
+      }
+    }
+  }
+
   var urlArchivo = "";
   try {
     var r = subirArchivo(base64, nombreArchivo, "application/pdf", "ActasAsesoria");
@@ -3058,8 +3075,12 @@ function crearFase3(numeroRadicacion, emailEstudiante, porcentajeTurnitin, jurad
     var j2Nom = String(existingRows[j][16] || "").trim();  // col Q jurado2Nombre
     var estSol = String(existingRows[j][28] || "").trim().toLowerCase(); // col AC estadoSolicitud
     var esTerminalSol = estSol.includes("devuelt") || estSol.includes("cancel") || estSol.includes("rechaz");
-    if (j1Nom && j2Nom && !esTerminalSol) {
-      return { success: false, error: "Ya existe una solicitud de sustentación activa con jurados asignados para esta radicación. Debe solicitar a la coordinación anular la solicitud previa antes de crear una nueva." };
+    // Cualquier solicitud en curso (con o sin jurados) bloquea otra: antes un segundo envío antes de
+    // asignar jurados creaba filas repetidas en la hoja Fase 3.
+    if (!esTerminalSol) {
+      return { success: false, error: (j1Nom && j2Nom
+        ? "Ya existe una solicitud de sustentación activa con jurados asignados para esta radicación. Debe solicitar a la coordinación anular la solicitud previa antes de crear una nueva."
+        : "Ya enviaste una solicitud de sustentación para esta radicación y está en revisión. No necesitas enviarla de nuevo.") };
     }
   }
 
