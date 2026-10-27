@@ -242,7 +242,15 @@ No toca radicaciones en Cancelado, Sustentado, Reprobado, Completado o Fase 2 De
 
 ---
 
-## Cómo aplicar Fix 6 a 17 (obligatorio: el backend NO se actualiza solo)
+## Fix 18 — El estado de la sustentación no cambiaba
+
+**Problema:** en Sustentación (coordinadora_fase3), aprobar jurados, asignar la fecha o registrar la nota respondían «✓», pero la columna AC (Estado Solicitud) quedaba en «Solicitud sustentación revisada». Además, al aprobar o editar jurados se borraba el lugar (col AB), porque la API no lo devolvía.
+
+**Corrección:** `updateFase3Asignacion` deja «Jurados aprobados» o «Sustentación programada». `completarFase3` deja «Sustentado» o «Reprobado», y no los reemplaza al reprogramar. La API devuelve `lugar`. La página también muestra el estado correcto en filas antiguas, aunque la hoja no se haya actualizado.
+
+---
+
+## Cómo aplicar Fix 6 a 18 (obligatorio: el backend NO se actualiza solo)
 
 1. Abrir el proyecto de Apps Script del Web App.
 2. Reemplazar todo el código por el contenido de `appscript.gs` de este repo y guardar.

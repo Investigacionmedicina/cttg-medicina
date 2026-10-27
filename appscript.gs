@@ -3422,6 +3422,7 @@ function listaFase3TodasLasFilasSinDedupe() {
       fechaCierre:       formatearFecha(r[25]),
       horaSustentacion:  formatearHora(r[26]),
       observaciones:     String(r[27] || ""),
+      lugar:             String(r[27] || ""),  // AB = Lugar
       estadoSolicitud:   String(r[28] || "Solicitud sustentación radicada"),
       observacionesEstado: String(r[29] || ""),
       motivoDevolucion:  (function(){ var st = String(r[28] || "").toLowerCase(); return (st.indexOf("devuelta") !== -1 || st.indexOf("devolver") !== -1 || st.indexOf("devolucion") !== -1 || st.indexOf("devolución") !== -1) ? String(r[29] || "") : ""; })()
@@ -3516,6 +3517,12 @@ function obtenerFase3(sesion, opciones) {
   }
   return out;
 }
+/** Estados finales de la sustentación: no se reemplazan al reprogramar o editar jurados. */
+function esEstadoFinalFase3_(estado) {
+  var e = String(estado || "").trim().toLowerCase();
+  return e === "sustentado" || e === "reprobado";
+}
+
 function updateFase3Asignacion(rowIndex, fechaSustentacion, horaSustentacion, lugar, jurado1, jurado2, emailCoord) {
   var sheet = getSheetFase3();
   if (!sheet) return { success: false, error: "Hoja Fase 3 no encontrada" };
@@ -3545,6 +3552,16 @@ function updateFase3Asignacion(rowIndex, fechaSustentacion, horaSustentacion, lu
     sheet.getRange(ri, 19).setValue(jurado2.email  || "");
     sheet.getRange(ri, 32).setValue(jurado2.telefono || "");
     sheet.getRange(ri, 34).setValue(jurado2.especialidad || "");
+  }
+
+  // AC = Estado Solicitud: antes no cambiaba al aprobar jurados ni al programar la fecha.
+  var hayJurados = !!(jurado1 && String(jurado1.nombre || "").trim() && jurado2 && String(jurado2.nombre || "").trim());
+  var estadoNuevoAsig = String(fechaSustentacion || "").trim() ? "Sustentación programada" : (hayJurados ? "Jurados aprobados" : "");
+  if (estadoNuevoAsig && !esEstadoFinalFase3_(estadoAnteriorF3Asig)) {
+    sheet.getRange(ri, 29).setValue(estadoNuevoAsig);
+    sheet.getRange(ri, 30).setValue(estadoNuevoAsig === "Sustentación programada"
+      ? "Fecha: " + (fechaSustentacion || "") + " " + (horaSustentacion || "") + " · Lugar: " + (lugar || "Por confirmar")
+      : "Jurados: " + (jurado1.nombre || "") + " y " + (jurado2.nombre || ""));
   }
 
   try {
@@ -3583,7 +3600,7 @@ function updateFase3Asignacion(rowIndex, fechaSustentacion, horaSustentacion, lu
     "Fecha: " + (fechaSustentacion || "") + " | Hora: " + (horaSustentacion || "") + " | Lugar: " + (lugar || "Por confirmar")
   );
   registrarAuditoria(emailCoord, "ASIGNAR_JURADOS", numero + " | Fila " + rowIndex + " — " + fechaSustentacion);
-  registrarHistorial(numero, "FASE3", "ASIGNAR_JURADOS", estadoAnteriorF3Asig, "Sustentación programada", emailCoord || "", "", "Fecha: " + (fechaSustentacion || "") + " | Hora: " + (horaSustentacion || "") + " | Lugar: " + (lugar || ""));
+  registrarHistorial(numero, "FASE3", "ASIGNAR_JURADOS", estadoAnteriorF3Asig, estadoNuevoAsig || estadoAnteriorF3Asig, emailCoord || "", "", "Fecha: " + (fechaSustentacion || "") + " | Hora: " + (horaSustentacion || "") + " | Lugar: " + (lugar || ""));
   return { success: true };
 }
 
@@ -4038,6 +4055,10 @@ function completarFase3(rowIndex, nota, numeroActa, producto, descripcion, email
 
   var numero = String(sheet.getRange(ri, 2).getValue() || "").trim();
   var estadoFinal = notaNum >= 3 ? "Sustentado" : "Reprobado";
+  asegurarColumnasEstadoFase3(sheet);
+  var estadoAnteriorF3Fin = String(sheet.getRange(ri, 29).getValue() || "");
+  sheet.getRange(ri, 29).setValue(estadoFinal);  // AC = Estado Solicitud (antes quedaba en «revisada»)
+  sheet.getRange(ri, 30).setValue("Nota: " + notaNum + (numeroActa ? " · Acta: " + numeroActa : ""));
   var j1Nombre = String(sheet.getRange(ri, 14).getValue() || "");
   var j1Email  = String(sheet.getRange(ri, 16).getValue() || "");
   var j2Nombre = String(sheet.getRange(ri, 17).getValue() || "");
@@ -4067,7 +4088,7 @@ function completarFase3(rowIndex, nota, numeroActa, producto, descripcion, email
     "Nota: " + notaNum + " | Acta: " + (numeroActa || "") + " | Producto: " + (producto || "NO")
   );
   registrarAuditoria(emailCoord, "COMPLETAR_FASE3", numero + " | Nota: " + notaNum);
-  registrarHistorial(numero, "FASE3", "COMPLETAR_FASE3", "", estadoFinal, emailCoord || "", "", "Nota: " + notaNum + " | Acta: " + (numeroActa || "") + " | Producto: " + (producto || "NO"));
+  registrarHistorial(numero, "FASE3", "COMPLETAR_FASE3", estadoAnteriorF3Fin, estadoFinal, emailCoord || "", "", "Nota: " + notaNum + " | Acta: " + (numeroActa || "") + " | Producto: " + (producto || "NO"));
   return { success: true };
 }
 
