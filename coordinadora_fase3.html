@@ -46,6 +46,8 @@
   .b-pend{background:#fdecce;color:#b45309}
   .b-revisada{background:#d8e6fd;color:#1d4ed8}
   .b-devuelta{background:#fcdada;color:#b91c1c}
+  .b-programada{background:#ede7fe;color:#6d28d9}
+  .b-sustentado{background:#dcf5e7;color:#15803d}
   .act{display:flex;gap:4px;flex-wrap:wrap}
   .empty{padding:48px;text-align:center;color:#64748b;font-size:13px}
   .spinner{display:inline-block;width:13px;height:13px;border:2px solid #d3d9e3;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
@@ -440,9 +442,24 @@ function escAttr(s) {
 }
 
 /** Columna «Estado Solicitud» (AC) tal como viene del Excel/API */
-function estadoSheetRaw(r) {
+function estadoSheetGuardado(r) {
   const e = String(r.estadoSolicitud != null ? r.estadoSolicitud : '').trim();
   return e || 'Solicitud sustentación radicada';
+}
+
+/**
+ * Estado que se muestra: el de la hoja, pero adelantado según lo que ya pasó en la fila
+ * (nota → Sustentado/Reprobado; fecha → programada; jurados → aprobados). Antes, aprobar jurados,
+ * programar o registrar la nota no cambiaba la columna AC y el estado quedaba igual.
+ */
+function estadoSheetRaw(r) {
+  const guardado = estadoSheetGuardado(r);
+  const notaStr = String(r.nota ?? '').trim().replace(',', '.');
+  if (notaStr !== '' && !isNaN(parseFloat(notaStr))) return parseFloat(notaStr) >= 3 ? 'Sustentado' : 'Reprobado';
+  if (esEstadoDevueltaSheet(guardado)) return guardado;
+  if (tieneFechaProgramada(r)) return 'Sustentación programada';
+  if (tieneJuradosAsignados(r)) return 'Jurados aprobados';
+  return guardado;
 }
 
 function esEstadoDevueltaSheet(estadoTxt) {
@@ -456,7 +473,11 @@ function badgeEstadoSheet(estadoTxt) {
     'Solicitud sustentación revisada': 'b-revisada',
     'Solicitud sustentación devuelta': 'b-devuelta',
     'Devuelta': 'b-devuelta',
-    'Solicitud sustentación radicada': 'b-pend'
+    'Solicitud sustentación radicada': 'b-pend',
+    'Jurados aprobados': 'b-revisada',
+    'Sustentación programada': 'b-programada',
+    'Sustentado': 'b-sustentado',
+    'Reprobado': 'b-devuelta'
   };
   let cls = map[e] || 'b-pend';
   if (esEstadoDevueltaSheet(e)) cls = 'b-devuelta';
@@ -500,11 +521,14 @@ function poblarFiltroEstadoF3() {
     'Solicitud sustentación radicada',
     'Solicitud sustentación revisada',
     'Solicitud sustentación devuelta',
-    'Devuelta'
+    'Jurados aprobados',
+    'Sustentación programada',
+    'Sustentado',
+    'Reprobado'
   ];
   const seen = new Set(canon);
   fase3.forEach(r => {
-    const e = String(r.estadoSolicitud || '').trim();
+    const e = estadoSheetRaw(r);
     if (e) seen.add(e);
   });
   const opts = [...seen].sort((a, b) => a.localeCompare(b, 'es'));
@@ -962,7 +986,7 @@ function renderTablas() {
       <td>${truncObsHtml(r.observacionesEstado, 56)}</td>
       ${celdaBotonDetalleCompleto(r.rowIndex)}
       <td><div class="act">
-        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>✓ Revisada</button>
+        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" title="${estaDevuelta ? 'Quitar la devolución y marcarla como revisada' : 'Marcar como revisada'}">✓ Revisada</button>
         <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
         ${tieneJuradosAsignados(r)
           ? `<button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" title="Jurados ya aprobados — clic para editar">✓ Jurados aprobados</button>`
@@ -1128,6 +1152,7 @@ async function actualizarEstadoSolicitud(rowIndex, estado, observaciones) {
 async function marcarRevisada(rowIndex) {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   if (!r) return;
+  if (esEstadoDevueltaSheet(estadoSheetRaw(r)) && !confirm('Esta solicitud está devuelta. ¿Marcarla como revisada?')) return;
   const mensaje = 'Su solicitud de sustentación fue revisada. La documentación radicada se encuentra conforme y en los próximos días se asignarán los jurados.';
   try {
     await actualizarEstadoSolicitud(rowIndex, 'Solicitud sustentación revisada', mensaje);
@@ -1165,7 +1190,7 @@ async function asignarJurados() {
   const r = fase3.find(x => x.rowIndex === rowIndex);
   const fechaExistente = (r && r.fechaSustentacion) ? r.fechaSustentacion : '';
   const horaExistente  = (r && r.horaSustentacion)  ? r.horaSustentacion  : '';
-  const lugarExistente = (r && r.lugar)             ? r.lugar             : '';
+  const lugarExistente = (r && (r.lugar || r.observaciones)) ? (r.lugar || r.observaciones) : ''; // AB = Lugar (no borrarlo al editar jurados)
 
   const btn = document.getElementById('btnAsignar');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Aprobando...';
