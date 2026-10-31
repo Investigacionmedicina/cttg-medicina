@@ -1,11 +1,7 @@
 /**
- * Espejo de coordinadora_fase3.html → juradosAprobados. Actualizar si cambia la función en el HTML.
+ * juradosAprobados (Fase 3 coordinadora) — ahora vive en sustentacion_pendientes.js.
  */
-function juradosAprobados(r) {
-  const est = String(r.estadoSolicitud || '').trim().toLowerCase();
-  if (/\bjurados?\s+aprobados?\b/i.test(est)) return true;
-  return !!(String(r.nombres || '').trim());
-}
+const { juradosAprobados } = require('../sustentacion_pendientes.js');
 
 describe('juradosAprobados (Fase 3 coordinadora)', () => {
   test('no activa con textos que solo mencionan «jurados» en trámite', () => {

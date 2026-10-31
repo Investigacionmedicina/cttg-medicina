@@ -566,17 +566,28 @@
     </a>
   </div>
 
-  <!-- PANEL SUSTENTACIÓN -->
+  <!-- PANEL SUSTENTACIÓN: solo lo pendiente, como Actas y Protocolo -->
   <div class="panel" id="pan-fase3">
-    <h2 style="font-size:18px;font-weight:600;color:#0f172a;margin-bottom:20px">🎓 Sustentación</h2>
-    <a href="coordinadora_fase3.html" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:#e6f4f0;border:1px solid #b4e0d2;border-radius:14px;text-decoration:none;color:#0f172a;transition:background .2s" onmouseover="this.style.background='rgba(5,150,105,.2)'" onmouseout="this.style.background='rgba(5,150,105,.1)'">
-      <span style="font-size:32px">🎓</span>
-      <div style="flex:1">
-        <div style="font-size:15px;font-weight:600">Abrir Gestión de Sustentaciones</div>
-        <div style="font-size:12px;color:#334155;margin-top:3px">Revisar solicitudes, asignar jurados y registrar resultados de sustentación</div>
-      </div>
-      <span style="font-size:20px;color:#64748b">→</span>
-    </a>
+    <div class="filters">
+      <input id="searchSust" placeholder="🔍 Buscar por número, estudiante..." oninput="renderSustentacionPanel()">
+      <button class="btn" onclick="cargarSustentacionPanel()">↻ Actualizar</button>
+      <a class="btn bl" href="coordinadora_fase3.html" style="margin-left:auto;text-decoration:none">🎓 Abrir gestión de sustentaciones →</a>
+    </div>
+    <div id="sustResumen" style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px"></div>
+    <div style="margin:0 0 10px">
+      <span style="font-family:'DM Serif Display',serif;font-size:15px;color:#0f172a">📋 Pendientes de acción <span class="badge b-radicado" id="chipSustPend" style="font-size:12px;margin-left:6px">—</span></span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th><th>Estudiante</th><th>F. Solicitud</th><th>Fecha sustentación</th><th>Paso pendiente</th><th>Acción</th>
+        </tr></thead>
+        <tbody id="tbodySust">
+          <tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando sustentaciones...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p id="sustNotaDevueltas" style="font-size:12px;color:#64748b;margin-top:10px"></p>
   </div>
 
   <!-- PANEL FILTROS DINÁMICOS -->
@@ -1044,6 +1055,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="sustentacion_pendientes.js"></script>
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 function coordToken() { return localStorage.getItem('cttg_token') || ''; }
@@ -1107,6 +1119,7 @@ function switchPanel(name, btn) {
   }
   else if (name === 'solicitudesCambio') { cargarSolicitudesCambio(); cargarSolicitudesCancelacion(); renderCancelDirecta(); }
   else if (name === 'terminados') cargarTerminados();
+  else if (name === 'fase3') cargarSustentacionPanel();
   else if (name === 'diplomado') renderTablaDiplomado();
   else if (name === 'filtros') {
     (async () => {
@@ -1410,6 +1423,7 @@ async function cargar() {
       poblarFiltroMod();
       renderTabla();
       actualizarBadgeTerminados();
+      cargarSustentacionPanel(true);
       actualizarBadgeDiplomado();
       if (document.getElementById('pan-terminados')?.classList.contains('on')) cargarTerminados();
       if (document.getElementById('pan-diplomado')?.classList.contains('on')) renderTablaDiplomado();
@@ -4757,6 +4771,84 @@ async function resolverCancelacion(decision) {
 }
 
 
+
+// ── SUSTENTACIÓN: pendientes por paso (lógica en sustentacion_pendientes.js) ──
+let sustFilas = [], sustCargando = false;
+
+async function cargarSustentacionPanel(silencioso) {
+  if (!window.CTTGSust || sustCargando) return;
+  sustCargando = true;
+  const tb = document.getElementById('tbodySust');
+  if (!silencioso && tb && !sustFilas.length) tb.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Cargando sustentaciones...</td></tr>';
+  try {
+    const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe: true }) });
+    const d = await res.json();
+    if (!d.success) throw new Error(d.error || 'respuesta sin éxito');
+    sustFilas = d.fase3 || [];
+    renderSustentacionPanel();
+  } catch (e) {
+    if (!silencioso && tb) tb.innerHTML = '<tr><td colspan="6" class="empty">Error al cargar sustentaciones: ' + esc(e.message) + '</td></tr>';
+  } finally { sustCargando = false; }
+}
+
+function renderSustentacionPanel() {
+  if (!window.CTTGSust) return;
+  const estadoRad = {};
+  (radicaciones || []).forEach(r => { estadoRad[CTTGSust.norm(r.numero)] = r.estado || ''; });
+  const c = CTTGSust.clasificar(sustFilas, estadoRad);
+
+  // Contador en la pestaña del menú
+  const tab = document.getElementById('tabFase3');
+  if (tab) {
+    const prev = tab.querySelector('.badge-count');
+    if (prev) prev.remove();
+    if (c.totalPendientes > 0) {
+      const span = document.createElement('span');
+      span.className = 'badge-count';
+      span.textContent = c.totalPendientes;
+      tab.appendChild(span);
+    }
+  }
+
+  const resumen = document.getElementById('sustResumen');
+  if (resumen) {
+    const caja = (ico, txt, n) => '<div style="padding:10px 14px;border:1px solid #e4e8ef;border-radius:10px;background:#fff;font-size:12px;color:#334155;min-width:150px">' +
+      ico + ' ' + txt + '<div style="font-size:20px;font-weight:700;color:#0f172a;margin-top:2px">' + n + '</div></div>';
+    resumen.innerHTML = caja('📥', 'Nuevas por revisar', c.nueva.length) + caja('👥', 'Aprobar jurados', c.jurados.length) +
+      caja('📅', 'Programar fecha', c.programar.length) + caja('🎓', 'Registrar nota', c.nota.length);
+  }
+  const chip = document.getElementById('chipSustPend');
+  if (chip) chip.textContent = c.totalPendientes;
+  const notaDev = document.getElementById('sustNotaDevueltas');
+  if (notaDev) notaDev.textContent = c.devuelta.length
+    ? '↩ ' + c.devuelta.length + ' solicitud(es) devuelta(s) esperando que el estudiante corrija. No requieren acción; se ven en el Historial de la gestión de sustentaciones.'
+    : '';
+
+  const tb = document.getElementById('tbodySust');
+  if (!tb) return;
+  const q = (document.getElementById('searchSust')?.value || '').trim().toLowerCase();
+  const ordenPaso = { nueva: 0, jurados: 1, programar: 2, nota: 3 };
+  const filas = [].concat(c.nueva, c.jurados, c.programar, c.nota)
+    .filter(r => !q || [r.numero, r.nombreEstudiante, r.emailEstudiante].join(' ').toLowerCase().includes(q))
+    .sort((a, b) => (ordenPaso[c.pasoDe(a)] - ordenPaso[c.pasoDe(b)]) || String(a.fechaCarga || '').localeCompare(String(b.fechaCarga || '')));
+  if (!filas.length) {
+    tb.innerHTML = '<tr><td colspan="6" class="empty">' + (c.totalPendientes ? 'Ninguna coincide con la búsqueda.' : 'Sin sustentaciones pendientes de acción. ✓') + '</td></tr>';
+    return;
+  }
+  const accion = { nueva: 'Revisar', jurados: 'Aprobar jurados', programar: 'Asignar fecha', nota: 'Registrar nota' };
+  tb.innerHTML = filas.map(r => {
+    const p = c.pasoDe(r);
+    const fechaS = r.fechaSustentacion || r.fechaAsignada || '';
+    return '<tr>' +
+      '<td><div class="num-rad">' + esc(r.numero) + '</div></td>' +
+      '<td style="font-size:12px;color:#0f172a">' + esc(r.nombreEstudiante || r.emailEstudiante || '—') + '</td>' +
+      '<td style="font-size:12px;color:#64748b">' + esc(r.fechaCarga ? fmtFecha(r.fechaCarga) : '—') + '</td>' +
+      '<td style="font-size:12px;color:#b45309">' + esc(fechaS ? fmtFecha(fechaS) : '—') + (r.horaSustentacion ? ' ' + esc(r.horaSustentacion) : '') + '</td>' +
+      '<td><span class="badge b-radicado">' + esc(CTTGSust.ETIQUETAS[p]) + '</span></td>' +
+      '<td><a class="btn bl" style="text-decoration:none" href="coordinadora_fase3.html?rad=' + encodeURIComponent(r.numero || '') + '">' + accion[p] + ' →</a></td>' +
+      '</tr>';
+  }).join('');
+}
 </script>
 <script src="tema.js"></script>
 </body>
