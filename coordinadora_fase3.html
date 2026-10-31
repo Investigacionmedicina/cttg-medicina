@@ -19,7 +19,7 @@
   main{padding:24px 28px;max-width:1300px;margin:0 auto}
   .back{display:inline-flex;align-items:center;gap:6px;color:#334155;font-size:13px;text-decoration:none;margin-bottom:18px;transition:color .2s}
   .back:hover{color:#0f172a}
-  .tabs{display:flex;gap:4px;margin-bottom:20px;background:#ffffff;border:1px solid #e4e8ef;border-radius:10px;padding:4px;width:fit-content}
+  .tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:20px;background:#ffffff;border:1px solid #e4e8ef;border-radius:10px;padding:4px;width:fit-content}
   .tab{padding:8px 20px;border-radius:7px;border:none;background:transparent;color:#334155;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
   .tab.on{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 10px rgba(16,185,129,.4)}
   .panel{display:none}.panel.on{display:block}
@@ -48,6 +48,7 @@
   .b-devuelta{background:#fcdada;color:#b91c1c}
   .b-programada{background:#ede7fe;color:#6d28d9}
   .b-sustentado{background:#dcf5e7;color:#15803d}
+  .b-gris{background:#eef1f5;color:#64748b}
   .act{display:flex;gap:4px;flex-wrap:wrap}
   .empty{padding:48px;text-align:center;color:#64748b;font-size:13px}
   .spinner{display:inline-block;width:13px;height:13px;border:2px solid #d3d9e3;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
@@ -94,29 +95,28 @@
   <a href="#" class="back" onclick="window.location.href=urlPanelStaff();return false;">← Volver al panel</a>
 
   <div class="tabs">
-    <button type="button" class="tab on" id="tabAsignar" onclick="switchTab('asignar',this)">📅 Pendiente Asignación</button>
-    <button type="button" class="tab" id="tabResultado" onclick="switchTab('resultado',this)">🎓 Pendiente Resultado</button>
-    <button type="button" class="tab" id="tabTodas" onclick="switchTab('todas',this)">📋 Todas las solicitudes</button>
+    <button type="button" class="tab on" id="tabNueva" onclick="switchTab('nueva',this)">📥 Nuevas</button>
+    <button type="button" class="tab" id="tabJurados" onclick="switchTab('jurados',this)">👥 Aprobar jurados</button>
+    <button type="button" class="tab" id="tabProgramar" onclick="switchTab('programar',this)">📅 Programar fecha</button>
+    <button type="button" class="tab" id="tabResultado" onclick="switchTab('resultado',this)">🎓 Registrar nota</button>
+    <button type="button" class="tab" id="tabTodas" onclick="switchTab('todas',this)">📂 Historial</button>
   </div>
 
   <div class="filtro-estado-f3" style="margin:10px 0 18px;padding:12px 14px;background:#ffffff;border:1px solid #e4e8ef;border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-    <input id="searchFase3" type="search" placeholder="🔍 Buscar por radicación, estudiante, jurado, tutor..." autocomplete="off" oninput="renderTablas()" style="min-width:240px;flex:1;max-width:420px;background:#ffffff;border:1px solid #e4e8ef;border-radius:8px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none">
-    <label for="filtroEstadoF3" style="font-size:12px;color:#334155;flex:1;min-width:220px">
-      Filtrar por texto exacto de <strong style="color:#0f172a;font-weight:600">Estado solicitud</strong> (columna AC del Excel). «Observaciones estado» se muestra en las tablas (columna AD); los valores posibles salen de lo que haya en la hoja más los estándar del sistema.
-    </label>
-    <select id="filtroEstadoF3" autocomplete="off" onchange="renderTablas()" style="min-width:300px;max-width:100%;background:#f1f4f8;border:1px solid #e4e8ef;border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
-    <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#334155;cursor:pointer;max-width:340px;line-height:1.35">
-      <input type="checkbox" id="chkFase3SinDedupe" checked onchange="cargar()" style="accent-color:#38bdf8;width:16px;height:16px;margin-top:2px;flex-shrink:0" />
-      <span><strong style="color:#0f172a;font-weight:600">Sin agrupar</strong> por radicación (recomendado: lista cada fila del Excel). Desmárquelo si solo quiere la fila más reciente por número.</span>
-    </label>
-    <button type="button" class="btn-ref" onclick="diagnosticoFase3()" style="flex-shrink:0" title="Compara filas API vs escaneo columna B en Sheets">🔧 Diagnóstico lectura</button>
-    <p style="font-size:11px;color:#64748b;margin:0;width:100%;line-height:1.45">Si en la hoja hay más solicitudes radicadas (por ejemplo CONTARA en columna B) que filas en «Todas»: deje el filtro en «Todos los estados», mantenga «Sin agrupar» activo y pulse Diagnóstico para verificar que el script usa el mismo libro y pestaña que su archivo.</p>
+    <input id="searchFase3" type="search" placeholder="🔍 Buscar por radicación, estudiante, jurado..." autocomplete="off" oninput="renderTablas()" style="min-width:240px;flex:1;max-width:420px;background:#ffffff;border:1px solid #e4e8ef;border-radius:8px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:12px;padding:8px 11px;outline:none">
+    <span id="avisoDevueltas" style="font-size:12px;color:#64748b"></span>
+    <details style="width:100%"><summary style="font-size:12px;color:#64748b;cursor:pointer">⚙️ Opciones avanzadas</summary>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:10px">
+        <label for="filtroEstadoF3" style="font-size:12px;color:#334155">Filtrar por estado solicitud (columna AC):</label>
+        <select id="filtroEstadoF3" autocomplete="off" onchange="renderTablas()" style="min-width:260px;max-width:100%;background:#f1f4f8;border:1px solid #e4e8ef;border-radius:9px;color:#0f172a;font-family:'Outfit',sans-serif;font-size:13px;padding:9px 12px"></select>
+        <button type="button" class="btn-ref" onclick="diagnosticoFase3()" style="flex-shrink:0" title="Compara filas API vs escaneo columna B en Sheets">🔧 Diagnóstico lectura</button>
+      </div>
+    </details>
   </div>
 
-  <!-- VISTA 1: ASIGNAR JURADOS -->
-  <div class="panel on" id="pan-asignar">
+  <div class="panel on" id="pan-nueva">
     <div class="sec-hdr">
-      <div><h2>Pendiente de Asignación</h2><p>Solicitudes sin fecha programada según el sistema (columna «Fecha sustentación» / D o «Fecha asignada» / U). Si ya tienen fecha, aparecen en «Pendiente resultado» o «Todas».</p></div>
+      <div><h2>Nuevas por revisar</h2><p>Solicitudes que acaba de radicar el estudiante. Revise la documentación: márquela como revisada o devuélvala.</p></div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
@@ -128,13 +128,67 @@
           <th>Semestre</th>
           <th>% Turnitin</th>
           <th>F. Solicitud</th>
-          <th>Jurados Sugeridos</th>
+          <th>Jurados</th>
           <th>Estado solicitud</th>
           <th>Observaciones estado</th>
           <th>Detalle</th>
           <th>Acciones</th>
         </tr></thead>
-        <tbody id="tbodyAsignar">
+        <tbody id="tbodyNueva">
+          <tr><td colspan="11" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" id="pan-jurados">
+    <div class="sec-hdr">
+      <div><h2>Por aprobar jurados</h2><p>Solicitudes revisadas: acepte o cambie los jurados que sugirió el estudiante.</p></div>
+      <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th>
+          <th>Estudiante</th>
+          <th>Modalidad (Fase 1)</th>
+          <th>Semestre</th>
+          <th>% Turnitin</th>
+          <th>F. Solicitud</th>
+          <th>Jurados</th>
+          <th>Estado solicitud</th>
+          <th>Observaciones estado</th>
+          <th>Detalle</th>
+          <th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyJurados">
+          <tr><td colspan="11" class="empty"><span class="spinner"></span>Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" id="pan-programar">
+    <div class="sec-hdr">
+      <div><h2>Por programar fecha</h2><p>Jurados aprobados: asigne fecha, hora y lugar de la sustentación.</p></div>
+      <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>N° Radicación</th>
+          <th>Estudiante</th>
+          <th>Modalidad (Fase 1)</th>
+          <th>Semestre</th>
+          <th>% Turnitin</th>
+          <th>F. Solicitud</th>
+          <th>Jurados</th>
+          <th>Estado solicitud</th>
+          <th>Observaciones estado</th>
+          <th>Detalle</th>
+          <th>Acciones</th>
+        </tr></thead>
+        <tbody id="tbodyProgramar">
           <tr><td colspan="11" class="empty"><span class="spinner"></span>Cargando...</td></tr>
         </tbody>
       </table>
@@ -144,7 +198,7 @@
   <!-- VISTA 2: REGISTRAR RESULTADO -->
   <div class="panel" id="pan-resultado">
     <div class="sec-hdr">
-      <div><h2>Pendiente de Resultado</h2><p>Sustentaciones programadas sin nota registrada.</p></div>
+      <div><h2>Por registrar nota</h2><p>Sustentaciones ya programadas: registre la nota y el acta cuando se realicen.</p></div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
     <div class="tbl-wrap">
@@ -173,9 +227,8 @@
   <div class="panel" id="pan-todas">
     <div class="sec-hdr">
       <div>
-        <h2>Todas las solicitudes</h2>
-        <p>Listado completo cargado desde el sistema (incluye cerradas y programadas). Las pestañas anteriores solo muestran pendientes de acción.</p>
-        <p style="font-size:11px;color:#64748b;margin-top:6px">Con la casilla «sin agrupar» desactivada, si hay varias filas con el mismo número de radicación solo se muestra la más reciente. Actívela arriba para listar cada fila del Excel.</p>
+        <h2>Historial</h2>
+        <p>Todas las solicitudes, incluidas las devueltas, cerradas y los envíos anteriores. La columna «Paso» indica dónde está cada una.</p>
       </div>
       <button class="btn-ref" onclick="cargar()">↻ Actualizar</button>
     </div>
@@ -193,7 +246,7 @@
           <th>Nota</th>
           <th>Estado solicitud</th>
           <th>Observaciones estado</th>
-          <th>Vista coordinación</th>
+          <th>Paso</th>
           <th>Detalle</th>
         </tr></thead>
         <tbody id="tbodyTodas">
@@ -338,6 +391,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="tema.js"></script>
+<script src="sustentacion_pendientes.js"></script>
 <script>
 const URL_APP = "https://script.google.com/macros/s/AKfycbx8J-FjMJCgtQBHTqXmOpbxVZxrbR1_DT7w55ucesQYtTdZgnbxBprB7c4auHhi9PQk/exec";
 
@@ -384,6 +438,8 @@ let admin = null;
 let fase3 = [];
 /** Número de radicación normalizado → modalidad texto en Fase 1 (coordina vista diplomado vs medicina) */
 let modalidadPorRad = {};
+/** Número de radicación normalizado → estado de la radicación en Fase 1 (para no mostrar trámites ya cerrados) */
+let estadoRadPorRad = {};
 /** Número de radicación normalizado → datos jurados diplomado desde Fase 1 */
 let dipDatosPorRad = {};
 let solicitudModalActual = null;
@@ -409,12 +465,23 @@ let solicitudModalActual = null;
     redirigirLoginCoordPorSesion('No hay sesión de coordinadora guardada en este navegador. Ingrese de nuevo.');
     return;
   }
+  // Desde el panel: coordinadora_fase3.html?rad=CTTG-… abre la página filtrada en esa radicación
+  try {
+    const radParam = new URLSearchParams(window.location.search || '').get('rad');
+    const inp = document.getElementById('searchFase3');
+    if (radParam && inp) inp.value = radParam;
+  } catch (e) {}
   cargar();
 })();
 
 function salir() { localStorage.removeItem('cttg_admin'); localStorage.removeItem('cttg_token_coord'); window.location.href = 'index.html'; }
 
 function switchTab(name, btn) {
+  tabElegidaPorUsuario = true;
+  mostrarTab(name, btn);
+}
+
+function mostrarTab(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
   document.getElementById('pan-' + name).classList.add('on');
@@ -820,8 +887,12 @@ function aplicarDecisionJurado(i) {
   }
 }
 
+/**
+ * Jurados aprobados POR COORDINACIÓN. Los nombres N/Q se llenan desde que el estudiante radica
+ * (son sus sugeridos), así que no bastan: ver CTTGSust.juradosAprobados.
+ */
 function tieneJuradosAsignados(r) {
-  return !!(String(r.jurado1Nombre || '').trim() && String(r.jurado2Nombre || '').trim());
+  return !!(window.CTTGSust && CTTGSust.juradosAprobados(r));
 }
 
 function toggleDesc() {
@@ -830,15 +901,17 @@ function toggleDesc() {
 
 async function cargar() {
   try {
-    const sinDedupe = !!(document.getElementById('chkFase3SinDedupe') && document.getElementById('chkFase3SinDedupe').checked);
+    const sinDedupe = true; // el historial necesita todas las filas; los pendientes usan solo el envío más reciente
     const reqF3 = fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe }) }).then(function(r){ return r.json(); });
     const reqF1 = fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase1', token: coordToken() }) }).then(function(r){ return r.json(); });
     const [d, dF1] = await Promise.all([reqF3, reqF1]);
     modalidadPorRad = {};
+    estadoRadPorRad = {};
     if (dF1.success) {
       (dF1.radicaciones || []).forEach(function(row) {
         const k = normRadCoordF3(row.numero);
         if (k && row.modalidad) modalidadPorRad[k] = String(row.modalidad).trim();
+        if (k) estadoRadPorRad[k] = String(row.estado || '').trim();
         if (k) {
           dipDatosPorRad[k] = {
             dipJurado1Nombre:    String(row.dipJurado1Nombre    || ''),
@@ -867,8 +940,10 @@ async function cargar() {
       throw new Error(d.error);
     }
   } catch(e) {
-    document.getElementById('tbodyAsignar').innerHTML = `<tr><td colspan="11" class="empty">Error: ${e.message}</td></tr>`;
-    document.getElementById('tbodyResultado').innerHTML = `<tr><td colspan="11" class="empty">Error: ${e.message}</td></tr>`;
+    ['tbodyNueva','tbodyJurados','tbodyProgramar','tbodyResultado'].forEach(id => {
+      const tb = document.getElementById(id);
+      if (tb) tb.innerHTML = `<tr><td colspan="11" class="empty">Error: ${esc(e.message)}</td></tr>`;
+    });
     const tbT = document.getElementById('tbodyTodas');
     if (tbT) tbT.innerHTML = `<tr><td colspan="10" class="empty">Error: ${e.message}</td></tr>`;
   }
@@ -877,7 +952,7 @@ async function cargar() {
 /** Ayuda a contrastar Google Sheets vs API cuando «faltan» solicitudes (libro, pestaña o inferencia de radicación). */
 async function diagnosticoFase3() {
   try {
-    const sinDedupe = !!(document.getElementById('chkFase3SinDedupe') && document.getElementById('chkFase3SinDedupe').checked);
+    const sinDedupe = true; // el historial necesita todas las filas; los pendientes usan solo el envío más reciente
     const res = await fetch(URL_APP, { method: 'POST', body: JSON.stringify({ action: 'getFase3', token: coordToken(), sinDedupe, debugFase3: true }) });
     const d = await res.json();
     if (!d.success) {
@@ -937,44 +1012,36 @@ function fechaProgramacionPrimaria(r) {
   return '';
 }
 
-/** Dónde aparece cada solicitud en las pestañas de trabajo */
-function vistaBucketCoord(r) {
-  const notaStr = String(r.nota ?? '').trim().replace(',', '.');
-  const tieneNota = notaStr !== '' && !isNaN(parseFloat(notaStr));
-  if (tieneNota) return { texto: 'Cerrada (tiene nota)', clase: 'b-aprobado' };
-  if (tieneFechaProgramada(r))
-    return { texto: 'En «Pendiente resultado»', clase: 'b-revisada' };
-  return { texto: 'En «Pendiente asignación»', clase: 'b-pend' };
+/** Pestañas de trabajo: cada solicitud vigente aparece solo en el paso que le toca (ver sustentacion_pendientes.js). */
+const PASO_BADGE = { nueva:'b-pend', jurados:'b-revisada', programar:'b-revisada', nota:'b-programada', devuelta:'b-devuelta', cerrada:'b-sustentado', reemplazada:'b-gris' };
+const PASO_TAB = { nueva:'tabNueva', jurados:'tabJurados', programar:'tabProgramar', nota:'tabResultado' };
+const PASO_TAB_TXT = { nueva:'📥 Nuevas', jurados:'👥 Aprobar jurados', programar:'📅 Programar fecha', nota:'🎓 Registrar nota' };
+let tabElegidaPorUsuario = false;
+
+function clasificacionF3() {
+  if (!window.CTTGSust) return null;
+  return CTTGSust.clasificar(fase3, estadoRadPorRad);
 }
 
-function renderTablas() {
-  poblarFiltroEstadoF3();
+function badgePaso(p) {
+  return `<span class="badge ${PASO_BADGE[p] || 'b-pend'}">${esc((window.CTTGSust && CTTGSust.ETIQUETAS[p]) || p)}</span>`;
+}
 
-  const sinFecha = fase3.filter(r =>
-    !tieneFechaProgramada(r) && coincideFiltros(r));
-  const conFecha = fase3.filter(r =>
-    tieneFechaProgramada(r) && (!r.nota || r.nota === '') && coincideFiltros(r));
-
-  const todasCoincidenEstado = fase3.filter(coincideFiltros);
-
-  const elAsig = document.getElementById('tabAsignar');
-  const elRes = document.getElementById('tabResultado');
-  const elTod = document.getElementById('tabTodas');
-  if (elAsig) elAsig.textContent = `📅 Pendiente Asignación (${sinFecha.length})`;
-  if (elRes) elRes.textContent = `🎓 Pendiente Resultado (${conFecha.length})`;
-  if (elTod) elTod.textContent = `📋 Todas (${todasCoincidenEstado.length}${todasCoincidenEstado.length !== fase3.length ? '/' + fase3.length : ''})`;
-
-  const tbA = document.getElementById('tbodyAsignar');
-  if (!sinFecha.length) {
-    tbA.innerHTML = '<tr><td colspan="11" class="empty">' +
-      (fase3.filter(r => !tieneFechaProgramada(r)).length
-        ? 'Ninguna coincide con el filtro de estado solicitud.'
-        : 'Sin solicitudes pendientes de asignación.') + '</td></tr>';
-  } else {
-    tbA.innerHTML = sinFecha.map(r => {
-      const estSh = estadoSheetRaw(r);
-      const estaDevuelta = esEstadoDevueltaSheet(estSh);
-      return `<tr>
+function filaPendienteF3(r, paso) {
+  const estSh = estadoSheetRaw(r);
+  let acciones = '';
+  if (paso === 'nueva') {
+    acciones = `<button class="btn bl" onclick="marcarRevisada(${r.rowIndex})">✓ Revisada</button>
+        <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
+        <button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" title="Revisar y aprobar los jurados de una vez">👥 Aprobar jurados</button>`;
+  } else if (paso === 'jurados') {
+    acciones = `<button class="btn gr" onclick="abrirAsignar(${r.rowIndex})">👥 Aprobar jurados</button>
+        <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>`;
+  } else if (paso === 'programar') {
+    acciones = `<button class="btn am" onclick="abrirFecha(${r.rowIndex})">📅 Asignar fecha</button>
+        <button class="btn" onclick="abrirAsignar(${r.rowIndex})" title="Cambiar los jurados aprobados">✏️ Jurados</button>`;
+  }
+  return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:#334155">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
       ${celdaModalidadF3(r.numero)}
@@ -985,25 +1052,49 @@ function renderTablas() {
       <td>${badgeEstadoSheet(estSh)}</td>
       <td>${truncObsHtml(r.observacionesEstado, 56)}</td>
       ${celdaBotonDetalleCompleto(r.rowIndex)}
-      <td><div class="act">
-        <button class="btn bl" onclick="marcarRevisada(${r.rowIndex})" title="${estaDevuelta ? 'Quitar la devolución y marcarla como revisada' : 'Marcar como revisada'}">✓ Revisada</button>
-        <button class="btn rd" onclick="abrirDevolver(${r.rowIndex})">↩ Devolver</button>
-        ${tieneJuradosAsignados(r)
-          ? `<button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" title="Jurados ya aprobados — clic para editar">✓ Jurados aprobados</button>`
-          : `<button class="btn gr" onclick="abrirAsignar(${r.rowIndex})" ${estaDevuelta ? 'disabled' : ''}>👥 Aprobar jurados</button>`
-        }
-        <button class="btn am" onclick="abrirFecha(${r.rowIndex})" ${estaDevuelta || !tieneJuradosAsignados(r) ? 'disabled' : ''} title="${!tieneJuradosAsignados(r) ? 'Primero aprueba los jurados' : 'Asignar fecha y hora'}">📅 Asignar fecha</button>
-      </div></td>
+      <td><div class="act">${acciones}</div></td>
      </tr>`;
-    }).join('');
+}
+
+function pintarTablaPendientes(tbodyId, lista, paso, vacio) {
+  const tb = document.getElementById(tbodyId);
+  if (!tb) return;
+  const visibles = lista.filter(coincideFiltros).sort((a, b) => fechaOrdValF3(a) - fechaOrdValF3(b)); // la más antigua primero
+  if (!visibles.length) {
+    tb.innerHTML = '<tr><td colspan="11" class="empty">' +
+      (lista.length ? 'Ninguna coincide con la búsqueda o el filtro.' : vacio) + '</td></tr>';
+    return;
   }
+  tb.innerHTML = visibles.map(r => filaPendienteF3(r, paso)).join('');
+}
+
+function renderTablas() {
+  poblarFiltroEstadoF3();
+  const c = clasificacionF3();
+  if (!c) return;
+
+  // Contadores en las pestañas (solo pendientes)
+  Object.keys(PASO_TAB).forEach(p => {
+    const el = document.getElementById(PASO_TAB[p]);
+    if (el) el.textContent = PASO_TAB_TXT[p] + (c[p].length ? ` (${c[p].length})` : '');
+  });
+  const elTod = document.getElementById('tabTodas');
+  if (elTod) elTod.textContent = '📂 Historial';
+
+  const aviso = document.getElementById('avisoDevueltas');
+  if (aviso) aviso.textContent = c.devuelta.length
+    ? `↩ ${c.devuelta.length} devuelta(s) esperando corrección del estudiante (ver Historial)`
+    : '';
+
+  pintarTablaPendientes('tbodyNueva', c.nueva, 'nueva', 'No hay solicitudes nuevas por revisar. ✓');
+  pintarTablaPendientes('tbodyJurados', c.jurados, 'jurados', 'No hay jurados por aprobar. ✓');
+  pintarTablaPendientes('tbodyProgramar', c.programar, 'programar', 'No hay sustentaciones por programar. ✓');
 
   const tbR = document.getElementById('tbodyResultado');
+  const conFecha = c.nota.filter(coincideFiltros).sort((a, b) => String(fechaProgramacionPrimaria(a)).localeCompare(String(fechaProgramacionPrimaria(b))));
   if (!conFecha.length) {
     tbR.innerHTML = '<tr><td colspan="11" class="empty">' +
-      (fase3.filter(r => tieneFechaProgramada(r) && (!r.nota || r.nota === '')).length
-        ? 'Ninguna coincide con el filtro de estado solicitud.'
-        : 'Sin sustentaciones pendientes de resultado.') + '</td></tr>';
+      (c.nota.length ? 'Ninguna coincide con la búsqueda o el filtro.' : 'No hay sustentaciones pendientes de nota. ✓') + '</td></tr>';
   } else {
     tbR.innerHTML = conFecha.map(r => `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
@@ -1016,10 +1107,12 @@ function renderTablas() {
       <td>${badgeEstadoSheet(estadoSheetRaw(r))}</td>
       <td>${truncObsHtml(r.observacionesEstado, 44)}</td>
       ${celdaBotonDetalleCompleto(r.rowIndex)}
-      <td><button class="btn bl" onclick="abrirResultado(${r.rowIndex},'${esc(r.numero)}')">🎓 Registrar</button></td>
+      <td><div class="act"><button class="btn bl" onclick="abrirResultado(${r.rowIndex},'${esc(r.numero)}')">🎓 Registrar</button>
+        <button class="btn" onclick="abrirFecha(${r.rowIndex})" title="Cambiar fecha, hora o lugar">📅 Reprogramar</button></div></td>
     </tr>`).join('');
   }
 
+  // Historial: todo, con el paso en que está cada fila
   const tbTod = document.getElementById('tbodyTodas');
   if (tbTod) {
     const q = (document.getElementById('searchTodasF3') && document.getElementById('searchTodasF3').value || '').trim().toLowerCase();
@@ -1035,9 +1128,11 @@ function renderTablas() {
         (fase3.length ? 'Ninguna solicitud coincide con el filtro o la búsqueda.' : 'No hay solicitudes cargadas.') + '</td></tr>';
     } else {
       tbTod.innerHTML = todasFiltradas.map(r => {
-        const vb = vistaBucketCoord(r);
+        const p = c.pasoDe(r);
         const notaTxt = String(r.nota != null ? r.nota : '').trim();
-        const estSh = estadoSheetRaw(r);
+        const extra = p === 'devuelta'
+          ? `<div style="margin-top:4px"><button class="btn bl" style="font-size:10px;padding:3px 7px" onclick="marcarRevisada(${r.rowIndex})" title="Quitar la devolución y marcarla como revisada">✓ Revisada</button></div>`
+          : '';
         return `<tr>
       <td><div class="num-rad">${esc(r.numero)}</div></td>
       <td style="font-size:12px;color:#334155">${esc(r.nombreEstudiante || r.emailEstudiante)}</td>
@@ -1045,12 +1140,22 @@ function renderTablas() {
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:#64748b">${fmtFecha(r.fechaCarga)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:#b45309">${fmtFecha(fechaProgramacionPrimaria(r))}</td>
       <td style="font-size:12px">${esc(notaTxt || '—')}</td>
-      <td>${badgeEstadoSheet(estSh)}</td>
+      <td>${badgeEstadoSheet(estadoSheetRaw(r))}</td>
       <td>${truncObsHtml(r.observacionesEstado, 64)}</td>
-      <td><span class="badge ${vb.clase}">${esc(vb.texto)}</span></td>
+      <td>${badgePaso(p)}${extra}</td>
       ${celdaBotonDetalleCompleto(r.rowIndex)}
     </tr>`;
       }).join('');
+    }
+  }
+
+  // Al abrir la página, ir a la primera pestaña que tenga algo pendiente
+  if (!tabElegidaPorUsuario) {
+    const primero = ['nueva','jurados','programar','nota'].find(p => c[p].length);
+    if (primero) {
+      const panel = primero === 'nota' ? 'resultado' : primero;
+      const btn = document.getElementById(PASO_TAB[primero]);
+      if (btn) mostrarTab(panel, btn);
     }
   }
 }
